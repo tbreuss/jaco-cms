@@ -20,5 +20,22 @@ function find_by_name(string $name): string
     if ($key !== false) {
         return $all[$key];
     }
-    throw new exception\Exception('Something strange happened...');
+    throw new exception\Exception('Could not find a page');
+}
+
+function get_html(string $page, string $directory = JACO_WEB_DIR): string
+{
+    $path = rtrim($directory, '/') . '/' . sanitize_page($page);
+    $content = file_get_contents($path);
+    if ($content === false) {
+        throw new \jaco\exception\Exception('Could not load ' . $page);
+    }
+    return $content;
+}
+
+function sanitize_page(string $page): string
+{
+    $search = ['..', '\\'];
+    $replace = '';
+    return str_replace($search, $replace, $page);
 }

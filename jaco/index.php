@@ -5,9 +5,10 @@ require 'vendor/autoload.php';
 use jaco\exception;
 use jaco\route;
 
-define('JACO_DIR', __DIR__);
+define('JACO_CMS_DIR', __DIR__);
 define('JACO_WEB_DIR', dirname(__DIR__));
 define('JACO_ALLOWED_EXTENSIONS', ['htm', 'html']);
+define('JACO_DEFAULT_PAGE', 'index.html');
 
 try {
 

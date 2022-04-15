@@ -7,8 +7,11 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'e19024d92d101c1791acb0def6baa6ff' => $baseDir . '/php/action.php',
+    '050521240c81b2df03d09fb32b4fa6db' => $baseDir . '/php/asset.php',
+    '6564283e7a81974a8317e05be6198808' => $baseDir . '/php/auth.php',
     'ab885253c1280e643d1af2690ef81856' => $baseDir . '/php/exception.php',
     'c031c3f48a1cedd8ee9cd14a6e430c41' => $baseDir . '/php/html.php',
     '677c9cb6ab6befaa17dddc8467282cd4' => $baseDir . '/php/page.php',
     'd7d8bdeb45aa7631683e4446e1469009' => $baseDir . '/php/route.php',
+    'cb02381323a1cca6581ee043efb6caa2' => $baseDir . '/php/view.php',
 );

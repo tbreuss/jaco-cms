@@ -60,8 +60,10 @@ function call_action(string $action): string
     $parameters = [];
     foreach ($function->getParameters() as $parameter) {
         $name = $parameter->getName();
-        $default = $parameter->getDefaultValue();
-        $parameters[$name] = $default;
+        if ($parameter->isOptional()) {
+            $default = $parameter->getDefaultValue();
+            $parameters[$name] = $default;
+        }
         $value = filter_input(INPUT_GET, $name, FILTER_SANITIZE_STRING);
         if ($value) {
             $parameters[$name] = $value;

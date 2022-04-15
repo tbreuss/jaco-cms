@@ -5,16 +5,17 @@ namespace jaco\action;
 use jaco\exception;
 use jaco\page;
 use jaco\html;
+use jaco\view;
 
-function page(?string $file = 'index.html'): string
+function page(string $file = '', string $default = JACO_DEFAULT_PAGE): string
 {
-    print_r($file);
-    
+    if (strlen($file) === 0) {
+        header('Location: ?action=page&file=' . $default);
+        exit;    
+    }    
     $page = page\find_by_name($file);
-
-    print_r($page);
-
-    return html\h('h1', 'Page');
+    $html = page\get_html($page);
+    return view\page($html);
 }
 
 function error(?exception\Exception $e = null): string

@@ -8,10 +8,13 @@ class ComposerStaticInit9fe84f8c84f4ea9698b6098d5151902c
 {
     public static $files = array (
         'e19024d92d101c1791acb0def6baa6ff' => __DIR__ . '/../..' . '/php/action.php',
+        '050521240c81b2df03d09fb32b4fa6db' => __DIR__ . '/../..' . '/php/asset.php',
+        '6564283e7a81974a8317e05be6198808' => __DIR__ . '/../..' . '/php/auth.php',
         'ab885253c1280e643d1af2690ef81856' => __DIR__ . '/../..' . '/php/exception.php',
         'c031c3f48a1cedd8ee9cd14a6e430c41' => __DIR__ . '/../..' . '/php/html.php',
         '677c9cb6ab6befaa17dddc8467282cd4' => __DIR__ . '/../..' . '/php/page.php',
         'd7d8bdeb45aa7631683e4446e1469009' => __DIR__ . '/../..' . '/php/route.php',
+        'cb02381323a1cca6581ee043efb6caa2' => __DIR__ . '/../..' . '/php/view.php',
     );
 
     public static $prefixLengthsPsr4 = array (
