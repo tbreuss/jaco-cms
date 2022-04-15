@@ -1,0 +1,14 @@
+{    
+    "require": {
+        "spatie/html-element": "^1.1"
+    },
+    "autoload": {
+        "files": [
+            "php/action.php",
+            "php/exception.php",
+            "php/html.php",
+            "php/page.php",
+            "php/route.php"
+        ]
+    }
+}
