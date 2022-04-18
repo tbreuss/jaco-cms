@@ -9,3 +9,7 @@
 .jaco-editable-image {
     outline: 1px dotted black;
 }
+
+.jaco-is-editing {
+    outline: 1px solid red;
+}

@@ -1,3 +1,101 @@
+// helpers.js
+function guid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+// Notifications.js
+
+let state = {
+    list: [],
+    destroy(msg) {
+        let index = state.list.findIndex(x => x.id === msg.id)
+        state.list.splice(index, 1)
+    }
+}
+
+function addSuccess(text, timeout = 3000) {
+    state.list.push({
+        id: guid(),
+        type: 'success',
+        text,
+        timeout
+    })
+}
+
+function addInfo(text, timeout = 3000) {
+    state.list.push({
+        id: guid(),
+        type: 'info',
+        text,
+        timeout
+    })
+}
+
+function addWarning(text, timeout = 3000) {
+    state.list.push({
+        id: guid(),
+        type: 'warning',
+        text,
+        timeout
+    })
+}
+
+function addDanger(text, timeout = 3000) {
+    state.list.push({
+        id: guid(),
+        type: 'danger',
+        text,
+        timeout
+    })
+}
+
+let Notifications = {
+    view(vnode) {
+        let ui = vnode.state
+        return state.list ?
+            m('.m-notifications', state.list.map((msg) => {
+                return m('div', {
+                    key: msg.id
+                }, m(Notification, msg)) //wrap in div with key for proper dom updates
+            })) : null
+    }
+}
+
+let Notification = {
+    oninit(vnode) {
+        setTimeout(() => {
+            Notification.destroy(vnode)
+        }, vnode.attrs.timeout)
+    },
+    notificationClass(type) {
+        const types = ['info', 'warning', 'success', 'danger']
+        if (types.indexOf(type) > -1)
+            return type
+        return 'info'
+    },
+    destroy(vnode) {
+        vnode.dom.classList.add('destroy')
+        setTimeout(() => {
+            state.destroy(vnode.attrs)
+            m.redraw()
+        }, 300)
+    },
+    view(vnode) {
+        let ui = vnode.state
+        let msg = vnode.attrs
+        return m('.m-notification', {
+            class: ui.notificationClass(msg.type),
+            onclick: () => {
+                ui.destroy(vnode)
+            }
+        }, msg.text)
+    }
+}
+
+
 var enableEditor = false
 
 var iframe = {
@@ -20,56 +118,7 @@ var iframe = {
 
         var iframe = document.getElementById('pageIframe')
         if (!iframe) {
-            return []
-        }
-        var editorOptions = {
-            modules: { toolbar: true },
-            theme: 'snow'
-          };
-
-        // in parent
-        var el = document.getElementById('editor')
-        //var editor1 = new Quill(el, editorOptions);
-
-        // add editor styles
-        if (!iframe.contentDocument.getElementById('editorStylesheet')) {
-            var cssLink = iframe.contentDocument.createElement("link");
-            cssLink.href = "https://cdn.quilljs.com/1.3.6/quill.snow.css"; 
-            cssLink.id = 'editorStylesheet';
-            cssLink.rel = "stylesheet"; 
-            cssLink.type = "text/css"; 
-            cssLink.async = false;
-            cssLink.onload = function () {
-                console.log('editorStylesheet loaded')
-            };            
-            iframe.contentDocument.head.appendChild(cssLink);
-        }
-
-        // add editor script
-        if (!iframe.contentDocument.getElementById('editorJavascript')) {
-            var script = iframe.contentDocument.createElement('script');
-            script.id = 'editorJavascript';
-            script.type = 'text/javascript';
-            script.src = 'https://cdn.quilljs.com/1.3.6/quill.js';
-            script.async = false;
-            script.onload = function () {
-                console.log('editorJavascript loaded')
-            };            
-            iframe.contentDocument.head.appendChild(script);
-        }
-        
-        // add editor instance styles
-        if (!iframe.contentDocument.getElementById('editorInstanceStylesheet')) {
-            var cssLink = iframe.contentDocument.createElement("link");
-            cssLink.href = "test/editor.css"; 
-            cssLink.id = 'editorStylesheet';
-            cssLink.rel = "stylesheet"; 
-            cssLink.type = "text/css"; 
-            cssLink.async = false;
-            cssLink.onload = function () {
-                console.log('editorInstanceStylesheet loaded')
-            };            
-            iframe.contentDocument.head.appendChild(cssLink);
+            return
         }
 
         // add editor script
@@ -80,11 +129,46 @@ var iframe = {
             script.src = 'test/editor.js';
             script.async = false;
             script.onload = function () {
-                console.log('editorInstanceJavascript loaded')
-                // iframe.contentWindow.initEditors()
-            };               
+                iframe.contentWindow.initEditors()
+            };
             iframe.contentDocument.head.appendChild(script);
+        } else {
+            iframe.contentWindow.initEditors()
         }
+    },
+    removeEditors: function () {
+        var iframe = document.getElementById('pageIframe')
+        if (!iframe) {
+            return
+        }
+        if (typeof iframe.contentWindow.removeEditors === "function") {
+            iframe.contentWindow.removeEditors()
+        }
+    },
+    disableEditors: function () {
+        var iframe = document.getElementById('pageIframe')
+        if (!iframe) {
+            return
+        }
+        if (typeof iframe.contentWindow.disableEditors === "function") {
+            iframe.contentWindow.disableEditors()
+        }
+    },
+    reload: function () {
+        var iframe = document.getElementById('pageIframe')
+        if (!iframe) {
+            return
+        }
+        iframe.contentWindow.location.reload();
+    },
+    getHTML: function () {
+        var iframe = document.getElementById('pageIframe')
+        if (!iframe) {
+            throw error
+        }
+        iframe.contentWindow.removeEditorInstances()
+        iframe.contentWindow.removeEditors()
+        return iframe.contentWindow.document.documentElement.outerHTML;
     }
 }
 
@@ -94,53 +178,54 @@ var Layout = {
         // see https://www.w3schools.com/howto/howto_css_dropdown_navbar.asp
         return [
             m(".toolbar",
-            window.sessionStorage.getItem('authenticated') ? m(".navbar", [
-                m(m.route.Link, {
-                    class: 'title',
-                    href: '/',
-                }, 'JACO'),
-                m('.dropdown',
-                    m('button.dropbtn', 'Pages'),
-                    m('.dropdown-content',
-                        m(m.route.Link, {
-                            href: '/page-edit'
-                        }, "Edit page"),
-                        m(m.route.Link, {
-                            href: '/page-copy'
-                        }, "Copy page"),
-                        m(m.route.Link, {
-                            href: '/page-delete'
-                        }, "Delete page"),
-                        m('.ruler'),
-                        m(m.route.Link, {
-                            href: '/page-list'
-                        }, "List pages"),
-                        m(m.route.Link, {
-                            href: '/page-add'
-                        }, "Add page"),
-                    )
-                ),
-                m('a[href=#]', 'Uploads'),
-                m('a[href=#]', 'Backups'),
-                m('a[href=#]', 'CSS'),
-                m('a[href=#]', 'HTML'),
-                m(m.route.Link, {
-                    class: 'logout',
-                    href: '/logout'
-                }, "Logout"),
-            ]) : m(".navbar", [
-                m(m.route.Link, {
-                    class: 'title',
-                    href: '/',
-                }, 'JACO'),
-                m(m.route.Link, {
-                    class: 'login',
-                    href: '/login'
-                }, "Login")
-            ]),
-        ),
-        vnode.children
-    ]
+                window.sessionStorage.getItem('authenticated') ? m(".navbar", [
+                    m(m.route.Link, {
+                        class: 'title',
+                        href: '/',
+                    }, 'JACO'),
+                    m('.dropdown',
+                        m('button.dropbtn', 'Pages'),
+                        m('.dropdown-content',
+                            m(m.route.Link, {
+                                href: '/page-edit'
+                            }, "Edit page"),
+                            m(m.route.Link, {
+                                href: '/page-copy'
+                            }, "Copy page"),
+                            m(m.route.Link, {
+                                href: '/page-delete'
+                            }, "Delete page"),
+                            m('.ruler'),
+                            m(m.route.Link, {
+                                href: '/page-list'
+                            }, "List pages"),
+                            m(m.route.Link, {
+                                href: '/page-add'
+                            }, "Add page"),
+                        )
+                    ),
+                    m('a[href=#]', 'Uploads'),
+                    m('a[href=#]', 'Backups'),
+                    m('a[href=#]', 'CSS'),
+                    m('a[href=#]', 'HTML'),
+                    m(m.route.Link, {
+                        class: 'logout',
+                        href: '/logout'
+                    }, "Logout"),
+                ]) : m(".navbar", [
+                    m(m.route.Link, {
+                        class: 'title',
+                        href: '/',
+                    }, 'JACO'),
+                    m(m.route.Link, {
+                        class: 'login',
+                        href: '/login'
+                    }, "Login")
+                ]),
+            ),
+            vnode.children,
+            m(Notifications),
+        ]
     }
 }
 
@@ -157,26 +242,26 @@ var Login = {
         return m('.modal',
             m('.modal-inner',
                 m('h1', 'Login'),
-                m('div', 
+                m('div',
                     m('input[type=text]', {
                         value: Login.username,
                         placeholder: 'Username',
-                        oninput: function(e) {
+                        oninput: function (e) {
                             Login.username = e.target.value
                         }
                     })
                 ),
-                m('div', 
+                m('div',
                     m('input[type=password]', {
                         value: Login.password,
                         placeholder: 'Password',
-                        oninput: function(e) {
+                        oninput: function (e) {
                             Login.password = e.target.value
                         }
-                    })  
+                    })
                 ),
                 m('button', {
-                    onclick: function(e) {                    
+                    onclick: function (e) {
                         window.sessionStorage.setItem('authenticated', true)
                         m.route.set('/')
                     }
@@ -189,11 +274,13 @@ var Login = {
 // Logout
 var Logout = {
     view: function () {
-        return m('.modal', 
+        return m('.modal',
             m('.modal-inner',
                 m('h1', 'Logged out'),
-                m('ul.unstyled', 
-                    m('li', m('a', {href: '..'}, 'Go to homepage')),
+                m('ul.unstyled',
+                    m('li', m('a', {
+                        href: '..'
+                    }, 'Go to homepage')),
                     m('li', m(m.route.Link, {
                         class: 'login',
                         href: '/login'
@@ -206,10 +293,34 @@ var Logout = {
 
 // PageEdit
 var PageEdit = {
+    oninit: function () {
+        // i.e. if page was reloaded with given route
+        if (!document.getElementById('pageIframe')) {
+            iframe.reload()
+            m.route.set('/')
+        }
+        iframe.makeEditable()
+    },
     view: function () {
         return m(".dialog",
-            m('a[href=#]', 'Speichern'),
-            m('a[href=#]', 'Abbrechen'),
+            m('a[href=#]', {
+                onclick: function (e) {
+                    e.preventDefault()
+                    const fileName = iframe.fileName()
+                    const html = iframe.getHTML()
+                    iframe.reload()
+                    console.log(fileName, html)
+                    addSuccess('Page was successfully saved.')
+                    m.route.set('/')
+                }
+            }, 'Save'),
+            m('a[href=#]', {
+                onclick: function (e) {
+                    e.preventDefault()
+                    iframe.reload()
+                    m.route.set('/')
+                }
+            }, 'Cancel'),
         )
     }
 }
@@ -237,7 +348,10 @@ var PageDelete = {
                 m('p', 'Do you really want to delete the page: ' + iframe.fileName() + '?'),
                 m('div',
                     m('button', {
-                        onclick: () => m.route.set('/')
+                        onclick: () => {
+                            addSuccess('Page was successfully deleted.')                            
+                            m.route.set('/')
+                    }
                     }, 'Yes'),
                     m('a', {
                         href: '#',
@@ -260,7 +374,6 @@ m.route(document.body, "/", {
     },
     "/page-edit": {
         render: function () {
-            iframe.makeEditable()
             return m(Layout, m(PageEdit))
         }
     },
