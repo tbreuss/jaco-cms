@@ -5,8 +5,8 @@ export const DefaultLayout = {
     view: function (vnode) {
         // see https://www.w3schools.com/howto/howto_css_dropdown_navbar.asp
         return [
-            m(".toolbar",
-                window.sessionStorage.getItem('authenticated') ? m(".navbar", [
+            m('.toolbar',
+                window.sessionStorage.getItem('authenticated') ? m('.navbar', [
                     m(m.route.Link, {
                         class: 'title',
                         href: '/',
@@ -17,24 +17,24 @@ export const DefaultLayout = {
                             m(m.route.Link, {
                                 href: '/page-edit',
                                 onclick: () => closeDropdown()
-                            }, "Edit page"),
+                            }, 'Edit page'),
                             m(m.route.Link, {
                                 href: '/page-copy',
                                 onclick: () => closeDropdown()
-                            }, "Copy page"),
+                            }, 'Copy page'),
                             m(m.route.Link, {
                                 href: '/page-delete',
                                 onclick: () => closeDropdown()
-                            }, "Delete page"),
+                            }, 'Delete page'),
                             m('.ruler'),
                             m(m.route.Link, {
                                 href: '/page-list',
                                 onclick: () => closeDropdown()
-                            }, "List pages"),
+                            }, 'List pages'),
                             m(m.route.Link, {
                                 href: '/page-add',
                                 onclick: () => closeDropdown()
-                            }, "Add page"),
+                            }, 'Add page'),
                         )
                     ),
                     m('a[href=#]', 'Uploads'),
@@ -44,8 +44,8 @@ export const DefaultLayout = {
                     m(m.route.Link, {
                         class: 'logout',
                         href: '/logout'
-                    }, "Logout"),
-                ]) : m(".navbar", [
+                    }, 'Logout'),
+                ]) : m('.navbar', [
                     m(m.route.Link, {
                         class: 'title',
                         href: '/',
@@ -53,15 +53,15 @@ export const DefaultLayout = {
                     m(m.route.Link, {
                         class: 'login',
                         href: '/login'
-                    }, "Login")
+                    }, 'Login')
                 ]),
             ),
             vnode.children,
             m(Notifications),
             m('iframe', {
-                src: "../",
-                frameborder:"0",
-                id: "pageIframe"
+                src: '../',
+                frameborder:'0',
+                id: 'pageIframe'
             }),
         ]
     }

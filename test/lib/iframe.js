@@ -41,7 +41,7 @@ export const iframe = {
         if (!iframe) {
             return
         }
-        if (typeof iframe.contentWindow.removeEditors === "function") {
+        if (typeof iframe.contentWindow.removeEditors === 'function') {
             iframe.contentWindow.removeEditors()
         }
     },
@@ -50,7 +50,7 @@ export const iframe = {
         if (!iframe) {
             return
         }
-        if (typeof iframe.contentWindow.disableEditors === "function") {
+        if (typeof iframe.contentWindow.disableEditors === 'function') {
             iframe.contentWindow.disableEditors()
         }
     },

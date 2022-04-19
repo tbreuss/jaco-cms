@@ -1,11 +1,11 @@
 window.initEditors = function () {
     // add editor styles
     if (!document.getElementById('editorStylesheet')) {
-        var cssLink = document.createElement("link")
-        cssLink.href = "./test/quill.snow-customized.css"
+        var cssLink = document.createElement('link')
+        cssLink.href = './test/quill.snow-customized.css'
         cssLink.id = 'editorStylesheet'
-        cssLink.rel = "stylesheet"
-        cssLink.type = "text/css"
+        cssLink.rel = 'stylesheet'
+        cssLink.type = 'text/css'
         cssLink.async = false
         cssLink.onload = function () {}
         document.head.appendChild(cssLink)
@@ -26,11 +26,11 @@ window.initEditors = function () {
 
     // add editor instance styles
     if (!document.getElementById('editorInstanceStylesheet')) {
-        var cssLink = document.createElement("link")
-        cssLink.href = "test/editor.css"
+        var cssLink = document.createElement('link')
+        cssLink.href = 'test/editor.css'
         cssLink.id = 'editorInstanceStylesheet'
-        cssLink.rel = "stylesheet"
-        cssLink.type = "text/css"
+        cssLink.rel = 'stylesheet'
+        cssLink.type = 'text/css'
         cssLink.async = false
         cssLink.onload = function () {}
         document.head.appendChild(cssLink)

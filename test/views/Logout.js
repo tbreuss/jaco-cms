@@ -10,7 +10,7 @@ export const Logout = {
                     m('li', m(m.route.Link, {
                         class: 'login',
                         href: '/login'
-                    }, "Login again"))
+                    }, 'Login again'))
                 )
             )
         )

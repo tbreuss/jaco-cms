@@ -11,7 +11,7 @@ export const PageEdit = {
         iframe.makeEditable()
     },
     view: function () {
-        return m(".dialog",
+        return m('.dialog',
             m('a[href=#]', {
                 onclick: function (e) {
                     e.preventDefault()

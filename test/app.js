@@ -6,34 +6,34 @@ import { Logout } from './views/Logout.js'
 import { Start } from './views/Start.js'
 import { DefaultLayout } from './layouts/Default.js'
 
-m.route(document.body, "/", {
-    "/": {
-        render: function () {
+m.route(document.body, '/', {
+    '/': {
+        render: () => {
             return m(DefaultLayout, m(Start))
         }
     },
-    "/page-edit": {
-        render: function () {
+    '/page-edit': {
+        render: () => {
             return m(DefaultLayout, m(PageEdit))
         }
     },
-    "/page-copy": {
-        render: function () {
+    '/page-copy': {
+        render: () => {
             return m(DefaultLayout, m(PageCopy))
         }
     },
-    "/page-delete": {
-        render: function () {
+    '/page-delete': {
+        render: () => {
             return m(DefaultLayout, m(PageDelete))
         }
     },
-    "/login": {
-        render: function () {
+    '/login': {
+        render: () => {
             return m(DefaultLayout, m(Login))
         }
     },
-    "/logout": {
-        render: function () {
+    '/logout': {
+        render: () => {
             window.sessionStorage.removeItem('authenticated')
             return m(DefaultLayout, m(Logout))
         }
