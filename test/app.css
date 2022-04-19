@@ -184,7 +184,7 @@ button {
 }
 
 .m-notification.destroy {
-  animation: fade-out 0.3s;
+  animation: fade-out 0;
 }
 
 .m-notification.info {
