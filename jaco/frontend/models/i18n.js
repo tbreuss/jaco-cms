@@ -12,8 +12,15 @@ export const i18n = {
   loadAndSetLocale,
 };
 
-export function t(key) {
-  return i18n.messages[key] || '{' + key + '}';
+export function t(key, placeholders = null) {
+  let t = i18n.messages[key] || '{' + key + '}'
+  if (placeholders) {
+    t = t.replace(/\{\w+\}/g, function(all) {
+      let key = all.substring(1, all.length - 1)
+      return placeholders[key] || all
+    })    
+  }
+  return t;
 }
 
 function loadAndSetLocale(newLocale) {

@@ -7,7 +7,7 @@ export const PageDelete = {
         return m('.modal',
             m('.modal-inner',
                 m('h2', t('Delete page')),
-                m('p', t('Do you really want to delete the page') + ': ' + iframe.fileName() + '?'),
+                m('p', t('Do you really want to delete the page', {name: iframe.fileName()})),
                 m('div',
                     m('button', {
                         onclick: () => {

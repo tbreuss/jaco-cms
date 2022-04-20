@@ -14,12 +14,13 @@ export const DefaultLayout = {
     view: function (vnode) {
         // see https://www.w3schools.com/howto/howto_css_dropdown_navbar.asp
         return [
-            i18n.status === 'loading' 
+            i18n.status === 'loading'
             ? m('.toolbar', m('.navbar', 
                 title(),
                 m('a', 'Loading...')
                 ))
-            : m('.toolbar',
+            : [ 
+                m('.toolbar',
                 window.sessionStorage.getItem('authenticated') ? m('.navbar', [
                     title(),
                     m('.dropdown',
@@ -71,6 +72,7 @@ export const DefaultLayout = {
                 frameborder:'0',
                 id: 'iframe'
             }),
+            ]
         ]
     }
 }

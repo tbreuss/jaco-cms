@@ -6,7 +6,7 @@
   "Copy page": "Copy page",
   "CSS": "CSS",
   "Delete page": "Delete page",
-  "Do you really want to delete the page": "Do you really want to delete the page",
+  "Do you really want to delete the page": "Do you really want to delete the page {name}?",
   "Edit page": "Edit page",
   "Go to homepage": "Go to homepage",
   "HTML": "HTML",
