@@ -1,5 +1,6 @@
 import { iframe } from '../lib/iframe.js'
 import { addSuccess } from '../state/actions.js'
+import { t } from '../models/i18n.js'
 
 export const PageEdit = {
     oninit: function () {
@@ -19,17 +20,17 @@ export const PageEdit = {
                     const html = iframe.getHTML()
                     iframe.reload()
                     console.log(fileName, html)
-                    addSuccess('Page was successfully saved.')
+                    addSuccess(t('Page was successfully saved.'))
                     m.route.set('/')
                 }
-            }, 'Save'),
+            }, t('Save')),
             m('a[href=#]', {
                 onclick: function (e) {
                     e.preventDefault()
                     iframe.reload()
                     m.route.set('/')
                 }
-            }, 'Cancel'),
+            }, t('Cancel')),
         )
     }
 }

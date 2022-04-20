@@ -7,6 +7,23 @@ use jaco\page;
 use jaco\html;
 use jaco\view;
 
+function index(): array
+{
+    return [
+        'jaco'
+    ];
+}
+
+function translations(string $lang = JACO_DEFAULT_LANGUAGE): array
+{
+    $template = dirname(__DIR__) . '/lang/{lang}.json';
+    $path = str_replace('{lang}', $lang, $template);
+    if (is_file($path)) {
+        return json_decode(file_get_contents($path), true);
+    }
+    return translations(JACO_DEFAULT_LANGUAGE);
+}
+
 function page(string $file = '', string $default = JACO_DEFAULT_PAGE): string
 {
     if (strlen($file) === 0) {

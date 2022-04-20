@@ -1,16 +1,18 @@
+import { t } from '../models/i18n.js'
+
 export const Logout = {
     view: function () {
         return m('.modal',
             m('.modal-inner',
-                m('h1', 'Logged out'),
+                m('h1', t('Logged out')),
                 m('ul.unstyled',
                     m('li', m('a', {
                         href: '..'
-                    }, 'Go to homepage')),
+                    }, t('Go to homepage'))),
                     m('li', m(m.route.Link, {
                         class: 'login',
                         href: '/login'
-                    }, 'Login again'))
+                    }, t('Login again')))
                 )
             )
         )

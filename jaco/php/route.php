@@ -7,16 +7,18 @@ use jaco\exception;
 
 function get_default_action(): string
 {
-    return 'page';
+    return 'index';
 }
 
 function get_actions(): array
 {
     return [
         'error',
+        'index',
         'login',
         'logout',
         'page',
+        'translations'
     ];
 }
 
@@ -53,7 +55,7 @@ function find_html_files(string $dir): array
     return [];
 }
 
-function call_action(string $action): string
+function call_action(string $action): array|string
 {
     $function = new \ReflectionFunction($action);
     

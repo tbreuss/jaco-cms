@@ -1,7 +1,11 @@
 import { Notifications } from '../views/Notifications.js'
 import { closeDropdown } from '../lib/helpers.js'
+import { i18n, t } from '../models/i18n.js'
 
 export const DefaultLayout = {
+    oncreate: () => {
+        i18n.loadAndSetLocale(i18n.defaultLocale);
+    },
     view: function (vnode) {
         // see https://www.w3schools.com/howto/howto_css_dropdown_navbar.asp
         return [
@@ -12,39 +16,39 @@ export const DefaultLayout = {
                         href: '/',
                     }, 'JACO'),
                     m('.dropdown',
-                        m('button.dropbtn', 'Pages'),
+                        m('button.dropbtn', t('Pages')),
                         m('.dropdown-content',
                             m(m.route.Link, {
                                 href: '/page-edit',
                                 onclick: () => closeDropdown()
-                            }, 'Edit page'),
+                            }, t('Edit page')),
                             m(m.route.Link, {
                                 href: '/page-copy',
                                 onclick: () => closeDropdown()
-                            }, 'Copy page'),
+                            }, t('Copy page')),
                             m(m.route.Link, {
                                 href: '/page-delete',
                                 onclick: () => closeDropdown()
-                            }, 'Delete page'),
+                            }, t('Delete page')),
                             m('.ruler'),
                             m(m.route.Link, {
                                 href: '/page-list',
                                 onclick: () => closeDropdown()
-                            }, 'List pages'),
+                            }, t('List pages')),
                             m(m.route.Link, {
                                 href: '/page-add',
                                 onclick: () => closeDropdown()
-                            }, 'Add page'),
+                            }, t('Add page')),
                         )
                     ),
-                    m('a[href=#]', 'Uploads'),
-                    m('a[href=#]', 'Backups'),
-                    m('a[href=#]', 'CSS'),
-                    m('a[href=#]', 'HTML'),
+                    m('a[href=#]', t('Uploads')),
+                    m('a[href=#]', t('Backups')),
+                    m('a[href=#]', t('CSS')),
+                    m('a[href=#]', t('HTML')),
                     m(m.route.Link, {
                         class: 'logout',
                         href: '/logout'
-                    }, 'Logout'),
+                    }, t('Logout')),
                 ]) : m('.navbar', [
                     m(m.route.Link, {
                         class: 'title',
@@ -53,7 +57,7 @@ export const DefaultLayout = {
                     m(m.route.Link, {
                         class: 'login',
                         href: '/login'
-                    }, 'Login')
+                    }, t('Login'))
                 ]),
             ),
             vnode.children,
