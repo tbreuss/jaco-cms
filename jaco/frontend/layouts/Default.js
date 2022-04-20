@@ -19,7 +19,7 @@ export const DefaultLayout = {
                 title(),
                 m('a', 'Loading...')
                 ))
-            : [ 
+            : [            
                 m('.toolbar',
                 window.sessionStorage.getItem('authenticated') ? m('.navbar', [
                     title(),
@@ -67,11 +67,6 @@ export const DefaultLayout = {
             ),
             vnode.children,
             m(Notifications),
-            m('iframe', {
-                src: '../',
-                frameborder:'0',
-                id: 'iframe'
-            }),
             ]
         ]
     }

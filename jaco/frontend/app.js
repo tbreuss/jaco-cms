@@ -6,7 +6,7 @@ import { Logout } from './views/Logout.js'
 import { Start } from './views/Start.js'
 import { DefaultLayout } from './layouts/Default.js'
 
-m.route(document.body, '/', {
+m.route(document.getElementById('app'), '/', {
     '/': {
         render: () => {
             return m(DefaultLayout, m(Start))

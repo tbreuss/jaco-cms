@@ -7,21 +7,21 @@ export const PageDelete = {
         return m('.modal',
             m('.modal-inner',
                 m('h2', t('Delete page')),
+                m('fieldset',
                 m('p', t('Do you really want to delete the page', {name: iframe.fileName()})),
                 m('div',
-                    m('button', {
+                    m('button.submit', {
                         onclick: () => {
                             addSuccess(t('Page was successfully deleted.'))
                             m.route.set('/')
                         }
                     }, t('Yes')),
-                    m('a', {
-                        href: '#',
+                    m('button.cancel', {
                         onclick: function (e) {
-                            e.preventDefault()
                             m.route.set('/')
                         }
                     }, t('No'))
+                )
                 )
             )
         )

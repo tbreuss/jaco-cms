@@ -6,7 +6,6 @@ export const PageEdit = {
     oninit: function () {
         // i.e. if page was reloaded with given route
         if (!document.getElementById('iframe')) {
-            iframe.reload()
             m.route.set('/')
         }
         iframe.makeEditable()
