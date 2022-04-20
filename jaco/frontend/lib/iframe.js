@@ -26,7 +26,7 @@ export const iframe = {
             var script = iframe.contentDocument.createElement('script');
             script.id = 'editorInstanceJavascript';
             script.type = 'text/javascript';
-            script.src = 'test/editor.js';
+            script.src = 'jaco/frontend/editor.js';
             script.async = false;
             script.onload = function () {
                 iframe.contentWindow.initEditors()
