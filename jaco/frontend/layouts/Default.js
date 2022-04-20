@@ -2,6 +2,11 @@ import { Notifications } from '../views/Notifications.js'
 import { closeDropdown } from '../lib/helpers.js'
 import { i18n, t } from '../models/i18n.js'
 
+const title = () => m(m.route.Link, {
+        class: 'title',
+        href: '/',
+    }, 'JACO');
+
 export const DefaultLayout = {
     oncreate: () => {
         i18n.loadAndSetLocale(i18n.defaultLocale);
@@ -9,12 +14,14 @@ export const DefaultLayout = {
     view: function (vnode) {
         // see https://www.w3schools.com/howto/howto_css_dropdown_navbar.asp
         return [
-            m('.toolbar',
+            i18n.status === 'loading' 
+            ? m('.toolbar', m('.navbar', 
+                title(),
+                m('a', 'Loading...')
+                ))
+            : m('.toolbar',
                 window.sessionStorage.getItem('authenticated') ? m('.navbar', [
-                    m(m.route.Link, {
-                        class: 'title',
-                        href: '/',
-                    }, 'JACO'),
+                    title(),
                     m('.dropdown',
                         m('button.dropbtn', t('Pages')),
                         m('.dropdown-content',
@@ -50,10 +57,7 @@ export const DefaultLayout = {
                         href: '/logout'
                     }, t('Logout')),
                 ]) : m('.navbar', [
-                    m(m.route.Link, {
-                        class: 'title',
-                        href: '/',
-                    }, 'JACO'),
+                    title(),
                     m(m.route.Link, {
                         class: 'login',
                         href: '/login'
