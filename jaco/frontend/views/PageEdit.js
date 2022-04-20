@@ -4,7 +4,7 @@ import { addSuccess } from '../state/actions.js'
 export const PageEdit = {
     oninit: function () {
         // i.e. if page was reloaded with given route
-        if (!document.getElementById('pageIframe')) {
+        if (!document.getElementById('iframe')) {
             iframe.reload()
             m.route.set('/')
         }

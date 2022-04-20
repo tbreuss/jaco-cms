@@ -61,7 +61,7 @@ export const DefaultLayout = {
             m('iframe', {
                 src: '../',
                 frameborder:'0',
-                id: 'pageIframe'
+                id: 'iframe'
             }),
         ]
     }

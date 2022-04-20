@@ -1,13 +1,13 @@
 export const iframe = {
     pageTitle: function () {
-        var iframe = document.getElementById('pageIframe')
+        var iframe = document.getElementById('iframe')
         if (!iframe) {
             return ''
         }
         return iframe.contentDocument.title
     },
     fileName: function () {
-        var iframe = document.getElementById('pageIframe')
+        var iframe = document.getElementById('iframe')
         if (!iframe) {
             return ''
         }
@@ -16,7 +16,7 @@ export const iframe = {
     },
     makeEditable: function () {
 
-        var iframe = document.getElementById('pageIframe')
+        var iframe = document.getElementById('iframe')
         if (!iframe) {
             return
         }
@@ -37,7 +37,7 @@ export const iframe = {
         }
     },
     removeEditors: function () {
-        var iframe = document.getElementById('pageIframe')
+        var iframe = document.getElementById('iframe')
         if (!iframe) {
             return
         }
@@ -46,7 +46,7 @@ export const iframe = {
         }
     },
     disableEditors: function () {
-        var iframe = document.getElementById('pageIframe')
+        var iframe = document.getElementById('iframe')
         if (!iframe) {
             return
         }
@@ -55,14 +55,14 @@ export const iframe = {
         }
     },
     reload: function () {
-        var iframe = document.getElementById('pageIframe')
+        var iframe = document.getElementById('iframe')
         if (!iframe) {
             return
         }
         iframe.contentWindow.location.reload();
     },
     getHTML: function () {
-        var iframe = document.getElementById('pageIframe')
+        var iframe = document.getElementById('iframe')
         if (!iframe) {
             throw error
         }
