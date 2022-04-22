@@ -1,7 +1,7 @@
 // see https://medium.com/i18n-and-l10n-resources-for-developers/localizing-mithril-applications-728fca63eaf3
 
 const defaultLocale = 'en';
-const messageUrl = 'api.php?action=translations&lang={locale}';
+const messageUrl = 'api.php?action=translations&language={locale}';
 
 export const i18n = {
   defaultLocale,
