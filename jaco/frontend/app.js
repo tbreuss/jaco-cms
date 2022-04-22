@@ -34,7 +34,6 @@ m.route(document.getElementById('app'), '/', {
   },
   '/logout': {
     render: () => {
-      window.sessionStorage.removeItem('authenticated')
       return m(DefaultLayout, m(Logout))
     }
   }

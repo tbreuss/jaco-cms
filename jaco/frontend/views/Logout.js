@@ -1,6 +1,12 @@
 import { t } from '../models/i18n.js'
 
 export const Logout = {
+  oninit: () => {
+    if (window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+      window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+      m.route.set('/logout')
+    }
+  },
   view: function () {
     return m('.modal',
       m('.modal-sm',

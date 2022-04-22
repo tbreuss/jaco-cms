@@ -26,10 +26,10 @@ function get_action_str(): string
 {
     $action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING);
     if (strlen($action) === 0) {
-        return get_default_action();
+        $action = 'index';
     }
     if (!in_array($action, get_actions())) {
-        throw new exception\ActionNotFound();
+        throw new exception\ActionNotFound('action not found', 404);
     }
     return $action;
 }
@@ -37,17 +37,17 @@ function get_action_str(): string
 function get_action(): string
 {
     $action = get_action_str();
-    $action_func = 'jaco\\action\\' . $action;
+    $action_func = 'jaco\\actions\\' . $action . '\\main';
 
     if (function_exists($action_func)) {
         return $action_func;
     }
-    throw new exception\ActionNotFound();
+    throw new exception\ActionNotFound('action function not found', 404);
 }
 
 function get_error_action(): string
 {
-    return 'jaco\\action\\error';
+    return 'jaco\\actions\\error\\main';
 }
 
 function find_html_files(string $dir): array
@@ -58,7 +58,7 @@ function find_html_files(string $dir): array
 function call_action(string $action): array|string
 {
     $function = new \ReflectionFunction($action);
-    
+
     $parameters = [];
     foreach ($function->getParameters() as $parameter) {
         $name = $parameter->getName();

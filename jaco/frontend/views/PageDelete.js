@@ -3,6 +3,11 @@ import { iframe } from '../lib/iframe.js'
 import { t } from '../models/i18n.js'
 
 export const PageDelete = {
+  oninit: function () {
+    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+      m.route.set('/logout')
+    }
+  },
   view: function () {
     return m('.modal',
       m('.modal-inner',

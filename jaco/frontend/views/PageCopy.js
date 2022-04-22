@@ -7,6 +7,9 @@ let pageTitle = ''
 
 export const PageCopy = {
   oninit: function () {
+    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+      m.route.set('/logout')
+    }
     // i.e. if page was reloaded with given route
     if (!document.getElementById('iframe')) {
       m.route.set('/')

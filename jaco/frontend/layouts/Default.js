@@ -1,4 +1,4 @@
-import { Notifications } from '../views/Notifications.js'
+import { Notifications } from '../services/Notifications.js'
 import { closeDropdown } from '../lib/helpers.js'
 import { i18n, t } from '../models/i18n.js'
 
@@ -21,7 +21,7 @@ export const DefaultLayout = {
         )) :
         [
           m('.toolbar',
-            window.sessionStorage.getItem('authenticated') ? m('.navbar', [
+            window.sessionStorage.getItem('AUTHORIZATION_TOKEN') ? m('.navbar', [
               title(),
               m('.dropdown',
                 m('button.dropbtn', t('Pages')),

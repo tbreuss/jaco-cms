@@ -1,17 +1,11 @@
-{    
+{
     "require": {
-        "spatie/html-element": "^1.1"
+        "spatie/html-element": "^1.1",
+        "firebase/php-jwt": "^6.1"
     },
     "autoload": {
         "files": [
-            "php/action.php",
-            "php/asset.php",
-            "php/auth.php",
-            "php/exception.php",
-            "php/html.php",
-            "php/page.php",
-            "php/route.php",
-            "php/view.php"
+            ".include.php"
         ]
     }
 }
