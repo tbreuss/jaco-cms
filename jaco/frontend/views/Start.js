@@ -1,3 +1,3 @@
 export const Start = {
-    view: function () {}
+  view: function () { }
 }

@@ -5,7 +5,7 @@ const messageUrl = 'api.php?action=translations&lang={locale}';
 
 export const i18n = {
   defaultLocale,
-  currentLocale: '', 
+  currentLocale: '',
   messages: {}, // loadAndSetLocale() populates these
   status: 'loading',
   t,
@@ -15,10 +15,10 @@ export const i18n = {
 export function t(key, placeholders = null) {
   let t = i18n.messages[key] || '{' + key + '}'
   if (placeholders) {
-    t = t.replace(/\{\w+\}/g, function(all) {
+    t = t.replace(/\{\w+\}/g, function (all) {
       let key = all.substring(1, all.length - 1)
       return placeholders[key] || all
-    })    
+    })
   }
   return t;
 }
