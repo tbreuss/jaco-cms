@@ -1,270 +1,269 @@
 body {
-  font-family: Arial;
+    font-family: Arial;
 }
 
 /* Dropdown */
 
 /* Navbar container */
 .navbar {
-  overflow: hidden;
-  background-color: #333;
+    overflow: hidden;
+    background-color: #333;
 }
 
 .navbar .ruler {
-  border-top: 1px solid #333;
+    border-top: 1px solid #333;
 }
 
 /* Links inside the navbar */
 .navbar a {
-  float: left;
-  font-size: 16px;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
+    float: left;
+    font-size: 16px;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
 }
 
 .navbar a.title {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .navbar a.logout,
 .navbar a.login {
-  float: right;
+    float: right;
 }
 
 /* The dropdown container */
 .dropdown {
-  float: left;
-  overflow: hidden;
+    float: left;
+    overflow: hidden;
 }
 
 /* Dropdown button */
 .dropdown .dropbtn {
-  font-size: 16px;
-  border: none;
-  outline: none;
-  color: white;
-  padding: 14px 16px;
-  background-color: inherit;
-  font-family: inherit;
-  /* Important for vertical align on mobile phones */
-  margin: 0;
-  /* Important for vertical align on mobile phones */
+    font-size: 16px;
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    background-color: inherit;
+    font-family: inherit;
+    /* Important for vertical align on mobile phones */
+    margin: 0;
+    /* Important for vertical align on mobile phones */
 }
 
 /* Add a red background color to navbar links on hover */
 .navbar a:hover,
 .dropdown:hover .dropbtn {
-  background-color: red;
+    background-color: red;
 }
 
 .navbar a.title:hover {
-  background-color: transparent;
+    background-color: transparent;
 }
 
 /* Dropdown content (hidden by default) */
 .dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f9f9f9;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-  z-index: 1;
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
 }
 
 /* Links inside the dropdown */
 .dropdown-content a {
-  float: none;
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-  text-align: left;
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
 }
 
 /* Add a grey background color to dropdown links on hover */
 .dropdown-content a:hover {
-  background-color: #ddd;
+    background-color: #ddd;
 }
 
 /* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {
-  display: block;
+    display: block;
 }
 
 
 body {
-  height: 100vh;
-  padding: 0;
-  width: 100%;
-  margin: 0;
+    height: 100vh;
+    padding: 0;
+    width: 100%;
+    margin: 0;
 }
 
 .modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(51, 51, 51, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(51, 51, 51, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3;
 }
 
 .modal-inner {
-  text-align: left;
-  padding: 2rem;
-  width: 60%;
-  min-height: 100px;
-  background: #f9f9f9;
+    text-align: left;
+    padding: 2rem;
+    width: 60%;
+    min-height: 100px;
+    background: #f9f9f9;
 }
 
 .modal-sm {
-  text-align: left;
-  padding: 2rem;
-  width: 60%;
-  max-width: 18rem;
-  min-height: 100px;
-  background: #f9f9f9;
+    text-align: left;
+    padding: 2rem;
+    width: 60%;
+    max-width: 18rem;
+    min-height: 100px;
+    background: #f9f9f9;
 }
 
 .modal h2:first-child {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 iframe {
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
 }
 
 .toolbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  /*height: 40px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /*height: 40px;
     background-color: rgba(255, 255, 255, 0.9);*/
 }
 
 .dialog {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: #333;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 46.5px;
+    background: #333;
+    z-index: 2;
 }
 
-.dialog a {
-  float: left;
-  font-size: 16px;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
+.dialog button {
+    padding: 10px 20px;
+    margin-left: 0.5rem;
+    margin-top: 0.35rem;
 }
 
 /* Notifications */
 
 button {
-  margin: 0.25rem 0;
+    margin: 0.25rem 0;
 }
 
 .m-notifications {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  z-index: 10;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    z-index: 4;
 }
 
 .m-notification {
-  width: auto;
-  margin-bottom: 0.25rem;
-  max-width: 400px;
-  cursor: pointer;
-  animation: fade-in 0.3s;
+    width: auto;
+    margin-bottom: 0.25rem;
+    max-width: 400px;
+    cursor: pointer;
+    animation: fade-in 0.3s;
 }
 
 .m-notification:hover {
-  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .m-notification.destroy {
-  animation: fade-out 0;
+    animation: fade-out 0;
 }
 
 .m-notification.info {
-  color: #0c5460;
-  background-color: #d1ecf1;
-  padding: 0.75rem 1.25rem;
-  border: 1px solid #bee5eb;
-  border-radius: 0.25rem;
+    color: #0c5460;
+    background-color: #d1ecf1;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #bee5eb;
+    border-radius: 0.25rem;
 }
 
 .m-notification.warning {
-  color: #856404;
-  background-color: #fff3cd;
-  padding: 0.75rem 1.25rem;
-  border: 1px solid #ffeeba;
-  border-radius: 0.25rem;
+    color: #856404;
+    background-color: #fff3cd;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #ffeeba;
+    border-radius: 0.25rem;
 }
 
 .m-notification.danger {
-  color: #721c24;
-  background-color: #f8d7da;
-  padding: 0.75rem 1.25rem;
-  border: 1px solid #f5c6cb;
-  border-radius: 0.25rem;
+    color: #721c24;
+    background-color: #f8d7da;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #f5c6cb;
+    border-radius: 0.25rem;
 }
 
 .m-notification.success {
-  color: #155724;
-  background-color: #d4edda;
-  padding: 0.75rem 1.25rem;
-  border: 1px solid #c3e6cb;
-  border-radius: 0.25rem;
+    color: #155724;
+    background-color: #d4edda;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #c3e6cb;
+    border-radius: 0.25rem;
 }
 
 @keyframes fade-in {
-  from {
-    opacity: 0;
-  }
+    from {
+        opacity: 0;
+    }
 
-  to {
-    opacity: 1;
-  }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes fade-out {
-  from {
-    opacity: 1;
-  }
+    from {
+        opacity: 1;
+    }
 
-  to {
-    opacity: 0;
-  }
+    to {
+        opacity: 0;
+    }
 }
 
 
 /* Form */
 
 fieldset {
-  border: 1px solid #ccc;
+    border: 1px solid #ccc;
 }
 
 fieldset:not(:last-child) {
-  margin-bottom: 1rem;
+    margin-bottom: 1rem;
 }
 
 legend {
-  color: #aaa;
+    color: #aaa;
 }
 
 /* Style inputs, select elements and textareas */
@@ -272,43 +271,41 @@ input[type=text],
 input[type=password],
 select,
 textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  resize: vertical;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    resize: vertical;
 }
 
 /* Style the label to display next to the inputs */
-label {
+/*label {
   padding: 12px 12px 12px 0;
   display: inline-block;
-}
+}*/
 
 /* Style the submit button */
-button.submit {
-  background-color: #04AA6D;
-  color: white;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  float: right;
-  font-weight: bold;
-  margin: 0.5rem 0 0 0.5rem;
+.primary {
+    background-color: #04AA6D;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 0;
 }
 
-button.cancel {
-  background-color: #aaa;
-  color: white;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  float: right;
-  font-weight: bold;
-  margin: 0.5rem 0 0 0;
+.secondary {
+    background-color: #aaa;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 0;
 }
 
 /* Style the container */
@@ -318,39 +315,63 @@ button.cancel {
   padding: 20px;
 }*/
 
+.row {
+    margin-top: 0.5rem;
+}
+
+fieldset .row:first-of-type {
+    margin-top: 0;
+}
+
 /* Floating column for labels: 25% width */
-.col-25 {
-  float: left;
-  width: 25%;
-  margin-top: 0.5rem;
+.row>label {
+    float: left;
+    width: 25%;
+    padding: 12px 0;
 }
 
 /* Floating column for inputs: 75% width */
-.col-75 {
-  float: left;
-  width: 75%;
-  margin-top: 0.5rem;
-}
-
-fieldset .row:first-of-type .col-25,
-fieldset .row:first-of-type .col-75 {
-  margin-top: 0;
+.row>input {
+    float: left;
+    width: 75%;
 }
 
 /* Clear floats after the columns */
 .row:after {
-  content: "";
-  display: table;
-  clear: both;
+    content: "";
+    display: table;
+    clear: both;
 }
+
+.text-right {
+    text-align: right;
+}
+
+fieldset .row button {
+    margin-right: 0.5rem;
+}
+
+fieldset .row.text-right button {
+    margin-right: 0;
+    margin-left: 0.5rem;
+}
+
+
 
 /* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
 @media screen and (max-width: 600px) {
 
-  .col-25,
-  .col-75,
-  input[type=submit] {
-    width: 100%;
-    margin-top: 0;
-  }
+    .col-25,
+    .col-75,
+    input[type=submit] {
+        width: 100%;
+        margin-top: 0;
+    }
+
+    .row>label,
+    .row>input[type=text] {
+        width: 100%;
+        margin-top: 0;
+    }
+
 }

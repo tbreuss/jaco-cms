@@ -1,5 +1,10 @@
 import { api } from '../services/api.js'
 import { t } from '../models/i18n.js'
+import { ModalSmall } from '../components/ModalSmall.js'
+import { InputText } from '../components/InputText.js'
+import { InputPassword } from '../components/InputPassword.js'
+import { ButtonGroup } from '../components/ButtonGroup.js'
+import { ButtonPrimary } from '../components/ButtonPrimary.js'
 
 const state = {
   username: '',
@@ -26,35 +31,26 @@ const login = () => {
 }
 
 export const Login = {
-  view: () => m('.modal',
-    m('.modal-sm',
-      m('h2', t('Login')),
-      m('.row',
-        m('input[type=text]', {
-          value: state.username,
-          placeholder: t('Username'),
-          oninput: (e) => {
-            state.username = e.target.value
-            state.error = ''
-          }
-        })
-      ),
-      m('.row',
-        m('input[type=password]', {
-          value: state.password,
-          placeholder: t('Password'),
-          oninput: (e) => {
-            state.password = e.target.value
-            state.error = ''
-          }
-        })
-      ),
-      m('.row',
-        m('button.submit', {
-          onclick: login
-        }, t('Login'))
-      ),
-      state.error !== '' ? state.error : ''
-    )
+  view: () => m(ModalSmall, { title: t('Login') },
+    m(InputText, {
+      value: state.username,
+      placeholder: t('Username'),
+      oninput: (value) => {
+        state.username = value
+        state.error = ''
+      }
+    }),
+    m(InputPassword, {
+      value: state.password,
+      placeholder: t('Password'),
+      oninput: (value) => {
+        state.password = value
+        state.error = ''
+      }
+    }),
+    m(ButtonGroup, { wrap: 'div.row.text-right' },
+      m(ButtonPrimary, { onclick: login }, t('Login'))
+    ),
+    state.error ?? state.error
   )
 }

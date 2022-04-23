@@ -1,9 +1,26 @@
 import { iframe } from '../lib/iframe.js'
 import { addSuccess } from '../state/actions.js'
 import { t } from '../models/i18n.js'
+import { ButtonGroup } from '../components/ButtonGroup.js'
+import { ButtonPrimary } from '../components/ButtonPrimary.js'
+import { ButtonSecondary } from '../components/ButtonSecondary.js'
+
+const save = () => {
+  const fileName = iframe.fileName()
+  const html = iframe.getHTML()
+  iframe.reload()
+  console.log(fileName, html)
+  addSuccess(t('Page was successfully saved.'))
+  m.route.set('/')
+}
+
+const cancel = () => {
+  iframe.reload()
+  m.route.set('/')
+}
 
 export const PageEdit = {
-  oninit: function () {
+  oninit: () => {
     if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
       m.route.set('/logout')
     }
@@ -13,26 +30,8 @@ export const PageEdit = {
     }
     iframe.makeEditable()
   },
-  view: function () {
-    return m('.dialog',
-      m('a[href=#]', {
-        onclick: function (e) {
-          e.preventDefault()
-          const fileName = iframe.fileName()
-          const html = iframe.getHTML()
-          iframe.reload()
-          console.log(fileName, html)
-          addSuccess(t('Page was successfully saved.'))
-          m.route.set('/')
-        }
-      }, t('Save')),
-      m('a[href=#]', {
-        onclick: function (e) {
-          e.preventDefault()
-          iframe.reload()
-          m.route.set('/')
-        }
-      }, t('Cancel')),
-    )
-  }
+  view: () => m(ButtonGroup, { wrap: 'div.dialog' },
+    m(ButtonPrimary, { onclick: save }, t('Save')),
+    m(ButtonSecondary, { onclick: cancel }, t('Cancel'))
+  )
 }

@@ -1,12 +1,31 @@
 import { addSuccess } from '../state/actions.js'
 import { iframe } from '../lib/iframe.js'
 import { t } from '../models/i18n.js'
+import { ModalMedium } from '../components/ModalMedium.js'
+import { Fieldset } from '../components/Fieldset.js'
+import { ButtonGroup } from '../components/ButtonGroup.js'
+import { ButtonPrimary } from '../components/ButtonPrimary.js'
+import { ButtonSecondary } from '../components/ButtonSecondary.js'
+import { InputText } from '../components/InputText.js'
 
-let fileName = ''
-let pageTitle = ''
+const state = {
+  srcFileName: '',
+  srcPageTitle: '',
+  dstFileName: '',
+  dstPageTitle: ''
+}
+
+const save = () => {
+  addSuccess(t('Page was successfully copied.'))
+  m.route.set('/')
+}
+
+const cancel = () => {
+  m.route.set('/')
+}
 
 export const PageCopy = {
-  oninit: function () {
+  oninit: () => {
     if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
       m.route.set('/logout')
     }
@@ -14,67 +33,47 @@ export const PageCopy = {
     if (!document.getElementById('iframe')) {
       m.route.set('/')
     }
-    fileName = iframe.fileName()
-    pageTitle = iframe.pageTitle()
+    state.srcFileName = state.dstFileName = iframe.fileName()
+    state.srcPageTitle = state.dstPageTitle = iframe.pageTitle()
   },
-  view: function () {
-    return m('.modal',
-      m('.modal-inner',
-        m('h2', t('Copy page')),
-        m('fieldset',
-          m('legend', t('Current page')),
-          m('.row',
-            m('.col-25', t('Filename')),
-            m('.col-75', fileName)
-          ),
-          m('.row',
-            m('.col-25', t('Page title')),
-            m('.col-75', pageTitle)
-          )
-        ),
-        m('fieldset',
-          m('legend', t('New page')),
-          m('.row',
-            m('.col-25',
-              m('label', t('Filename')),
-            ),
-            m('.col-75',
-              m('input[type=text]', {
-                value: fileName,
-                oninput: (e) => {
-                  fileName = e.target.value
-                }
-              }),
-            )
-          ),
-          m('.row',
-            m('.col-25',
-              m('label', t('Page title')),
-            ),
-            m('.col-75',
-              m('input[type=text]', {
-                value: pageTitle,
-                oninput: (e) => {
-                  pageTitle = e.target.value
-                }
-              }),
-            ),
-          ),
-          m('.row',
-            m('button.submit', {
-              onclick: () => {
-                addSuccess(t('Page was successfully copied.'))
-                m.route.set('/')
-              }
-            }, t('OK')),
-            m('button.cancel', {
-              onclick: (e) => {
-                m.route.set('/')
-              }
-            }, t('Cancel'))
-          )
-        )
+  view: () => m(ModalMedium, { title: t('Copy page') },
+    m(Fieldset, { legend: t('Current page') },
+      m(InputText, {
+        wrap: 'div.row',
+        label: t('Filename'),
+        value: state.srcFileName,
+        disabled: true
+      }),
+      m(InputText, {
+        wrap: 'div.row',
+        label: t('Page title'),
+        value: state.srcPageTitle,
+        disabled: true
+      })
+    ),
+    m(Fieldset, { legend: t('New page') },
+      m(InputText, {
+        id: 'dst-file-name',
+        wrap: 'div.row',
+        label: t('Filename'),
+        value: state.dstFileName,
+        oninput: (value) => {
+          state.dstFileName = value
+        }
+      }),
+      m(InputText, {
+        id: 'dst-page-title',
+        wrap: 'div.row',
+        label: t('Page title'),
+        value: state.dstPageTitle,
+        oninput: (value) => {
+          state.dstPageTitle = value
+        }
+      }),
+      m(ButtonGroup, { wrap: 'div.row.text-right' },
+        m(ButtonSecondary, { onclick: cancel }, t('Cancel')),
+        m(ButtonPrimary, { onclick: save }, t('OK'))
       )
     )
-  }
+  )
 }

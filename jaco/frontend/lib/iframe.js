@@ -1,34 +1,34 @@
 export const iframe = {
-  pageTitle: function () {
-    var iframe = document.getElementById('iframe')
+  pageTitle: () => {
+    let iframe = document.getElementById('iframe')
     if (!iframe) {
       return ''
     }
     return iframe.contentDocument.title
   },
-  fileName: function () {
-    var el = document.getElementById('iframe')
+  fileName: () => {
+    let el = document.getElementById('iframe')
     if (!el) {
       return ''
     }
-    var pathname = iframe.removeLeadingSlash(el.contentDocument.location.pathname)
+    let pathname = iframe.removeLeadingSlash(el.contentDocument.location.pathname)
     return pathname === '' ? 'index.html' : pathname
   },
-  makeEditable: function () {
+  makeEditable: () => {
 
-    var iframe = document.getElementById('iframe')
+    let iframe = document.getElementById('iframe')
     if (!iframe) {
       return
     }
 
     // add editor script
     if (!iframe.contentDocument.getElementById('editorInstanceJavascript')) {
-      var script = iframe.contentDocument.createElement('script');
+      let script = iframe.contentDocument.createElement('script');
       script.id = 'editorInstanceJavascript';
       script.type = 'text/javascript';
       script.src = 'jaco/frontend/editor.js';
       script.async = false;
-      script.onload = function () {
+      script.onload = () => {
         iframe.contentWindow.initEditors()
       };
       iframe.contentDocument.head.appendChild(script);
@@ -36,8 +36,8 @@ export const iframe = {
       iframe.contentWindow.initEditors()
     }
   },
-  removeEditors: function () {
-    var iframe = document.getElementById('iframe')
+  removeEditors: () => {
+    let iframe = document.getElementById('iframe')
     if (!iframe) {
       return
     }
@@ -45,8 +45,8 @@ export const iframe = {
       iframe.contentWindow.removeEditors()
     }
   },
-  disableEditors: function () {
-    var iframe = document.getElementById('iframe')
+  disableEditors: () => {
+    let iframe = document.getElementById('iframe')
     if (!iframe) {
       return
     }
@@ -54,15 +54,15 @@ export const iframe = {
       iframe.contentWindow.disableEditors()
     }
   },
-  reload: function () {
-    var iframe = document.getElementById('iframe')
+  reload: () => {
+    let iframe = document.getElementById('iframe')
     if (!iframe) {
       return
     }
     iframe.contentWindow.location.reload();
   },
-  getHTML: function () {
-    var iframe = document.getElementById('iframe')
+  getHTML: () => {
+    let iframe = document.getElementById('iframe')
     if (!iframe) {
       throw error
     }
@@ -70,7 +70,7 @@ export const iframe = {
     iframe.contentWindow.removeEditors()
     return iframe.contentWindow.document.documentElement.outerHTML;
   },
-  removeLeadingSlash: function (str) {
+  removeLeadingSlash: (str) => {
     return str.replace(/^\/+/, '')
   }
 }

@@ -3,27 +3,7 @@
 const defaultLocale = 'en';
 const messageUrl = 'api.php?action=translations&language={locale}';
 
-export const i18n = {
-  defaultLocale,
-  currentLocale: '',
-  messages: {}, // loadAndSetLocale() populates these
-  status: 'loading',
-  t,
-  loadAndSetLocale,
-};
-
-export function t(key, placeholders = null) {
-  let t = i18n.messages[key] || '{' + key + '}'
-  if (placeholders) {
-    t = t.replace(/\{\w+\}/g, function (all) {
-      let key = all.substring(1, all.length - 1)
-      return placeholders[key] || all
-    })
-  }
-  return t;
-}
-
-function loadAndSetLocale(newLocale) {
+const loadAndSetLocale = (newLocale) => {
   if (i18n.currentLocale === newLocale) {
     return;
   }
@@ -37,8 +17,28 @@ function loadAndSetLocale(newLocale) {
   });
 }
 
-function fetchMessages(locale, onComplete) {
+const fetchMessages = (locale, onComplete) => {
   m.request(messageUrl.replace('{locale}', locale)).then(
     onComplete,
   );
+}
+
+export const i18n = {
+  defaultLocale,
+  currentLocale: '',
+  messages: {}, // loadAndSetLocale() populates these
+  status: 'loading',
+  t,
+  loadAndSetLocale,
+};
+
+export function t(key, placeholders = null) {
+  let t = i18n.messages[key] || '{' + key + '}'
+  if (placeholders) {
+    t = t.replace(/\{\w+\}/g, (all) => {
+      let key = all.substring(1, all.length - 1)
+      return placeholders[key] || all
+    })
+  }
+  return t;
 }
