@@ -7,13 +7,15 @@ use jaco\route;
 $settings = require 'settings.php';
 
 define('JACO_CMS_DIR', __DIR__);
-define('JACO_BACKUPS_DIR', dirname(__DIR__) . '/backups');
-define('JACO_UPLOADS_DIR', dirname(__DIR__) . '/uploads');
+define('JACO_BACKUPS_DIR', __DIR__ . '/.backups');
+define('JACO_TEMPLATES_PAGES_DIR', __DIR__ . '/.templates/pages');
+define('JACO_TEMPLATES_CONTENTS_DIR', __DIR__ . '/.templates/contents');
 define('JACO_WEB_DIR', dirname(__DIR__));
+define('JACO_UPLOADS_DIR', dirname(__DIR__) . '/uploads');
 define('JACO_ALLOWED_EXTENSIONS', ['htm', 'html']);
 define('JACO_DEFAULT_PAGE', 'index.html');
 define('JACO_DEFAULT_LANGUAGE', 'en');
-define('JACO_JWT_KEY', 'z2MSdMsCEs8eQpZV');
+define('JACO_SECRET_KEY', $settings['JACO_SECRET_KEY']);
 define('JACO_USERNAME', $settings['JACO_USERNAME']);
 define('JACO_PASSWORD', $settings['JACO_PASSWORD']);
 

@@ -22,7 +22,7 @@ function main(): array
         'nbf' => time(),
     ];
 
-    $jwt = JWT::encode($payload, JACO_JWT_KEY, 'HS256');
+    $jwt = JWT::encode($payload, JACO_SECRET_KEY, 'HS256');
 
     return [
         'token' => $jwt,
