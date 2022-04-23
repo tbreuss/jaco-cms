@@ -7,9 +7,9 @@ use jaco\route;
 $settings = require 'settings.php';
 
 define('JACO_CMS_DIR', __DIR__);
-define('JACO_BACKUPS_DIR', __DIR__ . '/.backups');
-define('JACO_TEMPLATES_PAGES_DIR', __DIR__ . '/.templates/pages');
-define('JACO_TEMPLATES_CONTENTS_DIR', __DIR__ . '/.templates/contents');
+define('JACO_BACKUPS_DIR', __DIR__ . '/_backups');
+define('JACO_TEMPLATES_PAGES_DIR', __DIR__ . '/_templates/pages');
+define('JACO_TEMPLATES_CONTENTS_DIR', __DIR__ . '/_templates/contents');
 define('JACO_WEB_DIR', dirname(__DIR__));
 define('JACO_UPLOADS_DIR', dirname(__DIR__) . '/uploads');
 define('JACO_ALLOWED_EXTENSIONS', ['htm', 'html']);
