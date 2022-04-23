@@ -5,11 +5,17 @@ import { Login } from './views/Login.js'
 import { Logout } from './views/Logout.js'
 import { Start } from './views/Start.js'
 import { DefaultLayout } from './layouts/Default.js'
+import { PageAdd } from './views/PageAdd.js'
 
 m.route(document.getElementById('app'), '/', {
   '/': {
     render: () => {
       return m(DefaultLayout, m(Start))
+    }
+  },
+  '/page-add': {
+    render: () => {
+      return m(DefaultLayout, m(PageAdd))
     }
   },
   '/page-edit': {

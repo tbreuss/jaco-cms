@@ -35,6 +35,10 @@ export const DefaultLayout = {
                     onclick: () => closeDropdown()
                   }, t('Copy page')),
                   m(m.route.Link, {
+                    href: '/page-add',
+                    onclick: () => closeDropdown()
+                  }, t('Add page')),
+                  m(m.route.Link, {
                     href: '/page-delete',
                     onclick: () => closeDropdown()
                   }, t('Delete page')),
@@ -42,11 +46,7 @@ export const DefaultLayout = {
                   m(m.route.Link, {
                     href: '/page-list',
                     onclick: () => closeDropdown()
-                  }, t('List pages')),
-                  m(m.route.Link, {
-                    href: '/page-add',
-                    onclick: () => closeDropdown()
-                  }, t('Add page'))
+                  }, t('List pages'))
                 )
               ),
               m('a[href=#]', t('Uploads')),
