@@ -7,13 +7,16 @@ import { ButtonGroup } from '../components/ButtonGroup.js'
 import { ButtonPrimary } from '../components/ButtonPrimary.js'
 import { ButtonSecondary } from '../components/ButtonSecondary.js'
 import { InputText } from '../components/InputText.js'
+import { Select } from '../components/Select.js'
 
 const state = {
   fileName: '',
-  pageTitle: ''
+  pageTitle: '',
+  pageTemplate: ''
 }
 
 const save = () => {
+  console.log(state)
   addSuccess(t('Page was successfully added.'))
   m.route.set('/')
 }
@@ -31,27 +34,41 @@ export const PageAdd = {
     if (!document.getElementById('iframe')) {
       m.route.set('/')
     }
-    state.srcFileName = state.dstFileName = iframe.fileName()
-    state.srcPageTitle = state.dstPageTitle = iframe.pageTitle()
+    state.fileName = iframe.fileName()
+    state.pageTitle = iframe.pageTitle()
+    state.pageTemplate = ''
   },
   view: () => m(ModalMedium, { title: t('Add page') },
     m(Fieldset, { legend: t('New page') },
+      m(Select, {
+        id: 'page-template',
+        wrap: 'div.row',
+        label: t('Page template'),
+        options: [
+          { value: 'page_one.html', label: 'Page one' },
+          { value: 'page_two.html', label: 'Page two' },
+        ],
+        prompt: t('Select an option'),
+        onchange: (selectedItem) => {
+          state.pageTemplate = selectedItem
+        }
+      }),
       m(InputText, {
         id: 'dst-file-name',
         wrap: 'div.row',
         label: t('Filename'),
-        value: state.dstFileName,
+        value: state.fileName,
         oninput: (value) => {
-          state.dstFileName = value
+          state.fileName = value
         }
       }),
       m(InputText, {
         id: 'dst-page-title',
         wrap: 'div.row',
         label: t('Page title'),
-        value: state.dstPageTitle,
+        value: state.pageTitle,
         oninput: (value) => {
-          state.dstPageTitle = value
+          state.pageTitle = value
         }
       }),
       m(ButtonGroup, { wrap: 'div.row.text-right' },

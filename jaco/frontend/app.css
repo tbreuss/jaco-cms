@@ -331,7 +331,8 @@ fieldset .row:first-of-type {
 }
 
 /* Floating column for inputs: 75% width */
-.row>input {
+.row>input[type=text],
+.row>select {
     float: left;
     width: 75%;
 }
@@ -356,20 +357,12 @@ fieldset .row.text-right button {
     margin-left: 0.5rem;
 }
 
-
-
 /* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
 @media screen and (max-width: 600px) {
 
-    .col-25,
-    .col-75,
-    input[type=submit] {
-        width: 100%;
-        margin-top: 0;
-    }
-
     .row>label,
-    .row>input[type=text] {
+    .row>input[type=text],
+    .row>select {
         width: 100%;
         margin-top: 0;
     }
