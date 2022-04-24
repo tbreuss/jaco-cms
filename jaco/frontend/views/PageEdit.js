@@ -1,3 +1,4 @@
+import { api } from '../services/api.js'
 import { iframe } from '../lib/iframe.js'
 import { addSuccess } from '../state/actions.js'
 import { t } from '../models/i18n.js'
@@ -6,12 +7,22 @@ import { ButtonPrimary } from '../components/ButtonPrimary.js'
 import { ButtonSecondary } from '../components/ButtonSecondary.js'
 
 const save = () => {
-  const fileName = iframe.fileName()
-  const html = iframe.getHTML()
-  iframe.reload()
-  console.debug(fileName, html)
-  addSuccess(t('Page was successfully saved.'))
-  m.route.set('/')
+  api.post('action=page/update', {
+    body: {
+      fileName: iframe.fileName(),
+      html: iframe.getHTML()
+    },
+    withCredentials: false
+  })
+    .then((result) => {
+      iframe.reload()
+      console.debug(fileName, html)
+      addSuccess(t('Page was successfully saved.'))
+      m.route.set('/')
+    })
+    .catch((error) => {
+      state.error = error.response.error + ' (' + error.code + ')'
+    })
 }
 
 const cancel = () => {

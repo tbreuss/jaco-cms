@@ -38,7 +38,7 @@ function dispatch(string $method, string $action): array
 
     $routes_by_action = filter_routes($routes, 'action', $action);
     if (count($routes_by_action) === 0) {
-        return [404, ['error' => 'Route not found']];
+        return [404, ['error' => '404 Page Not Found']];
     }
 
     $routes_by_method = filter_routes($routes_by_action, 'method', $method);
@@ -50,10 +50,13 @@ function dispatch(string $method, string $action): array
     foreach ($routes_by_method as $route) {
         if ($route['authenticated'] === true) {
             if (check_authorization() === false) {
-                return [403, ['error' => 'Forbidden']];
+                return [403, ['error' => '403 Forbidden']];
             }
         }
         $response = call_action($route['callback']);
+        if ((count($response) === 2) && (is_int($response[0]))) {
+            return $response;
+        }
         return [200, $response];
     }
 

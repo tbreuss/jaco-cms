@@ -1,3 +1,4 @@
+import { api } from '../services/api.js'
 import { addSuccess } from '../state/actions.js'
 import { iframe } from '../lib/iframe.js'
 import { t } from '../models/i18n.js'
@@ -16,9 +17,18 @@ const state = {
 }
 
 const save = () => {
-  console.debug(state)
-  addSuccess(t('Page was successfully added.'))
-  m.route.set('/')
+  api.post('action=page/create', {
+    body: state,
+    withCredentials: false
+  })
+    .then((result) => {
+      console.debug(result)
+      addSuccess(t('Page was successfully added.'))
+      m.route.set('/')
+    })
+    .catch((error) => {
+      state.error = error.response.error + ' (' + error.code + ')'
+    })
 }
 
 const cancel = () => {

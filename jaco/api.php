@@ -28,7 +28,10 @@ router\post('login', 'jaco\\actions\\login\\main', false);
 router\get('translations', 'jaco\\actions\\translations\\main', false);
 
 // define private routes
+router\post('page/copy', 'jaco\\actions\\page\\copy\\main', true);
+router\post('page/create', 'jaco\\actions\\page\\create\\main', true);
 router\post('page/delete', 'jaco\\actions\\page\\delete\\main', true);
+router\post('page/update', 'jaco\\actions\\page\\update\\main', true);
 
 // dispatch route
 [$status, $response] = router\dispatch(
