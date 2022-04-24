@@ -1,3 +1,4 @@
+import { api } from '../services/api.js'
 import { addSuccess } from '../state/actions.js'
 import { iframe } from '../lib/iframe.js'
 import { t } from '../models/i18n.js'
@@ -7,9 +8,23 @@ import { ButtonPrimary } from '../components/ButtonPrimary.js'
 import { ButtonSecondary } from '../components/ButtonSecondary.js'
 import { Fieldset } from '../components/Fieldset.js'
 
+const state = {
+  fileName: ''
+}
+
 const save = () => {
-  addSuccess(t('Page was successfully deleted.'))
-  m.route.set('/')
+  api.post('action=page/delete', {
+    body: { fileName: state.fileName },
+    withCredentials: false
+  })
+    .then((result) => {
+      console.debug(result)
+      addSuccess(t('Page was successfully deleted.'))
+      m.route.set('/')
+    })
+    .catch((error) => {
+      state.error = error.response.error + ' (' + error.code + ')'
+    })
 }
 
 const cancel = () => {
@@ -18,14 +33,12 @@ const cancel = () => {
 
 export const PageDelete = {
   oninit: () => {
-    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
-      m.route.set('/logout')
-    }
+    state.fileName = iframe.fileName()
   },
   view: () => m(ModalMedium, { title: t('Delete page') },
     m(Fieldset, { legend: t('Confirm') },
       m('p', t('Do you really want to delete the page', {
-        name: iframe.fileName()
+        name: state.fileName
       })),
       m(ButtonGroup, { wrap: 'div.row.text-right' },
         m(ButtonSecondary, { onclick: cancel }, t('No')),

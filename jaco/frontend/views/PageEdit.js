@@ -9,7 +9,7 @@ const save = () => {
   const fileName = iframe.fileName()
   const html = iframe.getHTML()
   iframe.reload()
-  console.log(fileName, html)
+  console.debug(fileName, html)
   addSuccess(t('Page was successfully saved.'))
   m.route.set('/')
 }

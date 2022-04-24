@@ -2,29 +2,15 @@
 
 namespace jaco\actions\login;
 
-use Firebase\JWT\JWT;
+use jaco\auth;
+use jaco\request;
 
 function main(): array
 {
-    $data = json_decode(file_get_contents('php://input'), true);
-
+    $data = request\post_values();
     $username = $data['username'] ?? '';
     $password = $data['password'] ?? '';
-
-    if ($username !== JACO_USERNAME || $password !== JACO_PASSWORD) {
-        throw new \Exception('Login failed', 422);
-    }
-
-    $payload = [
-        'iss' => 'com.jaco',
-        'aud' => 'com.jaco',
-        'iat' => time(),
-        'nbf' => time(),
-    ];
-
-    $jwt = JWT::encode($payload, JACO_SECRET_KEY, 'HS256');
-
     return [
-        'token' => $jwt,
+        'token' => auth\login($username, $password),
     ];
 }

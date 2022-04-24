@@ -1,3 +1,5 @@
+import { addDanger } from '../state/actions.js'
+
 const handlers = {
   // 422 Unprocessable Entity (validation of form data failed)
   422: err => {
@@ -19,7 +21,7 @@ const request = method => (url, options) => {
 
   return m.request({
     method,
-    url: 'api.php?' + url,
+    url: 'api.php?' + url, // + '&XDEBUG_SESSION_START',
     ...options // might need Object.assign for Edge
   })
     .catch(err => {
@@ -27,6 +29,8 @@ const request = method => (url, options) => {
       if (err.code in handlers) {
         handlers[err.code](err)
       } else {
+        let message = err.response.error + ' (' + err.code + ')'
+        addDanger(message)
         throw err
       }
     })

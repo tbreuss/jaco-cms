@@ -1,11 +1,10 @@
 {
     "require": {
-        "spatie/html-element": "^1.1",
         "firebase/php-jwt": "^6.1"
     },
     "autoload": {
         "files": [
-            ".include.php"
+            "_include.php"
         ]
     }
 }

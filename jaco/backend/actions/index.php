@@ -2,10 +2,10 @@
 
 namespace jaco\actions\index;
 
-function main(): array
+function main(string $version = JACO_VERSION): array
 {
     return [
         'name' => 'jaco',
-        'version' => '1.0.0'
+        'version' => $version
     ];
 }

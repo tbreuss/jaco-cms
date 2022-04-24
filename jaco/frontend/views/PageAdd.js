@@ -16,7 +16,7 @@ const state = {
 }
 
 const save = () => {
-  console.log(state)
+  console.debug(state)
   addSuccess(t('Page was successfully added.'))
   m.route.set('/')
 }

@@ -2,10 +2,13 @@
 
 require 'vendor/autoload.php';
 
-use jaco\route;
+use jaco\router;
+use jaco\emitter;
 
 $settings = require 'settings.php';
 
+// set constants
+define('JACO_VERSION', '0.1.0');
 define('JACO_CMS_DIR', __DIR__);
 define('JACO_BACKUPS_DIR', __DIR__ . '/_backups');
 define('JACO_TEMPLATES_PAGES_DIR', __DIR__ . '/_templates/pages');
@@ -19,26 +22,19 @@ define('JACO_SECRET_KEY', $settings['JACO_SECRET_KEY']);
 define('JACO_USERNAME', $settings['JACO_USERNAME']);
 define('JACO_PASSWORD', $settings['JACO_PASSWORD']);
 
-try {
+// define public routes
+router\get('index', 'jaco\\actions\\index\\main', false);
+router\post('login', 'jaco\\actions\\login\\main', false);
+router\get('translations', 'jaco\\actions\\translations\\main', false);
 
-    $action = route\get_action();
-    $response = route\call_action($action);
+// define private routes
+router\post('page/delete', 'jaco\\actions\\page\\delete\\main', true);
 
-} catch (Throwable $e) {
+// dispatch route
+[$status, $response] = router\dispatch(
+    $_SERVER['REQUEST_METHOD'],
+    $_GET['action'] ?? 'index'
+);
 
-    $action = route\get_error_action();
-    $response = $action($e);
-
-    http_response_code($e->getCode());
-    echo json_encode([
-        'error' => $e->getMessage()
-    ]);
-    exit;
-
-}
-
-if (is_string($response)) {
-    echo $response;
-} elseif (is_array($response)) {
-    echo json_encode($response);
-}
+// emit response
+emitter\emit($status, $response);
