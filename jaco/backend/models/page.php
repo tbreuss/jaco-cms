@@ -1,8 +1,9 @@
 <?php
 
-namespace jaco\page;
+namespace jaco\models\page;
 
 use jaco\exception;
+use jaco\file;
 
 function find_all(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
@@ -38,4 +39,45 @@ function sanitize_page(string $page): string
     $search = ['..', '\\'];
     $replace = '';
     return str_replace($search, $replace, $page);
+}
+
+function delete(string $fileName): bool
+{
+    $status = file\backup($fileName);
+    if (!$status) {
+        return false;
+    }
+    return file\delete($fileName);
+}
+
+function exists(string $fileName): bool
+{
+    return file\exists($fileName);
+}
+
+function is_writable(string $fileName): bool
+{
+    return file\is_writable($fileName);
+}
+
+function is_valid(string $fileName): bool
+{
+    $pathinfo = pathinfo($fileName);
+
+    if (strlen($pathinfo['filename']) === 0) {
+        return false;
+    }
+
+    // check filename
+    preg_match('/[^a-z0-9-_]/', $pathinfo['filename'], $matches);
+    if (count($matches) > 0) {
+        return false;
+    }
+
+    // check extension
+    if (!in_array($pathinfo['extension'], JACO_ALLOWED_EXTENSIONS)) {
+        return false;
+    }
+
+    return true;
 }

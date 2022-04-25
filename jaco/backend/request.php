@@ -15,6 +15,12 @@ function post_values(): array
     return $decoded;
 }
 
+function post_value(string $name, string $default): string
+{
+    $values = post_values();
+    return $values[$name] ?? $default;
+}
+
 function get_header(string $header): ?string
 {
     $headers = apache_request_headers();

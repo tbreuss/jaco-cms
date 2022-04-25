@@ -21,7 +21,7 @@ const request = method => (url, options) => {
 
   return m.request({
     method,
-    url: 'api.php?' + url, // + '&XDEBUG_SESSION_START',
+    url: 'api.php?' + url + '&XDEBUG_SESSION_START',
     ...options // might need Object.assign for Edge
   })
     .catch(err => {
