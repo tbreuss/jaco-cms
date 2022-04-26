@@ -5,6 +5,12 @@ require 'vendor/autoload.php';
 use jaco\router;
 use jaco\emitter;
 
+// php stuff
+set_error_handler('jaco\\exception\\error_handler');
+set_exception_handler('jaco\\exception\\exception_handler');
+register_shutdown_function('jaco\\exception\\fatal_handler');
+
+// load settings
 $settings = require 'settings.php';
 
 // set constants
