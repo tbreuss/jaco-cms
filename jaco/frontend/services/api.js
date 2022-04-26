@@ -29,7 +29,7 @@ const request = method => (url, options) => {
       if (err.code in handlers) {
         handlers[err.code](err)
       } else {
-        let message = err.response.error + ' (' + err.code + ')'
+        let message = 'Error: ' + err.response.message + ' (' + err.code + ')'
         addDanger(message)
         throw err
       }

@@ -1,7 +1,9 @@
 // see https://medium.com/i18n-and-l10n-resources-for-developers/localizing-mithril-applications-728fca63eaf3
 
+import { api } from '../services/api.js'
+
 const defaultLocale = 'en';
-const messageUrl = 'api.php?action=translations&language={locale}';
+const messageUrl = 'action=translations&language={locale}';
 
 const loadAndSetLocale = (newLocale) => {
   if (i18n.currentLocale === newLocale) {
@@ -18,7 +20,7 @@ const loadAndSetLocale = (newLocale) => {
 }
 
 const fetchMessages = (locale, onComplete) => {
-  m.request(messageUrl.replace('{locale}', locale)).then(
+  api.get(messageUrl.replace('{locale}', locale)).then(
     onComplete,
   );
 }

@@ -16,9 +16,13 @@ class HttpUnauthorizedException extends Exception
 {
 }
 
+// errors see https://jsonapi.org/format/#error-objects
+
 function exception_handler(\Throwable $t): void
 {
-    emitter\emit(500, [
+    $code = $t->getCode();
+    $status = $code > 0 ? $code : 500;
+    emitter\emit($status, [
         'code' => $t->getCode(),
         'type' => 'exception',
         'message' => $t->getMessage()

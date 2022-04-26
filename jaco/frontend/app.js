@@ -6,7 +6,12 @@ import { Logout } from './views/Logout.js'
 import { Start } from './views/Start.js'
 import { DefaultLayout } from './layouts/Default.js'
 import { PageAdd } from './views/PageAdd.js'
+import { Notifications } from './services/Notifications.js'
 
+// notifications
+m.mount(document.getElementById('toasts'), Notifications)
+
+// application
 m.route(document.getElementById('app'), '/', {
   '/': {
     render: () => {

@@ -1,4 +1,3 @@
-import { Notifications } from '../services/Notifications.js'
 import { closeDropdown } from '../lib/helpers.js'
 import { i18n, t } from '../models/i18n.js'
 
@@ -65,8 +64,7 @@ export const DefaultLayout = {
               }, t('Login'))
             ])
           ),
-          vnode.children,
-          m(Notifications)
+          vnode.children
         ]
     ]
   }

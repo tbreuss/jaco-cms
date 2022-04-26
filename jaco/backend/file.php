@@ -54,6 +54,12 @@ function delete(string $file, string $dir = JACO_WEB_DIR): bool
     return unlink($path);
 }
 
+function make_dir(string $directory, bool $recursive = false, string $root = JACO_WEB_DIR, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
+{
+    $path = join($root, $directory);
+    return mkdir($path, $permissions, $recursive);
+}
+
 function join(string $dir, string $file): string
 {
     $dir = rtrim($dir, '/');
