@@ -16,6 +16,7 @@ $settings = require('settings.php');
 // set constants
 define('JACO_VERSION', '0.1.0');
 define('JACO_DIR', __DIR__);
+define('JACO_DIR_NAME', basename(JACO_DIR));
 define('JACO_BACKUPS_DIR', __DIR__ . '/_backups');
 define('JACO_TEMPLATES_PAGES_DIR', __DIR__ . '/_templates/pages');
 define('JACO_TEMPLATES_CONTENTS_DIR', __DIR__ . '/_templates/contents');
@@ -42,10 +43,9 @@ router\post('page/delete', 'jaco\\actions\\page\\delete\\main', true);
 router\post('page/update', 'jaco\\actions\\page\\update\\main', true);
 
 // dispatch route
-[$status, $response] = router\dispatch(
-    $_SERVER['REQUEST_METHOD'],
-    $_GET['action'] ?? 'index'
-);
+$method = $_SERVER['REQUEST_METHOD'] ?? '';
+$action = $_GET['action'] ?? 'index';
+[$status, $response] = router\dispatch($method, $action);
 
 // emit response
 emitter\emit($status, $response);
