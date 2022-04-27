@@ -54,7 +54,7 @@ function dispatch(string $method, string $action): array
             }
         }
         $response = call_action($route['callback']);
-        if ((count($response) === 2) && (is_int($response[0]))) {
+        if ((count($response) === 2) && isset($response[0]) && is_int($response[0]) && isset($response[1])) {
             return $response;
         }
         return [200, $response];

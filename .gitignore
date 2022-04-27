@@ -1,3 +1,6 @@
+.DS_Store
+.phpunit.result.cache
 .vscode
 node_modules
 jaco/settings.php
+vendor

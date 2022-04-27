@@ -54,20 +54,63 @@ function delete(string $file, string $dir = JACO_WEB_DIR): bool
     return unlink($path);
 }
 
-function make_dir(string $directory, bool $recursive = false, string $root = JACO_WEB_DIR, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
+function make_dir(string $directory, string $root = JACO_WEB_DIR, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
 {
     $path = join($root, $directory);
-    return mkdir($path, $permissions, $recursive);
+    return mkdir($path, $permissions, false);
+}
+
+function make_dir_rec(string $directory, string $root = JACO_WEB_DIR, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
+{
+    $path = join($root, $directory);
+    return mkdir($path, $permissions, true);
 }
 
 function join(string $dir, string $file): string
 {
-    $dir = rtrim($dir, '/');
-    $file = ltrim($file, '/');
-    return $dir . '/' . $file;
+    $dir = rtrim($dir, DIRECTORY_SEPARATOR);
+    $file = ltrim($file, DIRECTORY_SEPARATOR);
+    return $dir . DIRECTORY_SEPARATOR . $file;
 }
 
 function rand_string(int $length = 6): string
 {
     return substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, $length);
+}
+
+function remove_dir(string $rel_path, string $root = JACO_WEB_DIR): bool
+{
+    $abs_path = join($root, $rel_path);
+    return rmdir($abs_path);
+}
+
+function remove_dir_recursive(string $rel_path, string $root = JACO_WEB_DIR): void
+{
+    $abs_path = join($root, $rel_path);
+    _rrmdir($abs_path);
+}
+
+function _rrmdir($dir)
+{
+    if (is_dir($dir)) {
+        $objects = scandir($dir);
+        foreach ($objects as $object) {
+            if ($object != "." && $object != "..") {
+                if (is_dir($dir . DIRECTORY_SEPARATOR . $object) && !is_link($dir . "/" . $object))
+                    _rrmdir($dir . DIRECTORY_SEPARATOR . $object);
+                else
+                    unlink($dir . DIRECTORY_SEPARATOR . $object);
+            }
+        }
+        rmdir($dir);
+    }
+}
+
+function normalize($dir): string
+{
+    $normalized = realpath($dir);
+    if ($normalized === false) {
+        trigger_error('Path ' . $dir . ' is not valid', E_USER_ERROR);
+    }
+    return $normalized;
 }
