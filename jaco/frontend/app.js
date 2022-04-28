@@ -4,6 +4,7 @@ import { PageDelete } from './views/PageDelete.js'
 import { Login } from './views/Login.js'
 import { Logout } from './views/Logout.js'
 import { Start } from './views/Start.js'
+import { System } from './views/System.js'
 import { DefaultLayout } from './layouts/Default.js'
 import { PageAdd } from './views/PageAdd.js'
 import { Notifications } from './services/Notifications.js'
@@ -46,6 +47,11 @@ m.route(document.getElementById('app'), '/', {
   '/logout': {
     render: () => {
       return m(DefaultLayout, m(Logout))
+    }
+  },
+  '/system': {
+    render: () => {
+      return m(DefaultLayout, m(System))
     }
   }
 })

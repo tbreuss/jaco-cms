@@ -81,3 +81,18 @@ function is_valid(string $fileName): bool
 
     return true;
 }
+
+function copy(string $srcfileName, string $dstFileName, string $dstPageTitle): bool
+{
+    $status = file\copy($srcfileName, $dstFileName);
+    if (!$status) {
+        throw new \jaco\exception\Exception('Could not copy page ' . $srcfileName);
+    }
+    return file\update($dstFileName, function(string $contents) use ($dstPageTitle): string {
+        $contents = preg_replace('/<title>(.*?)<\/title>/', '<title>' . $dstPageTitle . '</title>', $contents);
+        if (is_null($contents)) {
+            throw new \Exception('Could not edit page title');
+        }
+        return $contents;
+    });
+}

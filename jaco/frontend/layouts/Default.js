@@ -52,6 +52,7 @@ export const DefaultLayout = {
               m('a[href=#]', t('Backups')),
               m('a[href=#]', t('CSS')),
               m('a[href=#]', t('HTML')),
+              m(m.route.Link, { href: '/system' }, t('System')),
               m(m.route.Link, {
                 class: 'logout',
                 href: '/logout'

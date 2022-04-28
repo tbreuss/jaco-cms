@@ -50,7 +50,7 @@ function file_html(mixed $value): array
     return [false, '{value} is invalid.'];
 }
 
-function file_writable(mixed $value): array
+function file_writeable(mixed $value): array
 {
     if (file\is_writable($value)) {
         return [true, ''];
@@ -74,32 +74,33 @@ function file_not_exists(mixed $value): array
     return [false, '{value} exists but must not exist.'];
 }
 
-function validate(): void
+function one(): void
 {
     // TODO
 }
 
-function validate_array(array $data, array $rules): array
+function all(array $data, array $rules): array
 {
     $errors = [];
     $failed = [];
     foreach ($rules as $rule) {
-        $value = $rule[0];
-        if (in_array($value, $failed)) {
+        $name = $rule[0];
+        if (in_array($name, $failed)) {
             continue;
         }
+        $value = $data[$name] ?? null;
         $callable = 'jaco\\validate\\' . $rule[1];
         $options = array_slice($rule, 2);
-        $options['value'] = $data[$value] ?? null;
+        $options['value'] = $value;
         [$status, $message] = call_user_func_array($callable, $options);
         if ($status === true) {
             continue;
         }
         $errors[] = [
-            'source' => ['pointer' => $value],
+            'source' => ['pointer' => $name],
             'detail' =>  str_replace('{value}', $value, $message)
         ];
-        $failed[] = $value;
+        $failed[] = $name;
     }
     return $errors;
 }

@@ -1,5 +1,48 @@
+html,
+body {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+/*
+body {
+    height: 100vh;
+    padding: 0;
+    width: 100%;
+    margin: 0;
+}
+*/
+.max-height {
+    height: 100%;
+}
+
 body {
     font-family: Arial;
+}
+
+#app {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.main {
+    overflow: auto;
+    flex: auto;
+    background: rgba(51, 51, 51, 0.9);
+}
+
+.content {
+    width: 100%;
+    min-height: 100%;
+    max-width: 1040px;
+    background-color: #eee;
+    padding: 1rem;
 }
 
 /* Dropdown */
@@ -93,14 +136,6 @@ body {
     display: block;
 }
 
-
-body {
-    height: 100vh;
-    padding: 0;
-    width: 100%;
-    margin: 0;
-}
-
 .modal {
     position: fixed;
     top: 0;
@@ -142,10 +177,10 @@ iframe {
 }
 
 .toolbar {
-    position: fixed;
+    /*position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 100%;*/
     /*height: 40px;
     background-color: rgba(255, 255, 255, 0.9);*/
 }

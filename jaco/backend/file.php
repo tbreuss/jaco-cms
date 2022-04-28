@@ -14,11 +14,50 @@ function is_writable(string $file, string $dir = JACO_WEB_DIR): bool
     return \is_writable($path);
 }
 
+function load(string $srcFile): string
+{
+    if (!exists($srcFile)) {
+        throw new \Exception('File ' . $srcFile . ' does not exist.');
+    }
+    $filePath = join(JACO_WEB_DIR, $srcFile);
+    $contents = file_get_contents($filePath);
+    if ($contents === false) {
+        throw new \Exception('Could not read file ' . $srcFile);
+    }
+    return $contents;
+}
+
+function save(string $fileName, string $contents): bool
+{
+    return false;
+}
+
 function copy(string $srcFile, string $dstFile, string $srcDir = JACO_WEB_DIR, string $dstDir = JACO_WEB_DIR): bool
 {
     $srcPath = join($srcDir, $srcFile);
     $dstPath = join($dstDir, $dstFile);
     return \copy($srcPath, $dstPath);
+}
+
+function update(string $fileName, callable $callback, bool $backup = false): bool
+{
+    $contents = load($fileName);
+    $edited = call_user_func($callback, $contents);
+    if (!is_string($edited)) {
+        throw new \Exception('Invalid type from callback ' . $callback);
+    }
+    if ($backup) {
+        $status = backup($fileName);
+        if (!$status) {
+            throw new \Exception('Could not backup file ' . $fileName);
+        }
+    }
+    $filePath = join(JACO_WEB_DIR, $fileName);
+    $status = file_put_contents($filePath, $edited);
+    if (!$status) {
+        throw new \Exception('Could not save file ' . $fileName);
+    }
+    return true;
 }
 
 function backup(string $file, string $dir = JACO_WEB_DIR, string $bakDir = JACO_BACKUPS_DIR): bool

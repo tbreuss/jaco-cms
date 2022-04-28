@@ -9,7 +9,7 @@ use jaco\validate;
 function main(): array
 {
     $data = request\post_values();
-    $errors = validate\validate_array($data, rules());
+    $errors = validate\all($data, rules());
     if (count($errors) > 0) {
         return [400, $errors];
     }
@@ -24,7 +24,8 @@ function rules(): array
 {
     return [
         ['fileName', 'required'],
-        ['fileName', 'file_html'],
+        ['fileName', 'file_exists'],
         ['fileName', 'file_writeable'],
+        ['fileName', 'file_html'],
     ];
 }

@@ -31,7 +31,7 @@ define('JACO_ALLOWED_EXTENSIONS', ['htm', 'html']);
 define('JACO_DEFAULT_PAGE', 'index.html');
 define('JACO_DEFAULT_LANGUAGE', 'en');
 define('JACO_PERMISSIONS_DIRECTORIES', 0755);
-define('JACO_PERMISSIONS_FILES', 644);
+define('JACO_PERMISSIONS_FILES', 0644);
 define('JACO_SECRET_KEY', $settings['JACO_SECRET_KEY']);
 define('JACO_USERNAME', $settings['JACO_USERNAME']);
 define('JACO_PASSWORD', $settings['JACO_PASSWORD']);
@@ -46,6 +46,7 @@ router\post('page/copy', 'jaco\\actions\\page\\copy\\main', true);
 router\post('page/create', 'jaco\\actions\\page\\create\\main', true);
 router\post('page/delete', 'jaco\\actions\\page\\delete\\main', true);
 router\post('page/update', 'jaco\\actions\\page\\update\\main', true);
+router\get('system', 'jaco\\actions\\system\\main', true);
 
 // dispatch route
 $method = $_SERVER['REQUEST_METHOD'] ?? '';
