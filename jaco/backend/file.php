@@ -57,12 +57,18 @@ function delete(string $file, string $dir = JACO_WEB_DIR): bool
 function make_dir(string $directory, string $root = JACO_WEB_DIR, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
 {
     $path = join($root, $directory);
+    if (is_dir($path)) {
+        return true;
+    }
     return mkdir($path, $permissions, false);
 }
 
 function make_dir_rec(string $directory, string $root = JACO_WEB_DIR, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
 {
     $path = join($root, $directory);
+    if (is_dir($path)) {
+        return true;
+    }
     return mkdir($path, $permissions, true);
 }
 

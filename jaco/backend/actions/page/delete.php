@@ -4,31 +4,27 @@ namespace jaco\actions\page\delete;
 
 use jaco\request;
 use jaco\models\page;
+use jaco\validate;
 
 function main(): array
 {
-    $fileName = request\post_value('fileName', '');
-    $errors = validate($fileName);
+    $data = request\post_values();
+    $errors = validate\validate_array($data, rules());
     if (count($errors) > 0) {
         return [400, $errors];
     }
+    $fileName = $data['fileName'];
     if (!page\delete($fileName)) {
         return [500, ['Could not delete page']];
     }
     return [200];
 }
 
-function validate(string $fileName): array
+function rules(): array
 {
-    if (!page\is_valid($fileName)) {
-        return [
-            'error' => 'Error: fileName is invalid'
-        ];
-    }
-    if (!page\is_writable($fileName)) {
-        return [
-            'error' => 'Error: fileName is not writable'
-        ];
-    }
-    return [];
+    return [
+        ['fileName', 'required'],
+        ['fileName', 'file_html'],
+        ['fileName', 'file_writeable'],
+    ];
 }

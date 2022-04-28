@@ -3,25 +3,25 @@
 namespace jaco\actions\page\copy;
 
 use jaco\request;
+use jaco\validate;
 
 function main(): array
 {
     $data = request\post_values();
-    $errors = validate($data);
+    $errors = validate\validate_array($data, rules());
     if (count($errors) > 0) {
         return [422, $errors];
     }
     return $data;
 }
 
-function validate(array $data): array
+function rules(): array
 {
-    $test = 1;
-    // validate:
-    // - srcFile not empty, does exist
-    // - dstFile not empty, does not exist
-    // - dstPage not empty
     return [
-        'error' => 'Unknown error'
+        ['srcFileName', 'required'],
+        ['srcFileName', 'file_exists'],
+        ['dstFileName', 'required'],
+        ['dstFileName', 'file_not_exists'],
+        ['dstPageTitle', 'required'],
     ];
 }

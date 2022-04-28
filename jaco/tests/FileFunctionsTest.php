@@ -11,22 +11,23 @@ final class FileFunctionsTest extends TestCase
 {
     protected function setUp(): void
     {
-        if (file\exists('foo', JACO_WEB_DIR)) {
-            file\remove_dir_recursive('foo', JACO_WEB_DIR);
+        if (file\exists('test', JACO_WEB_DIR)) {
+            file\remove_dir_recursive('test', JACO_WEB_DIR);
         }
+        file\make_dir_rec('test');
     }
 
     public function tearDown(): void
     {
-        if (file\exists('foo', JACO_WEB_DIR)) {
-            file\remove_dir_recursive('foo', JACO_WEB_DIR);
+        if (file\exists('test', JACO_WEB_DIR)) {
+            file\remove_dir_recursive('test', JACO_WEB_DIR);
         }
     }
 
     public function testExistsReturnsTrueIfFileExists(): void
     {
-        touch(JACO_WEB_DIR . '/foo.html');
-        $this->assertTrue(file\exists('foo.html', JACO_WEB_DIR));
+        touch(JACO_WEB_DIR . '/test/foo.html');
+        $this->assertTrue(file\exists('test/foo.html', JACO_WEB_DIR));
     }
 
     public function testExistsReturnsFalseIfFileNotExists(): void
@@ -35,10 +36,25 @@ final class FileFunctionsTest extends TestCase
         $this->assertFalse(file\exists('xxx/yyy/zzz.html', JACO_WEB_DIR));
     }
 
+    public function testIsWritableReturnsTrueIfFileIsWriteable(): void
+    {
+        file\make_dir_rec('test/is_writeable');
+        touch(JACO_WEB_DIR . '/test/is_writeable/a.html');
+        $this->assertTrue(file\is_writable('test/is_writeable/a.html', JACO_WEB_DIR));
+    }
+
+    public function testIsWritableReturnsFalseIfFileIsNotWriteable(): void
+    {
+        file\make_dir_rec('test/is_writeable');
+        touch(JACO_WEB_DIR . '/test/is_writeable/a.html');
+        file\make_dir_rec('test/not_writeable', JACO_WEB_DIR, 0644);
+        $this->assertFalse(file\is_writable('test/foo/writeable.html', JACO_WEB_DIR));
+    }
+
     public function testMakeDir(): void
     {
-        $dir = file\make_dir('foo', JACO_WEB_DIR);
-        $this->assertTrue(is_dir(JACO_WEB_DIR . '/foo'));
+        $dir = file\make_dir('foo/abc', JACO_WEB_DIR);
+        $this->assertTrue(is_dir(JACO_WEB_DIR . '/foo/abc'));
     }
 
     public function testMakeDirRec(): void
