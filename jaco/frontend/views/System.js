@@ -1,21 +1,29 @@
 import { System as SystemModel } from '../models/System.js'
+import { t } from '../models/i18n.js'
 
 const constants = (object) => object
   ? m('div',
     m('h2', 'Constants'),
-    m('.constants', Object.entries(object).map(function (constant) {
-      return m('.user-list-item', constant)
-    }))
-  )
+    m('table.table',
+      m('thead', m('tr', m('th', t('Name')), m('th', t('Value')))),
+      m('tbody', Object.entries(object).map((constant) => m('tr',
+        m('td', constant[0]),
+        m('td', constant[1]),
+      ))
+      )
+    ))
   : ''
 
 const functions = (array) => array
   ? m('div',
     m('h2', 'Functions'),
-    m('.constants', array.map(function (constant) {
-      return m('.user-list-item', constant)
-    }))
-  )
+    m('table.table',
+      m('thead', m('tr', m('th', t('Name')))),
+      m('tbody', array.map((constant) => m('tr',
+        m('td', constant)
+      ))
+      )
+    ))
   : ''
 
 export const System = {

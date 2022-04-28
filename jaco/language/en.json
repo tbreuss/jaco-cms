@@ -4,6 +4,7 @@
   "Backups": "Backups",
   "Cancel": "Cancel",
   "Confirm": "Confirm",
+  "Constants": "Constants",
   "Copy page": "Copy page",
   "Current page": "Current page",
   "CSS": "CSS",
@@ -11,6 +12,7 @@
   "Do you really want to delete the page": "Do you really want to delete the page {name}?",
   "Edit page": "Edit page",
   "Filename": "Filename",
+  "Functions": "Functions",
   "Go to homepage": "Go to homepage",
   "HTML": "HTML",
   "List pages": "List pages",
@@ -19,6 +21,7 @@
   "Login again": "Login again",
   "Login": "Login",
   "Logout": "Logout",
+  "Name": "Name",
   "New page": "New page",
   "No": "No",
   "OK": "OK",
@@ -32,7 +35,9 @@
   "Password": "Password",
   "Select an option": "- Select an option -",
   "Save": "Save",
+  "System": "System",
   "Uploads": "Uploads",
   "Username": "Username",
+  "Value": "Value",
   "Yes": "Yes"
 }
