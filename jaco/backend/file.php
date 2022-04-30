@@ -159,3 +159,35 @@ function normalize($dir): string
     }
     return $normalized;
 }
+
+function validate_filename(string $fileName): bool
+{
+    $abs_path = join(JACO_WEB_DIR, $fileName);
+
+    $pathinfo = pathinfo($abs_path);
+
+    if (strlen($pathinfo['filename']) === 0) {
+        return false;
+    }
+
+    // check filename
+    preg_match('/[^a-z0-9-_]/', $pathinfo['filename'], $matches);
+    if (count($matches) > 0) {
+        return false;
+    }
+
+    return true;
+}
+
+function validate_extension(string $fileName, array $allowed = JACO_ALLOWED_EXTENSIONS): bool
+{
+    $abs_path = join(JACO_WEB_DIR, $fileName);
+
+    $extension = pathinfo($abs_path, PATHINFO_EXTENSION);
+
+    if (!in_array($extension, $allowed)) {
+        return false;
+    }
+
+    return true;
+}

@@ -3,7 +3,6 @@
 namespace jaco\validate;
 
 use jaco\file;
-use jaco\models\page;
 
 function numeric(mixed $value): array
 {
@@ -42,12 +41,22 @@ function test(mixed $value, int $avg, int $min, int $max, int $sum): array
     return [true, ''];
 }
 
-function file_html(mixed $value): array
+function htmlfile_extension(mixed $value): array
 {
-    if (page\is_valid($value)) {
-        return [true, ''];
+    if (!file\validate_extension($value)) {
+        return [false, '{value} is an invalid extension'];
     }
-    return [false, '{value} is invalid.'];
+
+    return [true, ''];
+}
+
+function htmlfile_name(mixed $value): array
+{
+    if (!file\validate_filename($value)) {
+        return [false, '{value} is an invalid filename'];
+    }
+
+    return [true, ''];
 }
 
 function file_writeable(mixed $value): array

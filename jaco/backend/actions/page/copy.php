@@ -25,6 +25,8 @@ function rules(): array
         ['srcFileName', 'required'],
         ['srcFileName', 'file_exists'],
         ['dstFileName', 'required'],
+        ['dstFileName', 'htmlfile_name'],
+        ['dstFileName', 'htmlfile_extension'],
         ['dstFileName', 'file_not_exists'],
         ['dstPageTitle', 'required'],
     ];
