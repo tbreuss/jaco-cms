@@ -6,7 +6,7 @@ function defined_constants(): array
 {
     $constants = [];
     foreach (get_defined_constants() as $key => $value) {
-        if (substr($key, 0, 5) === 'JACO_') {
+        if (substr($key, 0, 5) === 'JACO_' || substr($key, 0, 5) === 'jaco\\') {
             $constants[$key] = stripos($key, 'password') ? '****' : $value;
         }
     }
