@@ -1,7 +1,7 @@
 export const ModalSmall = {
-  view: ({ attrs: { title }, children }) =>
+  view: ({ attrs: { title, cssClass }, children }) =>
     m('.modal',
-      m('.modal-sm',
+      m('.modal-sm' + (cssClass ? '.' + cssClass : ''),
         m('h2', title),
         children
       )

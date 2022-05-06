@@ -14,14 +14,15 @@ const save = () => {
     },
     withCredentials: false
   })
-    .then((result) => {
+    .then(() => {
       iframe.reload()
-      console.debug(fileName, html)
       addSuccess(t('Page was successfully saved.'))
       m.route.set('/')
     })
-    .catch((error) => {
-      state.error = error.response.error + ' (' + error.code + ')'
+    .catch(({ code, response }) => {
+      if (code === 422) {
+        state.error = response.error + ' (' + code + ')'
+      }
     })
 }
 

@@ -6,17 +6,15 @@ use jaco\file;
 
 function numeric(mixed $value): array
 {
-    $status = is_numeric($value);
-    if ($status) {
+    if (is_numeric($value)) {
         return [true, ''];
     }
-    return [false, '{value} must be an number.'];
+    return [false, '{value} must be a number.'];
 }
 
 function string(mixed $value): array
 {
-    $status = is_string($value);
-    if ($status) {
+    if (is_string($value)) {
         return [true, ''];
     }
     return [false, '{value} must be a string.'];
@@ -24,10 +22,10 @@ function string(mixed $value): array
 
 function required(mixed $value): array
 {
-    if (is_null($value) || (is_string($value) && trim($value) === '')) {
-        return [false, '{value} cannot be blank.'];
+    if (is_string($value) && trim($value) !== '') {
+        return [true, ''];
     }
-    return [true, ''];
+    return [false, '{value} cannot be blank.'];
 }
 
 function safe(): array
@@ -37,31 +35,28 @@ function safe(): array
 
 function test(mixed $value, int $avg, int $min, int $max, int $sum): array
 {
-    $test = func_get_args();
     return [true, ''];
 }
 
 function htmlfile_extension(mixed $value): array
 {
-    if (!file\validate_extension($value)) {
-        return [false, '{value} is an invalid extension'];
+    if (is_string($value) && file\validate_extension($value)) {
+        return [true, ''];
     }
-
-    return [true, ''];
+    return [false, '{value} is an invalid extension'];
 }
 
 function htmlfile_name(mixed $value): array
 {
-    if (!file\validate_filename($value)) {
-        return [false, '{value} is an invalid filename'];
+    if (is_string($value) && file\validate_filename($value)) {
+        return [true, ''];
     }
-
-    return [true, ''];
+    return [false, '{value} is an invalid filename'];
 }
 
 function file_writeable(mixed $value): array
 {
-    if (file\is_writable($value)) {
+    if (is_string($value) && file\is_writable($value)) {
         return [true, ''];
     }
     return [false, '{value} is not writeable.'];
@@ -69,7 +64,7 @@ function file_writeable(mixed $value): array
 
 function file_exists(mixed $value): array
 {
-    if (file\exists($value)) {
+    if (is_string($value) && file\exists($value)) {
         return [true, ''];
     }
     return [false, '{value} does not exist.'];
@@ -80,7 +75,7 @@ function file_not_exists(mixed $value): array
     if (!file\exists($value)) {
         return [true, ''];
     }
-    return [false, '{value} exists but must not exist.'];
+    return [false, '{value} must not exist.'];
 }
 
 function one(): void
@@ -107,7 +102,7 @@ function all(array $data, array $rules): array
         }
         $errors[] = [
             'source' => ['pointer' => $name],
-            'detail' =>  str_replace('{value}', $value, $message)
+            'detail' =>  str_replace('{value}', $value ?? $name, $message)
         ];
         $failed[] = $name;
     }

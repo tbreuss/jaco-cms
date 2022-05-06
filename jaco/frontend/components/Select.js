@@ -12,7 +12,7 @@ const getOptions = (prompt, options) => {
 }
 
 const selectOptions = (options) => {
-  return options.map(function (option) {
+  return options.map((option) => {
     return m('option', {
       value: option.value
     }, option.label)

@@ -8,12 +8,14 @@ import { ButtonGroup } from '../components/ButtonGroup.js'
 import { ButtonPrimary } from '../components/ButtonPrimary.js'
 import { ButtonSecondary } from '../components/ButtonSecondary.js'
 import { InputText } from '../components/InputText.js'
+import { FormErrors } from '../components/FormErrors.js'
 
 const state = {
   srcFileName: '',
   srcPageTitle: '',
   dstFileName: '',
-  dstPageTitle: ''
+  dstPageTitle: '',
+  errors: []
 }
 
 const save = () => {
@@ -21,13 +23,14 @@ const save = () => {
     body: state,
     withCredentials: false
   })
-    .then((result) => {
-      console.debug(result)
+    .then(() => {
       addSuccess(t('Page was successfully copied.'))
       m.route.set('/')
     })
-    .catch((error) => {
-      state.error = error.response.error + ' (' + error.code + ')'
+    .catch(({ code, response }) => {
+      if (code === 422) {
+        state.errors = response.errors
+      }
     })
 }
 
@@ -46,6 +49,7 @@ export const PageCopy = {
     }
     state.srcFileName = state.dstFileName = iframe.fileName()
     state.srcPageTitle = state.dstPageTitle = iframe.pageTitle()
+    state.errors = []
   },
   view: () => m(ModalMedium, { title: t('Copy page') },
     m(Fieldset, { legend: t('Current page') },
@@ -64,7 +68,7 @@ export const PageCopy = {
     ),
     m(Fieldset, { legend: t('New page') },
       m(InputText, {
-        id: 'dst-file-name',
+        id: 'dstFileName',
         wrap: 'div.row',
         label: t('Filename'),
         value: state.dstFileName,
@@ -73,7 +77,7 @@ export const PageCopy = {
         }
       }),
       m(InputText, {
-        id: 'dst-page-title',
+        id: 'dstPageTitle',
         wrap: 'div.row',
         label: t('Page title'),
         value: state.dstPageTitle,
@@ -85,6 +89,7 @@ export const PageCopy = {
         m(ButtonSecondary, { onclick: cancel }, t('Cancel')),
         m(ButtonPrimary, { onclick: save }, t('OK'))
       )
-    )
+    ),
+    m(FormErrors, { errors: state.errors })
   )
 }

@@ -2,21 +2,50 @@
 
 namespace jaco\actions\page\create;
 
+use jaco\filter;
 use jaco\request;
+use jaco\validate;
+use jaco\models\page;
 
 function main(): array
 {
-    $data = request\post_values();
-    $errors = validate($data);
+    // get raw user input
+    $raw = request\post_values();
+
+    // filter data
+    $data = filter\all($raw, filters());
+
+    // validate data
+    $errors = validate\all($data, rules());
     if (count($errors) > 0) {
-        return [400, $errors];
+        return [422, $errors];
     }
-    return $data;
+
+    // create page
+    if (!page\create_from_template($data['pageTemplate'], $data['fileName'], $data['pageTitle'])) {
+        return [500, ['Could not create page']];
+    }
+
+    return [200];
 }
 
-function validate(array $data): array
+function rules(): array
 {
     return [
-        'error' => 'Unknown error'
+        ['pageTemplate', 'required'],
+        ['fileName', 'required'],
+        ['fileName', 'htmlfile_name'],
+        ['fileName', 'htmlfile_extension'],
+        ['fileName', 'file_not_exists'],
+        ['pageTitle', 'required'],
+    ];
+}
+
+function filters(): array
+{
+    return [
+        ['pageTemplate', 'filename'],
+        ['fileName', 'filename'],
+        ['pageTitle', 'html_specialchars'],
     ];
 }

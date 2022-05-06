@@ -5,8 +5,8 @@ export const System = {
   info: {},
   load: () => {
     return api.get('action=system')
-      .then(function (result) {
-        System.info = result
+      .then(({ data }) => {
+        System.info = data
       })
   }
 }

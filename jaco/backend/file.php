@@ -36,6 +36,11 @@ function copy(string $srcFile, string $dstFile, string $srcDir = JACO_WEB_DIR, s
 {
     $srcPath = join($srcDir, $srcFile);
     $dstPath = join($dstDir, $dstFile);
+    $srcDirname = dirname($srcFile);
+    $dstDirname = dirname($dstFile);
+    if ($srcDirname !== $dstDirname) {
+        make_dir_rec($dstDirname);
+    }
     return \copy($srcPath, $dstPath);
 }
 
@@ -69,7 +74,7 @@ function backup(string $file, string $dir = JACO_WEB_DIR, string $bakDir = JACO_
         rand_string(4),
         str_replace('/', '|', $file)
     ));
-    return \copy($srcPath, $dstPath);
+    return \copy($srcPath, $dstPath); // triggers an error
 }
 
 function restore(string $bakFile, string $bakDir = JACO_BACKUPS_DIR, string $dir = JACO_WEB_DIR): bool
@@ -190,4 +195,36 @@ function validate_extension(string $fileName, array $allowed = JACO_ALLOWED_EXTE
     }
 
     return true;
+}
+
+function find_htmlfiles(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALLOWED_EXTENSIONS): array
+{
+    $files = scandir($directory, SCANDIR_SORT_ASCENDING);
+    $filtered = array_filter($files, function(string $file) use ($extensions): bool {
+        $extension = pathinfo($file, PATHINFO_EXTENSION);
+        return in_array($extension, $extensions);
+    });
+
+    $html = [];
+    foreach ($filtered as $file) {
+        $path = join($directory, $file);
+        $title = page_title($path);
+        $mtime = filemtime($path);
+        $html[] = new \jaco\structs\page($file, $title, $mtime);
+    }
+
+    return $html;
+}
+
+function page_title(string $path): string
+{
+    $title = '';
+    $dom = new \DOMDocument();
+    if($dom->loadHTMLFile($path)) {
+        $list = $dom->getElementsByTagName("title");
+        if ($list->length > 0) {
+            $title = $list->item(0)->textContent;
+        }
+    }
+    return $title;
 }

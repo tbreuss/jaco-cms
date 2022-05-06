@@ -26,11 +26,12 @@ const request = method => (url, options) => {
   })
     .catch(err => {
       const code = err.code || 0
-      if (err.code in handlers) {
-        handlers[err.code](err)
+      if (code in handlers) {
+        handlers[code](err)
       } else {
-        let message = 'Error: ' + err.response.message + ' (' + err.code + ')'
-        addDanger(message)
+        err.response.errors.forEach((error) => {
+          addDanger(error.detail)
+        })
         throw err
       }
     })

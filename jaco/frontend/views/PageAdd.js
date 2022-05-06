@@ -9,11 +9,14 @@ import { ButtonPrimary } from '../components/ButtonPrimary.js'
 import { ButtonSecondary } from '../components/ButtonSecondary.js'
 import { InputText } from '../components/InputText.js'
 import { Select } from '../components/Select.js'
+import { FormErrors } from '../components/FormErrors.js'
+import { PageTemplate } from '../models/PageTemplate.js'
 
 const state = {
   fileName: '',
   pageTitle: '',
-  pageTemplate: ''
+  pageTemplate: '',
+  errors: []
 }
 
 const save = () => {
@@ -21,13 +24,14 @@ const save = () => {
     body: state,
     withCredentials: false
   })
-    .then((result) => {
-      console.debug(result)
+    .then(() => {
       addSuccess(t('Page was successfully added.'))
       m.route.set('/')
     })
-    .catch((error) => {
-      state.error = error.response.error + ' (' + error.code + ')'
+    .catch(({ code, response }) => {
+      if (code === 422) {
+        state.errors = response.errors
+      }
     })
 }
 
@@ -47,24 +51,26 @@ export const PageAdd = {
     state.fileName = iframe.fileName()
     state.pageTitle = iframe.pageTitle()
     state.pageTemplate = ''
+    state.errors = []
+
+    PageTemplate.loadList()
   },
   view: () => m(ModalMedium, { title: t('Add page') },
     m(Fieldset, { legend: t('New page') },
       m(Select, {
-        id: 'page-template',
+        id: 'pageTemplate',
         wrap: 'div.row',
         label: t('Page template'),
-        options: [
-          { value: 'page_one.html', label: 'Page one' },
-          { value: 'page_two.html', label: 'Page two' },
-        ],
+        options: PageTemplate.list.map((item) => {
+          return { value: item.file, label: item.title }
+        }),
         prompt: t('Select an option'),
         onchange: (selectedItem) => {
           state.pageTemplate = selectedItem
         }
       }),
       m(InputText, {
-        id: 'dst-file-name',
+        id: 'fileName',
         wrap: 'div.row',
         label: t('Filename'),
         value: state.fileName,
@@ -73,7 +79,7 @@ export const PageAdd = {
         }
       }),
       m(InputText, {
-        id: 'dst-page-title',
+        id: 'pageTitle',
         wrap: 'div.row',
         label: t('Page title'),
         value: state.pageTitle,
@@ -84,7 +90,8 @@ export const PageAdd = {
       m(ButtonGroup, { wrap: 'div.row.text-right' },
         m(ButtonSecondary, { onclick: cancel }, t('Cancel')),
         m(ButtonPrimary, { onclick: save }, t('OK'))
-      )
-    )
+      ),
+    ),
+    m(FormErrors, { errors: state.errors })
   )
 }

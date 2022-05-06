@@ -96,3 +96,18 @@ function copy(string $srcfileName, string $dstFileName, string $dstPageTitle): b
         return $contents;
     });
 }
+
+function create_from_template(string $srcfileName, string $dstFileName, string $dstPageTitle): bool
+{
+    $status = file\copy($srcfileName, $dstFileName, JACO_TEMPLATES_PAGES_DIR);
+    if (!$status) {
+        throw new \jaco\exception\Exception('Could not create page ' . $srcfileName);
+    }
+    return file\update($dstFileName, function(string $contents) use ($dstPageTitle): string {
+        $contents = preg_replace('/<title>(.*?)<\/title>/', '<title>' . $dstPageTitle . '</title>', $contents);
+        if (is_null($contents)) {
+            throw new \Exception('Could not edit page title');
+        }
+        return $contents;
+    });
+}

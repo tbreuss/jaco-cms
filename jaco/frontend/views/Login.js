@@ -5,11 +5,12 @@ import { InputText } from '../components/InputText.js'
 import { InputPassword } from '../components/InputPassword.js'
 import { ButtonGroup } from '../components/ButtonGroup.js'
 import { ButtonPrimary } from '../components/ButtonPrimary.js'
+import { FormErrors } from '../components/FormErrors.js'
 
 const state = {
   username: '',
   password: '',
-  error: '',
+  errors: [],
 }
 
 const login = () => {
@@ -21,18 +22,28 @@ const login = () => {
     body: credentials,
     withCredentials: false
   })
-    .then((result) => {
-      window.sessionStorage.setItem('AUTHORIZATION_TOKEN', result.token)
+    .then(({ data }) => {
+      window.sessionStorage.setItem('AUTHORIZATION_TOKEN', data.token)
       m.route.set('/')
     })
-    .catch((error) => {
-      state.error = error.response.error + ' (' + error.code + ')'
+    .catch(({ code, response }) => {
+      if (code === 422) {
+        state.errors = response.errors
+      }
     })
 }
 
 export const Login = {
-  view: () => m(ModalSmall, { title: t('Login') },
+  oninit: () => {
+    state.username = ''
+    state.password = ''
+    state.errors = []
+  },
+  view: () => m(ModalSmall, { title: t('Login'), cssClass: 'modal-sm-login' },
     m(InputText, {
+      id: 'username',
+      wrap: 'div.row',
+      label: t('Username'),
       value: state.username,
       placeholder: t('Username'),
       oninput: (value) => {
@@ -41,6 +52,9 @@ export const Login = {
       }
     }),
     m(InputPassword, {
+      id: 'password',
+      wrap: 'div.row',
+      label: t('Password'),
       value: state.password,
       placeholder: t('Password'),
       oninput: (value) => {
@@ -51,6 +65,6 @@ export const Login = {
     m(ButtonGroup, { wrap: 'div.row.text-right' },
       m(ButtonPrimary, { onclick: login }, t('Login'))
     ),
-    state.error ?? state.error
+    m(FormErrors, { errors: state.errors })
   )
 }

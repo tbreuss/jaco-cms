@@ -10,7 +10,7 @@ ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/runtime/tmp/error.log');
+ini_set('error_log', __DIR__ . '/runtime/log/error.log');
 set_error_handler('jaco\\exception\\error_handler');
 set_exception_handler('jaco\\exception\\exception_handler');
 register_shutdown_function('jaco\\exception\\fatal_handler');
@@ -47,6 +47,7 @@ router\post('page/create', 'jaco\\actions\\page\\create\\main', true);
 router\post('page/delete', 'jaco\\actions\\page\\delete\\main', true);
 router\post('page/update', 'jaco\\actions\\page\\update\\main', true);
 router\get('system', 'jaco\\actions\\system\\main', true);
+router\get('template/pages', 'jaco\\actions\\template\\pages\\main', true);
 
 // dispatch route
 $method = $_SERVER['REQUEST_METHOD'] ?? '';

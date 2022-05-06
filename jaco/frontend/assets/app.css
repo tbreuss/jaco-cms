@@ -418,3 +418,24 @@ fieldset .row.text-right button {
     border-top: 1px solid #ccc;
     padding: 0.25rem 0;
 }
+
+.errors {
+    color: #cc3333;
+    border: 1px solid #cc8888;
+}
+
+.errors legend {
+    color: #cc7777;
+}
+
+.errors ul {
+    margin: 0.5rem 0 0.5rem 1rem;
+    padding: 0;
+}
+
+.modal-sm-login input {
+    width: 100% !important;
+}
+.modal-sm-login .errors {
+    margin-top: 1rem;
+}
