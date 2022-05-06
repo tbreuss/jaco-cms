@@ -54,6 +54,13 @@ export const iframe = {
       iframe.contentWindow.disableEditors()
     }
   },
+  load: (url) => {
+    let iframe = document.getElementById('iframe')
+    if (!iframe) {
+      return
+    }
+    iframe.src = url;
+  },
   reload: () => {
     let iframe = document.getElementById('iframe')
     if (!iframe) {

@@ -14,6 +14,16 @@ function find_all(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALL
     });
 }
 
+function find_all_rec(): array
+{
+    $files = file\find_htmlfiles_rec(
+        JACO_WEB_DIR,
+        JACO_ALLOWED_EXTENSIONS,
+        [JACO_DIR]
+    );
+    return $files;
+}
+
 function find_by_name(string $name): string
 {
     $all = find_all();

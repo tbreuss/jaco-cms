@@ -199,20 +199,25 @@ function validate_extension(string $fileName, array $allowed = JACO_ALLOWED_EXTE
 
 function find_htmlfiles(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
-    $files = scandir($directory, SCANDIR_SORT_ASCENDING);
-    $filtered = array_filter($files, function(string $file) use ($extensions): bool {
-        $extension = pathinfo($file, PATHINFO_EXTENSION);
-        return in_array($extension, $extensions);
-    });
+    $files = scandir($directory, $extensions, SCANDIR_SORT_ASCENDING);
+    return create_page_list($files, $directory);
+}
 
+function find_htmlfiles_rec(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALLOWED_EXTENSIONS, array $exclude_dirs = []): array
+{
+    $files = scandir_rec($directory, $extensions, $exclude_dirs);
+    return create_page_list($files, $directory);
+}
+
+function create_page_list(array $files, string $directory): array
+{
     $html = [];
-    foreach ($filtered as $file) {
+    foreach ($files as $file) {
         $path = join($directory, $file);
         $title = page_title($path);
         $mtime = filemtime($path);
         $html[] = new \jaco\structs\page($file, $title, $mtime);
     }
-
     return $html;
 }
 
@@ -220,11 +225,52 @@ function page_title(string $path): string
 {
     $title = '';
     $dom = new \DOMDocument();
-    if($dom->loadHTMLFile($path)) {
+    libxml_use_internal_errors(true);
+    if ($dom->loadHTMLFile($path)) {
         $list = $dom->getElementsByTagName("title");
         if ($list->length > 0) {
             $title = $list->item(0)->textContent;
         }
     }
+    libxml_clear_errors();
     return $title;
+}
+
+function scandir(string $directory, array $extensions, int $sorting_order): array
+{
+    $files = \scandir($directory, $sorting_order);
+    $filtered = array_filter($files, function (string $file) use ($extensions): bool {
+        $extension = pathinfo($file, PATHINFO_EXTENSION);
+        return in_array($extension, $extensions);
+    });
+    return array_values($filtered);
+}
+
+function scandir_rec(string $directory, array $extensions, array $excludedDirectories): array
+{
+    $rii = new \RecursiveIteratorIterator(
+        new \RecursiveDirectoryIterator($directory)
+    );
+
+    $files = [];
+    foreach ($rii as $file) {
+        if ($file->isDir()) {
+            continue;
+        }
+        if (!in_array($file->getExtension(), $extensions)) {
+            continue;
+        }
+        $pathname = $file->getPathname();
+        foreach ($excludedDirectories as $excludeDir) {
+            if (strpos($pathname, $excludeDir) !== false) {
+                continue 2;
+            }
+        }
+        if (strpos($pathname, $directory) === 0) {
+            $relfile = substr($pathname, strlen($directory));
+            $files[] = ltrim($relfile, '\\/');
+        }
+    }
+
+    return $files;
 }

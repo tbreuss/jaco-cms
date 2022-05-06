@@ -41,6 +41,10 @@ export const DefaultLayout = {
                     href: '/page-delete',
                     onclick: () => closeDropdown()
                   }, t('Delete page')),
+                  m(m.route.Link, {
+                    href: '/page-goto',
+                    onclick: () => closeDropdown()
+                  }, t('Goto page')),
                   m('.ruler'),
                   m(m.route.Link, {
                     href: '/page-list',

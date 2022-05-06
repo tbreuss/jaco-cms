@@ -1,6 +1,7 @@
 import { PageCopy } from './views/PageCopy.js'
-import { PageEdit } from './views/PageEdit.js'
 import { PageDelete } from './views/PageDelete.js'
+import { PageEdit } from './views/PageEdit.js'
+import { PageGoto } from './views/PageGoto.js'
 import { Login } from './views/Login.js'
 import { Logout } from './views/Logout.js'
 import { Start } from './views/Start.js'
@@ -37,6 +38,11 @@ m.route(document.getElementById('app'), '/', {
   '/page-delete': {
     render: () => {
       return m(DefaultLayout, m(PageDelete))
+    }
+  },
+  '/page-goto': {
+    render: () => {
+      return m(DefaultLayout, m(PageGoto))
     }
   },
   '/login': {
