@@ -17,12 +17,13 @@ const gotoPage = (e) => {
 }
 
 const pageList = (pages) =>
-  m('.list-group', pages.map((page) =>
-    m('a[href=#].list-group-item', {
-      onclick: gotoPage
-    }, page.file))
-  )
-
+  pages.length
+    ? m('.list-group', pages.map((page) =>
+      m('a[href=#].list-group-item', {
+        onclick: gotoPage
+      }, page.file))
+    )
+    : m('p', t('Sorry, no page found'))
 
 export const PageGoto = {
   oninit: () => {

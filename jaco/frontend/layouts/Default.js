@@ -6,6 +6,14 @@ const title = () => m(m.route.Link, {
   href: '/',
 }, 'JACO')
 
+const showInfo = (e) => {
+  if (!e) {
+    console.debug('Not yet implemented')
+    return
+  }
+  console.debug(e.target.textContent + ' not yet implemented')
+}
+
 export const DefaultLayout = {
   oncreate: () => {
     i18n.loadAndSetLocale(i18n.defaultLocale)
@@ -48,14 +56,17 @@ export const DefaultLayout = {
                   m('.ruler'),
                   m(m.route.Link, {
                     href: '/page-list',
-                    onclick: () => closeDropdown()
+                    onclick: () => {
+                      showInfo()
+                      closeDropdown()
+                    }
                   }, t('List pages'))
                 )
               ),
-              m('a[href=#]', t('Uploads')),
-              m('a[href=#]', t('Backups')),
-              m('a[href=#]', t('CSS')),
-              m('a[href=#]', t('HTML')),
+              m('a[href=#]', { onclick: showInfo }, t('Uploads')),
+              m('a[href=#]', { onclick: showInfo }, t('Backups')),
+              m('a[href=#]', { onclick: showInfo }, t('CSS')),
+              m('a[href=#]', { onclick: showInfo }, t('HTML')),
               m(m.route.Link, { href: '/system' }, t('System')),
               m(m.route.Link, {
                 class: 'logout',
