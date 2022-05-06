@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace jaco\request;
 
 function post_values(): array

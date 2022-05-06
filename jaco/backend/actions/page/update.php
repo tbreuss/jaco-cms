@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace jaco\actions\page\update;
 
 use jaco\request;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace jaco\actions\login;
 
 use jaco\auth;

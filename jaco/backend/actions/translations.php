@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace jaco\actions\translations;
 
 function main(string $language = JACO_DEFAULT_LANGUAGE): array

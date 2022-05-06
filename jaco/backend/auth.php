@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace jaco\auth;
 
 use Firebase\JWT\JWT;

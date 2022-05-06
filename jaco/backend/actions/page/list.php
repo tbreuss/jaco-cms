@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace jaco\actions\page\list;
 
 use jaco\models\page;

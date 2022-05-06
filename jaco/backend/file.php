@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace jaco\file;
 
 function exists(string $file, string $dir = JACO_WEB_DIR): bool
