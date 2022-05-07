@@ -1,3 +1,4 @@
+import { Backups } from './views/Backups.js'
 import { PageAdd } from './views/PageAdd.js'
 import { PageCopy } from './views/PageCopy.js'
 import { PageDelete } from './views/PageDelete.js'
@@ -18,6 +19,11 @@ m.route(document.getElementById('app'), '/', {
   '/': {
     render: () => {
       return m(DefaultLayout, m(Start))
+    }
+  },
+  '/backups': {
+    render: () => {
+      return m(DefaultLayout, m(Backups))
     }
   },
   '/page-add': {

@@ -12,7 +12,13 @@ function exists(string $root, string $dir): bool
     return \file_exists($path) && \is_dir($path);
 }
 
-function make_dir(string $root, string $directory, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
+function is_writable(string $root, string $dir): bool
+{
+    $path = shared\join($root, $dir);
+    return exists($root, $dir) && \is_writable($path);
+}
+
+function make(string $root, string $directory, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
 {
     $path = shared\join($root, $directory);
     if (is_dir($path)) {
@@ -21,7 +27,7 @@ function make_dir(string $root, string $directory, int $permissions = JACO_PERMI
     return mkdir($path, $permissions, false);
 }
 
-function make_dir_rec(string $root, string $directory, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
+function make_rec(string $root, string $directory, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
 {
     $path = shared\join($root, $directory);
     if (is_dir($path)) {
@@ -29,13 +35,14 @@ function make_dir_rec(string $root, string $directory, int $permissions = JACO_P
     }
     return mkdir($path, $permissions, true);
 }
-function remove_dir(string $root, string $rel_path): bool
+
+function remove(string $root, string $rel_path): bool
 {
     $abs_path = shared\join($root, $rel_path);
     return rmdir($abs_path);
 }
 
-function remove_dir_recursive(string $root, string $rel_path): void
+function remove_rec(string $root, string $rel_path): void
 {
     $abs_path = shared\join($root, $rel_path);
     _rrmdir($abs_path);

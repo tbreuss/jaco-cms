@@ -64,7 +64,7 @@ export const DefaultLayout = {
                 )
               ),
               m('a[href=#]', { onclick: showInfo }, t('Uploads')),
-              m('a[href=#]', { onclick: showInfo }, t('Backups')),
+              m(m.route.Link, { href: '/backups' }, t('Backups')),
               m('a[href=#]', { onclick: showInfo }, t('CSS')),
               m('a[href=#]', { onclick: showInfo }, t('HTML')),
               m(m.route.Link, { href: '/system' }, t('System')),

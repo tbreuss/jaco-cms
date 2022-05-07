@@ -46,13 +46,14 @@ router\post('login', 'jaco\\actions\\login\\main', false);
 router\get('translations', 'jaco\\actions\\translations\\main', false);
 
 // define private routes
-router\get('page/list', 'jaco\\actions\\page\\list\\main', true);
+router\get('backup/list', 'jaco\\actions\\backup\\list\\main', false);
+router\get('page/list', 'jaco\\actions\\page\\list\\main', false);
 router\post('page/copy', 'jaco\\actions\\page\\copy\\main', true);
 router\post('page/create', 'jaco\\actions\\page\\create\\main', true);
 router\post('page/delete', 'jaco\\actions\\page\\delete\\main', true);
 router\post('page/update', 'jaco\\actions\\page\\update\\main', true);
 router\get('system', 'jaco\\actions\\system\\main', true);
-router\get('template/pages', 'jaco\\actions\\template\\pages\\main', true);
+router\get('template/pages', 'jaco\\actions\\template\\pages\\main', false);
 
 // dispatch route
 $method = $_SERVER['REQUEST_METHOD'] ?? '';

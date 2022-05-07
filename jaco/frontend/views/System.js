@@ -27,7 +27,12 @@ const functions = (array) => array
   : ''
 
 export const System = {
-  oninit: SystemModel.load,
+  oninit: () => {
+    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+      m.route.set('/logout')
+    }
+    SystemModel.load()
+  },
   oncreate: () => {
     document.getElementById('app').classList.add('max-height')
   },

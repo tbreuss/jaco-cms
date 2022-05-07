@@ -7,6 +7,7 @@ namespace jaco\models\page;
 use jaco\exception;
 use jaco\filesystem\file;
 use jaco\filesystem\html_file;
+use jaco\structs\page;
 
 function find_all(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
@@ -19,8 +20,8 @@ function find_all(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALL
 
 function find_all_rec(): array
 {
-    $files = html_file\find_htmlfiles_rec(JACO_WEB_DIR, [JACO_DIR]);
-    return $files;
+    $files = html_file\find_rec(JACO_WEB_DIR, [JACO_DIR]);
+    return create_list(JACO_WEB_DIR, $files);
 }
 
 function find_by_name(string $name): string
@@ -119,4 +120,26 @@ function create_from_template(string $srcfileName, string $dstFileName, string $
         }
         return $contents;
     });
+}
+
+/**
+ * @param \jaco\structs\file[] $files
+ * @return page[]
+ */
+function create_list(string $directory, array $files): array
+{
+    $html = [];
+    foreach ($files as $file) {
+        $html[] = create_one($directory, $file->file, $file->modified);
+    }
+    return $html;
+}
+
+function create_one(string $dir, string $file, int $modified): page
+{
+    return new page(
+        $file,
+        html_file\page_title($dir, $file),
+        $modified
+    );
 }

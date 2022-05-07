@@ -36,6 +36,9 @@ const cancel = () => {
 
 export const PageDelete = {
   oninit: () => {
+    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+      m.route.set('/logout')
+    }
     state.fileName = iframe.fileName()
     state.errors = []
   },

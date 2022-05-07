@@ -41,32 +41,35 @@ function update(string $dir, string $fileName, callable $callback, ?string $bakD
     return true;
 }
 
-function find_htmlfiles(string $directory, array $extensions = JACO_ALLOWED_EXTENSIONS): array
+/**
+ * @param string[] $extensions
+ * @return \jaco\structs\file[]
+ */
+function find(string $directory, array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
     $files = file\scandir($directory, $extensions, SCANDIR_SORT_ASCENDING);
-    return create_page_list($directory, $files);
-}
-
-function find_htmlfiles_rec(string $directory, array $exclude_dirs = [], array $extensions = JACO_ALLOWED_EXTENSIONS): array
-{
-    $files = file\scandir_rec($directory, $extensions, $exclude_dirs);
-    return create_page_list($directory, $files);
-}
-
-function create_page_list(string $directory, array $files): array
-{
-    $html = [];
+    $list = [];
     foreach ($files as $file) {
         $path = shared\join($directory, $file);
-        $title = page_title($path);
-        $mtime = filemtime($path);
-        $html[] = new \jaco\structs\page($file, $title, $mtime);
+        $list[] = new \jaco\structs\file($file, filemtime($path));
     }
-    return $html;
+    return $list;
 }
 
-function page_title(string $path): string
+function find_rec(string $directory, array $exclude_dirs = [], array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
+    $files = file\scandir_rec($directory, $extensions, $exclude_dirs);
+    $list = [];
+    foreach ($files as $file) {
+        $path = shared\join($directory, $file);
+        $list[] = new \jaco\structs\file($file, filemtime($path));
+    }
+    return $list;
+}
+
+function page_title(string $dir, string $file): string
+{
+    $path = shared\join($dir, $file);
     $title = '';
     $dom = new \DOMDocument();
     libxml_use_internal_errors(true);

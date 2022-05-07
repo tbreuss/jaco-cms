@@ -8,6 +8,6 @@ use jaco\models\template\page;
 
 function main(): array
 {
-    $files = page\find_all();
-    return $files;
+    $pages = page\find_all();
+    return $pages;
 }

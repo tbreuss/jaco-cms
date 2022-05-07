@@ -16,7 +16,7 @@ function exists(string $dir, string $file): bool
 function is_writable(string $dir, string $file): bool
 {
     $path = shared\join($dir, $file);
-    return \is_writable($path);
+    return exists($dir, $file) && \is_writable($path);
 }
 
 function copy(string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
@@ -26,7 +26,7 @@ function copy(string $srcDir, string $srcFile, string $dstDir, string $dstFile):
     $srcDirname = dirname($srcFile);
     $dstDirname = dirname($dstFile);
     if ($srcDirname !== $dstDirname) {
-        dir\make_dir_rec($dstDir, $dstDirname);
+        dir\make_rec($dstDir, $dstDirname);
     }
     return \copy($srcPath, $dstPath);
 }
