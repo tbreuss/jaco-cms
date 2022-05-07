@@ -145,7 +145,7 @@ function remove_dir_recursive(string $rel_path, string $root = JACO_WEB_DIR): vo
 function _rrmdir($dir)
 {
     if (is_dir($dir)) {
-        $objects = scandir($dir);
+        $objects = \scandir($dir);
         foreach ($objects as $object) {
             if ($object != "." && $object != "..") {
                 if (is_dir($dir . DIRECTORY_SEPARATOR . $object) && !is_link($dir . "/" . $object))
