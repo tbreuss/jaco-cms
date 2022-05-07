@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace jaco\models\page;
 
 use jaco\exception;
-use jaco\file;
+use jaco\filesystem\file;
+use jaco\filesystem\html_file;
 
 function find_all(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
@@ -18,7 +19,7 @@ function find_all(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALL
 
 function find_all_rec(): array
 {
-    $files = file\find_htmlfiles_rec(JACO_WEB_DIR, [JACO_DIR]);
+    $files = html_file\find_htmlfiles_rec(JACO_WEB_DIR, [JACO_DIR]);
     return $files;
 }
 
@@ -96,7 +97,7 @@ function copy(string $srcfileName, string $dstFileName, string $dstPageTitle): b
     if (!$status) {
         throw new \jaco\exception\Exception('Could not copy page ' . $srcfileName);
     }
-    return file\update(JACO_WEB_DIR, $dstFileName, function (string $contents) use ($dstPageTitle): string {
+    return html_file\update(JACO_WEB_DIR, $dstFileName, function (string $contents) use ($dstPageTitle): string {
         $contents = preg_replace('/<title>(.*?)<\/title>/', '<title>' . $dstPageTitle . '</title>', $contents);
         if (is_null($contents)) {
             throw new \Exception('Could not edit page title');
@@ -111,7 +112,7 @@ function create_from_template(string $srcfileName, string $dstFileName, string $
     if (!$status) {
         throw new \jaco\exception\Exception('Could not create page ' . $srcfileName);
     }
-    return file\update(JACO_WEB_DIR, $dstFileName, function (string $contents) use ($dstPageTitle): string {
+    return html_file\update(JACO_WEB_DIR, $dstFileName, function (string $contents) use ($dstPageTitle): string {
         $contents = preg_replace('/<title>(.*?)<\/title>/', '<title>' . $dstPageTitle . '</title>', $contents);
         if (is_null($contents)) {
             throw new \Exception('Could not edit page title');

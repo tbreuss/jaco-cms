@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\validate;
 
-use jaco\file;
+use jaco\filesystem\file;
 
 function numeric(mixed $value): array
 {
