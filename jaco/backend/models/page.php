@@ -9,7 +9,7 @@ use jaco\file;
 
 function find_all(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
-    $files = scandir($directory, SCANDIR_SORT_ASCENDING);
+    $files = \scandir($directory, SCANDIR_SORT_ASCENDING);
     return array_filter($files, function (string $file) use ($extensions): bool {
         $extension = pathinfo($file, PATHINFO_EXTENSION);
         return in_array($extension, $extensions);
@@ -18,11 +18,7 @@ function find_all(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALL
 
 function find_all_rec(): array
 {
-    $files = file\find_htmlfiles_rec(
-        JACO_WEB_DIR,
-        JACO_ALLOWED_EXTENSIONS,
-        [JACO_DIR]
-    );
+    $files = file\find_htmlfiles_rec(JACO_WEB_DIR, [JACO_DIR]);
     return $files;
 }
 
@@ -55,21 +51,21 @@ function sanitize_page(string $page): string
 
 function delete(string $fileName): bool
 {
-    $status = file\backup($fileName);
+    $status = file\backup(JACO_WEB_DIR, $fileName, JACO_BACKUPS_DIR);
     if (!$status) {
         return false;
     }
-    return file\delete($fileName);
+    return file\delete(JACO_WEB_DIR, $fileName);
 }
 
 function exists(string $fileName): bool
 {
-    return file\exists($fileName);
+    return file\exists(JACO_WEB_DIR, $fileName);
 }
 
 function is_writable(string $fileName): bool
 {
-    return file\is_writable($fileName);
+    return file\is_writable(JACO_WEB_DIR, $fileName);
 }
 
 function is_valid(string $fileName): bool
@@ -96,11 +92,11 @@ function is_valid(string $fileName): bool
 
 function copy(string $srcfileName, string $dstFileName, string $dstPageTitle): bool
 {
-    $status = file\copy($srcfileName, $dstFileName);
+    $status = file\copy(JACO_WEB_DIR, $srcfileName, JACO_WEB_DIR, $dstFileName);
     if (!$status) {
         throw new \jaco\exception\Exception('Could not copy page ' . $srcfileName);
     }
-    return file\update($dstFileName, function (string $contents) use ($dstPageTitle): string {
+    return file\update(JACO_WEB_DIR, $dstFileName, function (string $contents) use ($dstPageTitle): string {
         $contents = preg_replace('/<title>(.*?)<\/title>/', '<title>' . $dstPageTitle . '</title>', $contents);
         if (is_null($contents)) {
             throw new \Exception('Could not edit page title');
@@ -111,11 +107,11 @@ function copy(string $srcfileName, string $dstFileName, string $dstPageTitle): b
 
 function create_from_template(string $srcfileName, string $dstFileName, string $dstPageTitle): bool
 {
-    $status = file\copy($srcfileName, $dstFileName, JACO_TEMPLATES_PAGES_DIR);
+    $status = file\copy(JACO_TEMPLATES_PAGES_DIR, $srcfileName, JACO_WEB_DIR, $dstFileName);
     if (!$status) {
         throw new \jaco\exception\Exception('Could not create page ' . $srcfileName);
     }
-    return file\update($dstFileName, function (string $contents) use ($dstPageTitle): string {
+    return file\update(JACO_WEB_DIR, $dstFileName, function (string $contents) use ($dstPageTitle): string {
         $contents = preg_replace('/<title>(.*?)<\/title>/', '<title>' . $dstPageTitle . '</title>', $contents);
         if (is_null($contents)) {
             throw new \Exception('Could not edit page title');

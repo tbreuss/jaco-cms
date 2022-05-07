@@ -4,62 +4,62 @@ declare(strict_types=1);
 
 namespace jaco\file;
 
-function exists(string $file, string $dir = JACO_WEB_DIR): bool
+function exists(string $dir, string $file): bool
 {
     $path = join($dir, $file);
     return file_exists($path);
 }
 
-function is_writable(string $file, string $dir = JACO_WEB_DIR): bool
+function is_writable(string $dir, string $file): bool
 {
     $path = join($dir, $file);
     return \is_writable($path);
 }
 
-function load(string $srcFile): string
+function load(string $dir, string $file): string
 {
-    if (!exists($srcFile)) {
-        throw new \Exception('File ' . $srcFile . ' does not exist.');
+    if (!exists($dir, $file)) {
+        throw new \Exception('File ' . $file . ' does not exist.');
     }
-    $filePath = join(JACO_WEB_DIR, $srcFile);
+    $filePath = join($dir, $file);
     $contents = file_get_contents($filePath);
     if ($contents === false) {
-        throw new \Exception('Could not read file ' . $srcFile);
+        throw new \Exception('Could not read file ' . $file);
     }
     return $contents;
 }
 
-function save(string $fileName, string $contents): bool
+function save(string $dir, string $file, string $contents): bool
 {
     return false;
 }
 
-function copy(string $srcFile, string $dstFile, string $srcDir = JACO_WEB_DIR, string $dstDir = JACO_WEB_DIR): bool
+function copy(string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
 {
     $srcPath = join($srcDir, $srcFile);
     $dstPath = join($dstDir, $dstFile);
     $srcDirname = dirname($srcFile);
     $dstDirname = dirname($dstFile);
     if ($srcDirname !== $dstDirname) {
-        make_dir_rec($dstDirname);
+        make_dir_rec($dstDir, $dstDirname);
     }
     return \copy($srcPath, $dstPath);
 }
 
-function update(string $fileName, callable $callback, bool $backup = false): bool
+function update(string $dir, string $fileName, callable $callback, ?string $bakDir = null): bool
 {
-    $contents = load($fileName);
+    $contents = load($dir, $fileName);
     $edited = call_user_func($callback, $contents);
     if (!is_string($edited)) {
         throw new \Exception('Invalid type from callback ' . $callback);
     }
-    if ($backup) {
-        $status = backup($fileName);
+    if ($bakDir) {
+        $status = backup($dir, $fileName, $bakDir);
         if (!$status) {
             throw new \Exception('Could not backup file ' . $fileName);
         }
     }
-    $filePath = join(JACO_WEB_DIR, $fileName);
+    $filePath = join($dir, $fileName);
     $status = file_put_contents($filePath, $edited);
     if (!$status) {
         throw new \Exception('Could not save file ' . $fileName);
@@ -67,7 +67,7 @@ function update(string $fileName, callable $callback, bool $backup = false): boo
     return true;
 }
 
-function backup(string $file, string $dir = JACO_WEB_DIR, string $bakDir = JACO_BACKUPS_DIR): bool
+function backup(string $dir, string $file, string $bakDir): bool
 {
     $srcPath = join($dir, $file);
     $dstPath = join($bakDir, sprintf(
@@ -79,7 +79,7 @@ function backup(string $file, string $dir = JACO_WEB_DIR, string $bakDir = JACO_
     return \copy($srcPath, $dstPath); // triggers an error
 }
 
-function restore(string $bakFile, string $bakDir = JACO_BACKUPS_DIR, string $dir = JACO_WEB_DIR): bool
+function restore(string $bakDir, string $bakFile, string $dir): bool
 {
     $srcPath = join($bakDir, $bakFile);
     $dstPath = join($dir, substr($bakFile, 20));
@@ -94,13 +94,13 @@ function restore(string $bakFile, string $bakDir = JACO_BACKUPS_DIR, string $dir
     return \copy($srcPath, $dstPath);
 }
 
-function delete(string $file, string $dir = JACO_WEB_DIR): bool
+function delete(string $dir, string $file): bool
 {
     $path = join($dir, $file);
     return unlink($path);
 }
 
-function make_dir(string $directory, string $root = JACO_WEB_DIR, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
+function make_dir(string $root, string $directory, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
 {
     $path = join($root, $directory);
     if (is_dir($path)) {
@@ -109,7 +109,7 @@ function make_dir(string $directory, string $root = JACO_WEB_DIR, int $permissio
     return mkdir($path, $permissions, false);
 }
 
-function make_dir_rec(string $directory, string $root = JACO_WEB_DIR, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
+function make_dir_rec(string $root, string $directory, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
 {
     $path = join($root, $directory);
     if (is_dir($path)) {
@@ -130,13 +130,13 @@ function rand_string(int $length = 6): string
     return substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, $length);
 }
 
-function remove_dir(string $rel_path, string $root = JACO_WEB_DIR): bool
+function remove_dir(string $root, string $rel_path): bool
 {
     $abs_path = join($root, $rel_path);
     return rmdir($abs_path);
 }
 
-function remove_dir_recursive(string $rel_path, string $root = JACO_WEB_DIR): void
+function remove_dir_recursive(string $root, string $rel_path): void
 {
     $abs_path = join($root, $rel_path);
     _rrmdir($abs_path);
@@ -167,9 +167,9 @@ function normalize($dir): string
     return $normalized;
 }
 
-function validate_filename(string $fileName): bool
+function validate_filename(string $dir, string $fileName): bool
 {
-    $abs_path = join(JACO_WEB_DIR, $fileName);
+    $abs_path = join($dir, $fileName);
 
     $pathinfo = pathinfo($abs_path);
 
@@ -186,9 +186,9 @@ function validate_filename(string $fileName): bool
     return true;
 }
 
-function validate_extension(string $fileName, array $allowed = JACO_ALLOWED_EXTENSIONS): bool
+function validate_extension(string $dir, string $fileName, array $allowed = JACO_ALLOWED_EXTENSIONS): bool
 {
-    $abs_path = join(JACO_WEB_DIR, $fileName);
+    $abs_path = join($dir, $fileName);
 
     $extension = pathinfo($abs_path, PATHINFO_EXTENSION);
 
@@ -199,19 +199,19 @@ function validate_extension(string $fileName, array $allowed = JACO_ALLOWED_EXTE
     return true;
 }
 
-function find_htmlfiles(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALLOWED_EXTENSIONS): array
+function find_htmlfiles(string $directory, array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
     $files = scandir($directory, $extensions, SCANDIR_SORT_ASCENDING);
-    return create_page_list($files, $directory);
+    return create_page_list($directory, $files);
 }
 
-function find_htmlfiles_rec(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALLOWED_EXTENSIONS, array $exclude_dirs = []): array
+function find_htmlfiles_rec(string $directory, array $exclude_dirs = [], array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
     $files = scandir_rec($directory, $extensions, $exclude_dirs);
-    return create_page_list($files, $directory);
+    return create_page_list($directory, $files);
 }
 
-function create_page_list(array $files, string $directory): array
+function create_page_list(string $directory, array $files): array
 {
     $html = [];
     foreach ($files as $file) {

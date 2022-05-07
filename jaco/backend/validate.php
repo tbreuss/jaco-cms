@@ -42,7 +42,7 @@ function test(mixed $value, int $avg, int $min, int $max, int $sum): array
 
 function htmlfile_extension(mixed $value): array
 {
-    if (is_string($value) && file\validate_extension($value)) {
+    if (is_string($value) && file\validate_extension(JACO_WEB_DIR, $value)) {
         return [true, ''];
     }
     return [false, '{value} is an invalid extension'];
@@ -50,7 +50,7 @@ function htmlfile_extension(mixed $value): array
 
 function htmlfile_name(mixed $value): array
 {
-    if (is_string($value) && file\validate_filename($value)) {
+    if (is_string($value) && file\validate_filename(JACO_WEB_DIR, $value)) {
         return [true, ''];
     }
     return [false, '{value} is an invalid filename'];
@@ -58,7 +58,7 @@ function htmlfile_name(mixed $value): array
 
 function file_writeable(mixed $value): array
 {
-    if (is_string($value) && file\is_writable($value)) {
+    if (is_string($value) && file\is_writable(JACO_WEB_DIR, $value)) {
         return [true, ''];
     }
     return [false, '{value} is not writeable.'];
@@ -66,7 +66,7 @@ function file_writeable(mixed $value): array
 
 function file_exists(mixed $value): array
 {
-    if (is_string($value) && file\exists($value)) {
+    if (is_string($value) && file\exists(JACO_WEB_DIR, $value)) {
         return [true, ''];
     }
     return [false, '{value} does not exist.'];
@@ -74,7 +74,7 @@ function file_exists(mixed $value): array
 
 function file_not_exists(mixed $value): array
 {
-    if (!file\exists($value)) {
+    if (!file\exists(JACO_WEB_DIR, $value)) {
         return [true, ''];
     }
     return [false, '{value} must not exist.'];
