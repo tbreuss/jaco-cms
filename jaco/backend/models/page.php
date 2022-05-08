@@ -122,6 +122,14 @@ function create_from_template(string $srcfileName, string $dstFileName, string $
     });
 }
 
+function update(string $file, string $content): bool
+{
+    $callback = function () use ($content): string {
+        return $content; // simply return content
+    };
+    return html_file\update(JACO_WEB_DIR, $file, $callback, JACO_BACKUPS_DIR);
+}
+
 /**
  * @param \jaco\structs\file[] $files
  * @return page[]

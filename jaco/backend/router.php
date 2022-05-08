@@ -40,19 +40,19 @@ function dispatch(string $method, string $action): array
 
     $routes_by_action = filter_routes($routes, 'action', $action);
     if (count($routes_by_action) === 0) {
-        return [404, ['error' => '404 Page Not Found']];
+        return [400, [['detail' => '404 Page Not Found']]];
     }
 
     $routes_by_method = filter_routes($routes_by_action, 'method', $method);
     if (count($routes_by_method) === 0) {
-        return [405, ['error' => '405 Method Not Allowed']];
+        return [405, ['detail' => '405 Method Not Allowed']];
     }
 
     // take the first one if multiple routes exist
     foreach ($routes_by_method as $route) {
         if ($route['authenticated'] === true) {
             if (check_authorization() === false) {
-                return [403, ['error' => '403 Forbidden']];
+                return [403, ['detail' => '403 Forbidden']];
             }
         }
         $response = call_action($route['callback']);
@@ -62,7 +62,7 @@ function dispatch(string $method, string $action): array
         return [200, $response];
     }
 
-    return [400, ['error' => 'Bad Request']];
+    return [400, ['detail' => 'Bad Request']];
 }
 
 function call_action(string $action): array|string
@@ -91,7 +91,7 @@ function check_authorization(): bool
     if (is_null($header)) {
         return false;
     }
-    if (substr($header, 0, 6) !== 'Bearer') {
+    if (!str_starts_with($header, 'Bearer')) {
         return false;
     }
     $token = trim(substr($header, 7));

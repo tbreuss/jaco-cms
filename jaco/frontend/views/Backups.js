@@ -2,14 +2,10 @@ import {t} from '../models/i18n.js'
 import {Backup} from '../models/Backup.js'
 import {ButtonPrimary} from '../components/ButtonPrimary.js'
 import {ButtonSecondary} from '../components/ButtonSecondary.js';
-
-Number.prototype.pad = function (size) {
-  let s = String(this);
-  while (s.length < (size || 2)) {
-    s = "0" + s;
-  }
-  return s;
-}
+import {api} from "../services/api.js";
+import {addSuccess} from "../state/actions.js";
+import {addDanger} from "../state/actions.js";
+import {addInfo} from '../state/actions.js';
 
 const dateTime = (timestamp) => {
   const date = new Date(timestamp * 1000);
@@ -28,12 +24,101 @@ const dateTime = (timestamp) => {
 
 const restoreBackup = (backup) => {
   if (confirm(t('Do you want to restore this page?', {name: backup.name}))) {
-    alert(backup.file)
+    api.post('action=backup/restore', {
+      background: true, // no redraw
+      body: {file: backup.file},
+      withCredentials: false
+    })
+      .then(() => {
+        Backup.loadList().then(() => {
+          addSuccess(t('Backup was successfully restored.'))
+        })
+      })
+      .catch(({code, response}) => {
+        if (code === 422) {
+          addDanger(response.errors[0].detail)
+          m.redraw()
+        }
+      })
   }
 }
 
 const viewBackup = () => {
-  alert('View')
+  addInfo('This is not yet implemented.')
+}
+
+const deleteAction = (backup) => {
+  if (confirm(t('Do you want to delete the page?', {name: backup.name}))) {
+    api.post('action=backup/delete', {
+      background: true, // no redraw
+      body: {file: backup.file},
+      withCredentials: false
+    })
+      .then(() => {
+        Backup.loadList().then(() => {
+          addSuccess(t('Backup was successfully deleted.'))
+        })
+      })
+      .catch(({code, response}) => {
+        if (code === 422) {
+          addDanger(response.errors[0].detail)
+        }
+        m.redraw()
+      })
+  }
+}
+
+const headings = [
+  {field: 'name', label: 'Name', sortable: true, default: 'asc'},
+  {field: 'title', label: 'Page title', sortable: true, default: 'asc'},
+  {field: 'created', label: 'Backed up', sortable: true, default: 'desc'},
+  {field: '', sortable: false, label: 'Type'},
+  {label: '', sortable: false}
+]
+
+const sortableHead = (headings, onclick) => {
+  const sort = Backup.sort
+  const [sortField, sortDir] = sort.substring(0, 1) === '-' ? [sort.substring(1), 'desc'] : [sort, 'asc']
+  const markup = headings.map((heading) => {
+    const label = heading.label.length ? t(heading.label) : ''
+    if (heading.sortable) {
+      let arrow = ''
+      let newSort = ''
+      if (heading.field === sortField) {
+        arrow = m('i.arrow ' + (sortDir === 'desc' ? 'down' : 'up'))
+        newSort = (sortDir === 'desc' ? '' : '-') + sortField
+      } else {
+        newSort = (heading.default === 'desc' ? '-' : '') + heading.field
+      }
+      return m('th', m('a[href=#]', {
+        onclick: (e) => {
+          e.redraw = false
+          e.preventDefault()
+          Backup.sort = newSort
+          onclick()
+        }
+      }, label, arrow))
+    }
+    return m('th', label)
+  })
+  return markup
+}
+
+const dataFilter = (oninput) => {
+  return m('.list-filter',
+    m('input[type=text]', {
+      placeholder: t('Filter backup files'),
+      oninput: (e) => {
+        e.redraw = false
+        Backup.filter = e.target.value
+        oninput()
+      }
+    })
+  )
+}
+
+const loadList = () => {
+  Backup.loadList()
 }
 
 export const Backups = {
@@ -52,23 +137,40 @@ export const Backups = {
   view: () => m('div.main',
     m('.content',
       m('h1', t('Backups')),
+      dataFilter(loadList),
       Backup.loading
         ? m('p', t('Loading') + '...')
         : Backup.list.length
           ? m('table.table',
+            m('colgroup',
+              m('col', {width: '30%'}),
+              m('col', {width: '30%'}),
+              m('col', {width: '20%'}),
+              m('col', {width: '10%'}),
+              m('col', {width: '15%'})
+            ),
             m('thead', m('tr',
-              m('th', t('Name')),
-              m('th', t('Page title')),
-              m('th', t('Backed up')),
-              m('th', '')
+              sortableHead(headings, loadList)
             )),
             m('tbody', Backup.list.map((backup) => m('tr',
                 m('td', backup.name),
                 m('td', backup.title),
                 m('td', dateTime(backup.created)),
-                m('td.text-right',
+                m('td', 'Page'),
+                m('td.text-right.text-nowrap',
                   m(ButtonSecondary, {onclick: viewBackup}, t('View')),
-                  m(ButtonPrimary, {onclick: () => restoreBackup(backup)}, t('Restore'))
+                  m(ButtonPrimary, {
+                    onclick: (e) => {
+                      e.redraw = false
+                      deleteAction(backup)
+                    }
+                  }, t('Delete')),
+                  m(ButtonPrimary, {
+                    onclick: (e) => {
+                      e.redraw = false
+                      restoreBackup(backup)
+                    }
+                  }, t('Restore'))
                 )
               ))
             )

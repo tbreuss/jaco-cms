@@ -13,12 +13,16 @@ const state = {
   errors: [],
 }
 
-const login = () => {
+const login = (e) => {
+  e.redraw = false
+
   const credentials = {
     username: state.username,
     password: state.password
   }
+
   api.post('action=login', {
+    background: true, // no redraw
     body: credentials,
     withCredentials: false
   })
@@ -29,6 +33,7 @@ const login = () => {
     .catch(({ code, response }) => {
       if (code === 422) {
         state.errors = response.errors
+        m.redraw()
       }
     })
 }

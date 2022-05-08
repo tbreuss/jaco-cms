@@ -11,6 +11,14 @@ import { System } from './views/System.js'
 import { DefaultLayout } from './layouts/Default.js'
 import { Notifications } from './services/Notifications.js'
 
+Number.prototype.pad = function (size) {
+  let s = String(this);
+  while (s.length < (size || 2)) {
+    s = '0' + s;
+  }
+  return s;
+}
+
 // notifications
 m.mount(document.getElementById('toasts'), Notifications)
 

@@ -1,13 +1,17 @@
 import { api } from '../services/api.js'
 import { iframe } from '../lib/iframe.js'
 import { addSuccess } from '../state/actions.js'
+import { addDanger } from '../state/actions.js'
 import { t } from '../models/i18n.js'
 import { ButtonGroup } from '../components/ButtonGroup.js'
 import { ButtonPrimary } from '../components/ButtonPrimary.js'
 import { ButtonSecondary } from '../components/ButtonSecondary.js'
 
-const save = () => {
+const save = (e) => {
+  e.redraw = false
+
   api.post('action=page/update', {
+    background: true, // no redraw
     body: {
       fileName: iframe.fileName(),
       html: iframe.getHTML()
@@ -21,12 +25,16 @@ const save = () => {
     })
     .catch(({ code, response }) => {
       if (code === 422) {
-        state.error = response.error + ' (' + code + ')'
+        response.errors.forEach(function(error) {
+          addDanger(error.detail) // TODO better error handling (we have no place to render errors atm)
+        })
       }
+      m.redraw()
     })
 }
 
-const cancel = () => {
+const cancel = (e) => {
+  e.redraw = false
   iframe.reload()
   m.route.set('/')
 }
@@ -44,6 +52,6 @@ export const PageEdit = {
   },
   view: () => m(ButtonGroup, { wrap: 'div.dialog' },
     m(ButtonPrimary, { onclick: save }, t('Save')),
-    m(ButtonSecondary, { onclick: cancel }, t('Cancel'))
+    m(ButtonSecondary, { onclick: cancel }, t('Cancel')),
   )
 }

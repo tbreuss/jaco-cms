@@ -1,5 +1,5 @@
-import { closeDropdown } from '../lib/helpers.js'
-import { i18n, t } from '../models/i18n.js'
+import {closeDropdown} from '../lib/helpers.js'
+import {i18n, t} from '../models/i18n.js'
 
 const title = () => m(m.route.Link, {
   class: 'title',
@@ -11,12 +11,16 @@ const showInfo = (e) => {
     console.debug('Not yet implemented')
     return
   }
+  e.redraw = false
   console.debug(e.target.textContent + ' not yet implemented')
 }
 
 export const DefaultLayout = {
   oncreate: () => {
     i18n.loadAndSetLocale(i18n.defaultLocale)
+  },
+  onupdate: () => {
+    console.debug('layouts/Default.js: onupdate')
   },
   view: (vnode) => {
     // see https://www.w3schools.com/howto/howto_css_dropdown_navbar.asp
@@ -35,39 +39,55 @@ export const DefaultLayout = {
                 m('.dropdown-content',
                   m(m.route.Link, {
                     href: '/page-edit',
-                    onclick: () => closeDropdown()
+                    onclick: (e) => {
+                      e.redraw = false
+                      closeDropdown()
+                    }
                   }, t('Edit page')),
                   m(m.route.Link, {
                     href: '/page-copy',
-                    onclick: () => closeDropdown()
+                    onclick: (e) => {
+                      e.redraw = false
+                      closeDropdown()
+                    }
                   }, t('Copy page')),
                   m(m.route.Link, {
                     href: '/page-add',
-                    onclick: () => closeDropdown()
+                    onclick: (e) => {
+                      e.redraw = false
+                      closeDropdown()
+                    }
                   }, t('Add page')),
                   m(m.route.Link, {
                     href: '/page-delete',
-                    onclick: () => closeDropdown()
+                    onclick: (e) => {
+                      e.redraw = false
+                      closeDropdown()
+                    }
                   }, t('Delete page')),
                   m(m.route.Link, {
                     href: '/page-goto',
-                    onclick: () => closeDropdown()
+                    onclick: (e) => {
+                      e.redraw = false
+                      closeDropdown()
+                    }
                   }, t('Goto page')),
                   m('.ruler'),
                   m(m.route.Link, {
                     href: '/page-list',
-                    onclick: () => {
+                    onclick: (e) => {
+                      e.redraw = false
                       showInfo()
                       closeDropdown()
                     }
                   }, t('List pages'))
                 )
               ),
-              m('a[href=#]', { onclick: showInfo }, t('Uploads')),
-              m(m.route.Link, { href: '/backups' }, t('Backups')),
-              m('a[href=#]', { onclick: showInfo }, t('CSS')),
-              m('a[href=#]', { onclick: showInfo }, t('HTML')),
-              m(m.route.Link, { href: '/system' }, t('System')),
+              m('a[href=#]', {onclick: showInfo}, t('Uploads')),
+              m(m.route.Link, {href: '/backups'}, t('Backups')),
+              m('a[href=#]', {onclick: showInfo}, t('CSS')),
+              m('a[href=#]', {onclick: showInfo}, t('HTML')),
+              m(m.route.Link, {href: '/system'}, t('System')),
               m(m.route.Link, {
                 class: 'logout',
                 href: '/logout'

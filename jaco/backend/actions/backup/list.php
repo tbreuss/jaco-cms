@@ -6,8 +6,8 @@ namespace jaco\actions\backup\list;
 
 use jaco\models\backup;
 
-function main(): array
+function main(string $filter = '', string $sort = '-created'): array
 {
-    $pages = backup\find_all();
+    $pages = backup\find_all($filter, $sort);
     return $pages;
 }

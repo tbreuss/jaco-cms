@@ -14,8 +14,10 @@ const state = {
   errors: []
 }
 
-const save = () => {
+const save = (e) => {
+  e.redraw = false
   api.post('action=page/delete', {
+    background: true, // no redraw
     body: { fileName: state.fileName },
     withCredentials: false
   })
@@ -26,11 +28,13 @@ const save = () => {
     .catch(({ code, response }) => {
       if (code === 422) {
         state.errors = response.errors
+        m.redraw()
       }
     })
 }
 
-const cancel = () => {
+const cancel = (e) => {
+  e.redraw = false
   m.route.set('/')
 }
 

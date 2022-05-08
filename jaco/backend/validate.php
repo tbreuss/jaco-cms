@@ -48,9 +48,9 @@ function htmlfile_extension(mixed $value): array
     return [false, '{value} is an invalid extension'];
 }
 
-function htmlfile_name(mixed $value): array
+function htmlfile_name(mixed $value, bool $isBackup = false): array
 {
-    if (is_string($value) && file\validate_filename(JACO_WEB_DIR, $value)) {
+    if (is_string($value) && file\validate_filename(JACO_WEB_DIR, $value, $isBackup)) {
         return [true, ''];
     }
     return [false, '{value} is an invalid filename'];
@@ -64,9 +64,9 @@ function file_writeable(mixed $value): array
     return [false, '{value} is not writeable.'];
 }
 
-function file_exists(mixed $value): array
+function file_exists(mixed $value, string $dir = JACO_WEB_DIR): array
 {
-    if (is_string($value) && file\exists(JACO_WEB_DIR, $value)) {
+    if (is_string($value) && file\exists($dir, $value)) {
         return [true, ''];
     }
     return [false, '{value} does not exist.'];

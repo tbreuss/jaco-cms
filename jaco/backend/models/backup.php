@@ -4,16 +4,34 @@ declare(strict_types=1);
 
 namespace jaco\models\backup;
 
+use jaco\filesystem\file;
 use jaco\filesystem\html_file;
 use jaco\structs\backup;
 
 /**
  * @return \jaco\structs\backup[]
  */
-function find_all(): array
+function find_all(string $filter = '', string $sort = '-created'): array
 {
     $files = html_file\find(JACO_BACKUPS_DIR);
-    return create_list(JACO_BACKUPS_DIR, $files);
+    $list = create_list(JACO_BACKUPS_DIR, $files);
+    $list = filter_list($list, $filter);
+    $sort = sort_field($sort);
+    return [
+        'list' => sort_list($list, $filter, $sort),
+        'filter' => $filter,
+        'sort' => $sort
+    ];
+}
+
+function restore(string $file): bool
+{
+    return file\restore(JACO_BACKUPS_DIR, $file, JACO_WEB_DIR);
+}
+
+function delete(string $file): bool
+{
+    return file\delete(JACO_BACKUPS_DIR, $file);
 }
 
 /**
@@ -38,4 +56,36 @@ function create_one(string $dir, string $file): backup
         html_file\page_title($dir, $file),
         $dateTime->getTimestamp()
     );
+}
+
+function sort_field(string $sort): array
+{
+    if (!in_array(ltrim($sort, '-'), ['created', 'name', 'title'])) {
+        return ['created', 'desc'];
+    }
+    $sortDir = str_starts_with($sort, '-') ? 'desc' : 'asc';
+    $sortField = $sortDir === 'desc' ? substr($sort, 1) : $sort;
+    return [$sortField, $sortDir];
+}
+
+function sort_list(array $list, string $filter, array $sort): array
+{
+    [$sortField, $sortDir] = $sort;
+    usort($list, function ($a, $b) use ($sortDir, $sortField) {
+        return $sortDir === 'asc'
+            ? strcmp((string)$a->$sortField, (string)$b->$sortField)
+            : strcmp((string)$b->$sortField, (string)$a->$sortField);
+    });
+    return $list;
+}
+
+function filter_list(array $list, string $filter): array
+{
+    if (strlen($filter) === 0) {
+        return $list;
+    }
+    return array_filter($list, function($item) use ($filter) {
+        $filter = str_replace('/', '|', $filter);
+        return stripos($item->file, $filter) !== false || stripos($item->name, $filter) !== false || stripos($item->title, $filter) !== false;
+    });
 }

@@ -31,6 +31,18 @@ function copy(string $srcDir, string $srcFile, string $dstDir, string $dstFile):
     return \copy($srcPath, $dstPath);
 }
 
+function move(string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
+{
+    $srcPath = shared\join($srcDir, $srcFile);
+    $dstPath = shared\join($dstDir, $dstFile);
+    $srcDirname = dirname($srcFile);
+    $dstDirname = dirname($dstFile);
+    if ($srcDirname !== $dstDirname) {
+        dir\make_rec($dstDir, $dstDirname);
+    }
+    return \rename($srcPath, $dstPath);
+}
+
 function delete(string $dir, string $file): bool
 {
     $path = shared\join($dir, $file);
@@ -49,19 +61,18 @@ function backup(string $dir, string $file, string $bakDir): bool
     return \copy($srcPath, $dstPath); // triggers an error
 }
 
-function restore(string $bakDir, string $bakFile, string $dir): bool
+function restore(string $bakDir, string $bakFile, string $dstDir): bool
 {
-    $srcPath = shared\join($bakDir, $bakFile);
-    $dstPath = shared\join($dir, substr($bakFile, 20));
-    if (is_file($dstPath)) {
+    $dstFile = str_replace('|', '/', substr($bakFile, 21));
+    if (exists($dstDir, $dstFile)) {
         // TODO backup first?
-        $status = unlink($dstPath);
+        $status = delete($dstDir, $dstFile);
         if (!$status) {
             // TODO throw error?
             return false;
         }
     }
-    return \copy($srcPath, $dstPath);
+    return move($bakDir, $bakFile, $dstDir, $dstFile);
 }
 
 function save(string $dir, string $file, string $contents): bool
@@ -69,7 +80,7 @@ function save(string $dir, string $file, string $contents): bool
     return false;
 }
 
-function validate_filename(string $dir, string $fileName): bool
+function validate_filename(string $dir, string $fileName, bool $isBackup = false): bool
 {
     $abs_path = shared\join($dir, $fileName);
 
@@ -80,7 +91,8 @@ function validate_filename(string $dir, string $fileName): bool
     }
 
     // check filename
-    preg_match('/[^a-z0-9-_]/', $pathinfo['filename'], $matches);
+    $pattern = $isBackup ? '/[^a-z0-9-_|]/' : '/[^a-z0-9-_]/';
+    preg_match($pattern, $pathinfo['filename'], $matches);
     if (count($matches) > 0) {
         return false;
     }

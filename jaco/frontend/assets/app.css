@@ -10,6 +10,42 @@ body {
     margin: 0;
 }
 
+a {
+    color: #2374d7;
+}
+
+/* https://www.w3schools.com/howto/howto_css_arrows.asp */
+.arrow {
+    border: solid #444;
+    border-width: 0 3px 3px 0;
+    display: inline-block;
+    padding: 3px;
+}
+a .arrow {
+    margin-left: 0.25rem;
+    border-color: #2374d7;
+}
+
+.right {
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+.left {
+    transform: rotate(135deg);
+    -webkit-transform: rotate(135deg);
+}
+
+.up {
+    transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+}
+
+.down {
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+}
+
 /*
 body {
     height: 100vh;
@@ -349,6 +385,11 @@ textarea {
     margin: 0;
 }
 
+table .primary,
+table .secondary {
+    padding: 6px 10px;
+}
+
 /* Style the container */
 /*.container {
   border-radius: 5px;
@@ -385,6 +426,9 @@ fieldset .row:first-of-type {
     clear: both;
 }
 
+.text-nowrap {
+    white-space: nowrap;
+}
 .text-right {
     text-align: right;
 }
@@ -395,6 +439,10 @@ fieldset .row button {
 
 fieldset .row.text-right button {
     margin-right: 0;
+    margin-left: 0.5rem;
+}
+
+.table .text-right button {
     margin-left: 0.5rem;
 }
 
@@ -413,6 +461,7 @@ fieldset .row.text-right button {
 .table {
     width: 100%;
     border-bottom: 1px solid #ccc;
+    border-collapse: collapse;
 }
 
 .table th {
@@ -477,4 +526,8 @@ fieldset .row.text-right button {
 a.list-group-item {
     color: inherit;
     text-decoration: none;
+}
+
+.list-filter {
+    margin-bottom: 1rem;
 }
