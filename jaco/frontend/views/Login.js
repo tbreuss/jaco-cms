@@ -33,8 +33,8 @@ const login = (e) => {
     .catch(({ code, response }) => {
       if (code === 422) {
         state.errors = response.errors
-        m.redraw()
       }
+      m.redraw()
     })
 }
 
