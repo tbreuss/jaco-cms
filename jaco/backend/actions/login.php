@@ -19,7 +19,7 @@ function main(): array
     try {
         $token = auth\login($data['username'], $data['password']);
     } catch (\Throwable $t) {
-        return [422, [['title' => $t->getMessage()]]];
+        return [422, [['title' => 'Validation Error', 'detail' => $t->getMessage()]]];
     }
 
     return [
