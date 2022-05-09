@@ -9,7 +9,7 @@ use jaco\filesystem\html_file;
 use jaco\structs\backup;
 
 /**
- * @return \jaco\structs\backup[]
+ * @phpstan-return array{list:backup[],filter:string,sort:array{string,string}}
  */
 function find_all(string $filter = '', string $sort = '-created'): array
 {
@@ -36,7 +36,7 @@ function delete(string $file): bool
 
 /**
  * @param \jaco\structs\file[] $files
- * @return \jaco\structs\backup[]
+ * @return backup[]
  */
 function create_list(string $directory, array $files): array
 {
@@ -58,6 +58,9 @@ function create_one(string $dir, string $file): backup
     );
 }
 
+/**
+ * @phpstan-return array{string,string}
+ */
 function sort_field(string $sort): array
 {
     if (!in_array(ltrim($sort, '-'), ['created', 'name', 'title'])) {
@@ -68,6 +71,11 @@ function sort_field(string $sort): array
     return [$sortField, $sortDir];
 }
 
+/**
+ * @param backup[] $list
+ * @phpstan-param array{string,string} $sort
+ * @return backup[]
+ */
 function sort_list(array $list, string $filter, array $sort): array
 {
     [$sortField, $sortDir] = $sort;
@@ -79,6 +87,10 @@ function sort_list(array $list, string $filter, array $sort): array
     return $list;
 }
 
+/**
+ * @param backup[] $list
+ * @return backup[]
+ */
 function filter_list(array $list, string $filter): array
 {
     if (strlen($filter) === 0) {

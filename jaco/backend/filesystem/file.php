@@ -100,6 +100,9 @@ function validate_filename(string $dir, string $fileName, bool $isBackup = false
     return true;
 }
 
+/**
+ * @param string[] $allowed
+ */
 function validate_extension(string $dir, string $fileName, array $allowed = JACO_ALLOWED_EXTENSIONS): bool
 {
     $abs_path = shared\join($dir, $fileName);
@@ -113,6 +116,10 @@ function validate_extension(string $dir, string $fileName, array $allowed = JACO
     return true;
 }
 
+/**
+ * @param string[] $extensions
+ * @return string[]
+ */
 function scandir(string $directory, array $extensions, int $sorting_order): array
 {
     $files = \scandir($directory, $sorting_order);
@@ -123,6 +130,11 @@ function scandir(string $directory, array $extensions, int $sorting_order): arra
     return array_values($filtered);
 }
 
+/**
+ * @param string[] $extensions
+ * @param string[] $excludedDirectories
+ * @return string[]
+ */
 function scandir_rec(string $directory, array $extensions, array $excludedDirectories): array
 {
     $rii = new \RecursiveIteratorIterator(

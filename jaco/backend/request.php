@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace jaco\request;
 
+/**
+ * @phpstan-return array<mixed>
+ */
 function post_values(): array
 {
     $contents = file_get_contents('php://input');

@@ -16,7 +16,7 @@ function join(string $dir, string $file): string
     return $dir . DIRECTORY_SEPARATOR . $file;
 }
 
-function normalize($dir): string
+function normalize(string $dir): string
 {
     $normalized = realpath($dir);
     if ($normalized === false) {

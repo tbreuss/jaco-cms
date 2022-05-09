@@ -6,6 +6,9 @@ namespace jaco\actions\system;
 
 use jaco\system;
 
+/**
+ * @phpstan-return array<string,mixed>
+ */
 function main(): array
 {
     return [

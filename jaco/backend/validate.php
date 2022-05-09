@@ -6,6 +6,9 @@ namespace jaco\validate;
 
 use jaco\filesystem\file;
 
+/**
+ * @phpstan-return array{bool, string}
+ */
 function numeric(mixed $value): array
 {
     if (is_numeric($value)) {
@@ -14,6 +17,9 @@ function numeric(mixed $value): array
     return [false, '{value} must be a number.'];
 }
 
+/**
+ * @phpstan-return array{bool, string}
+ */
 function string(mixed $value): array
 {
     if (is_string($value)) {
@@ -22,6 +28,9 @@ function string(mixed $value): array
     return [false, '{value} must be a string.'];
 }
 
+/**
+ * @phpstan-return array{bool, string}
+ */
 function required(mixed $value): array
 {
     if (is_string($value) && trim($value) !== '') {
@@ -30,16 +39,25 @@ function required(mixed $value): array
     return [false, '{value} cannot be blank.'];
 }
 
+/**
+ * @phpstan-return array{bool, string}
+ */
 function safe(): array
 {
     return [true, ''];
 }
 
+/**
+ * @phpstan-return array{bool, string}
+ */
 function test(mixed $value, int $avg, int $min, int $max, int $sum): array
 {
     return [true, ''];
 }
 
+/**
+ * @phpstan-return array{bool, string}
+ */
 function htmlfile_extension(mixed $value): array
 {
     if (is_string($value) && file\validate_extension(JACO_WEB_DIR, $value)) {
@@ -48,6 +66,9 @@ function htmlfile_extension(mixed $value): array
     return [false, '{value} is an invalid extension'];
 }
 
+/**
+ * @phpstan-return array{bool, string}
+ */
 function htmlfile_name(mixed $value, bool $isBackup = false): array
 {
     if (is_string($value) && file\validate_filename(JACO_WEB_DIR, $value, $isBackup)) {
@@ -56,6 +77,9 @@ function htmlfile_name(mixed $value, bool $isBackup = false): array
     return [false, '{value} is an invalid filename'];
 }
 
+/**
+ * @phpstan-return array{bool, string}
+ */
 function file_writeable(mixed $value): array
 {
     if (is_string($value) && file\is_writable(JACO_WEB_DIR, $value)) {
@@ -64,6 +88,9 @@ function file_writeable(mixed $value): array
     return [false, '{value} is not writeable.'];
 }
 
+/**
+ * @phpstan-return array{bool, string}
+ */
 function file_exists(mixed $value, string $dir = JACO_WEB_DIR): array
 {
     if (is_string($value) && file\exists($dir, $value)) {
@@ -72,6 +99,9 @@ function file_exists(mixed $value, string $dir = JACO_WEB_DIR): array
     return [false, '{value} does not exist.'];
 }
 
+/**
+ * @phpstan-return array{bool, string}
+ */
 function file_not_exists(mixed $value): array
 {
     if (!file\exists(JACO_WEB_DIR, $value)) {
@@ -85,6 +115,11 @@ function one(): void
     // TODO
 }
 
+/**
+ * @phpstan-param array<string,string> $data
+ * @phpstan-param array<array<string>> $rules
+ * @phpstan-return array<int,array<string,array<string,string>|string>>
+ */
 function all(array $data, array $rules): array
 {
     $errors = [];
@@ -105,7 +140,7 @@ function all(array $data, array $rules): array
         $errors[] = [
             'source' => ['pointer' => $name],
             'title' => 'Validation Error',
-            'detail' =>  str_replace('{value}', $value ?? $name, $message)
+            'detail' => str_replace('{value}', $value ?? $name, $message)
         ];
         $failed[] = $name;
     }

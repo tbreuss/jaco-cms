@@ -25,7 +25,7 @@ function update(string $dir, string $fileName, callable $callback, ?string $bakD
     $contents = load($dir, $fileName);
     $edited = call_user_func($callback, $contents);
     if (!is_string($edited)) {
-        throw new \Exception('Invalid type from callback ' . $callback);
+        throw new \Exception('Invalid type from callback');
     }
     if ($bakDir) {
         $status = file\backup($dir, $fileName, $bakDir);
@@ -56,6 +56,11 @@ function find(string $directory, array $extensions = JACO_ALLOWED_EXTENSIONS): a
     return $list;
 }
 
+/**
+ * @param string[] $exclude_dirs
+ * @param string[] $extensions
+ * @return \jaco\structs\file[]
+ */
 function find_rec(string $directory, array $exclude_dirs = [], array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
     $files = file\scandir_rec($directory, $extensions, $exclude_dirs);

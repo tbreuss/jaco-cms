@@ -7,6 +7,9 @@ namespace jaco\router;
 use jaco\auth;
 use jaco\request;
 
+/**
+ * @phpstan-return array<int,array{method:string,action:string,callback:string,authenticated:bool}>
+ */
 function &routes(): array
 {
     static $routes = [];
@@ -34,6 +37,9 @@ function post(string $action, callable $callback, bool $authenticated): void
     route('POST', $action, $callback, $authenticated);
 }
 
+/**
+ * @phpstan-return array{int, array<int,array<string,array<string,string>|string>>}
+ */
 function dispatch(string $method, string $action): array
 {
     $routes = routes();
@@ -49,22 +55,24 @@ function dispatch(string $method, string $action): array
     }
 
     // take the first one if multiple routes exist
-    foreach ($routes_by_method as $route) {
-        if ($route['authenticated'] === true) {
-            if (check_authorization() === false) {
-                return [403, [['title' => '403 Forbidden']]];
-            }
+    $route = reset($routes_by_method);
+
+    if ($route['authenticated'] === true) {
+        if (check_authorization() === false) {
+            return [403, [['title' => '403 Forbidden']]];
         }
-        $response = call_action($route['callback']);
-        if ((count($response) === 2) && isset($response[0]) && is_int($response[0]) && isset($response[1])) {
-            return $response;
-        }
-        return [200, $response];
+    }
+    $response = call_action($route['callback']);
+    if ((count($response) === 2) && isset($response[0]) && is_int($response[0]) && isset($response[1])) {
+        return $response;
     }
 
-    return [400, [['title' => 'Bad Request']]];
+    return [200, $response];
 }
 
+/**
+ * @phpstan-return string|array<mixed>
+ */
 function call_action(string $action): array|string
 {
     $function = new \ReflectionFunction($action);
@@ -98,6 +106,10 @@ function check_authorization(): bool
     return auth\is_logged_in($token);
 }
 
+/**
+ * @phpstan-param array<int,array{method:string,action:string,callback:string,authenticated:bool}> $routes
+ * @phpstan-return array<int,array{method:string,action:string,callback:string,authenticated:bool}>
+ */
 function filter_routes(array $routes, string $column, string $search): array
 {
     $matched = array_keys(array_column($routes, $column), $search);

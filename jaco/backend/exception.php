@@ -41,7 +41,7 @@ function exception_handler(\Throwable $t): void
     ]]);
 }
 
-function error_handler(int $errno, string $errstr, string $errfile, int $errline, array $errcontext = null): void
+function error_handler(int $errno, string $errstr, string $errfile, int $errline): void
 {
     $message = sprintf(
         '%s: %s in %s on line %s',
@@ -59,7 +59,7 @@ function error_handler(int $errno, string $errstr, string $errfile, int $errline
     ]]);
 }
 
-function fatal_handler()
+function fatal_handler(): void
 {
     $error = error_get_last();
     if ($error !== null) {

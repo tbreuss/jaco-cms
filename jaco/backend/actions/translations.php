@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace jaco\actions\translations;
 
+/**
+ * @phpstan-return array<string,string>
+ */
 function main(string $language = JACO_DEFAULT_LANGUAGE): array
 {
     $template = dirname(__DIR__, 2) . '/language/{language}.json';

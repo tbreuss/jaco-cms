@@ -48,7 +48,7 @@ function remove_rec(string $root, string $rel_path): void
     _rrmdir($abs_path);
 }
 
-function _rrmdir($dir)
+function _rrmdir(string $dir): void
 {
     if (is_dir($dir)) {
         $objects = \scandir($dir);

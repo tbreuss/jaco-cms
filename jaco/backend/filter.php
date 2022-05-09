@@ -58,6 +58,11 @@ function safe(mixed $value): mixed
     return $value;
 }
 
+/**
+ * @phpstan-param array<string,mixed> $data
+ * @phpstan-param array<int,mixed> $filters
+ * @return array<string,mixed>
+ */
 function all(array $data, array $filters): array
 {
     $filtered = [];

@@ -9,6 +9,10 @@ use jaco\filesystem\file;
 use jaco\filesystem\html_file;
 use jaco\structs\page;
 
+/**
+ * @param string[] $extensions
+ * @return string[]
+ */
 function find_all(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
     $files = \scandir($directory, SCANDIR_SORT_ASCENDING);
@@ -18,6 +22,9 @@ function find_all(string $directory = JACO_WEB_DIR, array $extensions = JACO_ALL
     });
 }
 
+/**
+ * @return page[]
+ */
 function find_all_rec(): array
 {
     $files = html_file\find_rec(JACO_WEB_DIR, [JACO_DIR]);

@@ -1,0 +1,8 @@
+parameters:
+    bootstrapFiles:
+        - vendor/autoload.php
+        - constants.php
+    level: 6
+    paths:
+        - api.php
+        - backend

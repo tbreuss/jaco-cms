@@ -7,6 +7,9 @@ namespace jaco\models\template\page;
 use jaco\filesystem\html_file;
 use jaco\models\page;
 
+/**
+ * @return \jaco\structs\page[]
+ */
 function find_all(): array
 {
     $files = html_file\find(JACO_TEMPLATES_PAGES_DIR);
