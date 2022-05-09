@@ -19,8 +19,10 @@ const state = {
   errors: []
 }
 
-const save = () => {
+const save = (e) => {
+  e.redraw = false
   api.post('action=page/create', {
+    background: true, // no redraw
     body: state,
     withCredentials: false
   })
@@ -32,10 +34,12 @@ const save = () => {
       if (code === 422) {
         state.errors = response.errors
       }
+      m.redraw()
     })
 }
 
-const cancel = () => {
+const cancel = (e) => {
+  e.redraw = false
   m.route.set('/')
 }
 

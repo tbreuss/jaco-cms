@@ -6,11 +6,13 @@ import { ButtonGroup } from '../components/ButtonGroup.js'
 import { ButtonSecondary } from '../components/ButtonSecondary.js'
 import { Page } from '../models/Page.js'
 
-const cancel = () => {
+const cancel = (e) => {
+  e.redraw = false
   m.route.set('/')
 }
 
 const gotoPage = (e) => {
+  e.redraw = false
   e.preventDefault()
   iframe.load('/' + e.target.textContent)
   m.route.set('/')

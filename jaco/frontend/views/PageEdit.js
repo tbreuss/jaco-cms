@@ -9,7 +9,6 @@ import { ButtonSecondary } from '../components/ButtonSecondary.js'
 
 const save = (e) => {
   e.redraw = false
-
   api.post('action=page/update', {
     background: true, // no redraw
     body: {
