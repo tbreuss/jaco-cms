@@ -19,6 +19,8 @@ const dateTime = (timestamp) => {
   parts.push(date.getHours().pad(2))
   parts.push(':')
   parts.push(date.getMinutes().pad(2))
+  parts.push(':')
+  parts.push(date.getSeconds().pad(2))
   return parts.join('')
 }
 
