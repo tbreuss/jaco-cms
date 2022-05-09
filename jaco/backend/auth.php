@@ -20,13 +20,13 @@ function login(string $username, string $password): string
         'nbf' => time(),
     ];
 
-    return JWT::encode($payload, JACO_SECRET_KEY, 'HS256');
+    return JWT::encode($payload, JACO_SECRET_KEY, 'HS512');
 }
 
 function is_logged_in(string $token): bool
 {
     try {
-        JWT::decode($token, new Key(JACO_SECRET_KEY, 'HS256'));
+        JWT::decode($token, new Key(JACO_SECRET_KEY, 'HS512'));
     } catch (\Throwable $t) {
         return false;
     }
