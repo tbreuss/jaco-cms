@@ -25,7 +25,7 @@ function main(): array
 
     // copy page
     if (!page\copy($data['srcFileName'], $data['dstFileName'], $data['dstPageTitle'])) {
-        return [500, ['Could not copy page']];
+        return [500, [['title' => 'Could not copy page']]];
     }
 
     return [200];

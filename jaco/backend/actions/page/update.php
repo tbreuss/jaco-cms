@@ -24,7 +24,7 @@ function main(): array
     }
 
     if (!page\update($data['fileName'], $data['html'])) {
-        return [500, [['source' => ['pointer' => ''], 'detail' => 'Could not update page']]];
+        return [500, [['title' => 'Could not update page']]];
     }
 
     return $data;

@@ -25,7 +25,7 @@ function main(): array
 
     // create page
     if (!page\create_from_template($data['pageTemplate'], $data['fileName'], $data['pageTitle'])) {
-        return [500, ['Could not create page']];
+        return [500, [['title' => 'Could not create page']]];
     }
 
     return [200];

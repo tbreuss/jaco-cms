@@ -25,7 +25,7 @@ function main(): array
 
     // delete page
     if (!page\delete($data['fileName'])) {
-        return [500, [['source' => ['pointer' => ''], 'detail' => 'Could not delete page']]];
+        return [500, [['title' => 'Could not delete page']]];
     }
 
     return [200];

@@ -104,6 +104,7 @@ function all(array $data, array $rules): array
         }
         $errors[] = [
             'source' => ['pointer' => $name],
+            'title' => 'Validation Error',
             'detail' =>  str_replace('{value}', $value ?? $name, $message)
         ];
         $failed[] = $name;

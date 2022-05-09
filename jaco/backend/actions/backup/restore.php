@@ -25,7 +25,7 @@ function main(): array
 
     // delete page
     if (!backup\restore($data['file'])) {
-        return [500, [['source' => ['pointer' => ''], 'detail' => 'Could not restore backup']]];
+        return [500, [['title' => 'Could not restore backup']]];
     }
 
     return [200];

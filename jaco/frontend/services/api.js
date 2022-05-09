@@ -30,7 +30,7 @@ const request = method => (url, options) => {
         handlers[code](err)
       } else {
         err.response.errors.forEach((error) => {
-          addDanger(error.detail)
+          addDanger(error.title)
         })
         throw err
       }

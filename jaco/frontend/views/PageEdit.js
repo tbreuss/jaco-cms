@@ -26,7 +26,7 @@ const save = (e) => {
     .catch(({ code, response }) => {
       if (code === 422) {
         response.errors.forEach(function(error) {
-          addDanger(error.detail) // TODO better error handling (we have no place to render errors atm)
+          addDanger(error.title) // TODO better error handling (we have no place to render errors atm)
         })
       }
       m.redraw()

@@ -24,6 +24,12 @@ function emit(int $status, $response)
 
 function send_errors(array $errors): string
 {
+    // keep errors consistent (like in json-api spec)
+    foreach ($errors as $index => $error) {
+        if (!isset($error['source'])) {
+            $errors[$index]['source']['pointer'] = '';
+        }
+    }
     return json_encode(['errors' => $errors]);
 }
 
