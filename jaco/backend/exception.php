@@ -26,8 +26,7 @@ function exception_handler(\Throwable $t): void
     $status = $code > 0 ? $code : 500;
 
     $message = sprintf(
-        '%s: %s in %s on line %s',
-        get_error_type($t->getCode()),
+        '%s in %s on line %s',
         $t->getMessage(),
         $t->getFile(),
         $t->getLine()
@@ -36,7 +35,7 @@ function exception_handler(\Throwable $t): void
     error_log($message);
 
     emitter\emit($status, [[
-        'code' => $t->getCode(),
+        'title' => get_error_type($t->getCode()),
         'detail' => $message
     ]]);
 }
@@ -44,8 +43,7 @@ function exception_handler(\Throwable $t): void
 function error_handler(int $errno, string $errstr, string $errfile, int $errline): bool
 {
     $message = sprintf(
-        '%s: %s in %s on line %s',
-        get_error_type($errno),
+        '%s in %s on line %s',
         $errstr,
         $errfile,
         $errline
@@ -54,7 +52,7 @@ function error_handler(int $errno, string $errstr, string $errfile, int $errline
     error_log($message);
 
     emitter\emit(500, [[
-        'code' => get_error_type($errno),
+        'title' => get_error_type($errno),
         'detail' => $message
     ]]);
 
@@ -68,8 +66,7 @@ function fatal_handler(): void
         ob_clean();
 
         $message = sprintf(
-            '%s: %s in %s on line %s',
-            get_error_type($error['type']),
+            '%s in %s on line %s',
             $error['message'],
             $error['file'],
             $error['line']
@@ -78,7 +75,7 @@ function fatal_handler(): void
         error_log($message);
 
         emitter\emit(500, [[
-            'code' => 500,
+            'title' => get_error_type($error['type']),
             'detail' => $message
         ]]);
     }
@@ -119,6 +116,6 @@ function get_error_type(int $number): string
             return "PHP User Deprecated Warning";
         case E_ALL:
         default:
-            return "PHP Unknown Error ($number)";
+            return "PHP Unknown Error";
     }
 }
