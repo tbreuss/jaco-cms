@@ -18,11 +18,15 @@ const showInfo = (e) => {
 export const DefaultLayout = {
   oncreate: () => {
     i18n.loadAndSetLocale(i18n.defaultLocale)
+    console.debug('layouts/Default.js oncreate')
   },
   onupdate: () => {
-    console.debug('layouts/Default.js: onupdate')
+    console.debug('layouts/Default.js onupdate')
+    document.documentElement.style.visibility = 'visible'
+    document.documentElement.style.opacity = '1'
   },
   view: (vnode) => {
+    console.debug('layouts/Default.js view')
     // see https://www.w3schools.com/howto/howto_css_dropdown_navbar.asp
     return [
       i18n.status === 'loading' ?

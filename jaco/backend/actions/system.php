@@ -7,12 +7,12 @@ namespace jaco\actions\system;
 use jaco\system;
 
 /**
- * @phpstan-return array<string,mixed>
+ * @phpstan-return array<int,mixed>
  */
 function main(): array
 {
-    return [
+    return [200, [
         'constants' => (array)system\defined_constants(),
         'functions' => system\defined_functions()
-    ];
+    ]];
 }

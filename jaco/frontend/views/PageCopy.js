@@ -55,45 +55,53 @@ export const PageCopy = {
     state.srcPageTitle = state.dstPageTitle = iframe.pageTitle()
     state.errors = []
   },
-  view: () => m(ModalMedium, { title: t('Copy page') },
-    m(Fieldset, { legend: t('Current page') },
-      m(InputText, {
-        wrap: 'div.row',
-        label: t('Filename'),
-        value: state.srcFileName,
-        disabled: true
-      }),
-      m(InputText, {
-        wrap: 'div.row',
-        label: t('Page title'),
-        value: state.srcPageTitle,
-        disabled: true
-      })
-    ),
-    m(Fieldset, { legend: t('New page') },
-      m(InputText, {
-        id: 'dstFileName',
-        wrap: 'div.row',
-        label: t('Filename'),
-        value: state.dstFileName,
-        oninput: (value) => {
-          state.dstFileName = value
-        }
-      }),
-      m(InputText, {
-        id: 'dstPageTitle',
-        wrap: 'div.row',
-        label: t('Page title'),
-        value: state.dstPageTitle,
-        oninput: (value) => {
-          state.dstPageTitle = value
-        }
-      }),
-      m(ButtonGroup, { wrap: 'div.row.text-right' },
-        m(ButtonSecondary, { onclick: cancel }, t('Cancel')),
-        m(ButtonPrimary, { onclick: save }, t('OK'))
-      )
-    ),
-    m(FormErrors, { errors: state.errors })
-  )
+  oncreate: () => {
+    //     visibility: visible;
+    //     opacity: 1;
+    console.log('views/PageCopy.js oncreate')
+  },
+  view: () => {
+    console.log('views/PageCopy.js view')
+    return m(ModalMedium, {title: t('Copy page')},
+      m(Fieldset, {legend: t('Current page')},
+        m(InputText, {
+          wrap: 'div.row',
+          label: t('Filename'),
+          value: state.srcFileName,
+          disabled: true
+        }),
+        m(InputText, {
+          wrap: 'div.row',
+          label: t('Page title'),
+          value: state.srcPageTitle,
+          disabled: true
+        })
+      ),
+      m(Fieldset, {legend: t('New page')},
+        m(InputText, {
+          id: 'dstFileName',
+          wrap: 'div.row',
+          label: t('Filename'),
+          value: state.dstFileName,
+          oninput: (value) => {
+            state.dstFileName = value
+          }
+        }),
+        m(InputText, {
+          id: 'dstPageTitle',
+          wrap: 'div.row',
+          label: t('Page title'),
+          value: state.dstPageTitle,
+          oninput: (value) => {
+            state.dstPageTitle = value
+          }
+        }),
+        m(ButtonGroup, {wrap: 'div.row.text-right'},
+          m(ButtonSecondary, {onclick: cancel}, t('Cancel')),
+          m(ButtonPrimary, {onclick: save}, t('OK'))
+        )
+      ),
+      m(FormErrors, {errors: state.errors})
+    )
+  }
 }

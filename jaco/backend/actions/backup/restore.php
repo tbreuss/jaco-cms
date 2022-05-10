@@ -10,7 +10,7 @@ use jaco\validate;
 use jaco\models\backup;
 
 /**
- * @return array<int, mixed>
+ * @phpstan-return array<int,mixed>
  */
 function main(): array
 {

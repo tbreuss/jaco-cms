@@ -7,10 +7,10 @@ namespace jaco\actions\backup\list;
 use jaco\models\backup;
 
 /**
- * @phpstan-return array{list:\jaco\structs\backup[],filter:string,sort:array{string,string}}
+ * @phpstan-return array<int,mixed>
  */
 function main(string $filter = '', string $sort = '-created'): array
 {
     $pages = backup\find_all($filter, $sort);
-    return $pages;
+    return [200, $pages];
 }

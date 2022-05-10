@@ -9,7 +9,7 @@ use jaco\request;
 use jaco\validate;
 
 /**
- * @return array<int, mixed>
+ * @phpstan-return array<int,mixed>
  */
 function main(): array
 {

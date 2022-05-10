@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace jaco\actions\index;
 
 /**
- * @return array<string, string>
+ * @phpstan-return array<int,mixed>
  */
 function main(string $version = JACO_VERSION): array
 {
-    return [
+    return [200, [
         'name' => 'jaco',
         'version' => $version
-    ];
+    ]];
 }

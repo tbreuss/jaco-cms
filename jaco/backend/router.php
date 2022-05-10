@@ -62,12 +62,13 @@ function dispatch(string $method, string $action): array
             return [403, [['title' => '403 Forbidden']]];
         }
     }
+
     $response = call_action($route['callback']);
-    if ((count($response) === 2) && isset($response[0]) && is_int($response[0]) && isset($response[1])) {
-        return $response;
+    if (!is_array($response) || !in_array(count($response), [1, 2]) || !is_int($response[0])) {
+        return [500, [['title' => 'Invalid Action Response Payload']]];
     }
 
-    return [200, $response];
+    return array_pad($response, 2, ''); // ensure array with two entries
 }
 
 /**

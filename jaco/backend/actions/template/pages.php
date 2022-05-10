@@ -7,10 +7,10 @@ namespace jaco\actions\template\pages;
 use jaco\models\template\page;
 
 /**
- * @return \jaco\structs\page[]
+ * @phpstan-return array<int,mixed>
  */
 function main(): array
 {
     $pages = page\find_all();
-    return $pages;
+    return [200, $pages];
 }
