@@ -8,6 +8,9 @@ use jaco\auth;
 use jaco\request;
 use jaco\validate;
 
+/**
+ * @return array<int, mixed>
+ */
 function main(): array
 {
     $data = request\post_values();
@@ -22,11 +25,12 @@ function main(): array
         return [422, [['title' => 'Validation Error', 'detail' => $t->getMessage()]]];
     }
 
-    return [
-        'token' => $token,
-    ];
+    return [200, ['token' => $token]];
 }
 
+/**
+ * @return string[][]
+ */
 function rules(): array
 {
     return [

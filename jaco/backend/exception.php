@@ -41,7 +41,7 @@ function exception_handler(\Throwable $t): void
     ]]);
 }
 
-function error_handler(int $errno, string $errstr, string $errfile, int $errline): void
+function error_handler(int $errno, string $errstr, string $errfile, int $errline): bool
 {
     $message = sprintf(
         '%s: %s in %s on line %s',
@@ -57,6 +57,8 @@ function error_handler(int $errno, string $errstr, string $errfile, int $errline
         'code' => get_error_type($errno),
         'detail' => $message
     ]]);
+
+    return true;
 }
 
 function fatal_handler(): void

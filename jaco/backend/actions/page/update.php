@@ -9,6 +9,9 @@ use jaco\request;
 use jaco\validate;
 use jaco\models\page;
 
+/**
+ * @return array<int, mixed>
+ */
 function main(): array
 {
     // get raw user input
@@ -27,9 +30,12 @@ function main(): array
         return [500, [['title' => 'Could not update page']]];
     }
 
-    return $data;
+    return [200];
 }
 
+/**
+ * @return string[][]
+ */
 function filters(): array
 {
     return [
@@ -39,6 +45,9 @@ function filters(): array
     ];
 }
 
+/**
+ * @return string[][]
+ */
 function validators(): array
 {
     return [

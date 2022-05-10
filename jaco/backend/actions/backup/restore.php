@@ -9,6 +9,9 @@ use jaco\request;
 use jaco\validate;
 use jaco\models\backup;
 
+/**
+ * @return array<int, mixed>
+ */
 function main(): array
 {
     // get raw user input
@@ -31,6 +34,9 @@ function main(): array
     return [200];
 }
 
+/**
+ * @return string[][]
+ */
 function filters(): array
 {
     return [
@@ -38,6 +44,9 @@ function filters(): array
     ];
 }
 
+/**
+ * @phpstan-return array<int,array<int|string,bool|string>>
+ */
 function validators(): array
 {
     return [

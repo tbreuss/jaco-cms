@@ -9,6 +9,9 @@ use jaco\request;
 use jaco\validate;
 use jaco\models\page;
 
+/**
+ * @return array<int, mixed>
+ */
 function main(): array
 {
     // get raw user input
@@ -31,6 +34,9 @@ function main(): array
     return [200];
 }
 
+/**
+ * @return string[][]
+ */
 function rules(): array
 {
     return [
@@ -43,6 +49,9 @@ function rules(): array
     ];
 }
 
+/**
+ * @return string[][]
+ */
 function filters(): array
 {
     return [
