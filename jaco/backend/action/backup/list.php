@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\action\backup\list;
 
-use jaco\model\backup;
+use jaco\service\backup;
 
 /**
  * @phpstan-return array<int,mixed>

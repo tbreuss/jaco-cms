@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\model\backup;
+namespace jaco\service\backup;
 
 use jaco\filesystem\file;
 use jaco\filesystem\html_file;

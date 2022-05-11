@@ -7,7 +7,7 @@ namespace jaco\action\backup\restore;
 use jaco\filter;
 use jaco\request;
 use jaco\validate;
-use jaco\model\backup;
+use jaco\service\backup;
 
 /**
  * @phpstan-return array<int,mixed>

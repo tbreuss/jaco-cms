@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\action\page\list;
 
-use jaco\model\page;
+use jaco\service\page;
 
 /**
  * @phpstan-return array<int,mixed>

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace jaco\model\template\page;
+namespace jaco\service\template\page;
 
 use jaco\filesystem\html_file;
-use jaco\model\page;
+use jaco\service\page;
 
 /**
  * @return \jaco\struct\page[]

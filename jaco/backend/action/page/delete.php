@@ -6,7 +6,7 @@ namespace jaco\action\page\delete;
 
 use jaco\filter;
 use jaco\request;
-use jaco\model\page;
+use jaco\service\page;
 use jaco\validate;
 
 /**

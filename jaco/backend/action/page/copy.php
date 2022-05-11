@@ -7,7 +7,7 @@ namespace jaco\action\page\copy;
 use jaco\filter;
 use jaco\request;
 use jaco\validate;
-use jaco\model\page;
+use jaco\service\page;
 
 /**
  * @phpstan-return array<int,mixed>

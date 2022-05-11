@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\model\page;
+namespace jaco\service\page;
 
 use jaco\exception;
 use jaco\filesystem\file;
