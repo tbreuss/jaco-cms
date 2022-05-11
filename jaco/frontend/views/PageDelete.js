@@ -46,6 +46,9 @@ export const PageDelete = {
     state.fileName = iframe.fileName()
     state.errors = []
   },
+  oncreate: () => {
+    document.documentElement.style.visibility = 'visible'
+  },
   view: () => m(ModalMedium, { title: t('Delete page') },
     m(Fieldset, { legend: t('Confirm') },
       m('p', t('Do you want to delete the page?', {

@@ -38,6 +38,9 @@ export const PageGoto = {
     }
     Page.loadList()
   },
+  oncreate: () => {
+    document.documentElement.style.visibility = 'visible'
+  },
   view: () => m(ModalMedium, { title: t('Goto page') },
     m(Fieldset, { legend: t('Select page') },
       pageList(Page.list || []),

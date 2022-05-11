@@ -49,6 +49,9 @@ export const PageEdit = {
     }
     iframe.makeEditable()
   },
+  oncreate: () => {
+    document.documentElement.style.visibility = 'visible'
+  },
   view: () => m(ButtonGroup, { wrap: 'div.dialog' },
     m(ButtonPrimary, { onclick: save }, t('Save')),
     m(ButtonSecondary, { onclick: cancel }, t('Cancel')),

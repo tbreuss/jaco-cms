@@ -56,12 +56,9 @@ export const PageCopy = {
     state.errors = []
   },
   oncreate: () => {
-    //     visibility: visible;
-    //     opacity: 1;
-    console.log('views/PageCopy.js oncreate')
+    document.documentElement.style.visibility = 'visible'
   },
   view: () => {
-    console.log('views/PageCopy.js view')
     return m(ModalMedium, {title: t('Copy page')},
       m(Fieldset, {legend: t('Current page')},
         m(InputText, {

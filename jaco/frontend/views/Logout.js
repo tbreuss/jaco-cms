@@ -8,6 +8,9 @@ export const Logout = {
       m.route.set('/logout')
     }
   },
+  oncreate: () => {
+    document.documentElement.style.visibility = 'visible'
+  },
   view: () => m(ModalSmall, { title: t('Logged out') },
     m('ul.unstyled',
       m('li', m('a', {

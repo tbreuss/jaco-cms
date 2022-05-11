@@ -35,6 +35,7 @@ export const System = {
   },
   oncreate: () => {
     document.getElementById('app').classList.add('max-height')
+    document.documentElement.style.visibility = 'visible'
   },
   onremove: () => {
     document.getElementById('app').classList.remove('max-height')

@@ -44,6 +44,9 @@ export const Login = {
     state.password = ''
     state.errors = []
   },
+  oncreate: () => {
+    document.documentElement.style.visibility = 'visible'
+  },
   view: () => m(ModalSmall, { title: t('Login'), cssClass: 'modal-sm-login' },
     m(InputText, {
       id: 'username',

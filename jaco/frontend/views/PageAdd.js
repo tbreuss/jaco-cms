@@ -59,6 +59,9 @@ export const PageAdd = {
 
     PageTemplate.loadList()
   },
+  oncreate: () => {
+    document.documentElement.style.visibility = 'visible'
+  },
   view: () => m(ModalMedium, { title: t('Add page') },
     m(Fieldset, { legend: t('New page') },
       m(Select, {
