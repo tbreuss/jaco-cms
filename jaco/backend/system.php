@@ -13,7 +13,7 @@ function defined_constants(): array
 {
     $constants = [];
     foreach (get_defined_constants() as $key => $value) {
-        if (substr($key, 0, 5) === 'JACO_' || substr($key, 0, 5) === 'jaco\\') {
+        if (str_starts_with($key, 'JACO_') || str_starts_with($key, 'jaco\\')) {
             if (is_array($value)) {
                 $value = json_encode($value);
             }
@@ -33,7 +33,7 @@ function defined_functions(): array
 {
     $functions = [];
     foreach (get_defined_functions()['user'] as $function) {
-        if (substr($function, 0, 5) === 'jaco\\') {
+        if (str_starts_with($function, 'jaco\\')) {
             $functions[] = $function;
         }
     }
