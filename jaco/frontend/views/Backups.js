@@ -110,6 +110,7 @@ const dataFilter = (oninput) => {
   return m('.list-filter',
     m('input[type=text]', {
       placeholder: t('Filter backup files'),
+      value: Backup.filter,
       oninput: (e) => {
         e.redraw = false
         Backup.filter = e.target.value
