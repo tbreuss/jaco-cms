@@ -1,5 +1,5 @@
 import {closeDropdown} from '../lib/helpers.js'
-import {i18n, t} from '../models/i18n.js'
+import {i18n, t} from '../model/i18n.js'
 
 const title = () => m(m.route.Link, {
   class: 'title',

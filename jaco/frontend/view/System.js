@@ -1,5 +1,5 @@
-import { System as SystemModel } from '../models/System.js'
-import { t } from '../models/i18n.js'
+import { System as SystemModel } from '../model/System.js'
+import { t } from '../model/i18n.js'
 
 const constants = (object) => object
   ? m('div',

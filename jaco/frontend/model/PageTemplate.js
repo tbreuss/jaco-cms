@@ -1,5 +1,5 @@
 
-import { api } from '../services/api.js'
+import { api } from '../service/api.js'
 
 export const PageTemplate = {
   list: [],

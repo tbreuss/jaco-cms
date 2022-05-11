@@ -1,5 +1,5 @@
-import { t } from '../models/i18n.js'
-import { ModalSmall } from '../components/ModalSmall.js'
+import { t } from '../model/i18n.js'
+import { ModalSmall } from '../component/ModalSmall.js'
 
 export const Logout = {
   oninit: () => {

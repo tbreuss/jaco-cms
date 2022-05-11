@@ -1,6 +1,6 @@
 // see https://medium.com/i18n-and-l10n-resources-for-developers/localizing-mithril-applications-728fca63eaf3
 
-import { api } from '../services/api.js'
+import { api } from '../service/api.js'
 
 const defaultLocale = 'en';
 const messageUrl = 'action=translations&language={locale}';

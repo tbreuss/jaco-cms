@@ -1,11 +1,11 @@
-import { api } from '../services/api.js'
+import { api } from '../service/api.js'
 import { iframe } from '../lib/iframe.js'
 import { addSuccess } from '../state/actions.js'
 import { addDanger } from '../state/actions.js'
-import { t } from '../models/i18n.js'
-import { ButtonGroup } from '../components/ButtonGroup.js'
-import { ButtonPrimary } from '../components/ButtonPrimary.js'
-import { ButtonSecondary } from '../components/ButtonSecondary.js'
+import { t } from '../model/i18n.js'
+import { ButtonGroup } from '../component/ButtonGroup.js'
+import { ButtonPrimary } from '../component/ButtonPrimary.js'
+import { ButtonSecondary } from '../component/ButtonSecondary.js'
 
 const save = (e) => {
   e.redraw = false

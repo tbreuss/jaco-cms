@@ -1,4 +1,4 @@
-import { t } from '../models/i18n.js'
+import { t } from '../model/i18n.js'
 
 const selectLabel = (label) => {
   const el = (document.querySelector('[for=' + label + ']'))

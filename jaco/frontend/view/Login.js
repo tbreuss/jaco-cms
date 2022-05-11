@@ -1,11 +1,11 @@
-import { api } from '../services/api.js'
-import { t } from '../models/i18n.js'
-import { ModalSmall } from '../components/ModalSmall.js'
-import { InputText } from '../components/InputText.js'
-import { InputPassword } from '../components/InputPassword.js'
-import { ButtonGroup } from '../components/ButtonGroup.js'
-import { ButtonPrimary } from '../components/ButtonPrimary.js'
-import { FormErrors } from '../components/FormErrors.js'
+import { api } from '../service/api.js'
+import { t } from '../model/i18n.js'
+import { ModalSmall } from '../component/ModalSmall.js'
+import { InputText } from '../component/InputText.js'
+import { InputPassword } from '../component/InputPassword.js'
+import { ButtonGroup } from '../component/ButtonGroup.js'
+import { ButtonPrimary } from '../component/ButtonPrimary.js'
+import { FormErrors } from '../component/FormErrors.js'
 
 const state = {
   username: '',

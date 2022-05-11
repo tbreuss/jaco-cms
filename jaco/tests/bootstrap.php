@@ -1,13 +1,13 @@
 <?php
 
 define('JACO_VERSION', '0.1.0');
-define('JACO_DIR', __DIR__ . '/assets/jaco');
+define('JACO_DIR', __DIR__ . '/asset/jaco');
 define('JACO_DIR_NAME', basename(JACO_DIR));
-define('JACO_BACKUPS_DIR', JACO_DIR . '/backups');
-define('JACO_TEMPLATES_PAGES_DIR', JACO_DIR . '/pages');
-define('JACO_TEMPLATES_CONTENTS_DIR', JACO_DIR . '/contents');
+define('JACO_BACKUPS_DIR', JACO_DIR . '/backup');
+define('JACO_TEMPLATES_PAGES_DIR', JACO_DIR . '/page');
+define('JACO_TEMPLATES_CONTENTS_DIR', JACO_DIR . '/content');
 define('JACO_WEB_DIR', dirname(JACO_DIR));
-define('JACO_UPLOADS_DIR', dirname(JACO_DIR) . '/uploads');
+define('JACO_UPLOADS_DIR', dirname(JACO_DIR) . '/upload');
 define('JACO_ALLOWED_EXTENSIONS', ['htm', 'html']);
 define('JACO_DEFAULT_PAGE', 'index.html');
 define('JACO_DEFAULT_LANGUAGE', 'en');

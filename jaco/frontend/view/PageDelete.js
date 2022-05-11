@@ -1,13 +1,13 @@
-import { api } from '../services/api.js'
+import { api } from '../service/api.js'
 import { addSuccess } from '../state/actions.js'
 import { iframe } from '../lib/iframe.js'
-import { t } from '../models/i18n.js'
-import { ModalMedium } from '../components/ModalMedium.js'
-import { ButtonGroup } from '../components/ButtonGroup.js'
-import { ButtonPrimary } from '../components/ButtonPrimary.js'
-import { ButtonSecondary } from '../components/ButtonSecondary.js'
-import { Fieldset } from '../components/Fieldset.js'
-import { FormErrors } from '../components/FormErrors.js'
+import { t } from '../model/i18n.js'
+import { ModalMedium } from '../component/ModalMedium.js'
+import { ButtonGroup } from '../component/ButtonGroup.js'
+import { ButtonPrimary } from '../component/ButtonPrimary.js'
+import { ButtonSecondary } from '../component/ButtonSecondary.js'
+import { Fieldset } from '../component/Fieldset.js'
+import { FormErrors } from '../component/FormErrors.js'
 
 const state = {
   fileName: '',

@@ -1,10 +1,10 @@
-import { t } from '../models/i18n.js'
+import { t } from '../model/i18n.js'
 import { iframe } from '../lib/iframe.js'
-import { ModalMedium } from '../components/ModalMedium.js'
-import { Fieldset } from '../components/Fieldset.js'
-import { ButtonGroup } from '../components/ButtonGroup.js'
-import { ButtonSecondary } from '../components/ButtonSecondary.js'
-import { Page } from '../models/Page.js'
+import { ModalMedium } from '../component/ModalMedium.js'
+import { Fieldset } from '../component/Fieldset.js'
+import { ButtonGroup } from '../component/ButtonGroup.js'
+import { ButtonSecondary } from '../component/ButtonSecondary.js'
+import { Page } from '../model/Page.js'
 
 const cancel = (e) => {
   e.redraw = false
