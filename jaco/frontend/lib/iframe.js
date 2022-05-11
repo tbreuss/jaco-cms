@@ -75,7 +75,21 @@ export const iframe = {
     }
     iframe.contentWindow.removeEditorInstances()
     iframe.contentWindow.removeEditors()
-    return iframe.contentWindow.document.documentElement.outerHTML;
+
+    const doctype = iframe.contentWindow.document.doctype
+    const outerHtml = iframe.contentWindow.document.documentElement.outerHTML
+
+    let html = '<!DOCTYPE html>' // take html5 doctype as default
+    if (doctype) {
+      html = "<!DOCTYPE "
+        + doctype.name
+        + (doctype.publicId ? ' PUBLIC "' + doctype.publicId + '"' : '')
+        + (!doctype.publicId && doctype.systemId ? ' SYSTEM' : '')
+        + (doctype.systemId ? ' "' + doctype.systemId + '"' : '')
+        + '>';
+    }
+
+    return html + "\r\n" + outerHtml
   },
   removeLeadingSlash: (str) => {
     return str.replace(/^\/+/, '')
