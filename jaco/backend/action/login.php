@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\actions\login;
+namespace jaco\action\login;
 
 use jaco\auth;
 use jaco\request;

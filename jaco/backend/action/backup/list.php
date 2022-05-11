@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace jaco\actions\backup\list;
+namespace jaco\action\backup\list;
 
-use jaco\models\backup;
+use jaco\model\backup;
 
 /**
  * @phpstan-return array<int,mixed>

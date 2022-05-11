@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace jaco\actions\page\create;
+namespace jaco\action\page\delete;
 
 use jaco\filter;
 use jaco\request;
+use jaco\model\page;
 use jaco\validate;
-use jaco\models\page;
 
 /**
  * @phpstan-return array<int,mixed>
@@ -26,9 +26,9 @@ function main(): array
         return [422, $errors];
     }
 
-    // create page
-    if (!page\create_from_template($data['pageTemplate'], $data['fileName'], $data['pageTitle'])) {
-        return [500, [['title' => 'Could not create page']]];
+    // delete page
+    if (!page\delete($data['fileName'])) {
+        return [500, [['title' => 'Could not delete page']]];
     }
 
     return [200];
@@ -40,12 +40,11 @@ function main(): array
 function rules(): array
 {
     return [
-        ['pageTemplate', 'required'],
         ['fileName', 'required'],
+        ['fileName', 'file_exists'],
+        ['fileName', 'file_writeable'],
         ['fileName', 'htmlfile_name'],
-        ['fileName', 'htmlfile_extension'],
-        ['fileName', 'file_not_exists'],
-        ['pageTitle', 'required'],
+        ['fileName', 'htmlfile_extension']
     ];
 }
 
@@ -55,8 +54,6 @@ function rules(): array
 function filters(): array
 {
     return [
-        ['pageTemplate', 'filename'],
-        ['fileName', 'filename'],
-        ['pageTitle', 'html_specialchars'],
+        ['fileName', 'filename']
     ];
 }

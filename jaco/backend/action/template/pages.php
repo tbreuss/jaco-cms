@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace jaco\actions\page\list;
+namespace jaco\action\template\pages;
 
-use jaco\models\page;
+use jaco\model\template\page;
 
 /**
  * @phpstan-return array<int,mixed>
  */
 function main(): array
 {
-    $pages = page\find_all_rec();
+    $pages = page\find_all();
     return [200, $pages];
 }

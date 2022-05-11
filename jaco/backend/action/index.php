@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\actions\index;
+namespace jaco\action\index;
 
 /**
  * @phpstan-return array<int,mixed>

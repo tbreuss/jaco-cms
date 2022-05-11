@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\structs;
+namespace jaco\struct;
 
 class backup
 {

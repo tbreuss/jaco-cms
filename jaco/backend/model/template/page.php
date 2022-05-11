@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace jaco\models\template\page;
+namespace jaco\model\template\page;
 
 use jaco\filesystem\html_file;
-use jaco\models\page;
+use jaco\model\page;
 
 /**
- * @return \jaco\structs\page[]
+ * @return \jaco\struct\page[]
  */
 function find_all(): array
 {

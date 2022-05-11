@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\actions\system;
+namespace jaco\action\system;
 
 use jaco\system;
 

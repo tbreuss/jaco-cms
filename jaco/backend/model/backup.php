@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace jaco\models\backup;
+namespace jaco\model\backup;
 
 use jaco\filesystem\file;
 use jaco\filesystem\html_file;
-use jaco\structs\backup;
+use jaco\struct\backup;
 
 /**
  * @phpstan-return array{list:backup[],filter:string,sort:array{string,string}}
@@ -35,7 +35,7 @@ function delete(string $file): bool
 }
 
 /**
- * @param \jaco\structs\file[] $files
+ * @param \jaco\struct\file[] $files
  * @return backup[]
  */
 function create_list(string $directory, array $files): array

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace jaco\actions\backup\restore;
+namespace jaco\action\backup\delete;
 
 use jaco\filter;
 use jaco\request;
 use jaco\validate;
-use jaco\models\backup;
+use jaco\model\backup;
 
 /**
  * @phpstan-return array<int,mixed>
@@ -27,7 +27,7 @@ function main(): array
     }
 
     // delete page
-    if (!backup\restore($data['file'])) {
+    if (!backup\delete($data['file'])) {
         return [500, [['title' => 'Could not restore backup']]];
     }
 
@@ -35,7 +35,7 @@ function main(): array
 }
 
 /**
- * @return string[][]
+ * @phpstan-return array<int,array<int,string>>
  */
 function filters(): array
 {
@@ -52,7 +52,5 @@ function validators(): array
     return [
         ['file', 'required'],
         ['file', 'file_exists', 'dir' => JACO_BACKUPS_DIR],
-        ['file', 'htmlfile_name', 'isBackup' => true],
-        ['file', 'htmlfile_extension']
     ];
 }

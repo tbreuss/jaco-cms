@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace jaco\models\page;
+namespace jaco\model\page;
 
 use jaco\exception;
 use jaco\filesystem\file;
 use jaco\filesystem\html_file;
-use jaco\structs\page;
+use jaco\struct\page;
 
 /**
  * @param string[] $extensions
@@ -138,7 +138,7 @@ function update(string $file, string $content): bool
 }
 
 /**
- * @param \jaco\structs\file[] $files
+ * @param \jaco\struct\file[] $files
  * @return page[]
  */
 function create_list(string $directory, array $files): array

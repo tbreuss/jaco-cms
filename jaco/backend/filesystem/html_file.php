@@ -43,7 +43,7 @@ function update(string $dir, string $fileName, callable $callback, ?string $bakD
 
 /**
  * @param string[] $extensions
- * @return \jaco\structs\file[]
+ * @return \jaco\struct\file[]
  */
 function find(string $directory, array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
@@ -51,7 +51,7 @@ function find(string $directory, array $extensions = JACO_ALLOWED_EXTENSIONS): a
     $list = [];
     foreach ($files as $file) {
         $path = shared\join($directory, $file);
-        $list[] = new \jaco\structs\file($file, filemtime($path));
+        $list[] = new \jaco\struct\file($file, filemtime($path));
     }
     return $list;
 }
@@ -59,7 +59,7 @@ function find(string $directory, array $extensions = JACO_ALLOWED_EXTENSIONS): a
 /**
  * @param string[] $exclude_dirs
  * @param string[] $extensions
- * @return \jaco\structs\file[]
+ * @return \jaco\struct\file[]
  */
 function find_rec(string $directory, array $exclude_dirs = [], array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
@@ -67,7 +67,7 @@ function find_rec(string $directory, array $exclude_dirs = [], array $extensions
     $list = [];
     foreach ($files as $file) {
         $path = shared\join($directory, $file);
-        $list[] = new \jaco\structs\file($file, filemtime($path));
+        $list[] = new \jaco\struct\file($file, filemtime($path));
     }
     return $list;
 }

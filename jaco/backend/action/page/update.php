@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace jaco\actions\page\update;
+namespace jaco\action\page\update;
 
 use jaco\filter;
 use jaco\request;
 use jaco\validate;
-use jaco\models\page;
+use jaco\model\page;
 
 /**
  * @phpstan-return array<int,mixed>

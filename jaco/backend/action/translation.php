@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\actions\translations;
+namespace jaco\action\translation;
 
 /**
  * @phpstan-return array<int,mixed>
