@@ -4,7 +4,7 @@ import { ModalMedium } from '../component/ModalMedium.js'
 import { Fieldset } from '../component/Fieldset.js'
 import { ButtonGroup } from '../component/ButtonGroup.js'
 import { ButtonSecondary } from '../component/ButtonSecondary.js'
-import { Page } from '../model/Page.js'
+import { PageList } from '../model/PageList.js'
 
 const cancel = (e) => {
   e.redraw = false
@@ -36,14 +36,16 @@ export const PageGoto = {
     if (!document.getElementById('iframe')) {
       m.route.set('/')
     }
-    Page.loadList()
+    PageList.load()
   },
   oncreate: () => {
     document.documentElement.style.visibility = 'visible'
   },
   view: () => m(ModalMedium, { title: t('Goto page') },
     m(Fieldset, { legend: t('Select page') },
-      pageList(Page.list || []),
+      PageList.loading
+        ? m('p', t('Loading') + '...')
+        : pageList(PageList.items || []),
       m(ButtonGroup, { wrap: 'div.row.text-right' },
         m(ButtonSecondary, { onclick: cancel }, t('Cancel'))
       )
