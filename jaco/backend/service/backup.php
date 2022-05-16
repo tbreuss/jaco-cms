@@ -24,6 +24,17 @@ function find_all(string $filter = '', string $sort = '-created'): array
     ];
 }
 
+function find_one(string $file): ?backup
+{
+    return new backup(
+        $file,
+        str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
+        html_file\page_title(JACO_BACKUPS_DIR, $file),
+        time(),
+        file_get_contents(JACO_BACKUPS_DIR . '/' . $file)
+    );
+}
+
 function restore(string $file): bool
 {
     return file\restore(JACO_BACKUPS_DIR, $file, JACO_WEB_DIR);

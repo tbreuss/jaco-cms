@@ -1,4 +1,5 @@
-import { Backups } from './view/Backups.js'
+import { BackupList } from './view/backup/BackupList.js'
+import { BackupView } from './view/backup/BackupView.js'
 import { PageAdd } from './view/PageAdd.js'
 import { PageCopy } from './view/PageCopy.js'
 import { PageDelete } from './view/PageDelete.js'
@@ -19,6 +20,23 @@ Number.prototype.pad = function (size) {
   return s;
 }
 
+Number.prototype.toDateTime = function () {
+  const date = new Date(this * 1000);
+  let parts = []
+  parts.push(date.getDate().pad(2))
+  parts.push('.')
+  parts.push((date.getMonth() + 1).pad(2))
+  parts.push('.')
+  parts.push(date.getFullYear())
+  parts.push(' ')
+  parts.push(date.getHours().pad(2))
+  parts.push(':')
+  parts.push(date.getMinutes().pad(2))
+  parts.push(':')
+  parts.push(date.getSeconds().pad(2))
+  return parts.join('')
+}
+
 // notifications
 m.mount(document.getElementById('toasts'), Notifications)
 
@@ -31,7 +49,12 @@ m.route(document.getElementById('app'), '/', {
   },
   '/backups': {
     render: () => {
-      return m(DefaultLayout, m(Backups))
+      return m(DefaultLayout, m(BackupList))
+    }
+  },
+  '/backups/view/:file': {
+    render: (vnode) => {
+      return m(DefaultLayout, m(BackupView, vnode.attrs))
     }
   },
   '/page-add': {

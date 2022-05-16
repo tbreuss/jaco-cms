@@ -11,6 +11,7 @@ class backup
         public string $name,
         public string $title,
         public int $created,
+        public string $content = ''
     ) {
     }
 }

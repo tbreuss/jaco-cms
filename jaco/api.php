@@ -31,6 +31,7 @@ router\get('translations', 'jaco\action\translation\main', false);
 
 // define private routes
 router\get('backup/list', 'jaco\action\backup\list\main', true);
+router\get('backup/view', 'jaco\action\backup\view\main', true);
 router\post('backup/restore', 'jaco\action\backup\restore\main', true);
 router\post('backup/delete', 'jaco\action\backup\delete\main', true);
 router\get('page/list', 'jaco\action\page\list\main', true);

@@ -1,11 +1,10 @@
-import {t} from '../model/i18n.js'
-import {Backup} from '../model/Backup.js'
-import {ButtonPrimary} from '../component/ButtonPrimary.js'
-import {ButtonSecondary} from '../component/ButtonSecondary.js';
-import {api} from "../service/api.js";
-import {addSuccess} from "../state/actions.js";
-import {addDanger} from "../state/actions.js";
-import {addInfo} from '../state/actions.js';
+import {t} from '../../model/i18n.js'
+import {Backup} from '../../model/Backup.js'
+import {ButtonPrimary} from '../../component/ButtonPrimary.js'
+import {ButtonSecondary} from '../../component/ButtonSecondary.js';
+import {api} from "../../service/api.js";
+import {addSuccess} from "../../state/actions.js";
+import {addDanger} from "../../state/actions.js";
 
 const dateTime = (timestamp) => {
   const date = new Date(timestamp * 1000);
@@ -45,8 +44,8 @@ const restoreBackup = (backup) => {
   }
 }
 
-const viewBackup = () => {
-  addInfo('This is not yet implemented.')
+const viewBackup = (file) => {
+  m.route.set('/backups/view/:file', {file: file})
 }
 
 const deleteAction = (backup) => {
@@ -124,7 +123,7 @@ const loadList = () => {
   Backup.loadList()
 }
 
-export const Backups = {
+export const BackupList = {
   oninit: () => {
     if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
       m.route.set('/logout')
@@ -162,7 +161,11 @@ export const Backups = {
                 m('td', dateTime(backup.created)),
                 m('td', 'Page'),
                 m('td.text-right.text-nowrap',
-                  m(ButtonSecondary, {onclick: viewBackup}, t('View')),
+                  m(ButtonSecondary, {
+                    onclick: () => {
+                      viewBackup(backup.file)
+                    }
+                  }, t('View')),
                   m(ButtonPrimary, {
                     onclick: (e) => {
                       e.redraw = false
