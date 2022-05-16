@@ -20,10 +20,10 @@ export const BackupView = {
   onupdate: () => {
     console.log('onupdate')
     const editor = ace.edit("ace", {
-      theme: "ace/theme/dracula",
+      theme: "ace/theme/github",
       mode: "ace/mode/html",
       maxLines: Infinity,  // this is going to be very slow on large documents
-      useWrapMode: true,   // wrap text to view
+      wrap: true,   // wrap text to view
       indentedSoftWrap: false,
       behavioursEnabled: false, // disable autopairing of brackets and tags
       showLineNumbers: false, // hide the gutter
