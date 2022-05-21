@@ -120,14 +120,9 @@ function validate_extension(string $dir, string $fileName, array $allowed = JACO
  * @param string[] $extensions
  * @return string[]
  */
-function scandir(string $directory, array $extensions, int $sorting_order): array
+function scandir(string $directory, array $extensions): array
 {
-    $files = \scandir($directory, $sorting_order);
-    $filtered = array_filter($files, function (string $file) use ($extensions): bool {
-        $extension = pathinfo($file, PATHINFO_EXTENSION);
-        return in_array($extension, $extensions);
-    });
-    return array_values($filtered);
+    return scandir_rec($directory, $extensions, [], 0);
 }
 
 /**
@@ -135,11 +130,12 @@ function scandir(string $directory, array $extensions, int $sorting_order): arra
  * @param string[] $excludedDirectories
  * @return string[]
  */
-function scandir_rec(string $directory, array $extensions, array $excludedDirectories): array
+function scandir_rec(string $directory, array $extensions, array $excludedDirectories = [], int $maxDepth = -1): array
 {
     $rii = new \RecursiveIteratorIterator(
         new \RecursiveDirectoryIterator($directory)
     );
+    $rii->setMaxDepth($maxDepth);
 
     $files = [];
     foreach ($rii as $file) {

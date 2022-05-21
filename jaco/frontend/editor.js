@@ -2,7 +2,7 @@ window.initEditors = () => {
   // add editor styles
   if (!document.getElementById('editorStylesheet')) {
     let cssLink = document.createElement('link')
-    cssLink.href = './jaco/frontend/asset/quill.snow-customized.css'
+    cssLink.href = '/jaco/frontend/asset/quill.snow-customized.css'
     cssLink.id = 'editorStylesheet'
     cssLink.rel = 'stylesheet'
     cssLink.type = 'text/css'
@@ -27,7 +27,7 @@ window.initEditors = () => {
   // add editor instance styles
   if (!document.getElementById('editorInstanceStylesheet')) {
     let cssLink = document.createElement('link')
-    cssLink.href = 'jaco/frontend/asset/editor.css'
+    cssLink.href = '/jaco/frontend/asset/editor.css'
     cssLink.id = 'editorInstanceStylesheet'
     cssLink.rel = 'stylesheet'
     cssLink.type = 'text/css'

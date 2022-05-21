@@ -11,6 +11,6 @@ use jaco\service\page;
  */
 function main(): array
 {
-    $pages = page\find_all_rec();
+    $pages = page\find_all();
     return [200, $pages];
 }
