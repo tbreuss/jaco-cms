@@ -20,23 +20,23 @@ function load(string $dir, string $file): string
     return $contents;
 }
 
-function update(string $dir, string $fileName, callable $callback, ?string $bakDir = null): bool
+function update(string $dir, string $file, callable $callback, ?string $bakDir = null): bool
 {
-    $contents = load($dir, $fileName);
+    $contents = load($dir, $file);
     $edited = call_user_func($callback, $contents);
     if (!is_string($edited)) {
         throw new \Exception('Invalid type from callback');
     }
     if ($bakDir) {
-        $status = file\backup($dir, $fileName, $bakDir);
+        $status = file\backup($dir, $file, $bakDir);
         if (!$status) {
-            throw new \Exception('Could not backup file ' . $fileName);
+            throw new \Exception('Could not backup file ' . $file);
         }
     }
-    $filePath = shared\join($dir, $fileName);
+    $filePath = shared\join($dir, $file);
     $status = file_put_contents($filePath, $edited);
     if (!$status) {
-        throw new \Exception('Could not save file ' . $fileName);
+        throw new \Exception('Could not save file ' . $file);
     }
     return true;
 }
@@ -45,12 +45,12 @@ function update(string $dir, string $fileName, callable $callback, ?string $bakD
  * @param string[] $extensions
  * @return \jaco\struct\file[]
  */
-function find(string $directory, array $extensions = JACO_ALLOWED_EXTENSIONS): array
+function find(string $dir, array $extensions = JACO_ALLOWED_EXTENSIONS): array
 {
-    $files = file\scandir($directory, $extensions);
+    $files = file\scandir($dir, $extensions);
     $list = [];
     foreach ($files as $file) {
-        $path = shared\join($directory, $file);
+        $path = shared\join($dir, $file);
         $list[] = new \jaco\struct\file($file, filemtime($path));
     }
     return $list;
@@ -61,12 +61,12 @@ function find(string $directory, array $extensions = JACO_ALLOWED_EXTENSIONS): a
  * @param string[] $extensions
  * @return \jaco\struct\file[]
  */
-function find_rec(string $directory, array $exclude_dirs = [], array $extensions = JACO_ALLOWED_EXTENSIONS, int $max_depth = -1): array
+function find_rec(string $dir, array $exclude_dirs = [], array $extensions = JACO_ALLOWED_EXTENSIONS, int $max_depth = -1): array
 {
-    $files = file\scandir_rec($directory, $extensions, $exclude_dirs, $max_depth);
+    $files = file\scandir_rec($dir, $extensions, $exclude_dirs, $max_depth);
     $list = [];
     foreach ($files as $file) {
-        $path = shared\join($directory, $file);
+        $path = shared\join($dir, $file);
         $list[] = new \jaco\struct\file($file, filemtime($path));
     }
     return $list;

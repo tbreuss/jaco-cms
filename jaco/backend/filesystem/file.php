@@ -75,14 +75,21 @@ function restore(string $bakDir, string $bakFile, string $dstDir): bool
     return move($bakDir, $bakFile, $dstDir, $dstFile);
 }
 
-function save(string $dir, string $file, string $contents): bool
+/**
+ * Writes data to a file rooted at dir.
+ * @param string $dir
+ * @param string $file
+ * @param string $data
+ * @return bool
+ */
+function write(string $dir, string $file, string $data): bool
 {
     return false;
 }
 
-function validate_filename(string $dir, string $fileName, bool $isBackup = false): bool
+function validate_filename(string $dir, string $file, bool $isBackup = false): bool
 {
-    $abs_path = shared\join($dir, $fileName);
+    $abs_path = shared\join($dir, $file);
 
     $pathinfo = pathinfo($abs_path);
 
@@ -103,9 +110,9 @@ function validate_filename(string $dir, string $fileName, bool $isBackup = false
 /**
  * @param string[] $allowed
  */
-function validate_extension(string $dir, string $fileName, array $allowed = JACO_ALLOWED_EXTENSIONS): bool
+function validate_extension(string $dir, string $file, array $allowed = JACO_ALLOWED_EXTENSIONS): bool
 {
-    $abs_path = shared\join($dir, $fileName);
+    $abs_path = shared\join($dir, $file);
 
     $extension = pathinfo($abs_path, PATHINFO_EXTENSION);
 
@@ -120,9 +127,9 @@ function validate_extension(string $dir, string $fileName, array $allowed = JACO
  * @param string[] $extensions
  * @return string[]
  */
-function scandir(string $directory, array $extensions): array
+function scandir(string $dir, array $extensions): array
 {
-    return scandir_rec($directory, $extensions, [], 0);
+    return scandir_rec($dir, $extensions, [], 0);
 }
 
 /**
@@ -130,10 +137,10 @@ function scandir(string $directory, array $extensions): array
  * @param string[] $excludedDirectories
  * @return string[]
  */
-function scandir_rec(string $directory, array $extensions, array $excludedDirectories = [], int $maxDepth = -1): array
+function scandir_rec(string $dir, array $extensions, array $excludedDirectories = [], int $maxDepth = -1): array
 {
     $rii = new \RecursiveIteratorIterator(
-        new \RecursiveDirectoryIterator($directory)
+        new \RecursiveDirectoryIterator($dir)
     );
     $rii->setMaxDepth($maxDepth);
 
@@ -151,8 +158,8 @@ function scandir_rec(string $directory, array $extensions, array $excludedDirect
                 continue 2;
             }
         }
-        if (strpos($pathname, $directory) === 0) {
-            $relfile = substr($pathname, strlen($directory));
+        if (strpos($pathname, $dir) === 0) {
+            $relfile = substr($pathname, strlen($dir));
             $files[] = ltrim($relfile, '\\/');
         }
     }

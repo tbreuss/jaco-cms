@@ -18,33 +18,33 @@ function is_writable(string $root, string $dir): bool
     return exists($root, $dir) && \is_writable($path);
 }
 
-function make(string $root, string $directory, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
+function make(string $root, string $dir, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
 {
-    $path = shared\join($root, $directory);
+    $path = shared\join($root, $dir);
     if (is_dir($path)) {
         return true;
     }
     return mkdir($path, $permissions, false);
 }
 
-function make_rec(string $root, string $directory, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
+function make_rec(string $root, string $dir, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
 {
-    $path = shared\join($root, $directory);
+    $path = shared\join($root, $dir);
     if (is_dir($path)) {
         return true;
     }
     return mkdir($path, $permissions, true);
 }
 
-function remove(string $root, string $rel_path): bool
+function remove(string $root, string $dir): bool
 {
-    $abs_path = shared\join($root, $rel_path);
+    $abs_path = shared\join($root, $dir);
     return rmdir($abs_path);
 }
 
-function remove_rec(string $root, string $rel_path): void
+function remove_rec(string $root, string $dir): void
 {
-    $abs_path = shared\join($root, $rel_path);
+    $abs_path = shared\join($root, $dir);
     _rrmdir($abs_path);
 }
 
