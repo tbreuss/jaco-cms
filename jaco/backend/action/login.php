@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace jaco\action\login;
 
 use jaco\auth;
+use jaco\filter;
 use jaco\request;
 use jaco\validate;
 
@@ -13,8 +14,14 @@ use jaco\validate;
  */
 function main(): array
 {
-    $data = request\post_values();
-    $errors = validate\all($data, rules());
+    // get raw user input
+    $raw = request\post_values();
+
+    // filter data
+    $data = filter\all($raw, filters());
+
+    // validate data
+    $errors = validate\all($data, validators());
     if (count($errors) > 0) {
         return [422, $errors];
     }
@@ -31,7 +38,18 @@ function main(): array
 /**
  * @return string[][]
  */
-function rules(): array
+function filters(): array
+{
+    return [
+        ['username', 'string'],
+        ['password', 'string']
+    ];
+}
+
+/**
+ * @return string[][]
+ */
+function validators(): array
 {
     return [
         ['username', 'required'],

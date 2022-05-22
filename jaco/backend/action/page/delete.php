@@ -21,7 +21,7 @@ function main(): array
     $data = filter\all($raw, filters());
 
     // validate data
-    $errors = validate\all($data, rules());
+    $errors = validate\all($data, validators());
     if (count($errors) > 0) {
         return [422, $errors];
     }
@@ -37,7 +37,17 @@ function main(): array
 /**
  * @return string[][]
  */
-function rules(): array
+function filters(): array
+{
+    return [
+        ['fileName', 'filename']
+    ];
+}
+
+/**
+ * @return string[][]
+ */
+function validators(): array
 {
     return [
         ['fileName', 'required'],
@@ -45,15 +55,5 @@ function rules(): array
         ['fileName', 'file_writeable'],
         ['fileName', 'htmlfile_name'],
         ['fileName', 'htmlfile_extension']
-    ];
-}
-
-/**
- * @return string[][]
- */
-function filters(): array
-{
-    return [
-        ['fileName', 'filename']
     ];
 }

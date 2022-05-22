@@ -21,7 +21,7 @@ function main(): array
     $data = filter\all($raw, filters());
 
     // validate data
-    $errors = validate\all($data, rules());
+    $errors = validate\all($data, validators());
     if (count($errors) > 0) {
         return [422, $errors];
     }
@@ -37,7 +37,19 @@ function main(): array
 /**
  * @return string[][]
  */
-function rules(): array
+function filters(): array
+{
+    return [
+        ['pageTemplate', 'filename'],
+        ['fileName', 'filename'],
+        ['pageTitle', 'html_specialchars'],
+    ];
+}
+
+/**
+ * @return string[][]
+ */
+function validators(): array
 {
     return [
         ['pageTemplate', 'required'],
@@ -46,17 +58,5 @@ function rules(): array
         ['fileName', 'htmlfile_extension'],
         ['fileName', 'file_not_exists'],
         ['pageTitle', 'required'],
-    ];
-}
-
-/**
- * @return string[][]
- */
-function filters(): array
-{
-    return [
-        ['pageTemplate', 'filename'],
-        ['fileName', 'filename'],
-        ['pageTitle', 'html_specialchars'],
     ];
 }
