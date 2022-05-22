@@ -17,28 +17,28 @@ function find_all(): array
     return create_list(JACO_WEB_DIR, $files);
 }
 
-function delete(string $fileName): bool
+function delete(string $file): bool
 {
-    $status = file\backup(JACO_WEB_DIR, $fileName, JACO_BACKUPS_DIR);
+    $status = file\backup(JACO_WEB_DIR, $file, JACO_BACKUPS_DIR);
     if (!$status) {
         return false;
     }
-    return file\delete(JACO_WEB_DIR, $fileName);
+    return file\delete(JACO_WEB_DIR, $file);
 }
 
-function exists(string $fileName): bool
+function exists(string $file): bool
 {
-    return file\exists(JACO_WEB_DIR, $fileName);
+    return file\exists(JACO_WEB_DIR, $file);
 }
 
-function is_writable(string $fileName): bool
+function is_writable(string $file): bool
 {
-    return file\is_writable(JACO_WEB_DIR, $fileName);
+    return file\is_writable(JACO_WEB_DIR, $file);
 }
 
-function is_valid(string $fileName): bool
+function is_valid(string $file): bool
 {
-    $pathinfo = pathinfo($fileName);
+    $pathinfo = pathinfo($file);
 
     if (strlen($pathinfo['filename']) === 0) {
         return false;
@@ -58,13 +58,13 @@ function is_valid(string $fileName): bool
     return true;
 }
 
-function copy(string $srcfileName, string $dstFileName, string $dstPageTitle): bool
+function copy(string $srcFile, string $dstFile, string $dstPageTitle): bool
 {
-    $status = file\copy(JACO_WEB_DIR, $srcfileName, JACO_WEB_DIR, $dstFileName);
+    $status = file\copy(JACO_WEB_DIR, $srcFile, JACO_WEB_DIR, $dstFile);
     if (!$status) {
-        throw new \jaco\exception\Exception('Could not copy page ' . $srcfileName);
+        throw new \jaco\exception\Exception('Could not copy page ' . $srcFile);
     }
-    return html_file\update(JACO_WEB_DIR, $dstFileName, function (string $contents) use ($dstPageTitle): string {
+    return html_file\update(JACO_WEB_DIR, $dstFile, function (string $contents) use ($dstPageTitle): string {
         $contents = preg_replace('/<title>(.*?)<\/title>/', '<title>' . $dstPageTitle . '</title>', $contents);
         if (is_null($contents)) {
             throw new \Exception('Could not edit page title');
@@ -73,13 +73,13 @@ function copy(string $srcfileName, string $dstFileName, string $dstPageTitle): b
     });
 }
 
-function create_from_template(string $srcfileName, string $dstFileName, string $dstPageTitle): bool
+function create_from_template(string $srcFile, string $dstFile, string $dstPageTitle): bool
 {
-    $status = file\copy(JACO_TEMPLATES_PAGES_DIR, $srcfileName, JACO_WEB_DIR, $dstFileName);
+    $status = file\copy(JACO_TEMPLATES_PAGES_DIR, $srcFile, JACO_WEB_DIR, $dstFile);
     if (!$status) {
-        throw new \jaco\exception\Exception('Could not create page ' . $srcfileName);
+        throw new \jaco\exception\Exception('Could not create page ' . $srcFile);
     }
-    return html_file\update(JACO_WEB_DIR, $dstFileName, function (string $contents) use ($dstPageTitle): string {
+    return html_file\update(JACO_WEB_DIR, $dstFile, function (string $contents) use ($dstPageTitle): string {
         $contents = preg_replace('/<title>(.*?)<\/title>/', '<title>' . $dstPageTitle . '</title>', $contents);
         if (is_null($contents)) {
             throw new \Exception('Could not edit page title');
@@ -100,11 +100,11 @@ function update(string $file, string $content): bool
  * @param \jaco\struct\file[] $files
  * @return page[]
  */
-function create_list(string $directory, array $files): array
+function create_list(string $dir, array $files): array
 {
     $html = [];
     foreach ($files as $file) {
-        $html[] = create_one($directory, $file->file, $file->modified);
+        $html[] = create_one($dir, $file->file, $file->modified);
     }
     return $html;
 }

@@ -110,11 +110,6 @@ function file_not_exists(mixed $value): array
     return [false, '{value} must not exist.'];
 }
 
-function one(): void
-{
-    // TODO
-}
-
 /**
  * @phpstan-param array<string,string> $data
  * @phpstan-param array<array<string>> $rules

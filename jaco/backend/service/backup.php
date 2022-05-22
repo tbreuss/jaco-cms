@@ -49,11 +49,11 @@ function delete(string $file): bool
  * @param \jaco\struct\file[] $files
  * @return backup[]
  */
-function create_list(string $directory, array $files): array
+function create_list(string $dir, array $files): array
 {
     $list = [];
     foreach ($files as $file) {
-        $list[] = create_one($directory, $file->file);
+        $list[] = create_one($dir, $file->file);
     }
     return $list;
 }
