@@ -13,12 +13,10 @@ export const BackupView = {
     BackupViewModel.load(vnode.attrs.file)
   },
   oncreate: () => {
-    console.log('oncreate')
     document.getElementById('app').classList.add('max-height')
     document.documentElement.style.visibility = 'visible'
   },
   onupdate: () => {
-    console.log('onupdate')
     const editor = ace.edit("ace", {
       theme: "ace/theme/github",
       mode: "ace/mode/html",
