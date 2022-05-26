@@ -1,17 +1,17 @@
-.jaco-editable {
+[data-jaco-editable] {
     outline: 1px dotted black;
     min-height: 1rem;
 }
 
-.jaco-editable-line {
+[data-jaco-editable-line] {
     outline: 1px dotted black;
     min-height: 1rem;
 }
 
-.jaco-editable-image {
+[data-jaco-editable-image] {
     outline: 1px dotted black;
 }
 
-.jaco-is-editing {
+[data-jaco-is-editing] {
     outline: 1px solid red;
 }

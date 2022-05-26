@@ -77,7 +77,7 @@ export const iframe = {
     iframe.contentWindow.removeEditors()
 
     const doctype = iframe.contentWindow.document.doctype
-    const outerHtml = iframe.contentWindow.document.documentElement.outerHTML
+    let outerHtml = iframe.contentWindow.document.documentElement.outerHTML
 
     let html = '<!DOCTYPE html>' // take html5 doctype as default
     if (doctype) {
@@ -88,6 +88,12 @@ export const iframe = {
         + (doctype.systemId ? ' "' + doctype.systemId + '"' : '')
         + '>';
     }
+
+    // use empty data attributes only (and remove the empty string part)
+    const dataAttrs = ['data-jaco-editable-image', 'data-jaco-editable-line', 'data-jaco-editable']
+    dataAttrs.forEach((attr) => {
+      outerHtml = outerHtml.replaceAll(attr + '=""', attr)
+    })
 
     return html + "\r\n" + outerHtml
   },

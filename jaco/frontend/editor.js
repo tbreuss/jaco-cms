@@ -55,15 +55,15 @@ window.disableEditors = () => {
 
 window.addClickHandler = () => {
   document.addEventListener('click', (event) => {
-    if (event.target.closest('.ql-container, .ql-toolbar, .jaco-is-editing')) {
+    if (event.target.closest('.ql-container, .ql-toolbar, [data-jaco-is-editing]')) {
       return
     }
 
     removeEditorInstances()
 
-    let jacoEditable = event.target.closest('.jaco-editable')
+    let jacoEditable = event.target.closest('[data-jaco-editable]')
     if (jacoEditable) {
-      jacoEditable.classList.add('jaco-is-editing')
+      jacoEditable.setAttribute('data-jaco-is-editing', '')
       let toolbarOptions = [
         [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
         ['bold', 'italic', 'underline', 'strike'],
@@ -83,9 +83,9 @@ window.addClickHandler = () => {
       return
     }
 
-    let jacoEditableLine = event.target.closest('.jaco-editable-line')
+    let jacoEditableLine = event.target.closest('[data-jaco-editable-line]')
     if (jacoEditableLine) {
-      jacoEditableLine.classList.add('jaco-is-editing')
+      jacoEditableLine.setAttribute('data-jaco-is-editing', '')
       let toolbarLineOptions = [
         ['bold', 'italic', 'underline', 'strike'],
         ['link'],
@@ -123,10 +123,15 @@ window.addClickHandler = () => {
 
 window.removeEditorInstances = () => {
   document.querySelectorAll('.ql-editor').forEach((element) => {
-    element.parentElement.classList.remove('ql-container', 'ql-snow', 'jaco-is-editing')
-    if (element.parentElement.classList.contains('jaco-editable-line')) {
+    element.parentElement.classList.remove('ql-container', 'ql-snow')
+    // remove empty class attribute
+    if (element.parentElement.classList.length === 0) {
+      element.parentElement.removeAttribute('class')
+    }
+    element.parentElement.removeAttribute('data-jaco-is-editing')
+    if (element.parentElement.hasAttribute('data-jaco-editable-line')) {
       element.parentElement.innerHTML = removeBlockTags(element)
-    } else if (element.parentElement.classList.contains('jaco-editable')) {
+    } else if (element.parentElement.hasAttribute('data-jaco-editable')) {
       element.parentElement.innerHTML = element.innerHTML
     }
   })
