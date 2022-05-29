@@ -1,17 +1,35 @@
 [data-jaco-editable] {
-    outline: 1px dotted black;
+    border: 1px solid #ddd;
     min-height: 1rem;
+    margin-bottom: 1rem;
 }
 
 [data-jaco-editable-line] {
-    outline: 1px dotted black;
+    border: 1px solid #ddd;
     min-height: 1rem;
 }
 
+[data-jaco-editable-line] * {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
 [data-jaco-editable-image] {
-    outline: 1px dotted black;
+    border: 1px solid #ddd;
+}
+
+[data-jaco-editable]:hover,
+[data-jaco-editable-line]:hover,
+[data-jaco-editable-image]:hover {
+    cursor:pointer;
 }
 
 [data-jaco-is-editing] {
-    outline: 1px solid red;
+    border: none;
+}
+
+[data-jaco-is-editing]:hover {
+    cursor:default !important;
 }

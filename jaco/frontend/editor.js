@@ -80,6 +80,7 @@ window.addClickHandler = () => {
         theme: 'snow'
       }
       new Quill(jacoEditable, editorOptions)
+      handlePosition(jacoEditable)
       return
     }
 
@@ -116,9 +117,20 @@ window.addClickHandler = () => {
         },
         theme: 'snow'
       })
+      handlePosition(jacoEditableLine)
       return
     }
   })
+}
+
+window.handlePosition = (element) => {
+  const rect = element.getBoundingClientRect()
+  const toolbar = element.parentElement.querySelectorAll('.ql-toolbar')[0]
+  const toolbarHeight = toolbar.offsetHeight // or clientHeight?
+  const scrollTop = document.body.scrollTop || document.documentElement.scrollTop
+  toolbar.style.top = (rect.top - toolbarHeight + scrollTop + 1) + 'px'
+  toolbar.style.left = rect.left + 'px'
+  toolbar.style.width = element.offsetWidth + 'px'
 }
 
 window.removeEditorInstances = () => {
@@ -145,9 +157,9 @@ window.removeEditorInstances = () => {
 window.removeBlockTags = (element) => {
   let tags = 'address,article,aside,blockquote,canvas,dd,div,dl,dt,fieldset,figcaption,figure,footer,form,h1,h1,h2,h3,h4,h5,h6,header,hr,li,main,nav,noscript,ol,p,pre,section,table,tfoot,ul,video'
   let blocks = element.querySelectorAll(tags)
-  let counter = blocks.length - 1;
+  let counter = blocks.length - 1
   for(let i=counter; i >= 0; i--) {
-    blocks[i].outerHTML = blocks[i].innerHTML;
+    blocks[i].outerHTML = blocks[i].innerHTML
   }
   return element.innerHTML
 }
@@ -160,6 +172,13 @@ window.addInternalLinkHandler = () => {
       event.preventDefault()
     })
   })
+}
+
+window.onresize = () => {
+  const editingElement = document.querySelector('[data-jaco-is-editing]')
+  if (editingElement) {
+    handlePosition(editingElement)
+  }
 }
 
 window.addClickHandler()
