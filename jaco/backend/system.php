@@ -17,6 +17,7 @@ function defined_classes(): array
             $classes[] = $class;
         }
     }
+    sort($classes);
     return $classes;
 }
 
@@ -37,6 +38,7 @@ function defined_constants(): array
             $constants[$key] = $value;
         }
     }
+    ksort($constants);
     return $constants;
 }
 
@@ -51,5 +53,6 @@ function defined_functions(): array
             $functions[] = $function;
         }
     }
+    sort($functions);
     return $functions;
 }
