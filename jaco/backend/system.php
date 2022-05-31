@@ -7,6 +7,20 @@ namespace jaco\system;
 const SECRETS = ['JACO_SECRET_KEY', 'JACO_PASSWORD'];
 
 /**
+ * @phpstan-return array<int,string>
+ */
+function defined_classes(): array
+{
+    $classes = [];
+    foreach (get_declared_classes() as $class) {
+        if (str_starts_with($class, 'jaco\\')) {
+            $classes[] = $class;
+        }
+    }
+    return $classes;
+}
+
+/**
  * @phpstan-return array<string,string>
  */
 function defined_constants(): array

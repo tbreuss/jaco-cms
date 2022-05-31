@@ -12,6 +12,7 @@ use jaco\system;
 function main(): array
 {
     return [200, [
+        'classes' => system\defined_classes(),
         'constants' => (array)system\defined_constants(),
         'functions' => system\defined_functions()
     ]];

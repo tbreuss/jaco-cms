@@ -1,9 +1,9 @@
 import { System as SystemModel } from '../model/System.js'
 import { t } from '../model/i18n.js'
 
-const constants = (object) => object
+const keyValueTable = (title, object) => object
   ? m('div',
-    m('h2', 'Constants'),
+    m('h2', title),
     m('table.table',
       m('thead', m('tr', m('th', t('Name')), m('th', t('Value')))),
       m('tbody', Object.entries(object).map((constant) => m('tr',
@@ -14,9 +14,9 @@ const constants = (object) => object
     ))
   : ''
 
-const functions = (array) => array
+const listTable = (title, array) => array
   ? m('div',
-    m('h2', 'Functions'),
+    m('h2', title),
     m('table.table',
       m('thead', m('tr', m('th', t('Name')))),
       m('tbody', array.map((constant) => m('tr',
@@ -43,8 +43,9 @@ export const System = {
   view: () => m('div.main',
     m('.content',
       m('h1', 'System'),
-      constants(SystemModel.info.constants),
-      functions(SystemModel.info.functions),
+      keyValueTable(t('Constants'), SystemModel.info.constants),
+      listTable(t('Classes'), SystemModel.info.classes),
+      listTable(t('Functions'), SystemModel.info.functions),
     )
   )
 }
