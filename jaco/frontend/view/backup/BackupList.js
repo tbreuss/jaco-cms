@@ -1,13 +1,13 @@
 import {t} from '../../model/i18n.js'
 import {Backup} from '../../model/Backup.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
-import {ButtonSecondary} from '../../component/ButtonSecondary.js';
-import {api} from "../../service/api.js";
-import {addSuccess} from "../../state/actions.js";
-import {addDanger} from "../../state/actions.js";
+import {ButtonSecondary} from '../../component/ButtonSecondary.js'
+import {api} from "../../service/api.js"
+import {addSuccess} from "../../state/actions.js"
+import {addDanger} from "../../state/actions.js"
 
 const dateTime = (timestamp) => {
-  const date = new Date(timestamp * 1000);
+  const date = new Date(timestamp * 1000)
   let parts = []
   parts.push(date.getDate().pad(2))
   parts.push('.')

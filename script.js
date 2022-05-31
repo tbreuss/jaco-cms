@@ -1,1 +1,1 @@
-console.debug('Log from website script.js');
+console.debug('Log from website script.js')

@@ -2,27 +2,27 @@
 
 import { api } from '../service/api.js'
 
-const defaultLocale = 'en';
-const messageUrl = 'action=translations&language={locale}';
+const defaultLocale = 'en'
+const messageUrl = 'action=translations&language={locale}'
 
 const loadAndSetLocale = (newLocale) => {
   if (i18n.currentLocale === newLocale) {
-    return;
+    return
   }
 
-  i18n.status = 'loading';
+  i18n.status = 'loading'
 
   fetchMessages(newLocale, (messages) => {
-    i18n.messages = messages.data;
-    i18n.currentLocale = newLocale;
-    i18n.status = 'idle';
-  });
+    i18n.messages = messages.data
+    i18n.currentLocale = newLocale
+    i18n.status = 'idle'
+  })
 }
 
 const fetchMessages = (locale, onComplete) => {
   api.get(messageUrl.replace('{locale}', locale)).then(
     onComplete,
-  );
+  )
 }
 
 export const i18n = {
@@ -32,7 +32,7 @@ export const i18n = {
   status: 'loading',
   t,
   loadAndSetLocale,
-};
+}
 
 export function t(key, placeholders = null) {
   let t = i18n.messages[key] || '{' + key + '}'
@@ -42,5 +42,5 @@ export function t(key, placeholders = null) {
       return placeholders[key] || all
     })
   }
-  return t;
+  return t
 }

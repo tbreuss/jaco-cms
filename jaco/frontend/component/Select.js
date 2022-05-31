@@ -1,7 +1,7 @@
 import { Label } from "./Label.js"
 
 const getOptions = (prompt, options) => {
-  let els = [];
+  let els = []
   if (prompt) {
     els.push({
       label: prompt,

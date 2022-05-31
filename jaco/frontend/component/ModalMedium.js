@@ -4,7 +4,7 @@ export const ModalMedium = {
   view: ({ attrs: { title }, children }) =>
     m('.modal', {
         oncreate: ({ dom }) => {
-          modalRef = dom;
+          modalRef = dom
         },
         onclick: (e) => {
           e.redraw = false

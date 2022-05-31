@@ -13,15 +13,15 @@ import { DefaultLayout } from './layout/Default.js'
 import { Notifications } from './service/Notifications.js'
 
 Number.prototype.pad = function (size) {
-  let s = String(this);
+  let s = String(this)
   while (s.length < (size || 2)) {
-    s = '0' + s;
+    s = '0' + s
   }
-  return s;
+  return s
 }
 
 Number.prototype.toDateTime = function () {
-  const date = new Date(this * 1000);
+  const date = new Date(this * 1000)
   let parts = []
   parts.push(date.getDate().pad(2))
   parts.push('.')

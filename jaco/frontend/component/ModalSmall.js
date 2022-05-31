@@ -4,7 +4,7 @@ export const ModalSmall = {
   view: ({ attrs: { title, cssClass }, children }) =>
     m('.modal', {
         oncreate: ({ dom }) => {
-          modalRef = dom;
+          modalRef = dom
         },
         onclick: (e) => {
           e.redraw = false

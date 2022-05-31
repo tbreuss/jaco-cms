@@ -23,15 +23,15 @@ export const iframe = {
 
     // add editor script
     if (!iframe.contentDocument.getElementById('editorInstanceJavascript')) {
-      let script = iframe.contentDocument.createElement('script');
-      script.id = 'editorInstanceJavascript';
-      script.type = 'text/javascript';
-      script.src = '/jaco/frontend/editor.js';
-      script.async = false;
+      let script = iframe.contentDocument.createElement('script')
+      script.id = 'editorInstanceJavascript'
+      script.type = 'text/javascript'
+      script.src = '/jaco/frontend/editor.js'
+      script.async = false
       script.onload = () => {
         iframe.contentWindow.initEditors()
-      };
-      iframe.contentDocument.head.appendChild(script);
+      }
+      iframe.contentDocument.head.appendChild(script)
     } else {
       iframe.contentWindow.initEditors()
     }
@@ -59,14 +59,14 @@ export const iframe = {
     if (!iframe) {
       return
     }
-    iframe.src = url;
+    iframe.src = url
   },
   reload: () => {
     let iframe = document.getElementById('iframe')
     if (!iframe) {
       return
     }
-    iframe.contentWindow.location.reload();
+    iframe.contentWindow.location.reload()
   },
   getHTML: () => {
     let iframe = document.getElementById('iframe')
@@ -86,7 +86,7 @@ export const iframe = {
         + (doctype.publicId ? ' PUBLIC "' + doctype.publicId + '"' : '')
         + (!doctype.publicId && doctype.systemId ? ' SYSTEM' : '')
         + (doctype.systemId ? ' "' + doctype.systemId + '"' : '')
-        + '>';
+        + '>'
     }
 
     // use empty data attributes only (and remove the empty string part)

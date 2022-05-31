@@ -1,5 +1,5 @@
 
-const animationDuration = 0;
+const animationDuration = 0
 
 let options = {
   title: () => 'Modal'
@@ -30,7 +30,7 @@ export function errorModalIsOpen() {
   return isOpen
 }
 
-let modelRef = undefined;
+let modelRef = undefined
 
 /** Modal component */
 export const ErrorModal = {
@@ -57,7 +57,7 @@ export const ErrorModal = {
     return m('dialog.error', {
       open: true,
       oncreate: ({ dom }) => {
-        modelRef = dom;
+        modelRef = dom
       },
       onclick: (e) => {
         e.redraw = false
