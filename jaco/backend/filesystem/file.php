@@ -154,7 +154,7 @@ function scandir_rec(string $dir, array $extensions, array $excludedDirectories 
         }
         $pathname = $file->getPathname();
         foreach ($excludedDirectories as $excludeDir) {
-            if (strpos($pathname, $excludeDir) !== false) {
+            if (strpos($pathname, rtrim($excludeDir, '/') . '/') !== false) {
                 continue 2;
             }
         }

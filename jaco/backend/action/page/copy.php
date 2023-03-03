@@ -58,6 +58,7 @@ function validators(): array
         ['dstFileName', 'htmlfile_name'],
         ['dstFileName', 'htmlfile_extension'],
         ['dstFileName', 'file_not_exists'],
+        ['dstFileName', 'file_not_in_jaco_dir'],
         ['dstPageTitle', 'required'],
     ];
 }

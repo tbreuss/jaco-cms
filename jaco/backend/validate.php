@@ -110,6 +110,18 @@ function file_not_exists(mixed $value): array
     return [false, '{value} must not exist.'];
 }
 
+function file_not_in_jaco_dir(mixed $value): array
+{
+    $parts = explode(DIRECTORY_SEPARATOR, $value);
+    $first = $parts[0] ?? '';
+
+    if ($first === JACO_DIR_NAME) {
+        return [false, sprintf('{value} cannot be copied to the protected %s folder.', JACO_DIR_NAME)];
+    }
+
+    return [true, ''];
+}
+
 /**
  * @phpstan-param array<string,string> $data
  * @phpstan-param array<array<string>> $rules
