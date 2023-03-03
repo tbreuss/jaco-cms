@@ -5,6 +5,7 @@ import { PageCopy } from './view/PageCopy.js'
 import { PageDelete } from './view/PageDelete.js'
 import { PageEdit } from './view/PageEdit.js'
 import { PageGoto } from './view/PageGoto.js'
+import { PageList } from './view/page/PageList.js'
 import { Login } from './view/Login.js'
 import { Logout } from './view/Logout.js'
 import { Start } from './view/Start.js'
@@ -55,6 +56,11 @@ m.route(document.getElementById('app'), '/', {
   '/backups/view/:file': {
     render: (vnode) => {
       return m(DefaultLayout, m(BackupView, vnode.attrs))
+    }
+  },
+  '/pages': {
+    render: () => {
+      return m(DefaultLayout, m(PageList))
     }
   },
   '/page-add': {

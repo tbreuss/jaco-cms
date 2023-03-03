@@ -17,11 +17,7 @@ function find_all(string $filter = '', string $sort = '-created'): array
     $list = create_list(JACO_BACKUPS_DIR, $files);
     $list = filter_list($list, $filter);
     $sort = sort_field($sort);
-    return [
-        'list' => sort_list($list, $filter, $sort),
-        'filter' => $filter,
-        'sort' => $sort
-    ];
+    return [sort_list($list, $filter, $sort), $filter, $sort];
 }
 
 function find_one(string $file): ?backup

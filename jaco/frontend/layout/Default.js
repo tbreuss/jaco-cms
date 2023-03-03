@@ -32,7 +32,7 @@ export const DefaultLayout = {
             window.sessionStorage.getItem('AUTHORIZATION_TOKEN') ? m('.navbar', [
               title(),
               m('.dropdown',
-                m('button.dropbtn', t('Pages')),
+                m('button.dropbtn', t('Quick Action')),
                 m('.dropdown-content',
                   m(m.route.Link, {
                     href: '/page-edit',
@@ -69,17 +69,19 @@ export const DefaultLayout = {
                       closeDropdown()
                     }
                   }, t('Goto page')),
+                  /*
                   m('.ruler'),
                   m(m.route.Link, {
-                    href: '/page-list',
+                    href: '/',
                     onclick: (e) => {
                       e.redraw = false
-                      showInfo()
                       closeDropdown()
                     }
-                  }, t('List pages'))
+                  }, t('Something else'))
+                  */
                 )
               ),
+              m(m.route.Link, {href: '/pages'}, t('Pages')),
               m('a[href=#]', {onclick: showInfo}, t('Uploads')),
               m(m.route.Link, {href: '/backups'}, t('Backups')),
               m('a[href=#]', {onclick: showInfo}, t('CSS')),

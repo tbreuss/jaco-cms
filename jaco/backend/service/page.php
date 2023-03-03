@@ -6,15 +6,21 @@ namespace jaco\service\page;
 
 use jaco\filesystem\file;
 use jaco\filesystem\html_file;
+use jaco\struct\backup;
 use jaco\struct\page;
+
+use function jaco\service\backup\sort_list;
 
 /**
  * @return page[]
  */
-function find_all(): array
+function find_all(string $filter = '', string $sort = '-created'): array
 {
     $files = html_file\find_rec(JACO_WEB_DIR, [JACO_DIR]);
-    return create_list(JACO_WEB_DIR, $files);
+    $list = create_list(JACO_WEB_DIR, $files);
+    $list = filter_list($list, $filter);
+    $sort = sort_field($sort);
+    return [sort_list($list, $filter, $sort), $filter, $sort];
 }
 
 function delete(string $file): bool
@@ -117,3 +123,29 @@ function create_one(string $dir, string $file, int $modified): page
         $modified
     );
 }
+
+/**
+ * @param backup[] $list
+ * @return backup[]
+ */
+function filter_list(array $list, string $filter): array
+{
+    if (strlen($filter) === 0) {
+        return $list;
+    }
+    return array_filter($list, function($item) use ($filter) {
+        $filter = str_replace('/', '|', $filter);
+        return stripos($item->file, $filter) !== false || stripos($item->title, $filter) !== false;
+    });
+}
+
+function sort_field(string $sort): array
+{
+    if (!in_array(ltrim($sort, '-'), ['created', 'file', 'title'])) {
+        return ['created', 'desc'];
+    }
+    $sortDir = str_starts_with($sort, '-') ? 'desc' : 'asc';
+    $sortField = $sortDir === 'desc' ? substr($sort, 1) : $sort;
+    return [$sortField, $sortDir];
+}
+

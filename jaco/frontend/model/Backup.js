@@ -3,14 +3,14 @@ import { api } from '../service/api.js'
 
 export const Backup = {
   loading: false,
-  list: [],
+  items: [],
   sort: '-created',
   filter: '',
   loadList: () => {
     Backup.loading = true
     return api.get('action=backup/list&filter=' + Backup.filter + '&sort=' + Backup.sort)
       .then(({ data }) => {
-        Backup.list = data.list
+        Backup.items = data.items
         Backup.loading = false
       })
   }

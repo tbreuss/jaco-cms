@@ -9,8 +9,12 @@ use jaco\service\page;
 /**
  * @phpstan-return array<int,mixed>
  */
-function main(): array
+function main(string $filter = '', string $sort = ''): array
 {
-    $pages = page\find_all();
-    return [200, $pages];
+    [$items, $filter, $sort] = page\find_all($filter, $sort);
+    return [200, [
+        'items' => $items,
+        'filter' => $filter,
+        'sort' => $sort,
+    ]];
 }

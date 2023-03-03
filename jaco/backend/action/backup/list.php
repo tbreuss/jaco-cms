@@ -11,6 +11,10 @@ use jaco\service\backup;
  */
 function main(string $filter = '', string $sort = '-created'): array
 {
-    $pages = backup\find_all($filter, $sort);
-    return [200, $pages];
+    [$items, $filter, $sort] = backup\find_all($filter, $sort);
+    return [200, [
+        'items' => $items,
+        'filter' => $filter,
+        'sort' => $sort,
+    ]];
 }

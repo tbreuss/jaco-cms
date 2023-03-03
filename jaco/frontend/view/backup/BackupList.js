@@ -143,7 +143,7 @@ export const BackupList = {
       dataFilter(loadList),
       Backup.loading
         ? m('p', t('Loading') + '...')
-        : Backup.list.length
+        : Backup.items.length
           ? m('table.table',
             m('colgroup',
               m('col', {width: '30%'}),
@@ -155,7 +155,7 @@ export const BackupList = {
             m('thead', m('tr',
               sortableHead(headings, loadList)
             )),
-            m('tbody', Backup.list.map((backup) => m('tr',
+            m('tbody', Backup.items.map((backup) => m('tr',
                 m('td', backup.name),
                 m('td', backup.title),
                 m('td', dateTime(backup.created)),
