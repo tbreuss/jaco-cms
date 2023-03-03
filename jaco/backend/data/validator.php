@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\validate;
+namespace jaco\data\validator;
 
 use jaco\filesystem\file;
 
@@ -110,70 +110,17 @@ function file_not_exists(mixed $value): array
     return [false, '{value} must not exist.'];
 }
 
+/**
+ * @phpstan-return array{bool, string}
+ */
 function file_not_in_jaco_dir(mixed $value): array
 {
     $parts = explode(DIRECTORY_SEPARATOR, $value);
     $first = $parts[0] ?? '';
 
     if ($first === JACO_DIR_NAME) {
-        return [false, sprintf('{value} cannot be copied to the protected %s folder.', JACO_DIR_NAME)];
+        return [false, sprintf('{value} must not be in the protected %s folder.', JACO_DIR_NAME)];
     }
 
     return [true, ''];
 }
-
-/**
- * @phpstan-param array<string,string> $data
- * @phpstan-param array<array<string>> $rules
- * @phpstan-return array<int,array<string,array<string,string>|string>>
- */
-function all(array $data, array $rules): array
-{
-    $errors = [];
-    $failed = [];
-    foreach ($rules as $rule) {
-        $name = $rule[0];
-        if (in_array($name, $failed)) {
-            continue;
-        }
-        $value = $data[$name] ?? null;
-        $callable = 'jaco\\validate\\' . $rule[1];
-        $options = array_slice($rule, 2);
-        $options['value'] = $value;
-        [$status, $message] = call_user_func_array($callable, $options);
-        if ($status === true) {
-            continue;
-        }
-        $errors[] = [
-            'source' => ['pointer' => $name],
-            'title' => 'Validation Error',
-            'detail' => str_replace('{value}', $value ?? $name, $message)
-        ];
-        $failed[] = $name;
-    }
-    return $errors;
-}
-
-/*
-$data = [
-    'test' => 'abc',
-    'number' => 123,
-    'string' => null,
-];
-print_r($data);
-
-$rules = [
-    ['test', 'required'],
-    ['test', 'string'],
-    ['number', 'numeric'],
-    ['string', 'required'],
-    ['string2', 'required'],
-    ['test', 'test', 'min' => 0, 'max' => 100, 'avg' => 50, 'sum' => 150],
-
-];
-
-$errors = validate_array($data, $rules);
-
-print_r($errors);
-exit;
-*/

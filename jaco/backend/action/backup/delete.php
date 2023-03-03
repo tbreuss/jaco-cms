@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\action\backup\delete;
 
-use jaco\filter;
+use jaco\data;
 use jaco\request;
-use jaco\validate;
 use jaco\service\backup;
 
 /**
@@ -17,11 +16,9 @@ function main(): array
     // get raw user input
     $raw = request\post_values();
 
-    // filter data
-    $data = filter\all($raw, filters());
+    $data = data\filter($raw, filters());
 
-    // validate data
-    $errors = validate\all($data, validators());
+    $errors = data\validate($data, validators());
     if (count($errors) > 0) {
         return [422, $errors];
     }
@@ -35,22 +32,22 @@ function main(): array
 }
 
 /**
- * @phpstan-return array<int,array<int,string>>
+ * @return array<int, array{string, callable}>
  */
 function filters(): array
 {
     return [
-        ['file', 'filename']
+        ['file', 'jaco\data\filter\filename']
     ];
 }
 
 /**
- * @phpstan-return array<int,array<int|string,bool|string>>
+ * @return array<int, array{string, callable}>
  */
 function validators(): array
 {
     return [
-        ['file', 'required'],
-        ['file', 'file_exists', 'dir' => JACO_BACKUPS_DIR],
+        ['file', 'jaco\data\validator\required'],
+        ['file', 'jaco\data\validator\file_exists', 'dir' => JACO_BACKUPS_DIR],
     ];
 }

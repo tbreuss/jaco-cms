@@ -8,9 +8,9 @@ use jaco\emitter;
 use jaco\router;
 
 // error handlers
-set_error_handler('jaco\exception\error_handler');
-set_exception_handler('jaco\exception\exception_handler');
-register_shutdown_function('jaco\exception\fatal_handler');
+set_error_handler('jaco\error\error_handler');
+set_exception_handler('jaco\error\exception_handler');
+register_shutdown_function('jaco\error\fatal_handler');
 
 // php stuff
 ini_set('error_reporting', (string)E_ALL);

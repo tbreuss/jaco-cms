@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace jaco\action\page\delete;
 
-use jaco\filter;
+use jaco\data;
 use jaco\request;
 use jaco\service\page;
-use jaco\validate;
 
 /**
  * @phpstan-return array<int,mixed>
@@ -17,11 +16,9 @@ function main(): array
     // get raw user input
     $raw = request\post_values();
 
-    // filter data
-    $data = filter\all($raw, filters());
+    $data = data\filter($raw, filters());
 
-    // validate data
-    $errors = validate\all($data, validators());
+    $errors = data\validate($data, validators());
     if (count($errors) > 0) {
         return [422, $errors];
     }
@@ -35,25 +32,25 @@ function main(): array
 }
 
 /**
- * @return string[][]
+ * @return array<int, array{string, callable}>
  */
 function filters(): array
 {
     return [
-        ['fileName', 'filename']
+        ['fileName', 'jaco\data\filter\filename']
     ];
 }
 
 /**
- * @return string[][]
+ * @return array<int, array{string, callable}>
  */
 function validators(): array
 {
     return [
-        ['fileName', 'required'],
-        ['fileName', 'file_exists'],
-        ['fileName', 'file_writeable'],
-        ['fileName', 'htmlfile_name'],
-        ['fileName', 'htmlfile_extension']
+        ['fileName', 'jaco\data\validator\required'],
+        ['fileName', 'jaco\data\validator\file_exists'],
+        ['fileName', 'jaco\data\validator\file_writeable'],
+        ['fileName', 'jaco\data\validator\htmlfile_name'],
+        ['fileName', 'jaco\data\validator\htmlfile_extension']
     ];
 }

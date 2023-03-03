@@ -26,13 +26,19 @@ function find_all(string $filter = '', string $sort = '-created'): array
 
 function find_one(string $file): ?backup
 {
-    return new backup(
-        $file,
-        str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
-        html_file\page_title(JACO_BACKUPS_DIR, $file),
-        time(),
-        file_get_contents(JACO_BACKUPS_DIR . '/' . $file)
-    );
+    $content = file\read(JACO_BACKUPS_DIR, $file);
+
+    if ($content) {
+        return new backup(
+            $file,
+            str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
+            html_file\page_title(JACO_BACKUPS_DIR, $file),
+            time(),
+            $content
+        );
+    }
+
+    return null;
 }
 
 function restore(string $file): bool

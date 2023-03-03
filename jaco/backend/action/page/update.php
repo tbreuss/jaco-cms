@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\action\page\update;
 
-use jaco\filter;
+use jaco\data;
 use jaco\request;
-use jaco\validate;
 use jaco\service\page;
 
 /**
@@ -17,11 +16,9 @@ function main(): array
     // get raw user input
     $raw = request\post_values();
 
-    // filter data
-    $data = filter\all($raw, filters());
+    $data = data\filter($raw, filters());
 
-    // validate data
-    $errors = validate\all($data, validators());
+    $errors = data\validate($data, validators());
     if (count($errors) > 0) {
         return [422, $errors];
     }
@@ -34,27 +31,27 @@ function main(): array
 }
 
 /**
- * @return string[][]
+ * @return array<int, array{string, callable}>
  */
 function filters(): array
 {
     return [
-        ['fileName', 'string'],
-        ['fileName', 'filename'],
-        ['html', 'string'],
+        ['fileName', 'jaco\data\filter\string'],
+        ['fileName', 'jaco\data\filter\filename'],
+        ['html', 'jaco\data\filter\string'],
     ];
 }
 
 /**
- * @return string[][]
+ * @return array<int, array{string, callable}>
  */
 function validators(): array
 {
     return [
-        ['fileName', 'required'],
-        ['fileName', 'file_exists'],
-        ['fileName', 'htmlfile_name'],
-        ['fileName', 'htmlfile_extension'],
-        ['html', 'required'],
+        ['fileName', 'jaco\data\validator\required'],
+        ['fileName', 'jaco\data\validator\file_exists'],
+        ['fileName', 'jaco\data\validator\htmlfile_name'],
+        ['fileName', 'jaco\data\validator\htmlfile_extension'],
+        ['html', 'jaco\data\validator\required'],
     ];
 }

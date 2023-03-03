@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace jaco\action\login;
 
 use jaco\auth;
-use jaco\filter;
+use jaco\data;
 use jaco\request;
-use jaco\validate;
 
 /**
  * @phpstan-return array<int,mixed>
@@ -17,11 +16,9 @@ function main(): array
     // get raw user input
     $raw = request\post_values();
 
-    // filter data
-    $data = filter\all($raw, filters());
+    $data = data\filter($raw, filters());
 
-    // validate data
-    $errors = validate\all($data, validators());
+    $errors = data\validate($data, validators());
     if (count($errors) > 0) {
         return [422, $errors];
     }
@@ -36,23 +33,23 @@ function main(): array
 }
 
 /**
- * @return string[][]
+ * @return array<int, array{string, callable}>
  */
 function filters(): array
 {
     return [
-        ['username', 'string'],
-        ['password', 'string']
+        ['username', 'jaco\data\filter\string'],
+        ['password', 'jaco\data\filter\string']
     ];
 }
 
 /**
- * @return string[][]
+ * @return array<int, array{string, callable}>
  */
 function validators(): array
 {
     return [
-        ['username', 'required'],
-        ['password', 'required'],
+        ['username', 'jaco\data\validator\required'],
+        ['password', 'jaco\data\validator\required'],
     ];
 }

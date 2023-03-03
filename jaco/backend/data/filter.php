@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\filter;
+namespace jaco\data\filter;
 
 function integer(mixed $value): int
 {
@@ -56,27 +56,4 @@ function filename(mixed $value): string
 function safe(mixed $value): mixed
 {
     return $value;
-}
-
-/**
- * @phpstan-param array<string,mixed> $data
- * @phpstan-param array<int,mixed> $filters
- * @return array<string,mixed>
- */
-function all(array $data, array $filters): array
-{
-    $filtered = [];
-    foreach ($filters as $rule) {
-        $name = $rule[0];
-        $value = $data[$name] ?? null;
-        $callable = 'jaco\\filter\\' . $rule[1];
-        $options = array_slice($rule, 2);
-        $options['value'] = $value;
-        $filteredValue = call_user_func_array($callable, $options);
-        if ($filteredValue === null) {
-            continue;
-        }
-        $filtered[$name] = $filteredValue;
-    }
-    return $filtered;
 }

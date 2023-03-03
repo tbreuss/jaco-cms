@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\action\page\copy;
 
-use jaco\filter;
+use jaco\data;
 use jaco\request;
-use jaco\validate;
 use jaco\service\page;
 
 /**
@@ -17,11 +16,9 @@ function main(): array
     // get raw user input
     $raw = request\post_values();
 
-    // filter data
-    $data = filter\all($raw, filters());
+    $data = data\filter($raw, filters());
 
-    // validate data
-    $errors = validate\all($data, validators());
+    $errors = data\validate($data, validators());
     if (count($errors) > 0) {
         return [422, $errors];
     }
@@ -35,30 +32,30 @@ function main(): array
 }
 
 /**
- * @return string[][]
+ * @return array<int, array{string, callable}>
  */
 function filters(): array
 {
     return [
-        ['srcFileName', 'filename'],
-        ['dstFileName', 'filename'],
-        ['dstPageTitle', 'html_specialchars'],
+        ['srcFileName', 'jaco\data\filter\filename'],
+        ['dstFileName', 'jaco\data\filter\filename'],
+        ['dstPageTitle', 'jaco\data\filter\html_specialchars'],
     ];
 }
 
 /**
- * @return string[][]
+ * @return array<int, array{string, callable}>
  */
 function validators(): array
 {
     return [
-        ['srcFileName', 'required'],
-        ['srcFileName', 'file_exists'],
-        ['dstFileName', 'required'],
-        ['dstFileName', 'htmlfile_name'],
-        ['dstFileName', 'htmlfile_extension'],
-        ['dstFileName', 'file_not_exists'],
-        ['dstFileName', 'file_not_in_jaco_dir'],
-        ['dstPageTitle', 'required'],
+        ['srcFileName', 'jaco\data\validator\required'],
+        ['srcFileName', 'jaco\data\validator\file_exists'],
+        ['dstFileName', 'jaco\data\validator\required'],
+        ['dstFileName', 'jaco\data\validator\htmlfile_name'],
+        ['dstFileName', 'jaco\data\validator\htmlfile_extension'],
+        ['dstFileName', 'jaco\data\validator\file_not_in_jaco_dir'],
+        ['dstFileName', 'jaco\data\validator\file_not_exists'],
+        ['dstPageTitle', 'jaco\data\validator\required'],
     ];
 }

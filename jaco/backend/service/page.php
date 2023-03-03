@@ -62,7 +62,7 @@ function copy(string $srcFile, string $dstFile, string $dstPageTitle): bool
 {
     $status = file\copy(JACO_WEB_DIR, $srcFile, JACO_WEB_DIR, $dstFile);
     if (!$status) {
-        throw new \jaco\exception\Exception('Could not copy page ' . $srcFile);
+        throw new \jaco\error\Exception('Could not copy page ' . $srcFile);
     }
     return html_file\update(JACO_WEB_DIR, $dstFile, function (string $contents) use ($dstPageTitle): string {
         $contents = preg_replace('/<title>(.*?)<\/title>/', '<title>' . $dstPageTitle . '</title>', $contents);
@@ -77,7 +77,7 @@ function create_from_template(string $srcFile, string $dstFile, string $dstPageT
 {
     $status = file\copy(JACO_TEMPLATES_PAGES_DIR, $srcFile, JACO_WEB_DIR, $dstFile);
     if (!$status) {
-        throw new \jaco\exception\Exception('Could not create page ' . $srcFile);
+        throw new \jaco\error\Exception('Could not create page ' . $srcFile);
     }
     return html_file\update(JACO_WEB_DIR, $dstFile, function (string $contents) use ($dstPageTitle): string {
         $contents = preg_replace('/<title>(.*?)<\/title>/', '<title>' . $dstPageTitle . '</title>', $contents);

@@ -75,6 +75,17 @@ function restore(string $bakDir, string $bakFile, string $dstDir): bool
     return move($bakDir, $bakFile, $dstDir, $dstFile);
 }
 
+function read(string $dir, string $file): ?string
+{
+    if (exists($dir, $file)) {
+        $content = file_get_contents(shared\join($dir, $file));
+        if (is_string($content)) {
+            return $content;
+        }
+    }
+    return null;
+}
+
 /**
  * Writes data to a file rooted at dir.
  * @param string $dir
@@ -127,9 +138,9 @@ function validate_extension(string $dir, string $file, array $allowed = JACO_ALL
  * @param string[] $extensions
  * @return string[]
  */
-function scandir(string $dir, array $extensions): array
+function scan_dir(string $dir, array $extensions): array
 {
-    return scandir_rec($dir, $extensions, [], 0);
+    return scan_dir_rec($dir, $extensions, [], 0);
 }
 
 /**
@@ -137,7 +148,7 @@ function scandir(string $dir, array $extensions): array
  * @param string[] $excludedDirectories
  * @return string[]
  */
-function scandir_rec(string $dir, array $extensions, array $excludedDirectories = [], int $maxDepth = -1): array
+function scan_dir_rec(string $dir, array $extensions, array $excludedDirectories = [], int $maxDepth = -1): array
 {
     $rii = new \RecursiveIteratorIterator(
         new \RecursiveDirectoryIterator($dir)
@@ -154,11 +165,11 @@ function scandir_rec(string $dir, array $extensions, array $excludedDirectories 
         }
         $pathname = $file->getPathname();
         foreach ($excludedDirectories as $excludeDir) {
-            if (strpos($pathname, rtrim($excludeDir, '/') . '/') !== false) {
+            if (str_contains($pathname, rtrim($excludeDir, '/') . '/')) {
                 continue 2;
             }
         }
-        if (strpos($pathname, $dir) === 0) {
+        if (str_starts_with($pathname, $dir)) {
             $relfile = substr($pathname, strlen($dir));
             $files[] = ltrim($relfile, '\\/');
         }

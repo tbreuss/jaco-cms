@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\exception;
+namespace jaco\error;
 
 use jaco\emitter;
 
