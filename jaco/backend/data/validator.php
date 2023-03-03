@@ -6,6 +6,9 @@ namespace jaco\data\validator;
 
 use jaco\filesystem\file;
 
+use const jaco\JACO_DIR_NAME;
+use const jaco\WEB_DIR;
+
 /**
  * @phpstan-return array{bool, string}
  */
@@ -60,7 +63,7 @@ function test(mixed $value, int $avg, int $min, int $max, int $sum): array
  */
 function htmlfile_extension(mixed $value): array
 {
-    if (is_string($value) && file\validate_extension(JACO_WEB_DIR, $value)) {
+    if (is_string($value) && file\validate_extension(WEB_DIR, $value)) {
         return [true, ''];
     }
     return [false, '{value} is an invalid extension'];
@@ -71,7 +74,7 @@ function htmlfile_extension(mixed $value): array
  */
 function htmlfile_name(mixed $value, bool $isBackup = false): array
 {
-    if (is_string($value) && file\validate_filename(JACO_WEB_DIR, $value, $isBackup)) {
+    if (is_string($value) && file\validate_filename(WEB_DIR, $value, $isBackup)) {
         return [true, ''];
     }
     return [false, '{value} is an invalid filename'];
@@ -82,7 +85,7 @@ function htmlfile_name(mixed $value, bool $isBackup = false): array
  */
 function file_writeable(mixed $value): array
 {
-    if (is_string($value) && file\is_writable(JACO_WEB_DIR, $value)) {
+    if (is_string($value) && file\is_writable(WEB_DIR, $value)) {
         return [true, ''];
     }
     return [false, '{value} is not writeable.'];
@@ -91,7 +94,7 @@ function file_writeable(mixed $value): array
 /**
  * @phpstan-return array{bool, string}
  */
-function file_exists(mixed $value, string $dir = JACO_WEB_DIR): array
+function file_exists(mixed $value, string $dir = WEB_DIR): array
 {
     if (is_string($value) && file\exists($dir, $value)) {
         return [true, ''];
@@ -104,7 +107,7 @@ function file_exists(mixed $value, string $dir = JACO_WEB_DIR): array
  */
 function file_not_exists(mixed $value): array
 {
-    if (!file\exists(JACO_WEB_DIR, $value)) {
+    if (!file\exists(WEB_DIR, $value)) {
         return [true, ''];
     }
     return [false, '{value} must not exist.'];

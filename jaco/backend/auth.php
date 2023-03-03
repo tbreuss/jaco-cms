@@ -7,9 +7,13 @@ namespace jaco\auth;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
+use const jaco\PASSWORD;
+use const jaco\SECRET_KEY;
+use const jaco\USERNAME;
+
 function login(string $username, string $password): string
 {
-    if ($username !== JACO_USERNAME || $password !== JACO_PASSWORD) {
+    if ($username !== USERNAME || $password !== PASSWORD) {
         throw new \Exception('Login failed', 422);
     }
 
@@ -20,13 +24,13 @@ function login(string $username, string $password): string
         'nbf' => time(),
     ];
 
-    return JWT::encode($payload, JACO_SECRET_KEY, 'HS512');
+    return JWT::encode($payload, SECRET_KEY, 'HS512');
 }
 
 function is_logged_in(string $token): bool
 {
     try {
-        JWT::decode($token, new Key(JACO_SECRET_KEY, 'HS512'));
+        JWT::decode($token, new Key(SECRET_KEY, 'HS512'));
     } catch (\Throwable $t) {
         return false;
     }

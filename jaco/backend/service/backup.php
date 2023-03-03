@@ -8,13 +8,16 @@ use jaco\filesystem\file;
 use jaco\filesystem\html_file;
 use jaco\struct\backup;
 
+use const jaco\BACKUPS_DIR;
+use const jaco\WEB_DIR;
+
 /**
  * @phpstan-return array{list:backup[],filter:string,sort:array{string,string}}
  */
 function find_all(string $filter = '', string $sort = '-created'): array
 {
-    $files = html_file\find(JACO_BACKUPS_DIR);
-    $list = create_list(JACO_BACKUPS_DIR, $files);
+    $files = html_file\find(BACKUPS_DIR);
+    $list = create_list(BACKUPS_DIR, $files);
     $list = filter_list($list, $filter);
     $sort = sort_field($sort);
     return [sort_list($list, $filter, $sort), $filter, $sort];
@@ -22,13 +25,13 @@ function find_all(string $filter = '', string $sort = '-created'): array
 
 function find_one(string $file): ?backup
 {
-    $content = file\read(JACO_BACKUPS_DIR, $file);
+    $content = file\read(BACKUPS_DIR, $file);
 
     if ($content) {
         return new backup(
             $file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
-            html_file\page_title(JACO_BACKUPS_DIR, $file),
+            html_file\page_title(BACKUPS_DIR, $file),
             time(),
             $content
         );
@@ -39,12 +42,12 @@ function find_one(string $file): ?backup
 
 function restore(string $file): bool
 {
-    return file\restore(JACO_BACKUPS_DIR, $file, JACO_WEB_DIR);
+    return file\restore(BACKUPS_DIR, $file, WEB_DIR);
 }
 
 function delete(string $file): bool
 {
-    return file\delete(JACO_BACKUPS_DIR, $file);
+    return file\delete(BACKUPS_DIR, $file);
 }
 
 /**

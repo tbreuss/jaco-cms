@@ -6,6 +6,8 @@ namespace jaco\filesystem\dir;
 
 use jaco\filesystem\shared;
 
+use const jaco\PERMISSIONS_DIRECTORIES;
+
 function exists(string $root, string $dir): bool
 {
     $path = shared\join($root, $dir);
@@ -18,7 +20,7 @@ function is_writable(string $root, string $dir): bool
     return exists($root, $dir) && \is_writable($path);
 }
 
-function make(string $root, string $dir, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
+function make(string $root, string $dir, int $permissions = PERMISSIONS_DIRECTORIES): bool
 {
     $path = shared\join($root, $dir);
     if (is_dir($path)) {
@@ -27,7 +29,7 @@ function make(string $root, string $dir, int $permissions = JACO_PERMISSIONS_DIR
     return mkdir($path, $permissions, false);
 }
 
-function make_rec(string $root, string $dir, int $permissions = JACO_PERMISSIONS_DIRECTORIES): bool
+function make_rec(string $root, string $dir, int $permissions = PERMISSIONS_DIRECTORIES): bool
 {
     $path = shared\join($root, $dir);
     if (is_dir($path)) {

@@ -107,7 +107,7 @@ const sortableHead = (headings, onclick) => {
 const dataFilter = (oninput) => {
   return m('.list-filter',
     m('input[type=text]', {
-      placeholder: t('Filter backup files'),
+      placeholder: t('Filter page files'),
       value: PageListModel.filter,
       oninput: (e) => {
         e.redraw = false

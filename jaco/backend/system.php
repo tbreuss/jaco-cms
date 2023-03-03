@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace jaco\system;
 
-const SECRETS = ['JACO_SECRET_KEY', 'JACO_PASSWORD'];
+use const jaco\WEB_DIR;
+
+const SECRETS = ['jaco\SECRET_KEY', 'jaco\PASSWORD'];
 
 /**
  * @phpstan-return array<int,string>
@@ -34,6 +36,9 @@ function defined_constants(): array
             }
             if (in_array($key, SECRETS) !== false) {
                 $value = '****';
+            }
+            if (is_string($value) && str_starts_with($value, WEB_DIR)) {
+                $value = substr($value, strlen(WEB_DIR));
             }
             $constants[$key] = $value;
         }

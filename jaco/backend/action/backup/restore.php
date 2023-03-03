@@ -8,6 +8,8 @@ use jaco\data;
 use jaco\request;
 use jaco\service\backup;
 
+use const jaco\BACKUPS_DIR;
+
 /**
  * @phpstan-return array<int,mixed>
  */
@@ -48,7 +50,7 @@ function validators(): array
 {
     return [
         ['file', 'jaco\data\validator\required'],
-        ['file', 'jaco\data\validator\file_exists', 'dir' => JACO_BACKUPS_DIR],
+        ['file', 'jaco\data\validator\file_exists', 'dir' => BACKUPS_DIR],
         ['file', 'jaco\data\validator\htmlfile_name', 'isBackup' => true],
         ['file', 'jaco\data\validator\htmlfile_extension']
     ];

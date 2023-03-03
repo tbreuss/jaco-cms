@@ -7,6 +7,8 @@ namespace jaco\filesystem\file;
 use jaco\filesystem\dir;
 use jaco\filesystem\shared;
 
+use const jaco\ALLOWED_EXTENSIONS;
+
 function exists(string $dir, string $file): bool
 {
     $path = shared\join($dir, $file);
@@ -121,7 +123,7 @@ function validate_filename(string $dir, string $file, bool $isBackup = false): b
 /**
  * @param string[] $allowed
  */
-function validate_extension(string $dir, string $file, array $allowed = JACO_ALLOWED_EXTENSIONS): bool
+function validate_extension(string $dir, string $file, array $allowed = ALLOWED_EXTENSIONS): bool
 {
     $abs_path = shared\join($dir, $file);
 

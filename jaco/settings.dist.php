@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'JACO_USERNAME' => '',
-    'JACO_PASSWORD' => '',
-    'JACO_SECRET_KEY' => 'z2MSdMsCEs8eQpZV'
+    'jaco\USERNAME' => '',
+    'jaco\PASSWORD' => '',
+    'jaco\SECRET_KEY' => 'z2MSdMsCEs8eQpZV'
 ];

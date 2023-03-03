@@ -7,6 +7,8 @@ namespace jaco\filesystem\html_file;
 use jaco\filesystem\file;
 use jaco\filesystem\shared;
 
+use const jaco\ALLOWED_EXTENSIONS;
+
 function load(string $dir, string $file): string
 {
     if (!file\exists($dir, $file)) {
@@ -45,7 +47,7 @@ function update(string $dir, string $file, callable $callback, ?string $bakDir =
  * @param string[] $extensions
  * @return \jaco\struct\file[]
  */
-function find(string $dir, array $extensions = JACO_ALLOWED_EXTENSIONS): array
+function find(string $dir, array $extensions = ALLOWED_EXTENSIONS): array
 {
     $files = file\scan_dir($dir, $extensions);
     $list = [];
@@ -61,7 +63,7 @@ function find(string $dir, array $extensions = JACO_ALLOWED_EXTENSIONS): array
  * @param string[] $extensions
  * @return \jaco\struct\file[]
  */
-function find_rec(string $dir, array $exclude_dirs = [], array $extensions = JACO_ALLOWED_EXTENSIONS, int $max_depth = -1): array
+function find_rec(string $dir, array $exclude_dirs = [], array $extensions = ALLOWED_EXTENSIONS, int $max_depth = -1): array
 {
     $files = file\scan_dir_rec($dir, $extensions, $exclude_dirs, $max_depth);
     $list = [];
