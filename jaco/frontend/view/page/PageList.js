@@ -23,41 +23,21 @@ const dateTime = (timestamp) => {
   return parts.join('')
 }
 
-const restoreBackup = (backup) => {
-  if (confirm(t('Do you want to restore this page?', {name: backup.name}))) {
-    api.post('action=backup/restore', {
+const editPage = (file) => {
+  m.route.set('/pages/edit/:file', {file: file})
+}
+
+const deleteAction = (page) => {
+  console.log(page)
+  if (confirm(t('Do you want to delete the page?', {name: page.file}))) {
+    api.post('action=page/delete', {
       background: true, // no redraw
-      body: {file: backup.file},
+      body: {fileName: page.file},
       withCredentials: false
     })
       .then(() => {
         PageListModel.load().then(() => {
-          addSuccess(t('Backup was successfully restored.'))
-        })
-      })
-      .catch(({code, response}) => {
-        if (code === 422) {
-          addDanger(response.errors[0].title)
-        }
-        m.redraw()
-      })
-  }
-}
-
-const viewBackup = (file) => {
-  m.route.set('/backups/view/:file', {file: file})
-}
-
-const deleteAction = (backup) => {
-  if (confirm(t('Do you want to delete the page?', {name: backup.name}))) {
-    api.post('action=backup/delete', {
-      background: true, // no redraw
-      body: {file: backup.file},
-      withCredentials: false
-    })
-      .then(() => {
-        PageListModel.load().then(() => {
-          addSuccess(t('Backup was successfully deleted.'))
+          addSuccess(t('Page was successfully deleted.'))
         })
       })
       .catch(({code, response}) => {
@@ -153,22 +133,20 @@ export const PageList = {
             m('thead', m('tr',
               sortableHead(headings, loadList)
             )),
-            m('tbody', PageListModel.items.map((backup) => m('tr',
-                m('td', backup.file),
-                m('td', backup.title),
-                m('td', dateTime(backup.created)),
+            m('tbody', PageListModel.items.map((page) => m('tr',
+                m('td', page.file),
+                m('td', page.title),
+                m('td', dateTime(page.created)),
                 m('td.text-right.text-nowrap',
                   m(ButtonSecondary, {
                     onclick: () => {
-                      //viewBackup(backup.file)
-                      return
+                      editPage(page.file)
                     }
-                  }, t('View')),
+                  }, t('Edit')),
                   m(ButtonPrimary, {
                     onclick: (e) => {
                       e.redraw = false
-                      //deleteAction(backup)
-                      return
+                      deleteAction(page)
                     }
                   }, t('Delete')),
                 )

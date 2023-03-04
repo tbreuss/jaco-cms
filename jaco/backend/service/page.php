@@ -26,6 +26,23 @@ function find_all(string $filter = '', string $sort = '-created'): array
     return [sort_list($list, $filter, $sort), $filter, $sort];
 }
 
+function find_one(string $file): ?page
+{
+    $content = file\read(WEB_DIR, $file);
+
+    if ($content) {
+        return new page(
+            $file,
+            html_file\page_title(WEB_DIR, $file),
+            file\mtime($file, WEB_DIR),
+            $content
+        );
+    }
+
+    return null;
+}
+
+
 function delete(string $file): bool
 {
     $status = file\backup(WEB_DIR, $file, BACKUPS_DIR);
@@ -118,12 +135,13 @@ function create_list(string $dir, array $files): array
     return $html;
 }
 
-function create_one(string $dir, string $file, int $modified): page
+function create_one(string $dir, string $file, int $modified, ?string $content = null): page
 {
     return new page(
         $file,
         html_file\page_title($dir, $file),
-        $modified
+        $modified,
+        $content
     );
 }
 

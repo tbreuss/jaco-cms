@@ -1,0 +1,130 @@
+import {t} from '../../model/i18n.js'
+import {PageEditModel} from '../../model/PageEditModel.js'
+import {ButtonSecondary} from '../../component/ButtonSecondary.js'
+import {Fieldset} from '../../component/Fieldset.js'
+import {InputText} from '../../component/InputText.js'
+import {ButtonGroup} from '../../component/ButtonGroup.js'
+import {addSuccess} from '../../state/actions.js'
+import {ButtonPrimary} from '../../component/ButtonPrimary.js'
+import {FormErrors} from '../../component/FormErrors.js'
+
+let editor = undefined
+
+const state = {
+  errors: [],
+  initialized: false
+}
+
+const onCancelHandler = () => {
+  m.route.set('/pages')
+}
+
+const onCreateComponent = () => {
+  document.getElementById('app').classList.add('max-height')
+  document.documentElement.style.visibility = 'visible'
+
+  editor = ace.edit("ace", {
+    theme: "ace/theme/github",
+    mode: "ace/mode/html",
+    maxLines: Infinity,  // this is going to be very slow on large documents
+    wrap: true,   // wrap text to view
+    indentedSoftWrap: false,
+    behavioursEnabled: false, // disable autopairing of brackets and tags
+    showLineNumbers: false, // hide the gutter
+    readOnly: false
+  })
+  editor.resize(false)
+}
+
+const onInitComponent = (vnode) => {
+  if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+    m.route.set('/logout')
+  }
+  PageEditModel.load(vnode.attrs.file)
+  state.errors = []
+  state.initialized = false
+}
+
+const onSaveHandler = (e) => {
+  e.redraw = false
+  PageEditModel.item.content = editor.getValue()
+  PageEditModel.save()
+    .then(() => {
+      addSuccess(t('Page was successfully saved.'))
+    })
+    .catch(({code, response}) => {
+      if (code === 422) {
+        state.errors = response.errors
+        m.redraw()
+      }
+    })
+}
+
+const onSaveAndCloseHandler = (e) => {
+  e.redraw = false
+  PageEditModel.item.content = editor.getValue()
+  PageEditModel.save()
+    .then(() => {
+      addSuccess(t('Page was successfully saved.'))
+      m.route.set('/pages')
+    })
+    .catch(({code, response}) => {
+      if (code === 422) {
+        state.errors = response.errors
+        m.redraw()
+      }
+    })
+}
+
+const onRemoveComponent = () => {
+  document.getElementById('app').classList.remove('max-height')
+}
+
+const onUpdateComponent = () => {
+  if (!state.initialized) {
+    editor.setValue(PageEditModel.item.content, 1) // set cursor at the end
+    state.initialized = true
+  }
+}
+
+export const EditPageView = {
+  oninit: onInitComponent,
+  oncreate: onCreateComponent,
+  onupdate: onUpdateComponent,
+  onremove: onRemoveComponent,
+  view: () => m('div.main',
+    m('.content',
+      m('h1', t('Edit page'), ': ', PageEditModel.item.title ?? ''),
+      m(Fieldset, {legend: t('Current page')},
+        m(InputText, {
+          wrap: 'div.row',
+          label: t('Filename'),
+          value: PageEditModel.item.file ?? '',
+          disabled: true
+        }),
+        m(InputText, {
+          wrap: 'div.row',
+          label: t('Page title'),
+          value: PageEditModel.item.title ?? '',
+          disabled: true
+        }),
+        m(InputText, {
+          wrap: 'div.row',
+          label: t('Created at'),
+          value: PageEditModel.item.created ? PageEditModel.item.created.toDateTime() : '',
+          disabled: true
+        }),
+        m('.row',
+          m('label', {style: {width: '100%'}}, t('HTML')),
+          m('div#ace', {style: {width: '100%'},})
+        ),
+        m(ButtonGroup, {wrap: 'div.row.text-right'},
+          m(ButtonPrimary, {onclick: onSaveHandler}, t('Save')),
+          m(ButtonPrimary, {onclick: onSaveAndCloseHandler}, t('Save & Close')),
+          m(ButtonSecondary, {onclick: onCancelHandler}, t('Back'))
+        )
+      ),
+      m(FormErrors, {errors: state.errors}),
+    )
+  )
+}

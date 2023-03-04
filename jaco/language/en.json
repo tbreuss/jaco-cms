@@ -18,6 +18,7 @@
   "Delete page": "Delete page",
   "Do you want to delete the page?": "Do you want to delete the page?\r\n- {name}",
   "Do you want to restore this page?": "Do you want to restore this page?\r\n- {name}",
+  "Edit": "Edit",
   "Edit page": "Edit page",
   "Filename": "Filename",
   "Filter backup files": "Filter backup files",
@@ -50,6 +51,7 @@
   "Quick Action": "Quick Action",
   "Restore": "Restore",
   "Save": "Save",
+  "Save & Close": "Save & Close",
   "Select an option": "- Select an option -",
   "Select page": "Select page",
   "Sorry, no page found": "Sorry, no page found.",
@@ -59,5 +61,6 @@
   "Username": "Username",
   "Value": "Value",
   "View": "View",
+  "View backup": "View backup",
   "Yes": "Yes"
 }

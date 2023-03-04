@@ -12,6 +12,7 @@ import { Start } from './view/Start.js'
 import { System } from './view/System.js'
 import { DefaultLayout } from './layout/Default.js'
 import { Notifications } from './service/Notifications.js'
+import {EditPageView} from './view/page/EditPageView.js'
 
 Number.prototype.pad = function (size) {
   let s = String(this)
@@ -61,6 +62,11 @@ m.route(document.getElementById('app'), '/', {
   '/pages': {
     render: () => {
       return m(DefaultLayout, m(PageList))
+    }
+  },
+  '/pages/edit/:file': {
+    render: (vnode) => {
+      return m(DefaultLayout, m(EditPageView, vnode.attrs))
     }
   },
   '/page-add': {

@@ -10,6 +10,7 @@ class page
         public string $file,
         public string $title,
         public int $created,
+        public ?string $content
     ) {
     }
 }

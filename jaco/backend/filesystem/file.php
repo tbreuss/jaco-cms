@@ -88,6 +88,12 @@ function read(string $dir, string $file): ?string
     return null;
 }
 
+function mtime(string $file, string $dir): int
+{
+    $time = filemtime(shared\join($dir, $file));
+    return is_int($time) ? $time : 0;
+}
+
 /**
  * Writes data to a file rooted at dir.
  * @param string $dir
@@ -97,6 +103,7 @@ function read(string $dir, string $file): ?string
  */
 function write(string $dir, string $file, string $data): bool
 {
+    // TODO
     return false;
 }
 

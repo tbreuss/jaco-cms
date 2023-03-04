@@ -27,14 +27,14 @@ export const BackupView = {
       showLineNumbers: false, // hide the gutter
       readOnly: true
     })
-    editor.setValue(BackupViewModel.item.content)
+    editor.setValue(BackupViewModel.item.content, 1) // set cursor at the end
   },
   onremove: () => {
     document.getElementById('app').classList.remove('max-height')
   },
   view: () => m('div.main',
     m('.content',
-      m('h1', t('Backups')),
+      m('h1', t('View backup'), ': ', BackupViewModel.item.title ?? ''),
       m(Fieldset, {legend: t('Current page')},
         m(InputText, {
           wrap: 'div.row',
@@ -56,11 +56,7 @@ export const BackupView = {
         }),
         m('.row',
           m('label', {style: {width: '100%'}}, t('HTML')),
-          m('div#ace', {
-              style: {width: '100%'},
-              oncreate: ({dom}) => setTimeout(() => dom.focus())
-            }
-          )
+          m('div#ace', {style: {width: '100%'}})
         ),
         m(ButtonGroup, {wrap: 'div.row.text-right'},
           m(ButtonSecondary, {

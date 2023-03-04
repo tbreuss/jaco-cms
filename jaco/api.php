@@ -35,6 +35,7 @@ router\get('backup/view', 'jaco\action\backup\view\main', true);
 router\post('backup/restore', 'jaco\action\backup\restore\main', true);
 router\post('backup/delete', 'jaco\action\backup\delete\main', true);
 router\get('page/list', 'jaco\action\page\list\main', true);
+router\get('page/view', 'jaco\action\page\view\main', true);
 router\post('page/copy', 'jaco\action\page\copy\main', true);
 router\post('page/create', 'jaco\action\page\create\main', true);
 router\post('page/delete', 'jaco\action\page\delete\main', true);
