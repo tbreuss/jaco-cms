@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\emitter;
 
+use jaco\response;
+
 /**
  * @phpstan-param string|array<mixed> $response
  */
@@ -15,11 +17,10 @@ function emit(int $status, string|array $response): void
         echo $response;
     } elseif (is_array($response)) {
         header('Content-Type: application/json; charset=utf-8');
-        if ($status >= 400) {
-            echo send_errors($response);
-        } else {
-            echo send_data($response);
-        }
+        echo match ($status) {
+            response\OK => send_data($response),
+            default => send_errors($response),
+        };
     }
     ob_end_flush();
     exit;

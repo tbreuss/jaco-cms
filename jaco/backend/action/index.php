@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\action\index;
 
+use jaco\response;
+
 use const jaco\VERSION;
 
 /**
@@ -11,7 +13,7 @@ use const jaco\VERSION;
  */
 function main(string $version = VERSION): array
 {
-    return [200, [
+    return [response\OK, [
         'name' => 'jaco',
         'version' => $version
     ]];

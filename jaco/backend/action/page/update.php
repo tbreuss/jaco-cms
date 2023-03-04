@@ -6,6 +6,7 @@ namespace jaco\action\page\update;
 
 use jaco\data;
 use jaco\request;
+use jaco\response;
 use jaco\service\page;
 
 /**
@@ -13,21 +14,20 @@ use jaco\service\page;
  */
 function main(): array
 {
-    // get raw user input
-    $raw = request\post_values();
+    $raw = request\get_post_values();
 
     $data = data\filter($raw, filters());
 
     $errors = data\validate($data, validators());
     if (count($errors) > 0) {
-        return [422, $errors];
+        return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
     if (!page\update($data['fileName'], $data['html'])) {
-        return [500, [['title' => 'Could not update page']]];
+        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not update page']]];
     }
 
-    return [200];
+    return [response\OK];
 }
 
 /**

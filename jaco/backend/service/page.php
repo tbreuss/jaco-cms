@@ -6,10 +6,7 @@ namespace jaco\service\page;
 
 use jaco\filesystem\file;
 use jaco\filesystem\html_file;
-use jaco\struct\backup;
 use jaco\struct\page;
-
-use function jaco\service\backup\sort_list;
 
 use const jaco\ALLOWED_EXTENSIONS;
 use const jaco\BACKUPS_DIR;
@@ -18,7 +15,7 @@ use const jaco\TEMPLATES_PAGES_DIR;
 use const jaco\WEB_DIR;
 
 /**
- * @return page[]
+ * @phpstan-return array{0:page[],1:string,2:array{string,string}}
  */
 function find_all(string $filter = '', string $sort = '-created'): array
 {
@@ -131,8 +128,24 @@ function create_one(string $dir, string $file, int $modified): page
 }
 
 /**
- * @param backup[] $list
- * @return backup[]
+ * @param page[] $list
+ * @phpstan-param array{string,string} $sort
+ * @return page[]
+ */
+function sort_list(array $list, string $filter, array $sort): array
+{
+    [$sortField, $sortDir] = $sort;
+    usort($list, function ($a, $b) use ($sortDir, $sortField) {
+        return $sortDir === 'asc'
+            ? strcmp((string)$a->$sortField, (string)$b->$sortField)
+            : strcmp((string)$b->$sortField, (string)$a->$sortField);
+    });
+    return $list;
+}
+
+/**
+ * @param page[] $list
+ * @return page[]
  */
 function filter_list(array $list, string $filter): array
 {
@@ -145,6 +158,9 @@ function filter_list(array $list, string $filter): array
     });
 }
 
+/**
+ * @return array{string, string}
+ */
 function sort_field(string $sort): array
 {
     if (!in_array(ltrim($sort, '-'), ['created', 'file', 'title'])) {
@@ -154,4 +170,3 @@ function sort_field(string $sort): array
     $sortField = $sortDir === 'desc' ? substr($sort, 1) : $sort;
     return [$sortField, $sortDir];
 }
-

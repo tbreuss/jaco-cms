@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\action\system;
 
+use jaco\response;
 use jaco\system;
 
 /**
@@ -11,7 +12,7 @@ use jaco\system;
  */
 function main(): array
 {
-    return [200, [
+    return [response\OK, [
         'classes' => system\defined_classes(),
         'constants' => (array)system\defined_constants(),
         'functions' => system\defined_functions()

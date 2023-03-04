@@ -7,29 +7,29 @@ namespace jaco\action\login;
 use jaco\auth;
 use jaco\data;
 use jaco\request;
+use jaco\response;
 
 /**
  * @phpstan-return array<int,mixed>
  */
 function main(): array
 {
-    // get raw user input
-    $raw = request\post_values();
+    $raw = request\get_post_values();
 
     $data = data\filter($raw, filters());
 
     $errors = data\validate($data, validators());
     if (count($errors) > 0) {
-        return [422, $errors];
+        return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
     try {
         $token = auth\login($data['username'], $data['password']);
     } catch (\Throwable $t) {
-        return [422, [['title' => 'Validation Error', 'detail' => $t->getMessage()]]];
+        return [response\UNPROCESSABLE_CONTENT, [['title' => 'Validation Error', 'detail' => $t->getMessage()]]];
     }
 
-    return [200, ['token' => $token]];
+    return [response\OK, ['token' => $token]];
 }
 
 /**

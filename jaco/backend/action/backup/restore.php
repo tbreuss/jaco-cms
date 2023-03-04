@@ -6,6 +6,7 @@ namespace jaco\action\backup\restore;
 
 use jaco\data;
 use jaco\request;
+use jaco\response;
 use jaco\service\backup;
 
 use const jaco\BACKUPS_DIR;
@@ -15,22 +16,21 @@ use const jaco\BACKUPS_DIR;
  */
 function main(): array
 {
-    // get raw user input
-    $raw = request\post_values();
+    $raw = request\get_post_values();
 
     $data = data\filter($raw, filters());
 
     $errors = data\validate($data, validators());
     if (count($errors) > 0) {
-        return [422, $errors];
+        return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
     // delete page
     if (!backup\restore($data['file'])) {
-        return [500, [['title' => 'Could not restore backup']]];
+        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not restore backup']]];
     }
 
-    return [200];
+    return [response\OK];
 }
 
 /**

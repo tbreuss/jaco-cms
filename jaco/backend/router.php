@@ -6,6 +6,7 @@ namespace jaco\router;
 
 use jaco\auth;
 use jaco\request;
+use jaco\response;
 
 /**
  * @phpstan-return array<int,array{method:string,action:string,callback:string,authenticated:bool}>
@@ -46,12 +47,12 @@ function dispatch(string $method, string $action): array
 
     $routes_by_action = filter_routes($routes, 'action', $action);
     if (count($routes_by_action) === 0) {
-        return [404, [['title' => '404 Page Not Found']]];
+        return [response\NOT_FOUND, [['title' => '404 Page Not Found']]];
     }
 
     $routes_by_method = filter_routes($routes_by_action, 'method', $method);
     if (count($routes_by_method) === 0) {
-        return [405, [['title' => '405 Method Not Allowed']]];
+        return [response\METHOD_NOT_ALLOWED, [['title' => '405 Method Not Allowed']]];
     }
 
     // take the first one if multiple routes exist
@@ -59,13 +60,13 @@ function dispatch(string $method, string $action): array
 
     if ($route['authenticated'] === true) {
         if (check_authorization() === false) {
-            return [403, [['title' => '403 Forbidden']]];
+            return [response\FORBIDDEN, [['title' => '403 Forbidden']]];
         }
     }
 
     $response = call_action($route['callback']);
     if (!is_array($response) || !in_array(count($response), [1, 2]) || !is_int($response[0])) {
-        return [500, [['title' => 'Invalid Action Response Payload']]];
+        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Invalid Action Response Payload']]];
     }
 
     return array_pad($response, 2, ''); // ensure array with two entries
@@ -96,7 +97,7 @@ function call_action(string $action): array|string
 
 function check_authorization(): bool
 {
-    $header = request\get_header('Authorization');
+    $header = request\get_header_value('Authorization');
     if (is_null($header)) {
         return false;
     }

@@ -14,7 +14,7 @@ use const jaco\USERNAME;
 function login(string $username, string $password): string
 {
     if ($username !== USERNAME || $password !== PASSWORD) {
-        throw new \Exception('Login failed', 422);
+        throw new \Exception('Login failed', 422); // TODO no http status code here
     }
 
     $payload = [

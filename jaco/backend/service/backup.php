@@ -12,7 +12,7 @@ use const jaco\BACKUPS_DIR;
 use const jaco\WEB_DIR;
 
 /**
- * @phpstan-return array{list:backup[],filter:string,sort:array{string,string}}
+ * @phpstan-return array{0:backup[],1:string,2:array{string,string}}
  */
 function find_all(string $filter = '', string $sort = '-created'): array
 {

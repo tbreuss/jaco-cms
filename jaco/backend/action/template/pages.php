@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\action\template\pages;
 
+use jaco\response;
 use jaco\service\template\page;
 
 /**
@@ -12,5 +13,5 @@ use jaco\service\template\page;
 function main(): array
 {
     $pages = page\find_all();
-    return [200, $pages];
+    return [response\OK, $pages];
 }

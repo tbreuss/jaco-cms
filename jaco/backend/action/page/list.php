@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\action\page\list;
 
+use jaco\response;
+
 use jaco\service\page;
 
 /**
@@ -12,7 +14,7 @@ use jaco\service\page;
 function main(string $filter = '', string $sort = ''): array
 {
     [$items, $filter, $sort] = page\find_all($filter, $sort);
-    return [200, [
+    return [response\OK, [
         'items' => $items,
         'filter' => $filter,
         'sort' => $sort,

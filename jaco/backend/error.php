@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\error;
 
+use jaco\response;
 use jaco\emitter;
 
 class Exception extends \Exception
@@ -23,7 +24,6 @@ class HttpUnauthorizedException extends Exception
 function exception_handler(\Throwable $t): void
 {
     $code = $t->getCode();
-    $status = $code > 0 ? $code : 500;
 
     $message = sprintf(
         '%s in %s on line %s',
@@ -34,7 +34,7 @@ function exception_handler(\Throwable $t): void
 
     error_log($message);
 
-    emitter\emit($status, [[
+    emitter\emit(response\INTERNAL_SERVER_ERROR, [[
         'title' => get_error_type($t->getCode()),
         'detail' => $message
     ]]);
@@ -51,7 +51,7 @@ function error_handler(int $errno, string $errstr, string $errfile, int $errline
 
     error_log($message);
 
-    emitter\emit(500, [[
+    emitter\emit(response\INTERNAL_SERVER_ERROR, [[
         'title' => get_error_type($errno),
         'detail' => $message
     ]]);
@@ -74,7 +74,7 @@ function fatal_handler(): void
 
         error_log($message);
 
-        emitter\emit(500, [[
+        emitter\emit(response\INTERNAL_SERVER_ERROR, [[
             'title' => get_error_type($error['type']),
             'detail' => $message
         ]]);

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\action\backup\view;
 
+use jaco\response;
+
 use jaco\service\backup;
 
 /**
@@ -11,5 +13,5 @@ use jaco\service\backup;
  */
 function main(string $file): array
 {
-    return [200, (array)backup\find_one($file)];
+    return [response\OK, (array)backup\find_one($file)];
 }
