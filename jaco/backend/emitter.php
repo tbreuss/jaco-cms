@@ -45,5 +45,9 @@ function send_errors(array $errors): string
  */
 function send_data(array $data): string
 {
-    return json_encode(['data' => $data]);
+    $data = json_encode(['data' => $data]);
+    if ($data === false) {
+        throw new \exception('Could not encode json');
+    }
+    return $data;
 }

@@ -465,6 +465,7 @@ fieldset .row.text-right button {
 
 .table th {
     text-align: left;
+    white-space: nowrap;
 }
 
 .table th,

@@ -13,6 +13,7 @@ import { System } from './view/System.js'
 import { DefaultLayout } from './layout/Default.js'
 import { Notifications } from './service/Notifications.js'
 import {EditPageView} from './view/page/EditPageView.js'
+import {UploadListView} from './view/upload/UploadListView.js'
 
 Number.prototype.pad = function (size) {
   let s = String(this)
@@ -92,6 +93,16 @@ m.route(document.getElementById('app'), '/', {
   '/page-goto': {
     render: () => {
       return m(DefaultLayout, m(PageGoto))
+    }
+  },
+  '/uploads': {
+    render: () => {
+      return m(DefaultLayout, m(UploadListView))
+    }
+  },
+  '/uploads/edit/:file': {
+    render: (vnode) => {
+      return m(DefaultLayout, m(ViewUploadView, vnode.attrs))
     }
   },
   '/login': {

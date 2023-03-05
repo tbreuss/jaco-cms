@@ -50,8 +50,14 @@ export const BackupView = {
         }),
         m(InputText, {
           wrap: 'div.row',
-          label: t('Backed up'),
+          label: t('Created at'),
           value: BackupViewModel.item.created ? BackupViewModel.item.created.toDateTime() : '',
+          disabled: true
+        }),
+        m(InputText, {
+          wrap: 'div.row',
+          label: t('Backed up'),
+          value: BackupViewModel.item.backedUp ? BackupViewModel.item.backedUp.toDateTime() : '',
           disabled: true
         }),
         m('.row',

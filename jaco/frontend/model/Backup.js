@@ -4,7 +4,7 @@ import { api } from '../service/api.js'
 export const Backup = {
   loading: false,
   items: [],
-  sort: '-created',
+  sort: '-backedUp',
   filter: '',
   loadList: () => {
     Backup.loading = true

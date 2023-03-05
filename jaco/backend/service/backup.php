@@ -4,36 +4,45 @@ declare(strict_types=1);
 
 namespace jaco\service\backup;
 
+use jaco\filesystem;
 use jaco\filesystem\file;
 use jaco\filesystem\html_file;
+use jaco\list;
 use jaco\struct\backup;
 
-use const jaco\BACKUPS_DIR;
+use const jaco\PAGE_EXTENSIONS;
+use const jaco\BACKUP_DIR;
 use const jaco\WEB_DIR;
+use const jaco\UPLOAD_EXTENSIONS;
 
 /**
  * @phpstan-return array{0:backup[],1:string,2:array{string,string}}
  */
 function find_all(string $filter = '', string $sort = '-created'): array
 {
-    $files = html_file\find(BACKUPS_DIR);
-    $list = create_list(BACKUPS_DIR, $files);
-    $list = filter_list($list, $filter);
+    $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
+    $files = filesystem\find_files(BACKUP_DIR, $allowed);
+    $list = create_list(BACKUP_DIR, $files, PAGE_EXTENSIONS);
+    $list = list\filter($list, $filter);
     $sort = sort_field($sort);
-    return [sort_list($list, $filter, $sort), $filter, $sort];
+    return [list\sort($list, $sort), $filter, $sort];
 }
 
 function find_one(string $file): ?backup
 {
-    $content = file\read(BACKUPS_DIR, $file);
+    $content = filesystem\read_file(BACKUP_DIR, $file);
 
     if ($content) {
+        $extension = \pathinfo($file, PATHINFO_EXTENSION);
+        $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
         return new backup(
             $file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
-            html_file\page_title(BACKUPS_DIR, $file),
-            time(),
-            $content
+            html_file\page_title(BACKUP_DIR, $file),
+            filesystem\restore_timestamp_from_file_name($file),
+            filesystem\file_mtime($file, BACKUP_DIR),
+            $type,
+            $type === 'page' ? $content : base64_encode($content)
         );
     }
 
@@ -42,36 +51,33 @@ function find_one(string $file): ?backup
 
 function restore(string $file): bool
 {
-    return file\restore(BACKUPS_DIR, $file, WEB_DIR);
+    return filesystem\restore_file(BACKUP_DIR, $file, WEB_DIR);
 }
 
 function delete(string $file): bool
 {
-    return file\delete(BACKUPS_DIR, $file);
+    return file\delete(BACKUP_DIR, $file);
 }
 
 /**
- * @param \jaco\struct\file[] $files
- * @return backup[]
+ * @param filesystem\file[] $files
+ * @param string[] $pageExtensions
+ * @return backup
  */
-function create_list(string $dir, array $files): array
+function create_list(string $dir, array $files, array $pageExtensions): array
 {
     $list = [];
     foreach ($files as $file) {
-        $list[] = create_one($dir, $file->file);
+        $list[] = new backup(
+            $file->file,
+            str_replace('|', DIRECTORY_SEPARATOR, substr($file->file, 21)),
+            html_file\page_title($dir, $file->file),
+            filesystem\restore_timestamp_from_file_name($file->file),
+            $file->modified,
+            in_array($file->extension, $pageExtensions) ? 'page' : 'upload'
+        );
     }
     return $list;
-}
-
-function create_one(string $dir, string $file): backup
-{
-    $dateTime = \DateTime::createFromFormat('Ymd_His', substr($file, 0, 15));
-    return new backup(
-        $file,
-        str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
-        html_file\page_title($dir, $file),
-        $dateTime->getTimestamp()
-    );
 }
 
 /**
@@ -79,7 +85,7 @@ function create_one(string $dir, string $file): backup
  */
 function sort_field(string $sort): array
 {
-    if (!in_array(ltrim($sort, '-'), ['created', 'name', 'title'])) {
+    if (!in_array(ltrim($sort, '-'), ['backedUp', 'created', 'name', 'title', 'type'])) {
         return ['created', 'desc'];
     }
     $sortDir = str_starts_with($sort, '-') ? 'desc' : 'asc';

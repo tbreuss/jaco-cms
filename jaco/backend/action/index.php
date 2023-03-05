@@ -6,12 +6,12 @@ namespace jaco\action\index;
 
 use jaco\response;
 
-use const jaco\VERSION;
+use const jaco\APP_VERSION;
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function main(string $version = VERSION): array
+function main(string $version = APP_VERSION): array
 {
     return [response\OK, [
         'name' => 'jaco',

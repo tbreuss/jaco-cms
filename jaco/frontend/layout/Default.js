@@ -69,23 +69,11 @@ export const DefaultLayout = {
                       closeDropdown()
                     }
                   }, t('Goto page')),
-                  /*
-                  m('.ruler'),
-                  m(m.route.Link, {
-                    href: '/',
-                    onclick: (e) => {
-                      e.redraw = false
-                      closeDropdown()
-                    }
-                  }, t('Something else'))
-                  */
                 )
               ),
               m(m.route.Link, {href: '/pages'}, t('Pages')),
-              m('a[href=#]', {onclick: showInfo}, t('Uploads')),
+              m(m.route.Link, {href: '/uploads'}, t('Uploads')),
               m(m.route.Link, {href: '/backups'}, t('Backups')),
-              m('a[href=#]', {onclick: showInfo}, t('CSS')),
-              m('a[href=#]', {onclick: showInfo}, t('HTML')),
               m(m.route.Link, {href: '/system'}, t('System')),
               m(m.route.Link, {
                 class: 'logout',

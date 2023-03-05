@@ -72,8 +72,9 @@ const deleteAction = (backup) => {
 const headings = [
   {field: 'name', label: 'Name', sortable: true, default: 'asc'},
   {field: 'title', label: 'Page title', sortable: true, default: 'asc'},
-  {field: 'created', label: 'Backed up', sortable: true, default: 'desc'},
-  {field: '', sortable: false, label: 'Type'},
+  {field: 'created', label: 'Created at', sortable: true, default: 'desc'},
+  {field: 'backedUp', label: 'Backed up', sortable: true, default: 'desc'},
+  {field: 'type', label: 'Type', sortable: true },
   {label: '', sortable: false}
 ]
 
@@ -142,15 +143,16 @@ export const BackupList = {
       m('h1', t('Backups')),
       dataFilter(loadList),
       Backup.loading
-        ? m('p', t('Loading') + '...')
+        ? m('table.table', m('tr', m('td', t('Loading') + '...')))
         : Backup.items.length
           ? m('table.table',
             m('colgroup',
               m('col', {width: '30%'}),
               m('col', {width: '30%'}),
               m('col', {width: '20%'}),
+              m('col', {width: '20%'}),
               m('col', {width: '10%'}),
-              m('col', {width: '15%'})
+              m('col', {width: '1%'})
             ),
             m('thead', m('tr',
               sortableHead(headings, loadList)
@@ -159,7 +161,8 @@ export const BackupList = {
                 m('td', backup.name),
                 m('td', backup.title),
                 m('td', dateTime(backup.created)),
-                m('td', 'Page'),
+                m('td', dateTime(backup.backedUp)),
+                m('td', backup.type),
                 m('td.text-right.text-nowrap',
                   m(ButtonSecondary, {
                     onclick: () => {
@@ -182,7 +185,7 @@ export const BackupList = {
               ))
             )
           )
-          : m('p', t('No backups found.'))
+          : m('table.table', m('tr', m('td', t('No backups found.'))))
     )
   )
 }

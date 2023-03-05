@@ -42,6 +42,9 @@ router\post('page/delete', 'jaco\action\page\delete\main', true);
 router\post('page/update', 'jaco\action\page\update\main', true);
 router\get('system', 'jaco\action\system\main', true);
 router\get('template/pages', 'jaco\action\template\pages\main', true);
+router\get('upload/list', 'jaco\action\upload\list\main', true);
+router\post('upload/delete', 'jaco\action\upload\delete\main', true);
+#router\get('upload/view', 'jaco\action\upload\view\main', true);
 
 // dispatch route
 $method = $_SERVER['REQUEST_METHOD'] ?? '';

@@ -121,7 +121,7 @@ export const PageList = {
       m('h1', t('Pages')),
       dataFilter(loadList),
       PageListModel.loading
-        ? m('p', t('Loading') + '...')
+        ? m('table.table', m('tr', m('td', t('Loading') + '...')))
         : PageListModel.items.length
           ? m('table.table',
             m('colgroup',
@@ -153,7 +153,7 @@ export const PageList = {
               ))
             )
           )
-          : m('p', t('No pages found.'))
+          : m('table.table', m('tr', m('td', t('No pages found.'))))
     )
   )
 }

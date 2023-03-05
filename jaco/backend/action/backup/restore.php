@@ -9,7 +9,9 @@ use jaco\request;
 use jaco\response;
 use jaco\service\backup;
 
-use const jaco\BACKUPS_DIR;
+use const jaco\PAGE_EXTENSIONS;
+use const jaco\BACKUP_DIR;
+use const jaco\UPLOAD_EXTENSIONS;
 
 /**
  * @phpstan-return array<int,mixed>
@@ -21,16 +23,16 @@ function main(): array
     $data = data\filter($raw, filters());
 
     $errors = data\validate($data, validators());
+
     if (count($errors) > 0) {
         return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
-    // delete page
-    if (!backup\restore($data['file'])) {
-        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not restore backup']]];
+    if (backup\restore($data['file'])) {
+        return [response\OK];
     }
 
-    return [response\OK];
+    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not restore backup']]];
 }
 
 /**
@@ -50,8 +52,8 @@ function validators(): array
 {
     return [
         ['file', 'jaco\data\validator\required'],
-        ['file', 'jaco\data\validator\file_exists', 'dir' => BACKUPS_DIR],
+        ['file', 'jaco\data\validator\file_exists', 'dir' => BACKUP_DIR],
         ['file', 'jaco\data\validator\htmlfile_name', 'isBackup' => true],
-        ['file', 'jaco\data\validator\htmlfile_extension']
+        ['file', 'jaco\data\validator\file_extension', 'allowed' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
     ];
 }

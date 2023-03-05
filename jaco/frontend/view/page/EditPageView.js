@@ -15,7 +15,7 @@ const state = {
   initialized: false
 }
 
-const onCancelHandler = () => {
+const onCancelButtonClicked = () => {
   m.route.set('/pages')
 }
 
@@ -45,10 +45,10 @@ const onInitComponent = (vnode) => {
   state.initialized = false
 }
 
-const onSaveHandler = (e) => {
+const onSaveButtonClicked = (e) => {
   e.redraw = false
   PageEditModel.item.content = editor.getValue()
-  PageEditModel.save()
+  return PageEditModel.save()
     .then(() => {
       addSuccess(t('Page was successfully saved.'))
     })
@@ -60,19 +60,10 @@ const onSaveHandler = (e) => {
     })
 }
 
-const onSaveAndCloseHandler = (e) => {
-  e.redraw = false
-  PageEditModel.item.content = editor.getValue()
-  PageEditModel.save()
+const onSaveAndCloseButtonClicked = (e) => {
+  onSaveButtonClicked(e)
     .then(() => {
-      addSuccess(t('Page was successfully saved.'))
       m.route.set('/pages')
-    })
-    .catch(({code, response}) => {
-      if (code === 422) {
-        state.errors = response.errors
-        m.redraw()
-      }
     })
 }
 
@@ -116,12 +107,12 @@ export const EditPageView = {
         }),
         m('.row',
           m('label', {style: {width: '100%'}}, t('HTML')),
-          m('div#ace', {style: {width: '100%'},})
+          m('div#ace', {style: {width: '100%'}})
         ),
         m(ButtonGroup, {wrap: 'div.row.text-right'},
-          m(ButtonPrimary, {onclick: onSaveHandler}, t('Save')),
-          m(ButtonPrimary, {onclick: onSaveAndCloseHandler}, t('Save & Close')),
-          m(ButtonSecondary, {onclick: onCancelHandler}, t('Back'))
+          m(ButtonPrimary, {onclick: onSaveButtonClicked}, t('Save')),
+          m(ButtonPrimary, {onclick: onSaveAndCloseButtonClicked}, t('Save & Close')),
+          m(ButtonSecondary, {onclick: onCancelButtonClicked}, t('Back'))
         )
       ),
       m(FormErrors, {errors: state.errors}),

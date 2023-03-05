@@ -7,8 +7,11 @@ namespace jaco\filesystem\html_file;
 use jaco\filesystem\file;
 use jaco\filesystem\shared;
 
-use const jaco\ALLOWED_EXTENSIONS;
+use const jaco\PAGE_EXTENSIONS;
 
+/**
+ * @deprecated
+ */
 function load(string $dir, string $file): string
 {
     if (!file\exists($dir, $file)) {
@@ -22,6 +25,9 @@ function load(string $dir, string $file): string
     return $contents;
 }
 
+/**
+ * @deprecated
+ */
 function update(string $dir, string $file, callable $callback, ?string $bakDir = null): bool
 {
     $contents = load($dir, $file);
@@ -46,8 +52,9 @@ function update(string $dir, string $file, callable $callback, ?string $bakDir =
 /**
  * @param string[] $extensions
  * @return \jaco\struct\file[]
+ * @deprecated
  */
-function find(string $dir, array $extensions = ALLOWED_EXTENSIONS): array
+function find(string $dir, array $extensions = PAGE_EXTENSIONS): array
 {
     $files = file\scan_dir($dir, $extensions);
     $list = [];
@@ -62,8 +69,9 @@ function find(string $dir, array $extensions = ALLOWED_EXTENSIONS): array
  * @param string[] $exclude_dirs
  * @param string[] $extensions
  * @return \jaco\struct\file[]
+ * @deprecated
  */
-function find_rec(string $dir, array $exclude_dirs = [], array $extensions = ALLOWED_EXTENSIONS, int $max_depth = -1): array
+function find_rec(string $dir, array $exclude_dirs = [], array $extensions = PAGE_EXTENSIONS, int $max_depth = -1): array
 {
     $files = file\scan_dir_rec($dir, $extensions, $exclude_dirs, $max_depth);
     $list = [];
@@ -74,6 +82,9 @@ function find_rec(string $dir, array $exclude_dirs = [], array $extensions = ALL
     return $list;
 }
 
+/**
+ * @deprecated
+ */
 function page_title(string $dir, string $file): string
 {
     $path = shared\join($dir, $file);

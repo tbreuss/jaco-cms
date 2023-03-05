@@ -6,21 +6,30 @@ namespace jaco\filesystem\dir;
 
 use jaco\filesystem\shared;
 
-use const jaco\PERMISSIONS_DIRECTORIES;
+use const jaco\DIRECTORY_PERMISSIONS;
 
+/**
+ * @deprecated
+ */
 function exists(string $root, string $dir): bool
 {
     $path = shared\join($root, $dir);
     return \file_exists($path) && \is_dir($path);
 }
 
+/**
+ * @deprecated
+ */
 function is_writable(string $root, string $dir): bool
 {
     $path = shared\join($root, $dir);
     return exists($root, $dir) && \is_writable($path);
 }
 
-function make(string $root, string $dir, int $permissions = PERMISSIONS_DIRECTORIES): bool
+/**
+ * @deprecated
+ */
+function make(string $root, string $dir, int $permissions = DIRECTORY_PERMISSIONS): bool
 {
     $path = shared\join($root, $dir);
     if (is_dir($path)) {
@@ -29,7 +38,10 @@ function make(string $root, string $dir, int $permissions = PERMISSIONS_DIRECTOR
     return mkdir($path, $permissions, false);
 }
 
-function make_rec(string $root, string $dir, int $permissions = PERMISSIONS_DIRECTORIES): bool
+/**
+ * @deprecated
+ */
+function make_rec(string $root, string $dir, int $permissions = DIRECTORY_PERMISSIONS): bool
 {
     $path = shared\join($root, $dir);
     if (is_dir($path)) {
@@ -38,18 +50,27 @@ function make_rec(string $root, string $dir, int $permissions = PERMISSIONS_DIRE
     return mkdir($path, $permissions, true);
 }
 
+/**
+ * @deprecated
+ */
 function remove(string $root, string $dir): bool
 {
     $abs_path = shared\join($root, $dir);
     return rmdir($abs_path);
 }
 
+/**
+ * @deprecated
+ */
 function remove_rec(string $root, string $dir): void
 {
     $abs_path = shared\join($root, $dir);
     _rrmdir($abs_path);
 }
 
+/**
+ * @deprecated
+ */
 function _rrmdir(string $dir): void
 {
     if (is_dir($dir)) {

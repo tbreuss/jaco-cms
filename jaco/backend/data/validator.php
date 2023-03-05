@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\data\validator;
 
+use jaco\filesystem;
 use jaco\filesystem\file;
 
-use const jaco\JACO_DIR_NAME;
+use const jaco\APP_DIR_NAME;
 use const jaco\WEB_DIR;
 
 /**
@@ -59,7 +60,20 @@ function test(mixed $value, int $avg, int $min, int $max, int $sum): array
 }
 
 /**
+ * @param string[] $allowed
+ * @return array{boolean, string}
+ */
+function file_extension(mixed $value, array $allowed = []): array
+{
+    if (is_string($value) && filesystem\validate_extension(WEB_DIR, $value, $allowed)) {
+        return [true, ''];
+    }
+    return [false, '{value} is an invalid extension'];
+}
+
+/**
  * @phpstan-return array{bool, string}
+ * @deprecated
  */
 function htmlfile_extension(mixed $value): array
 {
@@ -121,8 +135,8 @@ function file_not_in_jaco_dir(mixed $value): array
     $parts = explode(DIRECTORY_SEPARATOR, $value);
     $first = $parts[0] ?? '';
 
-    if ($first === JACO_DIR_NAME) {
-        return [false, sprintf('{value} must not be in the protected %s folder.', JACO_DIR_NAME)];
+    if ($first === APP_DIR_NAME) {
+        return [false, sprintf('{value} must not be in the protected %s folder.', APP_DIR_NAME)];
     }
 
     return [true, ''];

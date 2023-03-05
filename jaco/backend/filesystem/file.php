@@ -7,20 +7,29 @@ namespace jaco\filesystem\file;
 use jaco\filesystem\dir;
 use jaco\filesystem\shared;
 
-use const jaco\ALLOWED_EXTENSIONS;
+use const jaco\PAGE_EXTENSIONS;
 
+/**
+ * @deprecated
+ */
 function exists(string $dir, string $file): bool
 {
     $path = shared\join($dir, $file);
     return \file_exists($path) && \is_file($path);
 }
 
+/**
+ * @deprecated
+ */
 function is_writable(string $dir, string $file): bool
 {
     $path = shared\join($dir, $file);
     return exists($dir, $file) && \is_writable($path);
 }
 
+/**
+ * @deprecated
+ */
 function copy(string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
 {
     $srcPath = shared\join($srcDir, $srcFile);
@@ -33,6 +42,9 @@ function copy(string $srcDir, string $srcFile, string $dstDir, string $dstFile):
     return \copy($srcPath, $dstPath);
 }
 
+/**
+ * @deprecated
+ */
 function move(string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
 {
     $srcPath = shared\join($srcDir, $srcFile);
@@ -45,12 +57,18 @@ function move(string $srcDir, string $srcFile, string $dstDir, string $dstFile):
     return \rename($srcPath, $dstPath);
 }
 
+/**
+ * @deprecated
+ */
 function delete(string $dir, string $file): bool
 {
     $path = shared\join($dir, $file);
     return unlink($path);
 }
 
+/**
+ * @deprecated
+ */
 function backup(string $dir, string $file, string $bakDir): bool
 {
     $srcPath = shared\join($dir, $file);
@@ -63,6 +81,9 @@ function backup(string $dir, string $file, string $bakDir): bool
     return \copy($srcPath, $dstPath); // triggers an error
 }
 
+/**
+ * @deprecated
+ */
 function restore(string $bakDir, string $bakFile, string $dstDir): bool
 {
     $dstFile = str_replace('|', '/', substr($bakFile, 21));
@@ -77,6 +98,9 @@ function restore(string $bakDir, string $bakFile, string $dstDir): bool
     return move($bakDir, $bakFile, $dstDir, $dstFile);
 }
 
+/**
+ * @deprecated
+ */
 function read(string $dir, string $file): ?string
 {
     if (exists($dir, $file)) {
@@ -88,6 +112,9 @@ function read(string $dir, string $file): ?string
     return null;
 }
 
+/**
+ * @deprecated
+ */
 function mtime(string $file, string $dir): int
 {
     $time = filemtime(shared\join($dir, $file));
@@ -100,6 +127,7 @@ function mtime(string $file, string $dir): int
  * @param string $file
  * @param string $data
  * @return bool
+ * @deprecated
  */
 function write(string $dir, string $file, string $data): bool
 {
@@ -107,6 +135,9 @@ function write(string $dir, string $file, string $data): bool
     return false;
 }
 
+/**
+ * @deprecated
+ */
 function validate_filename(string $dir, string $file, bool $isBackup = false): bool
 {
     $abs_path = shared\join($dir, $file);
@@ -129,8 +160,9 @@ function validate_filename(string $dir, string $file, bool $isBackup = false): b
 
 /**
  * @param string[] $allowed
+ * @deprecated
  */
-function validate_extension(string $dir, string $file, array $allowed = ALLOWED_EXTENSIONS): bool
+function validate_extension(string $dir, string $file, array $allowed = PAGE_EXTENSIONS): bool
 {
     $abs_path = shared\join($dir, $file);
 
@@ -146,6 +178,7 @@ function validate_extension(string $dir, string $file, array $allowed = ALLOWED_
 /**
  * @param string[] $extensions
  * @return string[]
+ * @deprecated
  */
 function scan_dir(string $dir, array $extensions): array
 {
@@ -156,12 +189,36 @@ function scan_dir(string $dir, array $extensions): array
  * @param string[] $extensions
  * @param string[] $excludedDirectories
  * @return string[]
+ * @deprecated
  */
 function scan_dir_rec(string $dir, array $extensions, array $excludedDirectories = [], int $maxDepth = -1): array
 {
+    $excludedFiles = ['.git', '.idea', '.DS_Store', '.vscode', '.gitignore'];
+
+    $onFileAcceptHandler = function (\SplFileInfo $file) use ($extensions, $excludedDirectories, $excludedFiles) {
+        if ($file->isDir()) {
+            foreach ($excludedDirectories as $excludeDir) {
+                if (str_contains($file->getPathname(), rtrim($excludeDir, '/') . '/')) {
+                    return false;
+                }
+            }
+        }
+        if (in_array($file->getFilename(), $excludedFiles)) {
+            return false;
+        }
+        if ($file->isFile() && !in_array($file->getExtension(), $extensions)) {
+            return false;
+        }
+        return true;
+    };
+
     $rii = new \RecursiveIteratorIterator(
-        new \RecursiveDirectoryIterator($dir)
+        new \RecursiveCallbackFilterIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+            $onFileAcceptHandler
+        )
     );
+
     $rii->setMaxDepth($maxDepth);
 
     $files = [];
@@ -169,19 +226,9 @@ function scan_dir_rec(string $dir, array $extensions, array $excludedDirectories
         if ($file->isDir()) {
             continue;
         }
-        if (!in_array($file->getExtension(), $extensions)) {
-            continue;
-        }
         $pathname = $file->getPathname();
-        foreach ($excludedDirectories as $excludeDir) {
-            if (str_contains($pathname, rtrim($excludeDir, '/') . '/')) {
-                continue 2;
-            }
-        }
-        if (str_starts_with($pathname, $dir)) {
-            $relfile = substr($pathname, strlen($dir));
-            $files[] = ltrim($relfile, '\\/');
-        }
+        $relfile = substr($pathname, strlen($dir));
+        $files[] = ltrim($relfile, '\\/');
     }
 
     return $files;

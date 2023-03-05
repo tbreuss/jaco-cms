@@ -8,10 +8,10 @@ use jaco\filesystem\file;
 use jaco\filesystem\html_file;
 use jaco\struct\page;
 
-use const jaco\ALLOWED_EXTENSIONS;
-use const jaco\BACKUPS_DIR;
-use const jaco\JACO_DIR;
-use const jaco\TEMPLATES_PAGES_DIR;
+use const jaco\PAGE_EXTENSIONS;
+use const jaco\BACKUP_DIR;
+use const jaco\APP_DIR;
+use const jaco\TEMPLATE_PAGE_DIR;
 use const jaco\WEB_DIR;
 
 /**
@@ -19,7 +19,7 @@ use const jaco\WEB_DIR;
  */
 function find_all(string $filter = '', string $sort = '-created'): array
 {
-    $files = html_file\find_rec(WEB_DIR, [JACO_DIR]);
+    $files = html_file\find_rec(WEB_DIR, [APP_DIR]);
     $list = create_list(WEB_DIR, $files);
     $list = filter_list($list, $filter);
     $sort = sort_field($sort);
@@ -45,7 +45,7 @@ function find_one(string $file): ?page
 
 function delete(string $file): bool
 {
-    $status = file\backup(WEB_DIR, $file, BACKUPS_DIR);
+    $status = file\backup(WEB_DIR, $file, BACKUP_DIR);
     if (!$status) {
         return false;
     }
@@ -77,7 +77,7 @@ function is_valid(string $file): bool
     }
 
     // check extension
-    if (!in_array($pathinfo['extension'], ALLOWED_EXTENSIONS)) {
+    if (!in_array($pathinfo['extension'], PAGE_EXTENSIONS)) {
         return false;
     }
 
@@ -101,7 +101,7 @@ function copy(string $srcFile, string $dstFile, string $dstPageTitle): bool
 
 function create_from_template(string $srcFile, string $dstFile, string $dstPageTitle): bool
 {
-    $status = file\copy(TEMPLATES_PAGES_DIR, $srcFile, WEB_DIR, $dstFile);
+    $status = file\copy(TEMPLATE_PAGE_DIR, $srcFile, WEB_DIR, $dstFile);
     if (!$status) {
         throw new \jaco\error\Exception('Could not create page ' . $srcFile);
     }
@@ -119,7 +119,7 @@ function update(string $file, string $content): bool
     $callback = function () use ($content): string {
         return $content; // simply return content
     };
-    return html_file\update(WEB_DIR, $file, $callback, BACKUPS_DIR);
+    return html_file\update(WEB_DIR, $file, $callback, BACKUP_DIR);
 }
 
 /**

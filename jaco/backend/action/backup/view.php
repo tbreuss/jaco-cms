@@ -13,5 +13,11 @@ use jaco\service\backup;
  */
 function main(string $file): array
 {
-    return [response\OK, (array)backup\find_one($file)];
+    $backup = backup\find_one($file);
+
+    if ($backup) {
+        return [response\OK, (array)$backup];
+    }
+
+    return [response\NOT_FOUND];
 }
