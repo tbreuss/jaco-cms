@@ -86,7 +86,7 @@ function call_action(string $action): array|string
             $default = $parameter->getDefaultValue();
             $parameters[$name] = $default;
         }
-        $value = filter_input(INPUT_GET, $name, FILTER_SANITIZE_STRING);
+        $value = filter_input(INPUT_GET, $name, FILTER_UNSAFE_RAW);
         if ($value) {
             $parameters[$name] = $value;
         }

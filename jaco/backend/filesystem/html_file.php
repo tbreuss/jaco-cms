@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\filesystem\html_file;
 
+use jaco\filesystem;
 use jaco\filesystem\file;
-use jaco\filesystem\shared;
 
 use const jaco\PAGE_EXTENSIONS;
 
@@ -14,10 +14,10 @@ use const jaco\PAGE_EXTENSIONS;
  */
 function load(string $dir, string $file): string
 {
-    if (!file\exists($dir, $file)) {
+    if (!filesystem\file_exists($dir, $file)) {
         throw new \Exception('File ' . $file . ' does not exist.');
     }
-    $filePath = shared\join($dir, $file);
+    $filePath = filesystem\join($dir, $file);
     $contents = file_get_contents($filePath);
     if ($contents === false) {
         throw new \Exception('Could not read file ' . $file);
@@ -36,12 +36,12 @@ function update(string $dir, string $file, callable $callback, ?string $bakDir =
         throw new \Exception('Invalid type from callback');
     }
     if ($bakDir) {
-        $status = file\backup($dir, $file, $bakDir);
+        $status = filesystem\backup_file($dir, $file, $bakDir);
         if (!$status) {
             throw new \Exception('Could not backup file ' . $file);
         }
     }
-    $filePath = shared\join($dir, $file);
+    $filePath = filesystem\join($dir, $file);
     $status = file_put_contents($filePath, $edited);
     if (!$status) {
         throw new \Exception('Could not save file ' . $file);
@@ -59,7 +59,7 @@ function find(string $dir, array $extensions = PAGE_EXTENSIONS): array
     $files = file\scan_dir($dir, $extensions);
     $list = [];
     foreach ($files as $file) {
-        $path = shared\join($dir, $file);
+        $path = filesystem\join($dir, $file);
         $list[] = new \jaco\struct\file($file, filemtime($path));
     }
     return $list;
@@ -76,7 +76,7 @@ function find_rec(string $dir, array $exclude_dirs = [], array $extensions = PAG
     $files = file\scan_dir_rec($dir, $extensions, $exclude_dirs, $max_depth);
     $list = [];
     foreach ($files as $file) {
-        $path = shared\join($dir, $file);
+        $path = filesystem\join($dir, $file);
         $list[] = new \jaco\struct\file($file, filemtime($path));
     }
     return $list;
@@ -87,7 +87,7 @@ function find_rec(string $dir, array $exclude_dirs = [], array $extensions = PAG
  */
 function page_title(string $dir, string $file): string
 {
-    $path = shared\join($dir, $file);
+    $path = filesystem\join($dir, $file);
     $title = '';
     $dom = new \DOMDocument();
     libxml_use_internal_errors(true);

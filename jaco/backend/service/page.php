@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace jaco\service\page;
 
-use jaco\filesystem\file;
+use jaco\filesystem;
 use jaco\filesystem\html_file;
 use jaco\list;
 use jaco\struct\page;
 
 use const jaco\APP_DIR;
 use const jaco\BACKUP_DIR;
+use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
 use const jaco\WEB_DIR;
 
@@ -19,7 +20,7 @@ use const jaco\WEB_DIR;
  */
 function find_all(string $filter = '', string $sort = '-created'): array
 {
-    $files = html_file\find_rec(WEB_DIR, [APP_DIR]);
+    $files = filesystem\find_files_rec(WEB_DIR, PAGE_EXTENSIONS, [APP_DIR]);
     $list = create_list(WEB_DIR, $files);
     $list = list\filter($list, $filter);
     $sort = sort_field($sort);
@@ -28,13 +29,13 @@ function find_all(string $filter = '', string $sort = '-created'): array
 
 function find_one(string $file): ?page
 {
-    $content = file\read(WEB_DIR, $file);
+    $content = filesystem\read_file(WEB_DIR, $file);
 
     if ($content) {
         return new page(
             $file,
             html_file\page_title(WEB_DIR, $file),
-            file\mtime($file, WEB_DIR),
+            filesystem\file_mtime($file, WEB_DIR),
             $content
         );
     }
@@ -44,16 +45,16 @@ function find_one(string $file): ?page
 
 function delete(string $file): bool
 {
-    $status = file\backup(WEB_DIR, $file, BACKUP_DIR);
+    $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
     if (!$status) {
         return false;
     }
-    return file\delete(WEB_DIR, $file);
+    return filesystem\delete_file(WEB_DIR, $file);
 }
 
 function copy(string $srcFile, string $dstFile, string $dstPageTitle): bool
 {
-    $status = file\copy(WEB_DIR, $srcFile, WEB_DIR, $dstFile);
+    $status = filesystem\copy_file(WEB_DIR, $srcFile, WEB_DIR, $dstFile);
     if (!$status) {
         throw new \jaco\error\Exception('Could not copy page ' . $srcFile);
     }
@@ -68,7 +69,7 @@ function copy(string $srcFile, string $dstFile, string $dstPageTitle): bool
 
 function create_from_template(string $srcFile, string $dstFile, string $dstPageTitle): bool
 {
-    $status = file\copy(TEMPLATE_PAGE_DIR, $srcFile, WEB_DIR, $dstFile);
+    $status = filesystem\copy_file(TEMPLATE_PAGE_DIR, $srcFile, WEB_DIR, $dstFile);
     if (!$status) {
         throw new \jaco\error\Exception('Could not create page ' . $srcFile);
     }

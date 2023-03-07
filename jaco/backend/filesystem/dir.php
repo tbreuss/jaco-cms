@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\filesystem\dir;
 
-use jaco\filesystem\shared;
+use jaco\filesystem;
 
 use const jaco\DIRECTORY_PERMISSIONS;
 
@@ -13,7 +13,7 @@ use const jaco\DIRECTORY_PERMISSIONS;
  */
 function exists(string $root, string $dir): bool
 {
-    $path = shared\join($root, $dir);
+    $path = filesystem\join($root, $dir);
     return \file_exists($path) && \is_dir($path);
 }
 
@@ -22,7 +22,7 @@ function exists(string $root, string $dir): bool
  */
 function is_writable(string $root, string $dir): bool
 {
-    $path = shared\join($root, $dir);
+    $path = filesystem\join($root, $dir);
     return exists($root, $dir) && \is_writable($path);
 }
 
@@ -31,7 +31,7 @@ function is_writable(string $root, string $dir): bool
  */
 function make(string $root, string $dir, int $permissions = DIRECTORY_PERMISSIONS): bool
 {
-    $path = shared\join($root, $dir);
+    $path = filesystem\join($root, $dir);
     if (is_dir($path)) {
         return true;
     }
@@ -43,7 +43,7 @@ function make(string $root, string $dir, int $permissions = DIRECTORY_PERMISSION
  */
 function make_rec(string $root, string $dir, int $permissions = DIRECTORY_PERMISSIONS): bool
 {
-    $path = shared\join($root, $dir);
+    $path = filesystem\join($root, $dir);
     if (is_dir($path)) {
         return true;
     }
@@ -55,7 +55,7 @@ function make_rec(string $root, string $dir, int $permissions = DIRECTORY_PERMIS
  */
 function remove(string $root, string $dir): bool
 {
-    $abs_path = shared\join($root, $dir);
+    $abs_path = filesystem\join($root, $dir);
     return rmdir($abs_path);
 }
 
@@ -64,7 +64,7 @@ function remove(string $root, string $dir): bool
  */
 function remove_rec(string $root, string $dir): void
 {
-    $abs_path = shared\join($root, $dir);
+    $abs_path = filesystem\join($root, $dir);
     _rrmdir($abs_path);
 }
 

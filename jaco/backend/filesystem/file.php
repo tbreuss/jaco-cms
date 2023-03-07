@@ -14,7 +14,7 @@ use const jaco\PAGE_EXTENSIONS;
  */
 function exists(string $dir, string $file): bool
 {
-    $path = shared\join($dir, $file);
+    $path = join($dir, $file);
     return \file_exists($path) && \is_file($path);
 }
 
@@ -23,7 +23,7 @@ function exists(string $dir, string $file): bool
  */
 function is_writable(string $dir, string $file): bool
 {
-    $path = shared\join($dir, $file);
+    $path = join($dir, $file);
     return exists($dir, $file) && \is_writable($path);
 }
 
@@ -32,8 +32,8 @@ function is_writable(string $dir, string $file): bool
  */
 function copy(string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
 {
-    $srcPath = shared\join($srcDir, $srcFile);
-    $dstPath = shared\join($dstDir, $dstFile);
+    $srcPath = join($srcDir, $srcFile);
+    $dstPath = join($dstDir, $dstFile);
     $srcDirname = dirname($srcFile);
     $dstDirname = dirname($dstFile);
     if ($srcDirname !== $dstDirname) {
@@ -47,8 +47,8 @@ function copy(string $srcDir, string $srcFile, string $dstDir, string $dstFile):
  */
 function move(string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
 {
-    $srcPath = shared\join($srcDir, $srcFile);
-    $dstPath = shared\join($dstDir, $dstFile);
+    $srcPath = join($srcDir, $srcFile);
+    $dstPath = join($dstDir, $dstFile);
     $srcDirname = dirname($srcFile);
     $dstDirname = dirname($dstFile);
     if ($srcDirname !== $dstDirname) {
@@ -62,7 +62,7 @@ function move(string $srcDir, string $srcFile, string $dstDir, string $dstFile):
  */
 function delete(string $dir, string $file): bool
 {
-    $path = shared\join($dir, $file);
+    $path = join($dir, $file);
     return unlink($path);
 }
 
@@ -71,11 +71,11 @@ function delete(string $dir, string $file): bool
  */
 function backup(string $dir, string $file, string $bakDir): bool
 {
-    $srcPath = shared\join($dir, $file);
-    $dstPath = shared\join($bakDir, sprintf(
+    $srcPath = join($dir, $file);
+    $dstPath = join($bakDir, sprintf(
         '%s_%s_%s',
         date('Ymd_His'),
-        shared\rand_string(4),
+        rand_string(4),
         str_replace('/', '|', $file)
     ));
     return \copy($srcPath, $dstPath); // triggers an error
@@ -104,7 +104,7 @@ function restore(string $bakDir, string $bakFile, string $dstDir): bool
 function read(string $dir, string $file): ?string
 {
     if (exists($dir, $file)) {
-        $content = file_get_contents(shared\join($dir, $file));
+        $content = file_get_contents(join($dir, $file));
         if (is_string($content)) {
             return $content;
         }
@@ -117,7 +117,7 @@ function read(string $dir, string $file): ?string
  */
 function mtime(string $file, string $dir): int
 {
-    $time = filemtime(shared\join($dir, $file));
+    $time = filemtime(join($dir, $file));
     return is_int($time) ? $time : 0;
 }
 
@@ -140,7 +140,7 @@ function write(string $dir, string $file, string $data): bool
  */
 function validate_filename(string $dir, string $file, bool $isBackup = false): bool
 {
-    $abs_path = shared\join($dir, $file);
+    $abs_path = join($dir, $file);
 
     $pathinfo = pathinfo($abs_path);
 
@@ -164,7 +164,7 @@ function validate_filename(string $dir, string $file, bool $isBackup = false): b
  */
 function validate_extension(string $dir, string $file, array $allowed = PAGE_EXTENSIONS): bool
 {
-    $abs_path = shared\join($dir, $file);
+    $abs_path = join($dir, $file);
 
     $extension = pathinfo($abs_path, PATHINFO_EXTENSION);
 

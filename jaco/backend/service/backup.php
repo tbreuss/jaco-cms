@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace jaco\service\backup;
 
 use jaco\filesystem;
-use jaco\filesystem\file;
 use jaco\filesystem\html_file;
 use jaco\list;
 use jaco\struct\backup;
@@ -56,7 +55,7 @@ function restore(string $file): bool
 
 function delete(string $file): bool
 {
-    return file\delete(BACKUP_DIR, $file);
+    return filesystem\delete_file(BACKUP_DIR, $file);
 }
 
 /**
