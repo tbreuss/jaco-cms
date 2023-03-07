@@ -23,12 +23,11 @@ function action(): array
         return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
-    // create page
-    if (!page\create_from_template($data['pageTemplate'], $data['fileName'], $data['pageTitle'])) {
-        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not create page']]];
+    if (page\create_from_template($data['pageTemplate'], $data['fileName'], $data['pageTitle'])) {
+        return [response\OK];
     }
 
-    return [response\OK];
+    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not create page']]];
 }
 
 /**

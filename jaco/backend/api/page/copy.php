@@ -23,12 +23,11 @@ function action(): array
         return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
-    // copy page
-    if (!page\copy($data['srcFileName'], $data['dstFileName'], $data['dstPageTitle'])) {
-        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not copy page']]];
+    if (page\copy($data['srcFileName'], $data['dstFileName'], $data['dstPageTitle'])) {
+        return [response\OK];
     }
 
-    return [response\OK];
+    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not copy page']]];
 }
 
 /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace jaco\service\backup;
 
 use jaco\filesystem;
-use jaco\filesystem\html_file;
+use jaco\html;
 use jaco\list;
 use jaco\struct\backup;
 
@@ -37,7 +37,7 @@ function find_one(string $file): ?backup
         return new backup(
             $file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
-            html_file\page_title(BACKUP_DIR, $file),
+            html\get_title($content),
             filesystem\restore_timestamp_from_file_name($file),
             filesystem\file_mtime($file, BACKUP_DIR),
             $type,
@@ -67,10 +67,11 @@ function create_list(string $dir, array $files, array $pageExtensions): array
 {
     $list = [];
     foreach ($files as $file) {
+        $content = filesystem\read_file($dir, $file->file);
         $list[] = new backup(
             $file->file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file->file, 21)),
-            html_file\page_title($dir, $file->file),
+            html\get_title($content),
             filesystem\restore_timestamp_from_file_name($file->file),
             $file->modified,
             in_array($file->extension, $pageExtensions) ? 'page' : 'upload'

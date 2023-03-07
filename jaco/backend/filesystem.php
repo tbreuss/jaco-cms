@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\filesystem;
 
+use jaco\str;
+
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\DIRECTORY_PERMISSIONS;
 
@@ -47,11 +49,6 @@ function remove_dir_rec(string $root, string $dir): void
 {
     $abs_path = join($root, $dir);
     _rrmdir($abs_path);
-}
-
-function rand_string(int $length = 6): string
-{
-    return \substr(\str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, $length);
 }
 
 function join(string $dir, string $file): string
@@ -125,7 +122,7 @@ function backup_file(string $dir, string $file, string $bakDir): bool
     $dstPath = join($bakDir, \sprintf(
         '%s_%s_%s',
         \date('Ymd_His', $modTime),
-        rand_string(4),
+        str\random(4),
         \str_replace('/', '|', $file)
     ));
     return \copy($srcPath, $dstPath); // triggers an error
@@ -135,10 +132,8 @@ function restore_file(string $bakDir, string $bakFile, string $dstDir): bool
 {
     $dstFile = \str_replace('|', '/', \substr($bakFile, 21));
     if (file_exists($dstDir, $dstFile)) {
-        // TODO backup first?
         $status = delete_file($dstDir, $dstFile);
         if (!$status) {
-            // TODO throw error?
             return false;
         }
     }
@@ -148,7 +143,6 @@ function restore_file(string $bakDir, string $bakFile, string $dstDir): bool
             return true;
         }
     }
-    // TODO throw error?
     return false;
 }
 
@@ -177,23 +171,31 @@ function file_mtime(string $file, string $dir): int
 
 function write_file(string $dir, string $file, string $data): bool
 {
-    // TODO
-    return false;
+    $filePath = join($dir, $file);
+    $fileDir = \dirname($file);
+    if (!dir_exists($dir, $fileDir)) {
+        $status = make_dir_rec($dir, $fileDir);
+        if ($status === false) {
+            return false;
+        }
+    }
+    $status = file_put_contents($filePath, $data);
+    return !($status === false);
 }
 
 function validate_filename(string $dir, string $file, bool $isBackup = false): bool
 {
     $abs_path = join($dir, $file);
 
-    $pathinfo = \pathinfo($abs_path);
+    $pathInfo = \pathinfo($abs_path);
 
-    if (\strlen($pathinfo['filename']) === 0) {
+    if (\strlen($pathInfo['filename']) === 0) {
         return false;
     }
 
     // check filename
     $pattern = $isBackup ? '/[^a-z0-9-_|]/' : '/[^a-z0-9-_]/';
-    \preg_match($pattern, $pathinfo['filename'], $matches);
+    \preg_match($pattern, $pathInfo['filename'], $matches);
     if (\count($matches) > 0) {
         return false;
     }
@@ -236,11 +238,9 @@ function find_files_rec(string $dir, array $extensions, array $excludedDirectori
     $excludedFiles = ['.git', '.idea', '.DS_Store', '.vscode', '.gitignore'];
 
     $onFileAcceptHandler = function (\SplFileInfo $file) use ($extensions, $excludedDirectories, $excludedFiles) {
-        if ($file->isDir()) {
-            foreach ($excludedDirectories as $excludeDir) {
-                if (\str_contains($file->getPathname(), \rtrim($excludeDir, '/') . '/')) {
-                    return false;
-                }
+        foreach ($excludedDirectories as $excludeDir) {
+            if (\str_contains($file->getPathname(), \rtrim($excludeDir, '/') . '/')) {
+                return false;
             }
         }
         if (\in_array($file->getFilename(), $excludedFiles)) {

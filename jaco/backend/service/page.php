@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace jaco\service\page;
 
 use jaco\filesystem;
-use jaco\filesystem\html_file;
 use jaco\list;
+use jaco\html;
 use jaco\struct\page;
 
 use const jaco\APP_DIR;
@@ -34,7 +34,7 @@ function find_one(string $file): ?page
     if ($content) {
         return new page(
             $file,
-            html_file\page_title(WEB_DIR, $file),
+            html\get_title($content),
             filesystem\file_mtime($file, WEB_DIR),
             $content
         );
@@ -54,40 +54,33 @@ function delete(string $file): bool
 
 function copy(string $srcFile, string $dstFile, string $dstPageTitle): bool
 {
-    $status = filesystem\copy_file(WEB_DIR, $srcFile, WEB_DIR, $dstFile);
-    if (!$status) {
-        throw new \jaco\error\Exception('Could not copy page ' . $srcFile);
+    $contents = filesystem\read_file(WEB_DIR, $srcFile);
+
+    if ($contents === null) {
+        return false;
     }
-    return html_file\update(WEB_DIR, $dstFile, function (string $contents) use ($dstPageTitle): string {
-        $contents = preg_replace('/<title>(.*?)<\/title>/', '<title>' . $dstPageTitle . '</title>', $contents);
-        if (is_null($contents)) {
-            throw new \Exception('Could not edit page title');
-        }
-        return $contents;
-    });
+
+    $contents = html\set_title($contents, $dstPageTitle);
+
+    return filesystem\write_file(WEB_DIR, $dstFile, $contents);
 }
 
 function create_from_template(string $srcFile, string $dstFile, string $dstPageTitle): bool
 {
-    $status = filesystem\copy_file(TEMPLATE_PAGE_DIR, $srcFile, WEB_DIR, $dstFile);
-    if (!$status) {
-        throw new \jaco\error\Exception('Could not create page ' . $srcFile);
+    $contents = filesystem\read_file(TEMPLATE_PAGE_DIR, $srcFile);
+
+    if ($contents === null) {
+        return false;
     }
-    return html_file\update(WEB_DIR, $dstFile, function (string $contents) use ($dstPageTitle): string {
-        $contents = preg_replace('/<title>(.*?)<\/title>/', '<title>' . $dstPageTitle . '</title>', $contents);
-        if (is_null($contents)) {
-            throw new \Exception('Could not edit page title');
-        }
-        return $contents;
-    });
+
+    $contents = html\set_title($contents, $dstPageTitle);
+
+    return filesystem\write_file(WEB_DIR, $dstFile, $contents);
 }
 
 function update(string $file, string $content): bool
 {
-    $callback = function () use ($content): string {
-        return $content; // simply return content
-    };
-    return html_file\update(WEB_DIR, $file, $callback, BACKUP_DIR);
+    return filesystem\write_file(WEB_DIR, $file, $content);
 }
 
 /**
@@ -105,9 +98,11 @@ function create_list(string $dir, array $files): array
 
 function create_one(string $dir, string $file, int $modified, ?string $content = null): page
 {
+    $filecontent = filesystem\read_file($dir, $file);
+
     return new page(
         $file,
-        html_file\page_title($dir, $file),
+        html\get_title($filecontent),
         $modified,
         $content
     );

@@ -23,12 +23,11 @@ function action(): array
         return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
-    // delete page
-    if (!page\delete($data['fileName'])) {
-        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not delete page']]];
+    if (page\delete($data['fileName'])) {
+        return [response\OK];
     }
 
-    return [response\OK];
+    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not delete page']]];
 }
 
 /**

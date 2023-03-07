@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace jaco\api\page\list;
 
 use jaco\response;
-
 use jaco\service\page;
 
 /**

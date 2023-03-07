@@ -23,11 +23,11 @@ function action(): array
         return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
-    if (!page\update($data['fileName'], $data['html'])) {
-        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not update page']]];
+    if (page\update($data['fileName'], $data['html'])) {
+        return [response\OK];
     }
 
-    return [response\OK];
+    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not update page']]];
 }
 
 /**

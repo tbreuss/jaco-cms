@@ -25,12 +25,11 @@ function action(): array
         return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
-    // delete page
-    if (!backup\delete($data['file'])) {
-        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not restore backup']]];
+    if (backup\delete($data['file'])) {
+        return [response\OK];
     }
 
-    return [response\OK];
+    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not restore backup']]];
 }
 
 /**
