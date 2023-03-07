@@ -42,7 +42,7 @@ export const System = {
   },
   view: () => m('div.main',
     m('.content',
-      m('h1', 'System'),
+      m('h1', t('System environment')),
       keyValueTable(t('Constants'), SystemModel.info.constants),
       listTable(t('Classes'), SystemModel.info.classes),
       listTable(t('Functions'), SystemModel.info.functions),

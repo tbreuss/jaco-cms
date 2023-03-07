@@ -14,6 +14,8 @@ import { DefaultLayout } from './layout/Default.js'
 import { Notifications } from './service/Notifications.js'
 import {EditPageView} from './view/page/EditPageView.js'
 import {UploadListView} from './view/upload/UploadListView.js'
+import {PhpLogView} from './view/PhpLogView.js'
+import {PhpInfoView} from './view/PhpInfoView.js'
 
 Number.prototype.pad = function (size) {
   let s = String(this)
@@ -115,9 +117,19 @@ m.route(document.getElementById('app'), '/', {
       return m(DefaultLayout, m(Logout))
     }
   },
-  '/system': {
+  '/system/env': {
     render: () => {
       return m(DefaultLayout, m(System))
+    }
+  },
+  '/system/log': {
+    render: () => {
+      return m(DefaultLayout, m(PhpLogView))
+    }
+  },
+  '/system/php-info': {
+    render: () => {
+      return m(DefaultLayout, m(PhpInfoView))
     }
   }
 })

@@ -2,35 +2,33 @@
 
 declare(strict_types=1);
 
-namespace jaco\action\upload\delete;
+namespace jaco\api\page\delete;
 
 use jaco\data;
 use jaco\request;
 use jaco\response;
-use jaco\service\upload;
-
-use const jaco\UPLOAD_EXTENSIONS;
+use jaco\service\page;
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function main(): array
+function action(): array
 {
     $raw = request\get_post_values();
 
     $data = data\filter($raw, filters());
 
     $errors = data\validate($data, validators());
-
     if (count($errors) > 0) {
         return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
-    if (upload\delete($data['fileName'])) {
-        return [response\OK];
+    // delete page
+    if (!page\delete($data['fileName'])) {
+        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not delete page']]];
     }
 
-    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not delete upload']]];
+    return [response\OK];
 }
 
 /**
@@ -53,6 +51,6 @@ function validators(): array
         ['fileName', 'jaco\data\validator\file_exists'],
         ['fileName', 'jaco\data\validator\file_writeable'],
         ['fileName', 'jaco\data\validator\htmlfile_name'],
-        ['fileName', 'jaco\data\validator\file_extension', 'allowed' => UPLOAD_EXTENSIONS]
+        ['fileName', 'jaco\data\validator\htmlfile_extension']
     ];
 }

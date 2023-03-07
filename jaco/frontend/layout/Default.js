@@ -29,6 +29,7 @@ export const DefaultLayout = {
         )) :
         [
           m('.toolbar',
+            m.trust('<span id="loader" class="is-stoped"></span>'),
             window.sessionStorage.getItem('AUTHORIZATION_TOKEN') ? m('.navbar', [
               title(),
               m('.dropdown',
@@ -74,7 +75,14 @@ export const DefaultLayout = {
               m(m.route.Link, {href: '/pages'}, t('Pages')),
               m(m.route.Link, {href: '/uploads'}, t('Uploads')),
               m(m.route.Link, {href: '/backups'}, t('Backups')),
-              m(m.route.Link, {href: '/system'}, t('System')),
+              m('.dropdown',
+                m('button.dropbtn', t('Diagnostics')),
+                m('.dropdown-content',
+                  m(m.route.Link, {href: '/system/env'}, t('System environment')),
+                  m(m.route.Link, {href: '/system/log'}, t('PHP error log')),
+                  m(m.route.Link, {href: '/system/php-info'}, t('PHP info')),
+                )
+              ),
               m(m.route.Link, {
                 class: 'logout',
                 href: '/logout'
@@ -85,9 +93,9 @@ export const DefaultLayout = {
                 class: 'login',
                 href: '/login'
               }, t('Login'))
-            ])
+            ]),
           ),
-          vnode.children
+          vnode.children,
         ]
     ]
   }

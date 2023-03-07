@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\action\page\delete;
+namespace jaco\api\page\update;
 
 use jaco\data;
 use jaco\request;
@@ -12,7 +12,7 @@ use jaco\service\page;
 /**
  * @phpstan-return array<int,mixed>
  */
-function main(): array
+function action(): array
 {
     $raw = request\get_post_values();
 
@@ -23,9 +23,8 @@ function main(): array
         return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
-    // delete page
-    if (!page\delete($data['fileName'])) {
-        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not delete page']]];
+    if (!page\update($data['fileName'], $data['html'])) {
+        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not update page']]];
     }
 
     return [response\OK];
@@ -37,7 +36,9 @@ function main(): array
 function filters(): array
 {
     return [
-        ['fileName', 'jaco\data\filter\filename']
+        ['fileName', 'jaco\data\filter\string'],
+        ['fileName', 'jaco\data\filter\filename'],
+        ['html', 'jaco\data\filter\string'],
     ];
 }
 
@@ -49,8 +50,8 @@ function validators(): array
     return [
         ['fileName', 'jaco\data\validator\required'],
         ['fileName', 'jaco\data\validator\file_exists'],
-        ['fileName', 'jaco\data\validator\file_writeable'],
         ['fileName', 'jaco\data\validator\htmlfile_name'],
-        ['fileName', 'jaco\data\validator\htmlfile_extension']
+        ['fileName', 'jaco\data\validator\htmlfile_extension'],
+        ['html', 'jaco\data\validator\required'],
     ];
 }

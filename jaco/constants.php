@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+$settings = require('settings.php');
+
 define('jaco\APP_VERSION', '0.1.0');
 define('jaco\APP_DIR', __DIR__);
 define('jaco\APP_DIR_NAME', basename(jaco\APP_DIR));
@@ -19,3 +21,4 @@ define('jaco\FILE_PERMISSIONS', 0644);
 define('jaco\SECRET_KEY', $settings['jaco\SECRET_KEY'] ?? openssl_random_pseudo_bytes(32));
 define('jaco\USERNAME', $settings['jaco\USERNAME'] ?? 'admin');
 define('jaco\PASSWORD', $settings['jaco\PASSWORD'] ?? openssl_random_pseudo_bytes(32));
+define('jaco\ERROR_LOG', __DIR__ . '/runtime/log/error.log');

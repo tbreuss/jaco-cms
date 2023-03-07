@@ -83,39 +83,22 @@ function fatal_handler(): void
 
 function get_error_type(int $number): string
 {
-    switch ($number) {
-        case E_ERROR:
-            return "PHP Error";
-        case E_WARNING:
-            return "PHP Warning";
-        case E_PARSE:
-            return "PHP Parse Error";
-        case E_NOTICE:
-            return "PHP Notice";
-        case E_CORE_ERROR:
-            return "PHP Core Error";
-        case E_CORE_WARNING:
-            return "PHP Core Warning";
-        case E_COMPILE_ERROR:
-            return "PHP Compile Error";
-        case E_COMPILE_WARNING:
-            return "PHP Compile Warning";
-        case E_USER_ERROR:
-            return "PHP User Error";
-        case E_USER_WARNING:
-            return "PHP User Warning";
-        case E_USER_NOTICE:
-            return "PHP User Notice";
-        case E_STRICT:
-            return "PHP Strict Notice";
-        case E_RECOVERABLE_ERROR:
-            return "PHP Recoverable Error";
-        case E_DEPRECATED:
-            return "PHP Deprecated Warning";
-        case E_USER_DEPRECATED:
-            return "PHP User Deprecated Warning";
-        case E_ALL:
-        default:
-            return "PHP Unknown Error";
-    }
+    return match ($number) {
+        E_ERROR => "PHP Error",
+        E_WARNING => "PHP Warning",
+        E_PARSE => "PHP Parse Error",
+        E_NOTICE => "PHP Notice",
+        E_CORE_ERROR => "PHP Core Error",
+        E_CORE_WARNING => "PHP Core Warning",
+        E_COMPILE_ERROR => "PHP Compile Error",
+        E_COMPILE_WARNING => "PHP Compile Warning",
+        E_USER_ERROR => "PHP User Error",
+        E_USER_WARNING => "PHP User Warning",
+        E_USER_NOTICE => "PHP User Notice",
+        E_STRICT => "PHP Strict Notice",
+        E_RECOVERABLE_ERROR => "PHP Recoverable Error",
+        E_DEPRECATED => "PHP Deprecated Warning",
+        E_USER_DEPRECATED => "PHP User Deprecated Warning",
+        default => "PHP Unknown Error",
+    };
 }

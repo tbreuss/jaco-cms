@@ -19,6 +19,15 @@ const request = method => (url, options) => {
     }
   }
 
+  let isLoading = true
+  const loader = document.getElementById('loader')
+
+  setTimeout(() => {
+    if (loader && isLoading) {
+      loader.classList.add('is-running')
+    }
+  }, 400)
+
   return m.request({
     method,
     url: 'api.php?' + url + '&XDEBUG_SESSION_START',
@@ -33,6 +42,13 @@ const request = method => (url, options) => {
           addDanger(error.title)
         })
         throw err
+      }
+    })
+    .finally(() => {
+      isLoading = false
+      const loader = document.getElementById('loader')
+      if (loader) {
+        loader.classList.remove('is-running')
       }
     })
 }

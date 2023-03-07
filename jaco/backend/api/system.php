@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\action\system;
+namespace jaco\api\system;
 
 use jaco\response;
 use jaco\system;
@@ -10,11 +10,11 @@ use jaco\system;
 /**
  * @phpstan-return array<int,mixed>
  */
-function main(): array
+function action(): array
 {
     return [response\OK, [
         'classes' => system\defined_classes(),
-        'constants' => (array)system\defined_constants(),
+        'constants' => system\defined_constants(),
         'functions' => system\defined_functions()
     ]];
 }

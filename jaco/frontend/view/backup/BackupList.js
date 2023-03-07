@@ -3,8 +3,7 @@ import {Backup} from '../../model/Backup.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
 import {api} from "../../service/api.js"
-import {addSuccess} from "../../state/actions.js"
-import {addDanger} from "../../state/actions.js"
+import {addDanger, addSuccess} from "../../state/actions.js"
 
 const dateTime = (timestamp) => {
   const date = new Date(timestamp * 1000)
@@ -74,7 +73,7 @@ const headings = [
   {field: 'title', label: 'Page title', sortable: true, default: 'asc'},
   {field: 'created', label: 'Created at', sortable: true, default: 'desc'},
   {field: 'backedUp', label: 'Backed up', sortable: true, default: 'desc'},
-  {field: 'type', label: 'Type', sortable: true },
+  {field: 'type', label: 'Type', sortable: true},
   {label: '', sortable: false}
 ]
 
@@ -142,49 +141,49 @@ export const BackupList = {
     m('.content',
       m('h1', t('Backups')),
       dataFilter(loadList),
-      Backup.loading
-        ? m('table.table', m('tr', m('td', t('Loading') + '...')))
-        : Backup.items.length
-          ? m('table.table',
-            m('colgroup',
-              m('col', {width: '30%'}),
-              m('col', {width: '30%'}),
-              m('col', {width: '20%'}),
-              m('col', {width: '20%'}),
-              m('col', {width: '10%'}),
-              m('col', {width: '1%'})
-            ),
-            m('thead', m('tr',
-              sortableHead(headings, loadList)
-            )),
-            m('tbody', Backup.items.map((backup) => m('tr',
-                m('td', backup.name),
-                m('td', backup.title),
-                m('td', dateTime(backup.created)),
-                m('td', dateTime(backup.backedUp)),
-                m('td', backup.type),
-                m('td.text-right.text-nowrap',
-                  m(ButtonSecondary, {
-                    onclick: () => {
-                      viewBackup(backup.file)
-                    }
-                  }, t('View')),
-                  m(ButtonPrimary, {
-                    onclick: (e) => {
-                      e.redraw = false
-                      deleteAction(backup)
-                    }
-                  }, t('Delete')),
-                  m(ButtonPrimary, {
-                    onclick: (e) => {
-                      e.redraw = false
-                      restoreBackup(backup)
-                    }
-                  }, t('Restore'))
-                )
-              ))
-            )
+      Backup.items.length > 0
+        ? m('table.table',
+          m('colgroup',
+            m('col', {width: '30%'}),
+            m('col', {width: '30%'}),
+            m('col', {width: '20%'}),
+            m('col', {width: '20%'}),
+            m('col', {width: '10%'}),
+            m('col', {width: '1%'})
+          ),
+          m('thead', m('tr',
+            sortableHead(headings, loadList)
+          )),
+          m('tbody', Backup.items.map((backup) => m('tr',
+              m('td', backup.name),
+              m('td', backup.title),
+              m('td', dateTime(backup.created)),
+              m('td', dateTime(backup.backedUp)),
+              m('td', backup.type),
+              m('td.text-right.text-nowrap',
+                m(ButtonSecondary, {
+                  onclick: () => {
+                    viewBackup(backup.file)
+                  }
+                }, t('View')),
+                m(ButtonPrimary, {
+                  onclick: (e) => {
+                    e.redraw = false
+                    deleteAction(backup)
+                  }
+                }, t('Delete')),
+                m(ButtonPrimary, {
+                  onclick: (e) => {
+                    e.redraw = false
+                    restoreBackup(backup)
+                  }
+                }, t('Restore'))
+              )
+            ))
           )
+        )
+        : Backup.loading
+          ? m('table.table', m('tr', m('td', t('Loading') + '...')))
           : m('table.table', m('tr', m('td', t('No backups found.'))))
     )
   )

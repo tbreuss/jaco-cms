@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\action\index;
+namespace jaco\api\index;
 
 use jaco\response;
 
@@ -11,7 +11,7 @@ use const jaco\APP_VERSION;
 /**
  * @phpstan-return array<int,mixed>
  */
-function main(string $version = APP_VERSION): array
+function action(string $version = APP_VERSION): array
 {
     return [response\OK, [
         'name' => 'jaco',

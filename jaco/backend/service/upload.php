@@ -26,6 +26,15 @@ function find_all(string $filter = '', string $sort = '-created'): array
     return [$uploads, $filter, $sort];
 }
 
+function delete(string $file): bool
+{
+    $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
+    if (!$status) {
+        return false;
+    }
+    return filesystem\delete_file(WEB_DIR, $file);
+}
+
 /**
  * @param filesystem\file[] $files
  * @return upload[]
@@ -53,13 +62,4 @@ function sort_field(string $sort): array
     $sortDir = str_starts_with($sort, '-') ? 'desc' : 'asc';
     $sortField = $sortDir === 'desc' ? substr($sort, 1) : $sort;
     return [$sortField, $sortDir];
-}
-
-function delete(string $file): bool
-{
-    $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
-    if (!$status) {
-        return false;
-    }
-    return filesystem\delete_file(WEB_DIR, $file);
 }

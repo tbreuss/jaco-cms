@@ -92,34 +92,3 @@ function sort_field(string $sort): array
     $sortField = $sortDir === 'desc' ? substr($sort, 1) : $sort;
     return [$sortField, $sortDir];
 }
-
-/**
- * @param backup[] $list
- * @phpstan-param array{string,string} $sort
- * @return backup[]
- */
-function sort_list(array $list, string $filter, array $sort): array
-{
-    [$sortField, $sortDir] = $sort;
-    usort($list, function ($a, $b) use ($sortDir, $sortField) {
-        return $sortDir === 'asc'
-            ? strcmp((string)$a->$sortField, (string)$b->$sortField)
-            : strcmp((string)$b->$sortField, (string)$a->$sortField);
-    });
-    return $list;
-}
-
-/**
- * @param backup[] $list
- * @return backup[]
- */
-function filter_list(array $list, string $filter): array
-{
-    if (strlen($filter) === 0) {
-        return $list;
-    }
-    return array_filter($list, function($item) use ($filter) {
-        $filter = str_replace('/', '|', $filter);
-        return stripos($item->file, $filter) !== false || stripos($item->name, $filter) !== false || stripos($item->title, $filter) !== false;
-    });
-}

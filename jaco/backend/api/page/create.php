@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\action\page\create;
+namespace jaco\api\page\create;
 
 use jaco\data;
 use jaco\request;
@@ -12,7 +12,7 @@ use jaco\service\page;
 /**
  * @phpstan-return array<int,mixed>
  */
-function main(): array
+function action(): array
 {
     $raw = request\get_post_values();
 
