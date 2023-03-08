@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace jaco\api\page\update;
 
 use jaco\data;
+use jaco\html;
 use jaco\request;
 use jaco\response;
 use jaco\service\page;
@@ -19,11 +20,18 @@ function action(): array
     $data = data\filter($raw, filters());
 
     $errors = data\validate($data, validators());
+
     if (count($errors) > 0) {
         return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
-    if (page\update($data['fileName'], $data['html'])) {
+    [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['html']);
+
+    if (!$status) {
+        return [response\INTERNAL_SERVER_ERROR, $htmlOrErrors];
+    }
+
+    if (page\update($data['fileName'], $htmlOrErrors)) {
         return [response\OK];
     }
 

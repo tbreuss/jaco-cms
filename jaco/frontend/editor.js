@@ -61,9 +61,9 @@ window.addClickHandler = () => {
 
     removeEditorInstances()
 
-    let jacoEditable = event.target.closest('[data-jaco-editable]')
-    if (jacoEditable) {
-      jacoEditable.setAttribute('data-jaco-is-editing', '')
+    let editable = event.target.closest('[data-jaco-editable]')
+    if (editable) {
+      editable.setAttribute('data-jaco-is-editing', '')
       let toolbarOptions = [
         [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
         ['bold', 'italic', 'underline', 'strike'],
@@ -79,14 +79,14 @@ window.addClickHandler = () => {
         },
         theme: 'snow'
       }
-      new Quill(jacoEditable, editorOptions)
-      handlePosition(jacoEditable)
+      new Quill(editable, editorOptions)
+      handlePosition(editable)
       return
     }
 
-    let jacoEditableLine = event.target.closest('[data-jaco-editable-line]')
-    if (jacoEditableLine) {
-      jacoEditableLine.setAttribute('data-jaco-is-editing', '')
+    let editableLine = event.target.closest('[data-jaco-editable-line]')
+    if (editableLine) {
+      editableLine.setAttribute('data-jaco-is-editing', '')
       let toolbarLineOptions = [
         ['bold', 'italic', 'underline', 'strike'],
         ['link'],
@@ -98,7 +98,7 @@ window.addClickHandler = () => {
         },
         theme: 'snow'
       }
-      new Quill(jacoEditableLine, {
+      new Quill(editableLine, {
         modules: {
           toolbar: toolbarLineOptions,
           keyboard: {
@@ -117,8 +117,31 @@ window.addClickHandler = () => {
         },
         theme: 'snow'
       })
-      handlePosition(jacoEditableLine)
+      handlePosition(editableLine)
       return
+    }
+
+    let editableImage = event.target.closest('[data-jaco-editable-image]')
+    if (editableImage) {
+
+      let input = document.createElement('input')
+      input.type = 'file'
+
+      input.onchange = e => {
+
+        let file = e.target.files[0]
+
+        let reader = new FileReader()
+        reader.readAsDataURL(file)
+
+        reader.onload = readerEvent => {
+          let content = readerEvent.target.result
+          editableImage.src = content
+          editableImage.setAttribute('data-jaco-editable-image-file', file.name)
+        }
+
+      }
+      input.click()
     }
   })
 }
@@ -151,8 +174,6 @@ window.removeEditorInstances = () => {
     element.remove()
   })
 }
-
-
 
 window.removeBlockTags = (element) => {
   let tags = 'address,article,aside,blockquote,canvas,dd,div,dl,dt,fieldset,figcaption,figure,footer,form,h1,h1,h2,h3,h4,h5,h6,header,hr,li,main,nav,noscript,ol,p,pre,section,table,tfoot,ul,video'

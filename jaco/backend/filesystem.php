@@ -184,6 +184,30 @@ function write_file(string $dir, string $file, string $data): bool
     return !($status === false);
 }
 
+function write_file_without_overwrite(string $dir, string $file, string $data): array
+{
+    $newFile = file_name_to_write($dir, $file);
+
+    if (write_file($dir, $newFile, $data)) {
+        return [true, $newFile];
+    }
+
+    return [false];
+}
+
+function file_name_to_write(string $dir, string $file): string
+{
+    if (file_exists($dir, $file)) {
+        $info = \pathinfo($file);
+        $i = 1;
+        do {
+            $file = sprintf('%s-%d.%s', $info['filename'], $i, $info['extension']);
+            $i++;
+        } while (file_exists($dir, $file));
+    }
+    return $file;
+}
+
 function validate_filename(string $dir, string $file, bool $isBackup = false): bool
 {
     $abs_path = join($dir, $file);

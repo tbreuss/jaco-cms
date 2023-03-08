@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
-$settings = require('settings.php');
+$settings = [];
+
+if (is_readable('settings.php')) {
+    $settings = require('settings.php');
+}
 
 define('jaco\APP_VERSION', '0.1.0');
 define('jaco\APP_DIR', __DIR__);
@@ -13,6 +17,7 @@ define('jaco\TEMPLATE_CONTENT_DIR', __DIR__ . '/_template/content');
 define('jaco\WEB_DIR', dirname(__DIR__));
 define('jaco\UPLOAD_DIR', dirname(__DIR__) . '/upload');
 define('jaco\UPLOAD_EXTENSIONS', ['png', 'gif', 'jpg', 'jpeg', 'svg', 'pdf']);
+define('jaco\UPLOAD_URL', 'upload');
 define('jaco\PAGE_EXTENSIONS', ['htm', 'html']);
 define('jaco\DEFAULT_PAGE', 'index.html');
 define('jaco\DEFAULT_LANGUAGE', 'en');
