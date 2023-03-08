@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace jaco\auth;
 
+const AUDIENCE = 'com.jaco';
+const ISSUER = 'com.jaco';
+
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
@@ -11,15 +14,15 @@ use const jaco\PASSWORD;
 use const jaco\SECRET_KEY;
 use const jaco\USERNAME;
 
-function login(string $username, string $password): string
+function authenticate(string $username, string $password): ?string
 {
     if ($username !== USERNAME || $password !== PASSWORD) {
-        throw new \Exception('Login failed', 422); // TODO no http status code here
+        return null;
     }
 
     $payload = [
-        'iss' => 'com.jaco',
-        'aud' => 'com.jaco',
+        'iss' => ISSUER,
+        'aud' => AUDIENCE,
         'iat' => time(),
         'nbf' => time(),
     ];
@@ -27,12 +30,13 @@ function login(string $username, string $password): string
     return JWT::encode($payload, SECRET_KEY, 'HS512');
 }
 
-function is_logged_in(string $token): bool
+function is_authorized(string $token): bool
 {
     try {
-        JWT::decode($token, new Key(SECRET_KEY, 'HS512'));
-    } catch (\Throwable $t) {
+        $payload = JWT::decode($token, new Key(SECRET_KEY, 'HS512'));
+    } catch (\Exception) {
         return false;
     }
-    return true;
+    return ($payload->iss === ISSUER)
+        && ($payload->aud === AUDIENCE);
 }

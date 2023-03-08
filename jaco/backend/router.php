@@ -105,7 +105,7 @@ function check_authorization(): bool
         return false;
     }
     $token = trim(substr($header, 7));
-    return auth\is_logged_in($token);
+    return auth\is_authorized($token);
 }
 
 /**

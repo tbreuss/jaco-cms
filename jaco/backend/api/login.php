@@ -23,10 +23,10 @@ function action(): array
         return [response\UNPROCESSABLE_CONTENT, $errors];
     }
 
-    try {
-        $token = auth\login($data['username'], $data['password']);
-    } catch (\Throwable $t) {
-        return [response\UNPROCESSABLE_CONTENT, [['title' => 'Validation Error', 'detail' => $t->getMessage()]]];
+    $token = auth\authenticate($data['username'], $data['password']);
+
+    if ($token === null) {
+        return [response\UNPROCESSABLE_CONTENT, [['title' => 'Validation Error', 'detail' => 'Authentication failed']]];
     }
 
     return [response\OK, ['token' => $token]];
