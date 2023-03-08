@@ -80,11 +80,16 @@ function create_from_template(string $srcFile, string $dstFile, string $dstPageT
 
 function update(string $file, string $content): bool
 {
+    $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
+    if (!$status) {
+        return false;
+    }
+
     return filesystem\write_file(WEB_DIR, $file, $content);
 }
 
 /**
- * @param \jaco\struct\file[] $files
+ * @param filesystem\file[] $files
  * @return page[]
  */
 function create_list(string $dir, array $files): array

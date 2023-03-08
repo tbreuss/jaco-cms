@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\filesystem;
 
-use jaco\str;
+use jaco\strings;
+use jaco\struct;
 
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\DIRECTORY_PERMISSIONS;
@@ -122,7 +123,7 @@ function backup_file(string $dir, string $file, string $bakDir): bool
     $dstPath = join($bakDir, \sprintf(
         '%s_%s_%s',
         \date('Ymd_His', $modTime),
-        str\random(4),
+        strings\random(4),
         \str_replace('/', '|', $file)
     ));
     return \copy($srcPath, $dstPath); // triggers an error
@@ -269,7 +270,7 @@ function find_files_rec(string $dir, array $extensions, array $excludedDirectori
         }
         $pathname = $file->getPathname();
         $relfile = \substr($pathname, \strlen($dir));
-        $files[] = new file(
+        $files[] = new struct\file(
             \ltrim($relfile, '\\/'),
             $file->getExtension(),
             $file->getMTime(),
@@ -293,17 +294,5 @@ function _rrmdir(string $dir): void
             }
         }
         \rmdir($dir);
-    }
-}
-
-class file
-{
-    public function __construct(
-        public string $file,
-        public string $extension,
-        public int $modified,
-        public int $size,
-        public ?string $content = null,
-    ) {
     }
 }

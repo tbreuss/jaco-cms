@@ -33,3 +33,7 @@
 [data-jaco-is-editing]:hover {
     cursor:default !important;
 }
+
+.ql-toolbar.ql-snow  {
+    background-color: #eee;
+}
