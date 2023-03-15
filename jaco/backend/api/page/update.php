@@ -28,7 +28,7 @@ function action(): array
     [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['html']);
 
     if (!$status) {
-        return [response\INTERNAL_SERVER_ERROR, $htmlOrErrors];
+        return [response\INTERNAL_SERVER_ERROR, array_map(fn($error) => ['title' => $error], $htmlOrErrors)];
     }
 
     if (page\update($data['fileName'], $htmlOrErrors)) {

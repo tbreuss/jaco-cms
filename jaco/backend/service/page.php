@@ -7,6 +7,7 @@ namespace jaco\service\page;
 use jaco\filesystem;
 use jaco\list;
 use jaco\html;
+use jaco\struct\file;
 use jaco\struct\page;
 
 use const jaco\APP_DIR;
@@ -89,7 +90,7 @@ function update(string $file, string $content): bool
 }
 
 /**
- * @param filesystem\file[] $files
+ * @param file[] $files
  * @return page[]
  */
 function create_list(string $dir, array $files): array

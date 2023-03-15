@@ -8,6 +8,7 @@ use jaco\filesystem;
 use jaco\html;
 use jaco\list;
 use jaco\struct\backup;
+use jaco\struct\file;
 
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\BACKUP_DIR;
@@ -59,9 +60,9 @@ function delete(string $file): bool
 }
 
 /**
- * @param filesystem\file[] $files
+ * @param file[] $files
  * @param string[] $pageExtensions
- * @return backup
+ * @return backup[]
  */
 function create_list(string $dir, array $files, array $pageExtensions): array
 {

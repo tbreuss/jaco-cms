@@ -51,14 +51,6 @@ function safe(): array
 }
 
 /**
- * @phpstan-return array{bool, string}
- */
-function test(mixed $value, int $avg, int $min, int $max, int $sum): array
-{
-    return [true, ''];
-}
-
-/**
  * @param string[] $allowed
  * @return array{boolean, string}
  */

@@ -104,7 +104,7 @@ function move_file(string $srcDir, string $srcFile, string $dstDir, string $dstF
     return \rename($srcPath, $dstPath);
 }
 
-function touch_file(string $file, string $inDir, int $timestamp = 0)
+function touch_file(string $file, string $inDir, int $timestamp = 0): bool
 {
     $path = join($inDir, $file);
     return \touch($path, $timestamp);
@@ -246,7 +246,7 @@ function validate_extension(string $dir, string $file, array $allowed = PAGE_EXT
 
 /**
  * @param string[] $extensions
- * @return file[]
+ * @return struct\file[]
  */
 function find_files(string $dir, array $extensions): array
 {
@@ -256,7 +256,7 @@ function find_files(string $dir, array $extensions): array
 /**
  * @param string[] $extensions
  * @param string[] $excludedDirectories
- * @return file[]
+ * @return struct\file[]
  */
 function find_files_rec(string $dir, array $extensions, array $excludedDirectories = [], int $maxDepth = -1): array
 {

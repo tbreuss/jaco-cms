@@ -6,6 +6,7 @@ namespace jaco\service\upload;
 
 use jaco\filesystem;
 use jaco\list;
+use jaco\struct\file;
 use jaco\struct\upload;
 
 use const jaco\APP_DIR;
@@ -36,7 +37,7 @@ function delete(string $file): bool
 }
 
 /**
- * @param filesystem\file[] $files
+ * @param file[] $files
  * @return upload[]
  */
 function create_list(array $files): array

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\html;
 
+use DOMElement;
 use jaco\filesystem;
 
 use const jaco\UPLOAD_DIR;
@@ -43,18 +44,27 @@ function handle_embedded_data_url_images(string $html): array
         return [false, ['Could not load HTML']];
     }
 
-    $imgAttr = 'data-jaco-editable-image';
+    $imgAttrs = ['data-jaco-editable-image', 'data-jaco-editable-image-extended'];
     $imgSrcAttr = 'src';
     $imgFileAttr = 'data-jaco-editable-image-file';
 
     $images = $dom->getElementsByTagName('img');
 
+    $handled = 0;
     $errors = [];
 
     foreach ($images as $el) {
         /** @var DOMElement $el */
 
-        if (!$el->hasAttribute($imgAttr) || !$el->hasAttribute($imgSrcAttr) || !$el->hasAttribute($imgFileAttr)) {
+        $hasImgAttr = false;
+        foreach ($imgAttrs as $imgAttr) {
+            if ($el->hasAttribute($imgAttr)) {
+                $hasImgAttr = true;
+                break;
+            }
+        }
+
+        if (!$hasImgAttr || !$el->hasAttribute($imgSrcAttr) || !$el->hasAttribute($imgFileAttr)) {
             continue;
         }
 
@@ -76,12 +86,18 @@ function handle_embedded_data_url_images(string $html): array
 
         $el->setAttribute('src', filesystem\join(UPLOAD_URL, $newFile));
         $el->removeAttribute($imgFileAttr);
+        $handled++;
     }
 
     if (\count($errors) > 0) {
         return [false, $errors];
     }
 
+    if ($handled === 0) {
+        return [true, $html];
+    }
+
+    $dom->formatOutput = true;
     $newHtml = $dom->saveHTML();
 
     if ($newHtml === false) {
@@ -92,7 +108,7 @@ function handle_embedded_data_url_images(string $html): array
 
     if (\count($errors) > 0) {
         \libxml_clear_errors();
-        return [false, $errors];
+        return [false, array_map(fn(\LibXMLError $e) => $e->message, $errors)];
     }
 
     return [true, $newHtml];
