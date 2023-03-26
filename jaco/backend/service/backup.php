@@ -22,10 +22,10 @@ function find_all(string $filter = '', string $sort = '-created'): array
 {
     $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
     $files = filesystem\find_files(BACKUP_DIR, $allowed);
-    $list = create_list(BACKUP_DIR, $files, PAGE_EXTENSIONS);
-    $list = list\filter($list, $filter);
+    $backups = create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
+    $backups = list\filter($backups, $filter);
     $sort = sort_field($sort);
-    return [list\sort($list, $sort), $filter, $sort];
+    return [list\sort($backups, $sort), $filter, $sort];
 }
 
 function find_one(string $file): ?backup
@@ -64,12 +64,12 @@ function delete(string $file): bool
  * @param string[] $pageExtensions
  * @return backup[]
  */
-function create_list(string $dir, array $files, array $pageExtensions): array
+function create_list(array $files, string $dir, array $pageExtensions): array
 {
-    $list = [];
+    $backups = [];
     foreach ($files as $file) {
         $content = filesystem\read_file($dir, $file->file);
-        $list[] = new backup(
+        $backups[] = new backup(
             $file->file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file->file, 21)),
             html\get_title($content),
@@ -78,7 +78,7 @@ function create_list(string $dir, array $files, array $pageExtensions): array
             in_array($file->extension, $pageExtensions) ? 'page' : 'upload'
         );
     }
-    return $list;
+    return $backups;
 }
 
 /**

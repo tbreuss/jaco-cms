@@ -16,5 +16,5 @@ use const jaco\TEMPLATE_PAGE_DIR;
 function find_all(): array
 {
     $files = filesystem\find_files(TEMPLATE_PAGE_DIR, PAGE_EXTENSIONS);
-    return page\create_list(TEMPLATE_PAGE_DIR, $files);
+    return page\create_list($files, TEMPLATE_PAGE_DIR);
 }

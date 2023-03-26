@@ -219,7 +219,7 @@ function validate_filename(string $dir, string $file, bool $isBackup = false): b
     }
 
     // check filename
-    $pattern = $isBackup ? '/[^a-z0-9-_|]/' : '/[^a-z0-9-_]/';
+    $pattern = $isBackup ? '/[^A-Za-z0-9-_|]/' : '/[^A-Za-z0-9-_]/';
     \preg_match($pattern, $pathInfo['filename'], $matches);
     if (\count($matches) > 0) {
         return false;

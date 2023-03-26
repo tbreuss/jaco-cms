@@ -58,27 +58,3 @@ function validate(array $data, array $rules): array
     }
     return $errors;
 }
-
-/*
-$data = [
-    'test' => 'abc',
-    'number' => 123,
-    'string' => null,
-];
-print_r($data);
-
-$rules = [
-    ['test', 'required'],
-    ['test', 'string'],
-    ['number', 'numeric'],
-    ['string', 'required'],
-    ['string2', 'required'],
-    ['test', 'test', 'min' => 0, 'max' => 100, 'avg' => 50, 'sum' => 150],
-
-];
-
-$errors = validate_array($data, $rules);
-
-print_r($errors);
-exit;
-*/

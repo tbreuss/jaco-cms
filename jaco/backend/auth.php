@@ -30,7 +30,7 @@ function authenticate(string $username, string $password): ?string
     return JWT::encode($payload, SECRET_KEY, 'HS512');
 }
 
-function is_authorized(string $token): bool
+function is_authenticated(string $token): bool
 {
     try {
         $payload = JWT::decode($token, new Key(SECRET_KEY, 'HS512'));

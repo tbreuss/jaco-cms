@@ -22,22 +22,22 @@ use const jaco\WEB_DIR;
 function find_all(string $filter = '', string $sort = '-created'): array
 {
     $files = filesystem\find_files_rec(WEB_DIR, PAGE_EXTENSIONS, [APP_DIR]);
-    $list = create_list(WEB_DIR, $files);
-    $list = list\filter($list, $filter);
+    $pages = create_list($files, WEB_DIR);
+    $pages = list\filter($pages, $filter);
     $sort = sort_field($sort);
-    return [list\sort($list, $sort), $filter, $sort];
+    return [list\sort($pages, $sort), $filter, $sort];
 }
 
 function find_one(string $file): ?page
 {
-    $content = filesystem\read_file(WEB_DIR, $file);
+    $html = filesystem\read_file(WEB_DIR, $file);
 
-    if ($content) {
+    if ($html) {
         return new page(
             $file,
-            html\get_title($content),
+            html\get_title($html),
             filesystem\file_mtime($file, WEB_DIR),
-            $content
+            $html
         );
     }
 
@@ -55,33 +55,34 @@ function delete(string $file): bool
 
 function copy(string $srcFile, string $dstFile, string $dstPageTitle): bool
 {
-    $contents = filesystem\read_file(WEB_DIR, $srcFile);
+    $html = filesystem\read_file(WEB_DIR, $srcFile);
 
-    if ($contents === null) {
+    if ($html === null) {
         return false;
     }
 
-    $contents = html\set_title($contents, $dstPageTitle);
+    $html = html\set_title($html, $dstPageTitle);
 
-    return filesystem\write_file(WEB_DIR, $dstFile, $contents);
+    return filesystem\write_file(WEB_DIR, $dstFile, $html);
 }
 
 function create_from_template(string $srcFile, string $dstFile, string $dstPageTitle): bool
 {
-    $contents = filesystem\read_file(TEMPLATE_PAGE_DIR, $srcFile);
+    $html = filesystem\read_file(TEMPLATE_PAGE_DIR, $srcFile);
 
-    if ($contents === null) {
+    if ($html === null) {
         return false;
     }
 
-    $contents = html\set_title($contents, $dstPageTitle);
+    $html = html\set_title($html, $dstPageTitle);
 
-    return filesystem\write_file(WEB_DIR, $dstFile, $contents);
+    return filesystem\write_file(WEB_DIR, $dstFile, $html);
 }
 
 function update(string $file, string $content): bool
 {
     $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
+
     if (!$status) {
         return false;
     }
@@ -93,22 +94,22 @@ function update(string $file, string $content): bool
  * @param file[] $files
  * @return page[]
  */
-function create_list(string $dir, array $files): array
+function create_list(array $files, string $dir): array
 {
-    $html = [];
+    $pages = [];
     foreach ($files as $file) {
-        $html[] = create_one($dir, $file->file, $file->modified);
+        $pages[] = create_one($dir, $file->file, $file->modified);
     }
-    return $html;
+    return $pages;
 }
 
 function create_one(string $dir, string $file, int $modified, ?string $content = null): page
 {
-    $filecontent = filesystem\read_file($dir, $file);
+    $html = filesystem\read_file($dir, $file);
 
     return new page(
         $file,
-        html\get_title($filecontent),
+        html\get_title($html),
         $modified,
         $content
     );

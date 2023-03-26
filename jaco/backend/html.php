@@ -13,6 +13,11 @@ use const jaco\UPLOAD_URL;
 function get_title(string $html): string
 {
     $title = '';
+
+    if ($html === '') {
+        return $title;
+    }
+
     $dom = new \DOMDocument();
     \libxml_use_internal_errors(true);
     if ($dom->loadHTML($html)) {
@@ -25,11 +30,11 @@ function get_title(string $html): string
     return $title;
 }
 
-function set_title(string $contents, string $title): string
+function set_title(string $html, string $title): string
 {
-    $replaced = \preg_replace('/<title>(.*?)<\/title>/', '<title>' . $title . '</title>', $contents);
+    $replaced = \preg_replace('/<title>(.*?)<\/title>/', '<title>' . $title . '</title>', $html);
     if ($replaced === null) {
-        return $contents;
+        return $html;
     }
     return $replaced;
 }
