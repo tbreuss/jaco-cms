@@ -1,7 +1,9 @@
 {
     "require": {
         "php": "^8.0",
-        "firebase/php-jwt": "^6.1"
+        "firebase/php-jwt": "^6.1",
+        "ext-dom": "*",
+        "ext-libxml": "*"
     },
     "autoload": {
         "files": [

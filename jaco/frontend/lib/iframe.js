@@ -1,83 +1,59 @@
 export const iframe = {
   pageTitle: () => {
-    let iframe = document.getElementById('iframe')
-    if (!iframe) {
-      return ''
-    }
-    return iframe.contentDocument.title
+    return iframe.contentDocument().title
   },
   fileName: () => {
-    let el = document.getElementById('iframe')
-    if (!el) {
-      return ''
-    }
-    let pathname = iframe.removeLeadingSlash(el.contentDocument.location.pathname)
+    const contentDocument = iframe.contentDocument()
+    const pathname = iframe.removeLeadingSlash(contentDocument.location.pathname)
     return pathname === '' ? 'index.html' : pathname
   },
   makeEditable: () => {
+    const contentDocument = iframe.contentDocument()
+    const contentWindow = iframe.contentWindow()
 
-    let iframe = document.getElementById('iframe')
-    if (!iframe) {
-      return
-    }
-
-    // add editor script
-    if (!iframe.contentDocument.getElementById('editorInstanceJavascript')) {
-      let script = iframe.contentDocument.createElement('script')
+    if (contentDocument.getElementById('editorInstanceJavascript')) {
+      contentWindow.initEditors()
+      contentWindow.initImages()
+    } else {
+      const script = contentDocument.createElement('script')
       script.id = 'editorInstanceJavascript'
       script.type = 'text/javascript'
       script.src = '/jaco/frontend/editor.js'
       script.async = false
       script.onload = () => {
-        iframe.contentWindow.initEditors()
+        contentWindow.initRichTextEditor()
+        contentWindow.initImages()
       }
-      iframe.contentDocument.head.appendChild(script)
-    } else {
-      iframe.contentWindow.initEditors()
+      contentDocument.head.appendChild(script)
     }
   },
   removeEditors: () => {
-    let iframe = document.getElementById('iframe')
-    if (!iframe) {
-      return
-    }
-    if (typeof iframe.contentWindow.removeEditors === 'function') {
-      iframe.contentWindow.removeEditors()
+    const contentWindow = iframe.contentWindow()
+    if (typeof contentWindow.removeRichTextEditor === 'function') {
+      contentWindow.removeRichTextEditor()
+      contentWindow.removeTempImageElements()
     }
   },
   disableEditors: () => {
-    let iframe = document.getElementById('iframe')
-    if (!iframe) {
-      return
-    }
-    if (typeof iframe.contentWindow.disableEditors === 'function') {
-      iframe.contentWindow.disableEditors()
+    const contentWindow = iframe.contentWindow()
+    if (typeof contentWindow.disableRichTextEditor === 'function') {
+      contentWindow.disableRichTextEditor()
     }
   },
   load: (url) => {
-    let iframe = document.getElementById('iframe')
-    if (!iframe) {
-      return
-    }
-    iframe.src = url
+    iframe.getElement().src = url
   },
   reload: () => {
-    let iframe = document.getElementById('iframe')
-    if (!iframe) {
-      return
-    }
-    iframe.contentWindow.location.reload()
+    iframe.contentWindow().location.reload()
   },
   getHTML: () => {
-    let iframe = document.getElementById('iframe')
-    if (!iframe) {
-      throw error
-    }
-    iframe.contentWindow.removeEditorInstances()
-    iframe.contentWindow.removeEditors()
+    const contentWindow = iframe.contentWindow()
+    contentWindow.removeRichTextEditorElements()
+    contentWindow.removeRichTextEditor()
+    contentWindow.removeTempImageElements()
 
-    const doctype = iframe.contentWindow.document.doctype
-    let outerHtml = iframe.contentWindow.document.documentElement.outerHTML
+    const doctype = contentWindow.document.doctype
+    let outerHtml = contentWindow.document.documentElement.outerHTML
 
     let html = '<!DOCTYPE html>' // take html5 doctype as default
     if (doctype) {
@@ -99,5 +75,18 @@ export const iframe = {
   },
   removeLeadingSlash: (str) => {
     return str.replace(/^\/+/, '')
+  },
+  getElement: () => {
+    const iframe = document.getElementById('iframe')
+    if (!iframe) {
+      throw "Could not find iframe"
+    }
+    return iframe
+  },
+  contentDocument: () => {
+    return iframe.getElement().contentDocument
+  },
+  contentWindow: () => {
+    return iframe.getElement().contentWindow
   }
 }

@@ -1,11 +1,12 @@
 [data-jaco-editable] {
-    border: 1px solid #ddd;
+    outline: 1px solid #ddd;
+    border: 1px solid rgba(255, 255, 255, 0);
     min-height: 1rem;
     margin-bottom: 1rem;
 }
 
 [data-jaco-editable-line] {
-    border: 1px solid #ddd;
+    outline: 1px solid #ddd;
     min-height: 1rem;
 }
 
@@ -17,21 +18,72 @@
 }
 
 [data-jaco-editable-image] {
-    border: 1px solid #ddd;
+    outline: 1px solid #ddd;
+}
+
+[data-jaco-editable-image-extended] {
+    outline: 1px solid #ddd;
+}
+
+[data-jaco-editable-link] {
+    outline: 1px solid #ddd;
+    display: block;
+}
+[data-jaco-editable-link]:hover {
+    text-decoration: none;
 }
 
 [data-jaco-editable]:hover,
 [data-jaco-editable-line]:hover,
-[data-jaco-editable-image]:hover {
+[data-jaco-editable-image]:hover,
+[data-jaco-editable-image-extended]:hover {
     cursor:pointer;
 }
 
+[data-jaco-editable-image-extended] {
+    position: relative;
+}
+
+#editableImageExtended {
+    position: absolute;
+    background: #eee;
+    outline: 1px solid #ccc;
+    padding: 8px;
+}
+
+#editableImageExtended label {
+    display: inline;
+}
+
+#editableImageExtended input[type=text] {
+    display: inline;
+    background-color: #fff;
+    line-height: 1rem;
+    font-size: 0.9rem;
+}
+
+#editableImageExtended input[type=file] {
+    display: inline;
+    background-color: #fff;
+    line-height: 1rem;
+    font-size: 0.9rem;
+}
+
 [data-jaco-is-editing] {
-    border: none;
+    outline: none;
 }
 
 [data-jaco-is-editing]:hover {
     cursor:default !important;
+}
+
+[data-jaco-editable-image-temp] {
+    font-size: 0.9rem;
+}
+a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
+    color: #363636;
+    cursor: default;
+    text-decoration: none;
 }
 
 .ql-toolbar.ql-snow  {
