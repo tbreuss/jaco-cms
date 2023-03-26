@@ -28,9 +28,17 @@ function sort(array $list, array $sort): array
 {
     [$sortField, $sortDir] = $sort;
     usort($list, function ($a, $b) use ($sortDir, $sortField) {
-        return $sortDir === 'asc'
-            ? strcmp((string)$a->$sortField, (string)$b->$sortField)
-            : strcmp((string)$b->$sortField, (string)$a->$sortField);
+        $isNumeric = is_numeric($a->$sortField) && is_numeric($b->$sortField);
+        if ($sortDir === 'asc') {
+            if ($isNumeric) {
+                return $a->$sortField <=> $b->$sortField;
+            }
+            return strcmp((string)$a->$sortField, (string)$b->$sortField);
+        }
+        if ($isNumeric) {
+            return $b->$sortField <=> $a->$sortField;
+        }
+        return strcmp((string)$b->$sortField, (string)$a->$sortField);
     });
     return $list;
 }
