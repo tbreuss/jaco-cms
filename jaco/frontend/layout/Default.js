@@ -1,5 +1,6 @@
 import {closeDropdown} from '../lib/helpers.js'
 import {i18n, t} from '../model/i18n.js'
+import {app} from '../lib/app.js'
 
 const title = () => m(m.route.Link, {
   class: 'title',
@@ -30,7 +31,7 @@ export const DefaultLayout = {
         [
           m('.toolbar',
             m.trust('<span id="loader" class="is-stoped"></span>'),
-            window.sessionStorage.getItem('AUTHORIZATION_TOKEN') ? m('.navbar', [
+            app.hasAuthToken() ? m('.navbar', [
               title(),
               m('.dropdown',
                 m('button.dropbtn', t('Quick Action')),

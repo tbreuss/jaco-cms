@@ -1,5 +1,6 @@
-import { System as SystemModel } from '../model/System.js'
-import { t } from '../model/i18n.js'
+import {SystemModel as SystemModel} from '../model/SystemModel.js'
+import {t} from '../model/i18n.js'
+import {app} from '../lib/app.js'
 
 const keyValueTable = (title, object) => object
   ? m('div',
@@ -7,9 +8,9 @@ const keyValueTable = (title, object) => object
     m('table.table',
       m('thead', m('tr', m('th', t('Name')), m('th', t('Value')))),
       m('tbody', Object.entries(object).map((constant) => m('tr',
-        m('td', constant[0]),
-        m('td', constant[1]),
-      ))
+          m('td', constant[0]),
+          m('td', constant[1]),
+        ))
       )
     ))
   : ''
@@ -20,25 +21,24 @@ const listTable = (title, array) => array
     m('table.table',
       m('thead', m('tr', m('th', t('Name')))),
       m('tbody', array.map((constant) => m('tr',
-        m('td', constant)
-      ))
+          m('td', constant)
+        ))
       )
     ))
   : ''
 
-export const System = {
+export const SystemView = {
   oninit: () => {
-    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+    if (!app.hasAuthToken()) {
       m.route.set('/logout')
     }
     SystemModel.load()
   },
   oncreate: () => {
-    document.getElementById('app').classList.add('max-height')
-    document.documentElement.style.visibility = 'visible'
+    app.makeAppScrollable()
   },
   onremove: () => {
-    document.getElementById('app').classList.remove('max-height')
+    app.makeIframeScrollable()
   },
   view: () => m('div.main',
     m('.content',

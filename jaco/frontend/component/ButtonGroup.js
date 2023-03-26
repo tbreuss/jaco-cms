@@ -1,4 +1,4 @@
 export const ButtonGroup = {
-  view: ({ attrs: { wrap }, children }) =>
+  view: ({attrs: {wrap}, children}) =>
     m(wrap, children)
 }

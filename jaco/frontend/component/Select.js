@@ -1,4 +1,4 @@
-import { Label } from "./Label.js"
+import {Label} from './Label.js'
 
 const getOptions = (prompt, options) => {
   let els = []
@@ -20,10 +20,10 @@ const selectOptions = (options) => {
 }
 
 const SelectElement = {
-  view: ({ attrs: { disabled, id, options, prompt, onchange } }) => m('select', {
+  view: ({attrs: {disabled, id, options, prompt, onchange}}) => m('select', {
     id: id,
     disabled: disabled,
-    onchange: ({ target }) => {
+    onchange: ({target}) => {
       const index = target.selectedIndex
       onchange(target[index].value)
     }
@@ -31,14 +31,14 @@ const SelectElement = {
 }
 
 export const Select = {
-  view: ({ attrs: { disabled, wrap, label, id, options, prompt, onchange } }) =>
+  view: ({attrs: {disabled, wrap, label, id, options, prompt, onchange}}) =>
     wrap
       ? m(wrap,
-        label && m(Label, { id }, label),
-        m(SelectElement, { disabled, id, options, prompt, onchange })
+        label && m(Label, {id}, label),
+        m(SelectElement, {disabled, id, options, prompt, onchange})
       )
       : (
-        label && m(Label, { id }, label),
-        m(SelectElement, { disabled, id, options, prompt, onchange })
+        label && m(Label, {id}, label),
+          m(SelectElement, {disabled, id, options, prompt, onchange})
       )
 }

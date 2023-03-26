@@ -1,21 +1,21 @@
-import { BackupList } from './view/backup/BackupList.js'
-import { BackupView } from './view/backup/BackupView.js'
-import { PageAdd } from './view/PageAdd.js'
-import { PageCopy } from './view/PageCopy.js'
-import { PageDelete } from './view/PageDelete.js'
-import { PageEdit } from './view/PageEdit.js'
-import { PageGoto } from './view/PageGoto.js'
-import { PageList } from './view/page/PageList.js'
-import { Login } from './view/Login.js'
-import { Logout } from './view/Logout.js'
-import { Start } from './view/Start.js'
-import { System } from './view/System.js'
-import { DefaultLayout } from './layout/Default.js'
-import { Notifications } from './service/Notifications.js'
-import {EditPageView} from './view/page/EditPageView.js'
-import {UploadListView} from './view/upload/UploadListView.js'
-import {PhpLogView} from './view/PhpLogView.js'
+import {BackupEditView} from './view/backup/BackupEditView.js'
+import {BackupListView} from './view/backup/BackupListView.js'
+import {DefaultLayout} from './layout/Default.js'
+import {LoginView} from './view/LoginView.js'
+import {LogoutView} from './view/LogoutView.js'
+import {Notifications} from './service/Notifications.js'
+import {PageAddView} from './view/PageAddView.js'
+import {PageCopyView} from './view/PageCopyView.js'
+import {PageDeleteView} from './view/PageDeleteView.js'
+import {PageEditView} from './view/page/PageEditView.js'
+import {PageInlineEditView} from './view/PageInlineEditView.js'
+import {PageGotoView} from './view/PageGotoView.js'
+import {PageListView} from './view/page/PageListView.js'
 import {PhpInfoView} from './view/PhpInfoView.js'
+import {PhpLogView} from './view/PhpLogView.js'
+import {StartView} from './view/StartView.js'
+import {SystemView} from './view/SystemView.js'
+import {UploadListView} from './view/upload/UploadListView.js'
 
 Number.prototype.pad = function (size) {
   let s = String(this)
@@ -49,52 +49,52 @@ m.mount(document.getElementById('toasts'), Notifications)
 m.route(document.getElementById('app'), '/', {
   '/': {
     render: () => {
-      return m(DefaultLayout, m(Start))
+      return m(DefaultLayout, m(StartView))
     }
   },
   '/backups': {
     render: () => {
-      return m(DefaultLayout, m(BackupList))
+      return m(DefaultLayout, m(BackupListView))
     }
   },
   '/backups/view/:file': {
     render: (vnode) => {
-      return m(DefaultLayout, m(BackupView, vnode.attrs))
+      return m(DefaultLayout, m(BackupEditView, vnode.attrs))
     }
   },
   '/pages': {
     render: () => {
-      return m(DefaultLayout, m(PageList))
+      return m(DefaultLayout, m(PageListView))
     }
   },
   '/pages/edit/:file': {
     render: (vnode) => {
-      return m(DefaultLayout, m(EditPageView, vnode.attrs))
+      return m(DefaultLayout, m(PageEditView, vnode.attrs))
     }
   },
   '/page-add': {
     render: () => {
-      return m(DefaultLayout, m(PageAdd))
+      return m(DefaultLayout, m(PageAddView))
     }
   },
   '/page-edit': {
     render: () => {
-      return m(DefaultLayout, m(PageEdit))
+      return m(DefaultLayout, m(PageInlineEditView))
     }
   },
   '/page-copy': {
     render: () => {
-      return m(DefaultLayout, m(PageCopy))
+      return m(DefaultLayout, m(PageCopyView))
     }
   },
   '/page-delete': {
     render: () => {
-      return m(DefaultLayout, m(PageDelete))
+      return m(DefaultLayout, m(PageDeleteView))
     }
   },
   '/page-goto': {
     render: () => {
-      return m(DefaultLayout, m(PageGoto))
+      return m(DefaultLayout, m(PageGotoView))
     }
   },
   '/uploads': {
@@ -109,17 +109,17 @@ m.route(document.getElementById('app'), '/', {
   },
   '/login': {
     render: () => {
-      return m(DefaultLayout, m(Login))
+      return m(DefaultLayout, m(LoginView))
     }
   },
   '/logout': {
     render: () => {
-      return m(DefaultLayout, m(Logout))
+      return m(DefaultLayout, m(LogoutView))
     }
   },
   '/system/env': {
     render: () => {
-      return m(DefaultLayout, m(System))
+      return m(DefaultLayout, m(SystemView))
     }
   },
   '/system/log': {
@@ -132,4 +132,8 @@ m.route(document.getElementById('app'), '/', {
       return m(DefaultLayout, m(PhpInfoView))
     }
   }
+})
+
+window.addEventListener('load', (event) => {
+  document.documentElement.style.visibility = 'visible' // prevent flickering
 })

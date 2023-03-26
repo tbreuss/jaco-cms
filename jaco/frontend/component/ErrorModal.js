@@ -1,4 +1,3 @@
-
 const animationDuration = 0
 
 let options = {
@@ -10,7 +9,7 @@ let isOpen = false
 export function openErrorModal(opts) {
   // Deep copy the supplied opts
   isOpen = true
-  options = { ...opts }
+  options = {...opts}
   // Redraw by default unless caller suppressed
   if (options.redraw == null || options.redraw === true) {
     m.redraw()
@@ -55,17 +54,17 @@ export const ErrorModal = {
   },
   view() {
     return m('dialog.error', {
-      open: true,
-      oncreate: ({ dom }) => {
-        modelRef = dom
-      },
-      onclick: (e) => {
-        e.redraw = false
-        if (e.target === modelRef) {
-          closeErrorModal()
+        open: true,
+        oncreate: ({dom}) => {
+          modelRef = dom
+        },
+        onclick: (e) => {
+          e.redraw = false
+          if (e.target === modelRef) {
+            closeErrorModal()
+          }
         }
-      }
-    },
+      },
       m('article',
         m('a.close', {
           href: '#', ariaLabel: 'Close', onclick: (e) => {

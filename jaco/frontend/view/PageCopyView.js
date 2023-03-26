@@ -1,14 +1,15 @@
-import { api } from '../service/api.js'
-import { addSuccess } from '../state/actions.js'
-import { iframe } from '../lib/iframe.js'
-import { t } from '../model/i18n.js'
-import { ModalMedium } from '../component/ModalMedium.js'
-import { Fieldset } from '../component/Fieldset.js'
-import { ButtonGroup } from '../component/ButtonGroup.js'
-import { ButtonPrimary } from '../component/ButtonPrimary.js'
-import { ButtonSecondary } from '../component/ButtonSecondary.js'
-import { InputText } from '../component/InputText.js'
-import { FormErrors } from '../component/FormErrors.js'
+import {api} from '../service/api.js'
+import {addSuccess} from '../state/actions.js'
+import {iframe} from '../lib/iframe.js'
+import {t} from '../model/i18n.js'
+import {ModalMedium} from '../component/ModalMedium.js'
+import {Fieldset} from '../component/Fieldset.js'
+import {ButtonGroup} from '../component/ButtonGroup.js'
+import {ButtonPrimary} from '../component/ButtonPrimary.js'
+import {ButtonSecondary} from '../component/ButtonSecondary.js'
+import {InputText} from '../component/InputText.js'
+import {FormErrors} from '../component/FormErrors.js'
+import {app} from '../lib/app.js'
 
 const state = {
   srcFileName: '',
@@ -29,7 +30,7 @@ const save = (e) => {
       addSuccess(t('Page was successfully copied.'))
       m.route.set('/')
     })
-    .catch(({ code, response }) => {
+    .catch(({code, response}) => {
       if (code === 422) {
         state.errors = response.errors
       }
@@ -42,21 +43,18 @@ const cancel = (e) => {
   m.route.set('/')
 }
 
-export const PageCopy = {
+export const PageCopyView = {
   oninit: () => {
-    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+    if (!app.hasAuthToken()) {
       m.route.set('/logout')
     }
     // i.e. if page was reloaded with given route
-    if (!document.getElementById('iframe')) {
+    if (!iframe.hasElement()) {
       m.route.set('/')
     }
     state.srcFileName = state.dstFileName = iframe.fileName()
     state.srcPageTitle = state.dstPageTitle = iframe.pageTitle()
     state.errors = []
-  },
-  oncreate: () => {
-    document.documentElement.style.visibility = 'visible'
   },
   view: () => {
     return m(ModalMedium, {title: t('Copy page')},

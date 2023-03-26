@@ -21,6 +21,7 @@ a {
     display: inline-block;
     padding: 3px;
 }
+
 a .arrow {
     margin-left: 0.25rem;
     border-color: #2374d7;
@@ -405,15 +406,15 @@ fieldset .row:first-of-type {
 }
 
 /* Floating column for labels: 25% width */
-.row>label {
+.row > label {
     float: left;
     width: 25%;
     padding: 12px 0;
 }
 
 /* Floating column for inputs: 75% width */
-.row>input[type=text],
-.row>select {
+.row > input[type=text],
+.row > select {
     float: left;
     width: 75%;
 }
@@ -428,6 +429,7 @@ fieldset .row:first-of-type {
 .text-nowrap {
     white-space: nowrap;
 }
+
 .text-right {
     text-align: right;
 }
@@ -448,9 +450,9 @@ fieldset .row.text-right button {
 /* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
 @media screen and (max-width: 600px) {
 
-    .row>label,
-    .row>input[type=text],
-    .row>select {
+    .row > label,
+    .row > input[type=text],
+    .row > select {
         width: 100%;
         margin-top: 0;
     }
@@ -482,6 +484,7 @@ fieldset .row.text-right button {
     white-space: nowrap;
     padding-right: 1rem;
 }
+
 .table-log-view td div {
     white-space: pre;
 }
@@ -503,9 +506,11 @@ fieldset .row.text-right button {
 .modal-sm-login label {
     display: none;
 }
+
 .modal-sm-login input {
     width: 100% !important;
 }
+
 .modal-sm-login .errors {
     margin-top: 1rem;
 }
@@ -514,6 +519,7 @@ fieldset .row.text-right button {
 .list-group {
     margin-top: 0.5rem;
 }
+
 .list-group-item {
     border-right: 1px solid #ccc;
     border-bottom: 1px solid #ccc;
@@ -523,18 +529,22 @@ fieldset .row.text-right button {
     overflow: hidden;
     background-color: #fff;
 }
+
 .list-group-item:first-child {
     border-top: 1px solid #ccc;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
 }
+
 .list-group-item:last-child {
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
 }
+
 .list-group-item:hover {
     background-color: #f9f9f9;
 }
+
 a.list-group-item {
     color: inherit;
     text-decoration: none;
@@ -546,23 +556,93 @@ a.list-group-item {
 
 /* taken from the phpinfo function output and slightly adapted */
 
-.system-php-info pre {margin: 0; font-family: monospace;}
-.system-php-info a:link {color: #009; text-decoration: none; background-color: #fff;}
-.system-php-info a:hover {text-decoration: underline;}
-.system-php-info table {border-collapse: collapse; border: 0; width: 934px; box-shadow: 1px 2px 3px #ccc;}
-.system-php-info td, .system-php-info th {border: 1px solid #666; font-size: 75%; vertical-align: baseline; padding: 4px 5px;}
-.system-php-info th {position: sticky; top: 0; background: inherit;}
-.system-php-info .center h1 { font-size: 150%; margin-top: 3rem; }
-.system-php-info h2 { font-size: 125%; }
-.system-php-info .p {text-align: left;}
-.system-php-info .e {background-color: #ccf; width: 300px; font-weight: bold;}
-.system-php-info .h {background-color: #99c; font-weight: bold;}
-.system-php-info .v {background-color: #ddd; max-width: 300px; overflow-x: auto; word-wrap: break-word;}
-.system-php-info .v i {color: #999;}
-.system-php-info img {float: right; border: 0;}
-.system-php-info hr { display: none; }
-.system-php-info a[name] { color: black; }
-.system-php-info a[name]:hover { text-decoration: none; cursor: default }
+.system-php-info pre {
+    margin: 0;
+    font-family: monospace;
+}
+
+.system-php-info a:link {
+    color: #009;
+    text-decoration: none;
+    background-color: #fff;
+}
+
+.system-php-info a:hover {
+    text-decoration: underline;
+}
+
+.system-php-info table {
+    border-collapse: collapse;
+    border: 0;
+    width: 934px;
+    box-shadow: 1px 2px 3px #ccc;
+}
+
+.system-php-info td, .system-php-info th {
+    border: 1px solid #666;
+    font-size: 75%;
+    vertical-align: baseline;
+    padding: 4px 5px;
+}
+
+.system-php-info th {
+    position: sticky;
+    top: 0;
+    background: inherit;
+}
+
+.system-php-info .center h1 {
+    font-size: 150%;
+    margin-top: 3rem;
+}
+
+.system-php-info h2 {
+    font-size: 125%;
+}
+
+.system-php-info .p {
+    text-align: left;
+}
+
+.system-php-info .e {
+    background-color: #ccf;
+    width: 300px;
+    font-weight: bold;
+}
+
+.system-php-info .h {
+    background-color: #99c;
+    font-weight: bold;
+}
+
+.system-php-info .v {
+    background-color: #ddd;
+    max-width: 300px;
+    overflow-x: auto;
+    word-wrap: break-word;
+}
+
+.system-php-info .v i {
+    color: #999;
+}
+
+.system-php-info img {
+    float: right;
+    border: 0;
+}
+
+.system-php-info hr {
+    display: none;
+}
+
+.system-php-info a[name] {
+    color: black;
+}
+
+.system-php-info a[name]:hover {
+    text-decoration: none;
+    cursor: default
+}
 
 /* https://cssloaders.github.io/ */
 
@@ -576,6 +656,7 @@ a.list-group-item {
     margin: 0;
     padding: 0;
 }
+
 #loader::after {
     content: '';
     width: 96px;

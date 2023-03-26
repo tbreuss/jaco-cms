@@ -1,4 +1,4 @@
-import { state } from '../state/state.js'
+import {state} from '../state/state.js'
 
 let Notification = {
   oninit(vnode) {

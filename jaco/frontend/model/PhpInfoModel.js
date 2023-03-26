@@ -1,13 +1,14 @@
-import { api } from '../service/api.js'
+import {api} from '../service/api.js'
+
 export const PhpInfoModel = {
-  loading: false,
+  isLoading: false,
   data: [],
   load: () => {
-    PhpInfoModel.loading = true
+    PhpInfoModel.isLoading = true
     return api.get('action=system/php-info')
-      .then(({ data }) => {
+      .then(({data}) => {
         PhpInfoModel.data = data
-        PhpInfoModel.loading = false
+        PhpInfoModel.isLoading = false
       })
   }
 }

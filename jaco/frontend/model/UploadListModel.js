@@ -1,16 +1,15 @@
-
-import { api } from '../service/api.js'
+import {api} from '../service/api.js'
 
 export const UploadListModel = {
-  loading: false,
+  isLoading: false,
   items: [],
   sort: 'file',
   filter: '',
   load: () => {
-    UploadListModel.loading = true
+    UploadListModel.isLoading = true
     return api.get('action=upload/list&filter=' + UploadListModel.filter + '&sort=' + UploadListModel.sort)
-      .then(({ data }) => {
-        UploadListModel.loading = false
+      .then(({data}) => {
+        UploadListModel.isLoading = false
         UploadListModel.items = data.items
       })
   }

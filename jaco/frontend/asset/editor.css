@@ -29,6 +29,7 @@
     outline: 1px solid #ddd;
     display: block;
 }
+
 [data-jaco-editable-link]:hover {
     text-decoration: none;
 }
@@ -37,7 +38,7 @@
 [data-jaco-editable-line]:hover,
 [data-jaco-editable-image]:hover,
 [data-jaco-editable-image-extended]:hover {
-    cursor:pointer;
+    cursor: pointer;
 }
 
 [data-jaco-editable-image-extended] {
@@ -74,18 +75,19 @@
 }
 
 [data-jaco-is-editing]:hover {
-    cursor:default !important;
+    cursor: default !important;
 }
 
 [data-jaco-editable-image-temp] {
     font-size: 0.9rem;
 }
+
 a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
     color: #363636;
     cursor: default;
     text-decoration: none;
 }
 
-.ql-toolbar.ql-snow  {
+.ql-toolbar.ql-snow {
     background-color: #eee;
 }

@@ -57,7 +57,7 @@ export const iframe = {
 
     let html = '<!DOCTYPE html>' // take html5 doctype as default
     if (doctype) {
-      html = "<!DOCTYPE "
+      html = '<!DOCTYPE '
         + doctype.name
         + (doctype.publicId ? ' PUBLIC "' + doctype.publicId + '"' : '')
         + (!doctype.publicId && doctype.systemId ? ' SYSTEM' : '')
@@ -71,7 +71,7 @@ export const iframe = {
       outerHtml = outerHtml.replaceAll(attr + '=""', attr)
     })
 
-    return html + "\r\n" + outerHtml
+    return html + '\r\n' + outerHtml
   },
   removeLeadingSlash: (str) => {
     return str.replace(/^\/+/, '')
@@ -79,9 +79,12 @@ export const iframe = {
   getElement: () => {
     const iframe = document.getElementById('iframe')
     if (!iframe) {
-      throw "Could not find iframe"
+      throw 'Could not find iframe'
     }
     return iframe
+  },
+  hasElement: () => {
+    return document.getElementById('iframe') !== null
   },
   contentDocument: () => {
     return iframe.getElement().contentDocument

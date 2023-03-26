@@ -2,9 +2,9 @@ import {t} from '../../model/i18n.js'
 import {UploadListModel} from '../../model/UploadListModel.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
-import {api} from "../../service/api.js"
-import {addSuccess} from "../../state/actions.js"
-import {addDanger} from "../../state/actions.js"
+import {api} from '../../service/api.js'
+import {addDanger, addSuccess} from '../../state/actions.js'
+import {app} from '../../lib/app.js'
 
 const dateTime = (timestamp) => {
   const date = new Date(timestamp * 1000)
@@ -104,23 +104,22 @@ const loadList = () => {
 
 export const UploadListView = {
   oninit: () => {
-    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+    if (!app.hasAuthToken()) {
       m.route.set('/logout')
     }
     UploadListModel.load()
   },
   oncreate: () => {
-    document.getElementById('app').classList.add('max-height')
-    document.documentElement.style.visibility = 'visible'
+    app.makeAppScrollable()
   },
   onremove: () => {
-    document.getElementById('app').classList.remove('max-height')
+    app.makeIframeScrollable()
   },
   view: () => m('div.main',
     m('.content',
       m('h1', t('Uploads')),
       dataFilter(loadList),
-      UploadListModel.loading
+      UploadListModel.isLoading
         ? m('table.table', m('tr', m('td', t('Loading') + '...')))
         : UploadListModel.items.length
           ? m('table.table',

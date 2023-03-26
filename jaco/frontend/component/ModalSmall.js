@@ -1,9 +1,9 @@
 let modalRef = undefined
 
 export const ModalSmall = {
-  view: ({ attrs: { title, cssClass }, children }) =>
+  view: ({attrs: {title, cssClass}, children}) =>
     m('.modal', {
-        oncreate: ({ dom }) => {
+        oncreate: ({dom}) => {
           modalRef = dom
         },
         onclick: (e) => {

@@ -10,7 +10,8 @@ window.initRichTextEditor = () => {
     newCustomizedStylesheet.rel = 'stylesheet'
     newCustomizedStylesheet.type = 'text/css'
     newCustomizedStylesheet.async = false
-    newCustomizedStylesheet.onload = () => { }
+    newCustomizedStylesheet.onload = () => {
+    }
     document.head.appendChild(newCustomizedStylesheet)
   }
 
@@ -25,7 +26,8 @@ window.initRichTextEditor = () => {
     newEditorStylesheet.rel = 'stylesheet'
     newEditorStylesheet.type = 'text/css'
     newEditorStylesheet.async = false
-    newEditorStylesheet.onload = () => { }
+    newEditorStylesheet.onload = () => {
+    }
     document.head.appendChild(newEditorStylesheet)
   }
 
@@ -37,7 +39,8 @@ window.initRichTextEditor = () => {
     newEditorJavascript.type = 'text/javascript'
     newEditorJavascript.src = 'https://cdn.quilljs.com/1.3.7/quill.js'
     newEditorJavascript.async = false
-    newEditorJavascript.onload = () => { }
+    newEditorJavascript.onload = () => {
+    }
     document.head.appendChild(newEditorJavascript)
   }
 }
@@ -59,7 +62,7 @@ window.initImages = () => {
 }
 
 window.getDisplayType = (element) => {
-  let cStyle = element.currentStyle || window.getComputedStyle(element, "")
+  let cStyle = element.currentStyle || window.getComputedStyle(element, '')
   return cStyle.display
 }
 
@@ -104,11 +107,11 @@ window.addClickHandler = () => {
     if (editable) {
       editable.setAttribute('data-jaco-is-editing', '')
       let toolbarOptions = [
-        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{'header': [1, 2, 3, 4, 5, 6, false]}],
         ['bold', 'italic', 'underline', 'strike'],
         ['blockquote', 'code-block'],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        [{ 'indent': '-1'}, { 'indent': '+1' }],
+        [{'list': 'ordered'}, {'list': 'bullet'}],
+        [{'indent': '-1'}, {'indent': '+1'}],
         ['link'],
         ['clean']
       ]
@@ -145,11 +148,13 @@ window.addClickHandler = () => {
               shift_enter: {
                 key: 13,
                 shiftKey: true,
-                handler: () => { /* do nothing */ }
+                handler: () => { /* do nothing */
+                }
               },
               enter: {
                 key: 13,
-                handler: () => { /* do nothing */ }
+                handler: () => { /* do nothing */
+                }
               }
             }
           }
@@ -228,15 +233,15 @@ window.addClickHandler = () => {
 }
 
 window.drawImageScaled = (img, ctx) => {
-  var canvas = ctx.canvas ;
-  var hRatio = canvas.width  / img.width    ;
-  var vRatio =  canvas.height / img.height  ;
-  var ratio  = Math.max ( hRatio, vRatio );
-  var centerShift_x = ( canvas.width - img.width*ratio ) / 2;
-  var centerShift_y = ( canvas.height - img.height*ratio ) / 2;
-  ctx.clearRect(0,0,canvas.width, canvas.height);
-  ctx.drawImage(img, 0,0, img.width, img.height,
-    centerShift_x,centerShift_y,img.width*ratio, img.height*ratio);
+  var canvas = ctx.canvas;
+  var hRatio = canvas.width / img.width;
+  var vRatio = canvas.height / img.height;
+  var ratio = Math.max(hRatio, vRatio);
+  var centerShift_x = (canvas.width - img.width * ratio) / 2;
+  var centerShift_y = (canvas.height - img.height * ratio) / 2;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, img.width, img.height,
+    centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
 }
 
 window.resizeImage = (dataUrl, fileType, width, height, editableImage) => {
@@ -246,10 +251,10 @@ window.resizeImage = (dataUrl, fileType, width, height, editableImage) => {
   } else {
     const image = new Image();
     image.onload = e => {
-      const canvas = document.createElement("canvas")
+      const canvas = document.createElement('canvas')
       canvas.width = width
       canvas.height = height
-      const ctx = canvas.getContext("2d")
+      const ctx = canvas.getContext('2d')
 
       window.drawImageScaled(image, ctx)
 
@@ -274,7 +279,7 @@ window.detectImageSize = (image) => {
     return [Math.round(height * ratio), height]
   }
 
-  if  (height === 0) {
+  if (height === 0) {
     return [width, Math.round(width / ratio)]
   }
 
@@ -320,7 +325,7 @@ window.removeBlockTags = (element) => {
   let tags = 'address,article,aside,blockquote,canvas,dd,div,dl,dt,fieldset,figcaption,figure,footer,form,h1,h1,h2,h3,h4,h5,h6,header,hr,li,main,nav,noscript,ol,p,pre,section,table,tfoot,ul,video'
   let blocks = element.querySelectorAll(tags)
   let counter = blocks.length - 1
-  for(let i=counter; i >= 0; i--) {
+  for (let i = counter; i >= 0; i--) {
     blocks[i].outerHTML = blocks[i].innerHTML
   }
   return element.innerHTML

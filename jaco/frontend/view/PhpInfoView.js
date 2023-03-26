@@ -1,19 +1,19 @@
 import {PhpInfoModel} from '../model/PhpInfoModel.js'
+import {app} from '../lib/app.js'
 import {t} from '../model/i18n.js'
 
 export const PhpInfoView = {
   oninit: () => {
-    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+    if (!app.hasAuthToken()) {
       m.route.set('/logout')
     }
     PhpInfoModel.load()
   },
   oncreate: () => {
-    document.getElementById('app').classList.add('max-height')
-    document.documentElement.style.visibility = 'visible'
+    app.makeAppScrollable()
   },
   onremove: () => {
-    document.getElementById('app').classList.remove('max-height')
+    app.makeIframeScrollable()
   },
   view: () => m('div.main',
     m('.content.system-php-info',

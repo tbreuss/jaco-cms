@@ -1,25 +1,25 @@
 import {t} from '../../model/i18n.js'
-import {BackupView as BackupViewModel} from '../../model/BackupView.js'
+import {BackupViewModel} from '../../model/BackupViewModel.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
 import {Fieldset} from '../../component/Fieldset.js'
 import {InputText} from '../../component/InputText.js'
-import {ButtonGroup} from "../../component/ButtonGroup.js"
+import {ButtonGroup} from '../../component/ButtonGroup.js'
+import {app} from '../../lib/app.js'
 
-export const BackupView = {
+export const BackupEditView = {
   oninit: (vnode) => {
-    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+    if (!app.hasAuthToken()) {
       m.route.set('/logout')
     }
     BackupViewModel.load(vnode.attrs.file)
   },
   oncreate: () => {
-    document.getElementById('app').classList.add('max-height')
-    document.documentElement.style.visibility = 'visible'
+    app.makeAppScrollable()
   },
   onupdate: () => {
-    const editor = ace.edit("ace", {
-      theme: "ace/theme/github",
-      mode: "ace/mode/html",
+    const editor = ace.edit('ace', {
+      theme: 'ace/theme/github',
+      mode: 'ace/mode/html',
       maxLines: Infinity,  // this is going to be very slow on large documents
       wrap: true,   // wrap text to view
       indentedSoftWrap: false,
@@ -30,7 +30,7 @@ export const BackupView = {
     editor.setValue(BackupViewModel.item.content, 1) // set cursor at the end
   },
   onremove: () => {
-    document.getElementById('app').classList.remove('max-height')
+    app.makeIframeScrollable()
   },
   view: () => m('div.main',
     m('.content',

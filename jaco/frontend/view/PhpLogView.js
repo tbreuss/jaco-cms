@@ -1,5 +1,6 @@
 import {PhpLogModel} from '../model/PhpLogModel.js'
 import {t} from '../model/i18n.js'
+import {app} from '../lib/app.js'
 
 const logTable = (data) => m('div',
   m('table.table.table-log-view',
@@ -14,24 +15,23 @@ const logTable = (data) => m('div',
 
 export const PhpLogView = {
   oninit: () => {
-    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+    if (!app.hasAuthToken()) {
       m.route.set('/logout')
     }
     PhpLogModel.load()
   },
   oncreate: () => {
-    document.getElementById('app').classList.add('max-height')
-    document.documentElement.style.visibility = 'visible'
+    app.makeAppScrollable()
   },
   onremove: () => {
-    document.getElementById('app').classList.remove('max-height')
+    app.makeIframeScrollable()
   },
   view: () => m('div.main',
     m('.content',
       m('h1', t('PHP error log')),
       PhpLogModel.data.length > 0
         ? logTable(PhpLogModel.data)
-        : PhpLogModel.loading
+        : PhpLogModel.isLoading
           ? m('table.table', m('tr', m('td', t('Loading') + '...')))
           : m('table.table', m('tr', m('td', t('The log is empty.'))))
     )

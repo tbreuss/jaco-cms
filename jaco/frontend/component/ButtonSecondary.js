@@ -1,4 +1,4 @@
 export const ButtonSecondary = {
-  view: ({ attrs: { onclick }, children }) =>
-    m('button.secondary', { onclick: onclick }, children)
+  view: ({attrs: {onclick}, children}) =>
+    m('button.secondary', {onclick: onclick}, children)
 }

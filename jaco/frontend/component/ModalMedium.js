@@ -1,9 +1,9 @@
 let modalRef = undefined
 
 export const ModalMedium = {
-  view: ({ attrs: { title }, children }) =>
+  view: ({attrs: {title}, children}) =>
     m('.modal', {
-        oncreate: ({ dom }) => {
+        oncreate: ({dom}) => {
           modalRef = dom
         },
         onclick: (e) => {

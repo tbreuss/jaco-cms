@@ -1,14 +1,14 @@
 import {api} from '../service/api.js'
 
 export const PageEditModel = {
-  loading: false,
+  isLoading: false,
   item: {},
   load: (file) => {
-    PageEditModel.loading = true
+    PageEditModel.isLoading = true
     return api.get('action=page/view&file=' + file)
       .then(({data}) => {
         PageEditModel.item = data
-        PageEditModel.loading = false
+        PageEditModel.isLoading = false
       })
   },
   save: () => {

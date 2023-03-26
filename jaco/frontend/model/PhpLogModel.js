@@ -1,15 +1,14 @@
-
-import { api } from '../service/api.js'
+import {api} from '../service/api.js'
 
 export const PhpLogModel = {
-  loading: false,
+  isLoading: false,
   data: [],
   load: () => {
-    PhpLogModel.loading = true
+    PhpLogModel.isLoading = true
     return api.get('action=system/log')
-      .then(({ data }) => {
+      .then(({data}) => {
         PhpLogModel.data = data
-        PhpLogModel.loading = false
+        PhpLogModel.isLoading = false
       })
   }
 }

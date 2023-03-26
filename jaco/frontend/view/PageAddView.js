@@ -1,16 +1,17 @@
-import { api } from '../service/api.js'
-import { addSuccess } from '../state/actions.js'
-import { iframe } from '../lib/iframe.js'
-import { t } from '../model/i18n.js'
-import { ModalMedium } from '../component/ModalMedium.js'
-import { Fieldset } from '../component/Fieldset.js'
-import { ButtonGroup } from '../component/ButtonGroup.js'
-import { ButtonPrimary } from '../component/ButtonPrimary.js'
-import { ButtonSecondary } from '../component/ButtonSecondary.js'
-import { InputText } from '../component/InputText.js'
-import { Select } from '../component/Select.js'
-import { FormErrors } from '../component/FormErrors.js'
-import { PageTemplate } from '../model/PageTemplate.js'
+import {api} from '../service/api.js'
+import {addSuccess} from '../state/actions.js'
+import {iframe} from '../lib/iframe.js'
+import {t} from '../model/i18n.js'
+import {ModalMedium} from '../component/ModalMedium.js'
+import {Fieldset} from '../component/Fieldset.js'
+import {ButtonGroup} from '../component/ButtonGroup.js'
+import {ButtonPrimary} from '../component/ButtonPrimary.js'
+import {ButtonSecondary} from '../component/ButtonSecondary.js'
+import {InputText} from '../component/InputText.js'
+import {Select} from '../component/Select.js'
+import {FormErrors} from '../component/FormErrors.js'
+import {PageTemplateModel} from '../model/PageTemplateModel.js'
+import {app} from '../lib/app.js'
 
 const state = {
   fileName: '',
@@ -19,7 +20,7 @@ const state = {
   errors: []
 }
 
-const save = (e) => {
+const onSaveButtonClicked = (e) => {
   e.redraw = false
   api.post('action=page/create', {
     background: true, // no redraw
@@ -30,7 +31,7 @@ const save = (e) => {
       addSuccess(t('Page was successfully added.'))
       m.route.set('/')
     })
-    .catch(({ code, response }) => {
+    .catch(({code, response}) => {
       if (code === 422) {
         state.errors = response.errors
       }
@@ -38,18 +39,18 @@ const save = (e) => {
     })
 }
 
-const cancel = (e) => {
+const onCancelButtonClicked = (e) => {
   e.redraw = false
   m.route.set('/')
 }
 
-export const PageAdd = {
+export const PageAddView = {
   oninit: () => {
-    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+    if (!app.hasAuthToken()) {
       m.route.set('/logout')
     }
     // i.e. if page was reloaded with given route
-    if (!document.getElementById('iframe')) {
+    if (!iframe.hasElement()) {
       m.route.set('/')
     }
     state.fileName = iframe.fileName()
@@ -57,19 +58,16 @@ export const PageAdd = {
     state.pageTemplate = ''
     state.errors = []
 
-    PageTemplate.loadList()
+    PageTemplateModel.loadList()
   },
-  oncreate: () => {
-    document.documentElement.style.visibility = 'visible'
-  },
-  view: () => m(ModalMedium, { title: t('Add page') },
-    m(Fieldset, { legend: t('New page') },
+  view: () => m(ModalMedium, {title: t('Add page')},
+    m(Fieldset, {legend: t('New page')},
       m(Select, {
         id: 'pageTemplate',
         wrap: 'div.row',
         label: t('Page template'),
-        options: PageTemplate.list.map((item) => {
-          return { value: item.file, label: item.title }
+        options: PageTemplateModel.list.map((item) => {
+          return {value: item.file, label: item.title}
         }),
         prompt: t('Select an option'),
         onchange: (selectedItem) => {
@@ -94,11 +92,11 @@ export const PageAdd = {
           state.pageTitle = value
         }
       }),
-      m(ButtonGroup, { wrap: 'div.row.text-right' },
-        m(ButtonSecondary, { onclick: cancel }, t('Cancel')),
-        m(ButtonPrimary, { onclick: save }, t('OK'))
+      m(ButtonGroup, {wrap: 'div.row.text-right'},
+        m(ButtonSecondary, {onclick: onCancelButtonClicked}, t('Cancel')),
+        m(ButtonPrimary, {onclick: onSaveButtonClicked}, t('OK'))
       ),
     ),
-    m(FormErrors, { errors: state.errors })
+    m(FormErrors, {errors: state.errors})
   )
 }

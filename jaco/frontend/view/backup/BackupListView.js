@@ -1,9 +1,10 @@
 import {t} from '../../model/i18n.js'
-import {Backup} from '../../model/Backup.js'
+import {BackupListModel} from '../../model/BackupListModel.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
-import {api} from "../../service/api.js"
-import {addDanger, addSuccess} from "../../state/actions.js"
+import {api} from '../../service/api.js'
+import {addDanger, addSuccess} from '../../state/actions.js'
+import {app} from '../../lib/app.js'
 
 const dateTime = (timestamp) => {
   const date = new Date(timestamp * 1000)
@@ -30,7 +31,7 @@ const restoreBackup = (backup) => {
       withCredentials: false
     })
       .then(() => {
-        Backup.loadList().then(() => {
+        BackupListModel.loadList().then(() => {
           addSuccess(t('Backup was successfully restored.'))
         })
       })
@@ -55,7 +56,7 @@ const deleteAction = (backup) => {
       withCredentials: false
     })
       .then(() => {
-        Backup.loadList().then(() => {
+        BackupListModel.loadList().then(() => {
           addSuccess(t('Backup was successfully deleted.'))
         })
       })
@@ -78,7 +79,7 @@ const headings = [
 ]
 
 const sortableHead = (headings, onclick) => {
-  const sort = Backup.sort
+  const sort = BackupListModel.sort
   const [sortField, sortDir] = sort.substring(0, 1) === '-' ? [sort.substring(1), 'desc'] : [sort, 'asc']
   const markup = headings.map((heading) => {
     const label = heading.label.length ? t(heading.label) : ''
@@ -95,7 +96,7 @@ const sortableHead = (headings, onclick) => {
         onclick: (e) => {
           e.redraw = false
           e.preventDefault()
-          Backup.sort = newSort
+          BackupListModel.sort = newSort
           onclick()
         }
       }, label, arrow))
@@ -109,10 +110,10 @@ const dataFilter = (oninput) => {
   return m('.list-filter',
     m('input[type=text]', {
       placeholder: t('Filter backup files'),
-      value: Backup.filter,
+      value: BackupListModel.filter,
       oninput: (e) => {
         e.redraw = false
-        Backup.filter = e.target.value
+        BackupListModel.filter = e.target.value
         oninput()
       }
     })
@@ -120,28 +121,27 @@ const dataFilter = (oninput) => {
 }
 
 const loadList = () => {
-  Backup.loadList()
+  BackupListModel.loadList()
 }
 
-export const BackupList = {
+export const BackupListView = {
   oninit: () => {
-    if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+    if (!app.hasAuthToken()) {
       m.route.set('/logout')
     }
-    Backup.loadList()
+    BackupListModel.loadList()
   },
   oncreate: () => {
-    document.getElementById('app').classList.add('max-height')
-    document.documentElement.style.visibility = 'visible'
+    app.makeAppScrollable()
   },
   onremove: () => {
-    document.getElementById('app').classList.remove('max-height')
+    app.makeIframeScrollable()
   },
   view: () => m('div.main',
     m('.content',
       m('h1', t('Backups')),
       dataFilter(loadList),
-      Backup.items.length > 0
+      BackupListModel.items.length > 0
         ? m('table.table',
           m('colgroup',
             m('col', {width: '30%'}),
@@ -154,7 +154,7 @@ export const BackupList = {
           m('thead', m('tr',
             sortableHead(headings, loadList)
           )),
-          m('tbody', Backup.items.map((backup) => m('tr',
+          m('tbody', BackupListModel.items.map((backup) => m('tr',
               m('td', backup.name),
               m('td', backup.title),
               m('td', dateTime(backup.created)),
@@ -182,7 +182,7 @@ export const BackupList = {
             ))
           )
         )
-        : Backup.loading
+        : BackupListModel.isLoading
           ? m('table.table', m('tr', m('td', t('Loading') + '...')))
           : m('table.table', m('tr', m('td', t('No backups found.'))))
     )

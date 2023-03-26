@@ -7,6 +7,7 @@ import {ButtonGroup} from '../../component/ButtonGroup.js'
 import {addSuccess} from '../../state/actions.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {FormErrors} from '../../component/FormErrors.js'
+import {app} from '../../lib/app.js'
 
 let editor = undefined
 
@@ -20,12 +21,11 @@ const onCancelButtonClicked = () => {
 }
 
 const onCreateComponent = () => {
-  document.getElementById('app').classList.add('max-height')
-  document.documentElement.style.visibility = 'visible'
+  app.makeAppScrollable()
 
-  editor = ace.edit("ace", {
-    theme: "ace/theme/github",
-    mode: "ace/mode/html",
+  editor = ace.edit('ace', {
+    theme: 'ace/theme/github',
+    mode: 'ace/mode/html',
     maxLines: Infinity,  // this is going to be very slow on large documents
     wrap: true,   // wrap text to view
     indentedSoftWrap: false,
@@ -37,7 +37,7 @@ const onCreateComponent = () => {
 }
 
 const onInitComponent = (vnode) => {
-  if (!window.sessionStorage.getItem('AUTHORIZATION_TOKEN')) {
+  if (!app.hasAuthToken()) {
     m.route.set('/logout')
   }
   PageEditModel.load(vnode.attrs.file)
@@ -68,7 +68,7 @@ const onSaveAndCloseButtonClicked = (e) => {
 }
 
 const onRemoveComponent = () => {
-  document.getElementById('app').classList.remove('max-height')
+  app.makeIframeScrollable()
 }
 
 const onUpdateComponent = () => {
@@ -78,7 +78,7 @@ const onUpdateComponent = () => {
   }
 }
 
-export const EditPageView = {
+export const PageEditView = {
   oninit: onInitComponent,
   oncreate: onCreateComponent,
   onupdate: onUpdateComponent,

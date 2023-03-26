@@ -1,11 +1,12 @@
-import { api } from '../service/api.js'
-import { t } from '../model/i18n.js'
-import { ModalSmall } from '../component/ModalSmall.js'
-import { InputText } from '../component/InputText.js'
-import { InputPassword } from '../component/InputPassword.js'
-import { ButtonGroup } from '../component/ButtonGroup.js'
-import { ButtonPrimary } from '../component/ButtonPrimary.js'
-import { FormErrors } from '../component/FormErrors.js'
+import {ButtonGroup} from '../component/ButtonGroup.js'
+import {ButtonPrimary} from '../component/ButtonPrimary.js'
+import {FormErrors} from '../component/FormErrors.js'
+import {InputPassword} from '../component/InputPassword.js'
+import {InputText} from '../component/InputText.js'
+import {ModalSmall} from '../component/ModalSmall.js'
+import {api} from '../service/api.js'
+import {app} from '../lib/app.js'
+import {t} from '../model/i18n.js'
 
 const state = {
   username: '',
@@ -13,7 +14,7 @@ const state = {
   errors: [],
 }
 
-const login = (e) => {
+const onLoginButtonClicked = (e) => {
   e.redraw = false
 
   const credentials = {
@@ -26,11 +27,11 @@ const login = (e) => {
     body: credentials,
     withCredentials: false
   })
-    .then(({ data }) => {
-      window.sessionStorage.setItem('AUTHORIZATION_TOKEN', data.token)
+    .then(({data}) => {
+      app.setAuthToken(data.token)
       m.route.set('/')
     })
-    .catch(({ code, response }) => {
+    .catch(({code, response}) => {
       if (code === 422) {
         state.errors = response.errors
       }
@@ -38,16 +39,16 @@ const login = (e) => {
     })
 }
 
-export const Login = {
+export const LoginView = {
   oninit: () => {
     state.username = ''
     state.password = ''
     state.errors = []
   },
-  oncreate: () => {
-    document.documentElement.style.visibility = 'visible'
-  },
-  view: () => m(ModalSmall, { title: t('Login'), cssClass: 'modal-sm-login' },
+  view: () => m(ModalSmall, {
+      title: t('Login'),
+      cssClass: 'modal-sm-login'
+    },
     m(InputText, {
       id: 'username',
       wrap: 'div.row',
@@ -56,7 +57,7 @@ export const Login = {
       placeholder: t('Username'),
       oninput: (value) => {
         state.username = value
-        state.error = ''
+        state.errors = []
       }
     }),
     m(InputPassword, {
@@ -67,12 +68,12 @@ export const Login = {
       placeholder: t('Password'),
       oninput: (value) => {
         state.password = value
-        state.error = ''
+        state.errors = []
       }
     }),
-    m(ButtonGroup, { wrap: 'div.row.text-right' },
-      m(ButtonPrimary, { onclick: login }, t('Login'))
+    m(ButtonGroup, {wrap: 'div.row.text-right'},
+      m(ButtonPrimary, {onclick: onLoginButtonClicked}, t('Login'))
     ),
-    m(FormErrors, { errors: state.errors })
+    m(FormErrors, {errors: state.errors})
   )
 }

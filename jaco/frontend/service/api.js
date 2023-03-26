@@ -1,4 +1,5 @@
-import { addDanger } from '../state/actions.js'
+import {addDanger} from '../state/actions.js'
+import {app} from '../lib/app.js'
 
 const handlers = {
   // 422 Unprocessable Entity (validation of form data failed)
@@ -9,7 +10,7 @@ const handlers = {
 }
 
 const request = method => (url, options) => {
-  const token = window.sessionStorage.getItem('AUTHORIZATION_TOKEN')
+  const token = app.getAuthToken()
   if (token) {
     if (!options) {
       options = {}

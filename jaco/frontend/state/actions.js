@@ -1,5 +1,5 @@
-import { state } from './state.js'
-import { guid } from '../lib/helpers.js'
+import {state} from './state.js'
+import {guid} from '../lib/helpers.js'
 
 export function addSuccess(text, timeout = 3000) {
   state.list.push({
