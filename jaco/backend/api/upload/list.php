@@ -12,9 +12,9 @@ use jaco\service\upload;
  */
 function action(string $filter = '', string $sort = '-created'): array
 {
-    [$items, $filter, $sort] = upload\find_all($filter, $sort);
+    [$uploads, $filter, $sort] = upload\find_all($filter, $sort);
     return [response\OK, [
-        'items' => $items,
+        'items' => $uploads,
         'filter' => $filter,
         'sort' => $sort,
     ]];

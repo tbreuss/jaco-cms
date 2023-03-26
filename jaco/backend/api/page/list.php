@@ -12,9 +12,9 @@ use jaco\service\page;
  */
 function action(string $filter = '', string $sort = ''): array
 {
-    [$items, $filter, $sort] = page\find_all($filter, $sort);
+    [$pages, $filter, $sort] = page\find_all($filter, $sort);
     return [response\OK, [
-        'items' => $items,
+        'items' => $pages,
         'filter' => $filter,
         'sort' => $sort,
     ]];
