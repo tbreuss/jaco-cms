@@ -32,7 +32,7 @@ function find_one(string $file): ?backup
 {
     $content = filesystem\read_file(BACKUP_DIR, $file);
 
-    if ($content) {
+    if (isset($content)) {
         $extension = \pathinfo($file, PATHINFO_EXTENSION);
         $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
         return new backup(

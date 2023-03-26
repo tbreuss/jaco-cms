@@ -60,10 +60,15 @@ export const BackupEditView = {
           value: BackupViewModel.item.backedUp ? BackupViewModel.item.backedUp.toDateTime() : '',
           disabled: true
         }),
-        m('.row',
-          m('label', {style: {width: '100%'}}, t('HTML')),
-          m('div#ace', {style: {width: '100%'}})
-        ),
+        BackupViewModel.item.type === 'page'
+          ? m('.row',
+            m('label', {style: {width: '100%'}}, t('HTML')),
+            m('div#ace', {style: {width: '100%'}})
+          )
+          : m('.row',
+            m('label', {style: {width: '100%'}}, t('Upload')),
+            m('div#upload', {style: {width: '100%'}})
+          ),
         m(ButtonGroup, {wrap: 'div.row.text-right'},
           m(ButtonSecondary, {
             onclick: () => {
