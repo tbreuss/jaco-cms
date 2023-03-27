@@ -187,12 +187,8 @@ window.addClickHandler = () => {
     let editableImageExtended = event.target.closest('[data-jaco-editable-image-extended]')
     if (editableImageExtended) {
 
-      const rect = editableImageExtended.getBoundingClientRect()
-
       const divElement = document.createElement('div')
       divElement.id = 'editableImageExtended'
-      divElement.style.top = (rect.top - 63).toString() + 'px'
-      divElement.style.minWidth = (rect.width - 2 * 8).toString() + 'px'
 
       // alt
       const label = document.createElement('label')
@@ -228,6 +224,13 @@ window.addClickHandler = () => {
       divElement.appendChild(button)
 
       editableImageExtended.parentNode.insertBefore(divElement, editableImageExtended)
+
+      // position element after inserting into DOM
+      const rect = editableImageExtended.getBoundingClientRect()
+      const top = rect.top +  window.scrollY - divElement.offsetHeight
+      divElement.style.top = (top).toString() + 'px'
+      divElement.style.minWidth = (rect.width - 2 * 8).toString() + 'px'
+
     }
   })
 }
