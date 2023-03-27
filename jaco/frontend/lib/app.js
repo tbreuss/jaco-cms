@@ -22,4 +22,7 @@ export const app = {
   setAuthToken: (token) => {
     window.sessionStorage.setItem(AUTH_TOKEN, token)
   },
+  getLoaderElement: () => {
+    return document.getElementById('loader')
+  }
 }

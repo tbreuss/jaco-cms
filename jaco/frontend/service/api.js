@@ -21,7 +21,7 @@ const request = method => (url, options) => {
   }
 
   let isLoading = true
-  const loader = document.getElementById('loader')
+  const loader = app.getLoaderElement()
 
   setTimeout(() => {
     if (loader && isLoading) {
@@ -47,7 +47,6 @@ const request = method => (url, options) => {
     })
     .finally(() => {
       isLoading = false
-      const loader = document.getElementById('loader')
       if (loader) {
         loader.classList.remove('is-running')
       }
