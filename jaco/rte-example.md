@@ -1,4 +1,6 @@
-<!-- https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Editable_content -->
+See: https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Editable_content
+
+~~~html
 <!doctype html>
 <html>
 <head>
@@ -150,3 +152,4 @@ img.intLink { border: 0; }
 </form>
 </body>
 </html>
+~~~
