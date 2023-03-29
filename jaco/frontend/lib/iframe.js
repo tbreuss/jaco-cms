@@ -49,6 +49,8 @@ export const iframe = {
   getHTML: () => {
     const contentWindow = iframe.contentWindow()
     contentWindow.removeRichTextEditorElements()
+    contentWindow.removeExtendedImages()
+    contentWindow.removeLinks()
     contentWindow.removeRichTextEditor()
     contentWindow.removeTempImageElements()
 

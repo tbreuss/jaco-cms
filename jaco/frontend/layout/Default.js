@@ -70,7 +70,7 @@ export const DefaultLayout = {
                       e.redraw = false
                       closeDropdown()
                     }
-                  }, t('Goto page')),
+                  }, t('Go to page')),
                 )
               ),
               m(m.route.Link, {href: '/pages'}, t('Pages')),

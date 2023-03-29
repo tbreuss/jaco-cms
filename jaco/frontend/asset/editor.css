@@ -27,7 +27,12 @@
 
 [data-jaco-editable-link] {
     outline: 1px solid #ddd;
-    display: block;
+    display: inline-block;
+}
+
+[data-jaco-editable-link]:has(> [data-jaco-editable-image])::before,
+[data-jaco-editable-link]:has(> [data-jaco-editable-image-extended])::before {
+    content: 'Editable Link';
 }
 
 [data-jaco-editable-link]:hover {
@@ -45,11 +50,38 @@
     position: relative;
 }
 
+#editableLink {
+    position: absolute;
+    background: #eee;
+    outline: 1px solid #ccc;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+}
+
+#editableLink input[type=text] {
+    display: inline;
+    background-color: #fff;
+    line-height: 1rem;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+#editableLink select {
+    display: inline;
+    background-color: #fff;
+    line-height: 1rem;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
 #editableImageExtended {
     position: absolute;
     background: #eee;
     outline: 1px solid #ccc;
     padding: 8px;
+    display: flex;
+    align-items: center;
 }
 
 #editableImageExtended label {
@@ -61,6 +93,7 @@
     background-color: #fff;
     line-height: 1rem;
     font-size: 0.9rem;
+    margin: 0;
 }
 
 #editableImageExtended input[type=file] {
@@ -68,6 +101,7 @@
     background-color: #fff;
     line-height: 1rem;
     font-size: 0.9rem;
+    margin: 0;
 }
 
 [data-jaco-is-editing] {

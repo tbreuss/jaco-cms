@@ -55,8 +55,19 @@ window.initImages = () => {
       container = document.createElement('div')
     }
     container.setAttribute('data-jaco-editable-image-temp', '')
-    container.innerText = 'Image size: Original ' + image.naturalWidth + 'x' + image.naturalHeight;
-    container.innerText += ', Client ' + image.clientWidth + 'x' + image.clientHeight;
+    container.innerText = 'Image size: '
+      + 'HTML '
+      + (image.getAttribute('width') ?? '0')
+      + 'x'
+      + (image.getAttribute('height') ?? '0')
+      + ', Displayed '
+      + image.clientWidth
+      + 'x'
+      + image.clientHeight
+      + ', Original '
+      + image.naturalWidth
+      + 'x'
+      + image.naturalHeight
     image.after(container)
   })
 }
@@ -96,12 +107,14 @@ window.disableRichTextEditor = () => {
 
 window.addClickHandler = () => {
   document.addEventListener('click', (event) => {
-    if (event.target.closest('.ql-container, .ql-toolbar, [data-jaco-is-editing], #editableImageExtended')) {
+    if (event.target.closest('.ql-container, .ql-toolbar, [data-jaco-is-editing], #editableImageExtended, #editableLink')) {
+      //event.stopPropagation()
       return
     }
 
     removeRichTextEditorElements()
     removeExtendedImages()
+    removeLinks()
 
     let editable = event.target.closest('[data-jaco-editable]')
     if (editable) {
@@ -165,34 +178,35 @@ window.addClickHandler = () => {
       return
     }
 
-    let editableImage = event.target.closest('[data-jaco-editable-image]')
+    const editableImage = event.target.closest('[data-jaco-editable-image]')
     if (editableImage) {
-
-      let [width, height] = detectImageSize(editableImage)
-
-      let input = document.createElement('input')
+      const input = document.createElement('input')
       input.type = 'file'
       input.onchange = e => {
-        let file = e.target.files[0]
-        let reader = new FileReader()
+        const [width, height] = detectImageSize(editableImage)
+        const file = e.target.files[0]
+        const reader = new FileReader()
         reader.onload = readerEvent => {
-          resizeImage(readerEvent.target.result, file.type, width, height, editableImage)
+          resizeImage(readerEvent.target.result, file.type, width, height, 'fill', editableImage)
           editableImage.setAttribute('data-jaco-editable-image-file', file.name)
         }
         reader.readAsDataURL(file)
       }
       input.click()
+      return
     }
 
     let editableImageExtended = event.target.closest('[data-jaco-editable-image-extended]')
     if (editableImageExtended) {
+
+      const [width, height] = detectImageSize(editableImageExtended)
 
       const divElement = document.createElement('div')
       divElement.id = 'editableImageExtended'
 
       // alt
       const label = document.createElement('label')
-      label.innerText = 'Alt'
+      label.innerText = 'Alt Text'
       divElement.appendChild(label)
 
       const inputAlt = document.createElement('input')
@@ -203,9 +217,53 @@ window.addClickHandler = () => {
       }
       divElement.appendChild(inputAlt)
 
+      if (width > 0 && height > 0) {
+        // see https://www.bannerbear.com/help/articles/26-difference-between-fit-and-fill/
+        const imageScalingLabel = document.createElement('label')
+        imageScalingLabel.innerText = 'Image Scaling '
+        divElement.appendChild(imageScalingLabel)
+
+        const radio1 = document.createElement('input')
+        radio1.type = 'radio'
+        radio1.id = 'radio1'
+        radio1.name = 'type'
+        radio1.value = 'fit'
+        radio1.onclick = e => {
+          e.stopPropagation()
+          document.getElementById('radio2').checked = false
+          e.target.checked = true
+        }
+        divElement.appendChild(radio1)
+
+        const radioLabel1 = document.createElement('label')
+        radioLabel1.innerText = 'Fit'
+        radioLabel1.htmlFor = 'radio1'
+        divElement.appendChild(radioLabel1)
+
+        const radio2 = document.createElement('input')
+        radio2.type = 'radio'
+        radio2.id = 'radio2'
+        radio2.name = 'type'
+        radio2.value = 'fill'
+        radio2.checked = true
+        radio2.onclick = e => {
+          e.stopPropagation()
+          document.getElementById('radio1').checked = false
+          e.target.checked = true
+        }
+        divElement.appendChild(radio2)
+
+        const radioLabel2 = document.createElement('label')
+        radioLabel2.innerText = 'Fill'
+        radioLabel2.htmlFor = 'radio2'
+        divElement.appendChild(radioLabel2)
+      }
+
       const button = document.createElement('button')
       button.innerText = 'Choose file'
       button.onclick = e => {
+        e.stopPropagation()
+
         // within onclick handler because it doesn't work outside!
         const inputFile = document.createElement('input')
         inputFile.type = 'file'
@@ -214,10 +272,16 @@ window.addClickHandler = () => {
           const reader = new FileReader()
           reader.readAsDataURL(file)
           reader.onload = readerEvent => {
-            const content = readerEvent.target.result
-            editableImageExtended.src = content
+            let scaleType = 'fit'
+            if (width > 0 && height > 0) {
+              scaleType = document.querySelector('input[name=type]:checked').value
+            }
+            resizeImage(readerEvent.target.result, file.type, width, height, scaleType, editableImageExtended)
             editableImageExtended.setAttribute('data-jaco-editable-image-file', file.name)
           }
+        }
+        inputFile.onclick = e => {
+          e.preventDefault()
         }
         inputFile.click()
       }
@@ -230,48 +294,121 @@ window.addClickHandler = () => {
       const top = rect.top +  window.scrollY - divElement.offsetHeight
       divElement.style.top = (top).toString() + 'px'
       divElement.style.minWidth = (rect.width - 2 * 8).toString() + 'px'
-
+      return
     }
+
+    const editableLink = event.target.closest('[data-jaco-editable-link]')
+    if (editableLink) {
+
+      const divElement = document.createElement('div')
+      divElement.id = 'editableLink'
+
+      const labelHref = document.createElement('label')
+      labelHref.innerText = 'URL'
+      divElement.appendChild(labelHref)
+
+      const inputHref = document.createElement('input')
+      inputHref.type = 'text'
+      inputHref.value = editableLink.getAttribute('href')
+      inputHref.oninput = (e) => {
+        editableLink.setAttribute('href', e.target.value)
+      }
+      divElement.appendChild(inputHref)
+
+      const labelTarget = document.createElement('label')
+      labelTarget.innerText = 'Target'
+      divElement.appendChild(labelTarget)
+
+      const selectTarget = document.createElement('select')
+
+      const targetOptions = [
+        ['', ''],
+        ['_self', 'the current browsing context (self)'],
+        ['_blank', 'a new tab or window (blank)'],
+        ['_parent', 'the parent browsing context (parent)'],
+        ['_top', 'the topmost browsing context (top)'],
+      ]
+
+      targetOptions.forEach(([value, label]) => {
+        const option = document.createElement('option')
+        option.text = label
+        option.value = value
+        selectTarget.add(option)
+      })
+
+      selectTarget.value = editableLink.getAttribute('target') ?? ''
+
+      selectTarget.onchange = (e) => {
+        if (e.target.value === '') {
+          editableLink.removeAttribute('target')
+        } else {
+          editableLink.setAttribute('target', e.target.value)
+        }
+      }
+
+      divElement.appendChild(selectTarget)
+
+      editableLink.parentNode.insertBefore(divElement, editableLink)
+
+      // position element after inserting into DOM
+      const rect = editableLink.getBoundingClientRect()
+      const top = rect.top +  window.scrollY - divElement.offsetHeight
+      divElement.style.top = (top).toString() + 'px'
+      divElement.style.minWidth = (rect.width - 2 * 8).toString() + 'px'
+      return
+    }
+
   })
 }
 
-window.drawImageScaled = (img, ctx) => {
-  var canvas = ctx.canvas;
-  var hRatio = canvas.width / img.width;
-  var vRatio = canvas.height / img.height;
-  var ratio = Math.max(hRatio, vRatio);
-  var centerShift_x = (canvas.width - img.width * ratio) / 2;
-  var centerShift_y = (canvas.height - img.height * ratio) / 2;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+window.drawImageScaled = (img, ctx, scaleType) => {
+  var canvas = ctx.canvas
+  var hRatio = canvas.width / img.width
+  var vRatio = canvas.height / img.height
+  if (scaleType === 'fit') {
+    var ratio = Math.min(hRatio, vRatio) // fit
+  } else {
+    var ratio = Math.max(hRatio, vRatio) // fill
+  }
+  var centerShift_x = (canvas.width - img.width * ratio) / 2
+  var centerShift_y = (canvas.height - img.height * ratio) / 2
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
   ctx.drawImage(img, 0, 0, img.width, img.height,
-    centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+    centerShift_x, centerShift_y, img.width * ratio, img.height * ratio)
 }
 
-window.resizeImage = (dataUrl, fileType, width, height, editableImage) => {
+window.resizeImage = (dataUrl, fileType, width, height, scaleType, editableImage) => {
   if (width === 0 && height === 0) {
     // no restriction on size
     editableImage.src = dataUrl
   } else {
-    const image = new Image();
-    image.onload = e => {
+    const image = new Image()
+    image.onload = () => {
       const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
+      if (width > 0 && height > 0) {
+        canvas.width = width
+        canvas.height = height
+      } else if (width > 0) {
+        canvas.width = width
+        canvas.height = image.height / image.width * width
+      } else {
+        canvas.width = height * image.width / image.height
+        canvas.height = height
+      }
       const ctx = canvas.getContext('2d')
-
-      window.drawImageScaled(image, ctx)
-
-      const data = canvas.toDataURL(fileType, 1.0)
-      editableImage.src = data
+      window.drawImageScaled(image, ctx, scaleType)
+      editableImage.src = canvas.toDataURL(fileType, 1.0)
     }
     image.src = dataUrl
   }
 }
 
 window.detectImageSize = (image) => {
-  const width = image.getAttribute('width') ?? 0
-  const height = image.getAttribute('height') ?? 0
+  const width = parseInt(image.getAttribute('width') ?? '0')
+  const height = parseInt(image.getAttribute('height') ?? '0')
+  return [width, height]
 
+  /*
   if (width === 0 && height === 0) {
     return [0, 0]
   }
@@ -283,10 +420,12 @@ window.detectImageSize = (image) => {
   }
 
   if (height === 0) {
-    return [width, Math.round(width / ratio)]
+    const h = width / ratio
+    return [width, Math.round(h)]
   }
 
   return [width, height]
+  */
 }
 
 window.handlePosition = (element) => {
@@ -301,6 +440,12 @@ window.handlePosition = (element) => {
 
 window.removeExtendedImages = () => {
   document.querySelectorAll('#editableImageExtended').forEach((element) => {
+    element.remove()
+  })
+}
+
+window.removeLinks = () => {
+  document.querySelectorAll('#editableLink').forEach((element) => {
     element.remove()
   })
 }

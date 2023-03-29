@@ -39,7 +39,7 @@ export const PageGotoView = {
     }
     PageListModel.load()
   },
-  view: () => m(ModalMedium, {title: t('Goto page')},
+  view: () => m(ModalMedium, {title: t('Go to page')},
     m(Fieldset, {legend: t('Select page')},
       PageListModel.isLoading
         ? m('p', t('Loading') + '...')

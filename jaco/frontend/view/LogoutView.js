@@ -13,7 +13,7 @@ export const LogoutView = {
     m('ul.unstyled',
       m('li', m('a', {
         href: '..'
-      }, t('Goto homepage'))),
+      }, t('Go to homepage'))),
       m('li', m(m.route.Link, {
         class: 'login',
         href: '/login'
