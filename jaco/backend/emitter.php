@@ -13,6 +13,7 @@ function emit(int $status, string|array $response): void
 {
     ob_start();
     http_response_code($status);
+    header_remove('x-powered-by');
     if (is_string($response)) {
         echo $response;
     } elseif (is_array($response)) {
