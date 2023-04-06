@@ -7,6 +7,7 @@ namespace jaco\filesystem;
 use jaco\strings;
 use jaco\struct;
 
+use const jaco\APP_DIR_NAME;
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\DIRECTORY_PERMISSIONS;
 
@@ -212,15 +213,15 @@ function validate_filename(string $dir, string $file, bool $isBackup = false): b
 {
     $abs_path = join($dir, $file);
 
-    $pathInfo = \pathinfo($abs_path);
+    $filename = \pathinfo($abs_path, \PATHINFO_FILENAME);
 
-    if (\strlen($pathInfo['filename']) === 0) {
+    if (\strlen($filename) === 0) {
         return false;
     }
 
     // check filename
     $pattern = $isBackup ? '/[^A-Za-z0-9-_|]/' : '/[^A-Za-z0-9-_]/';
-    \preg_match($pattern, $pathInfo['filename'], $matches);
+    \preg_match($pattern, $filename, $matches);
     if (\count($matches) > 0) {
         return false;
     }
@@ -235,7 +236,7 @@ function validate_extension(string $dir, string $file, array $allowed = PAGE_EXT
 {
     $abs_path = join($dir, $file);
 
-    $extension = \pathinfo($abs_path, PATHINFO_EXTENSION);
+    $extension = \pathinfo($abs_path, \PATHINFO_EXTENSION);
 
     if (!\in_array($extension, $allowed)) {
         return false;
@@ -319,4 +320,28 @@ function _rrmdir(string $dir): void
         }
         \rmdir($dir);
     }
+}
+
+function filter_filename(string $file): string
+{
+    if (!is_string($file)) {
+        return '';
+    }
+
+    $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $file);
+    $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
+    $absolutes = [];
+    foreach ($parts as $part) {
+        $part = trim($part, '.');
+        if ($part === '') continue;
+        $absolutes[] = $part;
+    }
+    return implode(DIRECTORY_SEPARATOR, $absolutes);
+}
+
+function file_in_dir(string $file, string $dir): bool
+{
+    $parts = explode(DIRECTORY_SEPARATOR, $file);
+    $first = $parts[0] ?? '';
+    return $first === APP_DIR_NAME;
 }

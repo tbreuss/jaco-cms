@@ -25,7 +25,7 @@ function action(): array
     $errors = data\validate($data, validators());
 
     if (count($errors) > 0) {
-        return [response\UNPROCESSABLE_CONTENT, $errors];
+        return [response\UNPROCESSABLE_ENTITY, $errors];
     }
 
     if (backup\restore($data['file'])) {

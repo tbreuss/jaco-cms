@@ -7,26 +7,24 @@ require 'vendor/autoload.php';
 use jaco\emitter;
 use jaco\router;
 
-// error handlers
 set_error_handler('jaco\error\error_handler');
 set_exception_handler('jaco\error\exception_handler');
 register_shutdown_function('jaco\error\fatal_handler');
 
 require('constants.php');
 
-// php stuff
 ini_set('error_reporting', (string)E_ALL);
 ini_set('display_errors', '0');
 ini_set('display_startup_errors', '0');
 ini_set('log_errors', '1');
 ini_set('error_log', jaco\ERROR_LOG);
 
-// define public routes
+// public routes
 router\get('index', 'jaco\api\index\action', false);
 router\post('login', 'jaco\api\login\action', false);
 router\get('translations', 'jaco\api\translation\action', false);
 
-// define private routes
+// private routes
 router\get('backup/list', 'jaco\api\backup\list\action', true);
 router\get('backup/view', 'jaco\api\backup\view\action', true);
 router\post('backup/restore', 'jaco\api\backup\restore\action', true);
@@ -45,10 +43,9 @@ router\get('upload/list', 'jaco\api\upload\list\action', true);
 router\post('upload/delete', 'jaco\api\upload\delete\action', true);
 #router\get('upload/view', 'jaco\api\upload\view\action', true);
 
-// dispatch route
-$method = $_SERVER['REQUEST_METHOD'] ?? '';
-$action = $_GET['action'] ?? 'index';
-[$status, $response] = router\dispatch($method, $action);
+[$status, $response] = router\dispatch(
+    $_SERVER['REQUEST_METHOD'] ?? '',
+    $_GET['action'] ?? 'index'
+);
 
-// emit response
 emitter\emit($status, $response);

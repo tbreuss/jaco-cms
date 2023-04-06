@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace jaco\router;
 
 use jaco\auth;
+use jaco\json;
 use jaco\request;
 use jaco\response;
 
@@ -79,20 +80,47 @@ function call_action(string $action): array|string
 {
     $function = new \ReflectionFunction($action);
 
+    $attributes = [];
+    foreach ($function->getAttributes() as $attribute) {
+        $attributeName = $attribute->getName();
+        $attributes[$attributeName] = match($attributeName) {
+            'json_schema_request', 'json_schema_response' => $attribute->getArguments()[0] ?? null,
+            default => null
+        };
+    }
+
     $parameters = [];
-    foreach ($function->getParameters() as $parameter) {
-        $name = $parameter->getName();
-        if ($parameter->isOptional()) {
-            $default = $parameter->getDefaultValue();
-            $parameters[$name] = $default;
+    if (isset($attributes['json_schema_request'])) {
+        $data = request\get_post_values();
+        $errors = json\validate_data($data, $attributes['json_schema_request']);
+        if (count($errors) > 0) {
+            return [response\UNPROCESSABLE_ENTITY, $errors];
         }
-        $value = filter_input(INPUT_GET, $name, FILTER_UNSAFE_RAW);
-        if ($value) {
-            $parameters[$name] = $value;
+        $parameters['data'] = $data;
+    } else {
+        foreach ($function->getParameters() as $parameter) {
+            $name = $parameter->getName();
+            if ($parameter->isOptional()) {
+                $default = $parameter->getDefaultValue();
+                $parameters[$name] = $default;
+            }
+            $value = filter_input(INPUT_GET, $name, FILTER_UNSAFE_RAW);
+            if ($value) {
+                $parameters[$name] = $value;
+            }
         }
     }
 
-    return call_user_func($action, ...$parameters);
+    $response = call_user_func($action, ...$parameters);
+
+    if (isset($attributes['json_schema_response'])) {
+        $errors = json\validate_data($response, $attributes['json_schema_response']);
+        if (count($errors) > 0) {
+            return [response\UNPROCESSABLE_ENTITY, $errors];
+        }
+    }
+
+    return $response;
 }
 
 function check_authorization(): bool

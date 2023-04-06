@@ -1,0 +1,18 @@
+{
+    "errors": [
+        {
+            "source": {
+                "pointer": "dstFileName"
+            },
+            "title": "Validation Error",
+            "detail": "index.html must not exist."
+        },
+        {
+            "source": {
+                "pointer": "dstPageTitle"
+            },
+            "title": "Validation Error",
+            "detail": "dstPageTitle cannot be blank."
+        }
+    ]
+}

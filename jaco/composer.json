@@ -3,7 +3,8 @@
         "php": "^8.0",
         "firebase/php-jwt": "^6.1",
         "ext-dom": "*",
-        "ext-libxml": "*"
+        "ext-libxml": "*",
+        "opis/json-schema": "^2.3"
     },
     "autoload": {
         "files": [

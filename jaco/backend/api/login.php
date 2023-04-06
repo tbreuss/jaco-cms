@@ -20,13 +20,13 @@ function action(): array
 
     $errors = data\validate($data, validators());
     if (count($errors) > 0) {
-        return [response\UNPROCESSABLE_CONTENT, $errors];
+        return [response\UNPROCESSABLE_ENTITY, $errors];
     }
 
     $token = auth\authenticate($data['username'], $data['password']);
 
     if ($token === null) {
-        return [response\UNPROCESSABLE_CONTENT, [['title' => 'Validation Error', 'detail' => 'Authentication failed']]];
+        return [response\UNPROCESSABLE_ENTITY, [['title' => 'Validation Error', 'detail' => 'Authentication failed']]];
     }
 
     return [response\OK, ['token' => $token]];

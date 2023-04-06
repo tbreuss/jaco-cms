@@ -1,0 +1,30 @@
+{
+    "name": "John Doe",
+    "age": 31,
+    "email": "john@example.com",
+    "website": null,
+    "location": {
+        "country": "US",
+        "address": "Sesame Street, no. 5"
+    },
+    "available_for_hire": true,
+    "interests": ["php", "html", "css", "javascript", "programming", "web design"],
+    "skills": [
+        {
+            "name": "HTML",
+            "value": 100
+        },
+        {
+            "name": "PHP",
+            "value": 55.9
+        },
+        {
+            "name": "CSS",
+            "value": 99.5
+        },
+        {
+            "name": "JavaScript",
+            "value": 75
+        }
+    ]
+}

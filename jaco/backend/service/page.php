@@ -11,6 +11,7 @@ use jaco\struct\file;
 use jaco\struct\page;
 
 use const jaco\APP_DIR;
+use const jaco\APP_DIR_NAME;
 use const jaco\BACKUP_DIR;
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
@@ -53,17 +54,38 @@ function delete(string $file): bool
     return filesystem\delete_file(WEB_DIR, $file);
 }
 
-function copy(string $srcFile, string $dstFile, string $dstPageTitle): bool
+function copy(string $srcFile, string $dstFile, string $dstPageTitle): array
 {
+    $srcFile = filesystem\filter_filename($srcFile);
+    $dstFile = filesystem\filter_filename($dstFile);
+
     $html = filesystem\read_file(WEB_DIR, $srcFile);
 
     if ($html === null) {
-        return false;
+        return [false, 'Source file does not exist.'];
+    }
+
+    if (!filesystem\validate_filename(WEB_DIR, $dstFile)) {
+        return [false, 'Destination filename is invalid.'];
+    }
+
+    if (!filesystem\validate_extension(WEB_DIR, $dstFile)) {
+        return [false, 'Destination file extension is invalid.'];
+    }
+
+    if (filesystem\file_in_dir($dstFile, APP_DIR_NAME)) {
+        return [false, sprintf('Destination file must not be in the protected %s folder.', APP_DIR_NAME)];
+    }
+
+    if (filesystem\file_exists(WEB_DIR, $dstFile)) {
+        return [false, 'Destination file already exists.'];
     }
 
     $html = html\set_title($html, $dstPageTitle);
 
-    return filesystem\write_file(WEB_DIR, $dstFile, $html);
+    $status = filesystem\write_file(WEB_DIR, $dstFile, $html);
+
+    return $status ? [true, ''] : [false, 'Could not write file'];
 }
 
 function create_from_template(string $srcFile, string $dstFile, string $dstPageTitle): bool

@@ -20,7 +20,7 @@ function action(): array
 
     $errors = data\validate($data, validators());
     if (count($errors) > 0) {
-        return [response\UNPROCESSABLE_CONTENT, $errors];
+        return [response\UNPROCESSABLE_ENTITY, $errors];
     }
 
     if (page\create_from_template($data['pageTemplate'], $data['fileName'], $data['pageTitle'])) {

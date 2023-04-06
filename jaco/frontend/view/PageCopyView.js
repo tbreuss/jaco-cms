@@ -23,7 +23,11 @@ const save = (e) => {
   e.redraw = false
   api.post('action=page/copy', {
     background: true, // no redraw
-    body: state,
+    body: {
+      srcFileName: state.srcFileName,
+      dstFileName: state.dstFileName,
+      dstPageTitle: state.dstPageTitle,
+    },
     withCredentials: false
   })
     .then(() => {
@@ -60,6 +64,7 @@ export const PageCopyView = {
     return m(ModalMedium, {title: t('Copy page')},
       m(Fieldset, {legend: t('Current page')},
         m(InputText, {
+          id: 'srcFileName',
           wrap: 'div.row',
           label: t('Filename'),
           value: state.srcFileName,
