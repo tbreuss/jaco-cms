@@ -12,9 +12,9 @@ use jaco\system;
  */
 function action(): array
 {
-    return [response\OK, [
+    return response\ok([
         'classes' => system\defined_classes(),
         'constants' => system\defined_constants(),
         'functions' => system\defined_functions()
-    ]];
+    ]);
 }

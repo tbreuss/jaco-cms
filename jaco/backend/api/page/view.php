@@ -15,8 +15,8 @@ function action(string $file): array
     $page = page\find_one($file);
 
     if ($page === null) {
-        return [response\NOT_FOUND];
+        return response\not_found([]);
     }
 
-    return [response\OK, (array)$page];
+    return response\ok((array)$page);
 }

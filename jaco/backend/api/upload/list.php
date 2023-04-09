@@ -13,9 +13,9 @@ use jaco\service\upload;
 function action(string $filter = '', string $sort = '-created'): array
 {
     [$uploads, $filter, $sort] = upload\find_all($filter, $sort);
-    return [response\OK, [
+    return response\ok([
         'items' => $uploads,
         'filter' => $filter,
         'sort' => $sort,
-    ]];
+    ]);
 }

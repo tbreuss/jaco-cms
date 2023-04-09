@@ -13,5 +13,5 @@ use jaco\service\template\page;
 function action(): array
 {
     $pages = page\find_all();
-    return [response\OK, $pages];
+    return response\ok($pages);
 }

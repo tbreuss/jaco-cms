@@ -16,7 +16,7 @@ function action(string $language = DEFAULT_LANGUAGE): array
     $template = dirname(__DIR__, 2) . '/language/{language}.json';
     $path = str_replace('{language}', $language, $template);
     if (is_file($path)) {
-        return [response\OK, json_decode(file_get_contents($path), true)];
+        return response\ok(json_decode(file_get_contents($path), true));
     }
     return action(DEFAULT_LANGUAGE);
 }

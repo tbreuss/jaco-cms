@@ -22,14 +22,14 @@ function action(): array
 
     $errors = data\validate($data, validators());
     if (count($errors) > 0) {
-        return [response\UNPROCESSABLE_ENTITY, $errors];
+        return response\unprocessable_entity($errors);
     }
 
     if (backup\delete($data['file'])) {
-        return [response\OK];
+        return response\ok();
     }
 
-    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not restore backup']]];
+    return response\internal_server_error([['title' => 'Could not restore backup']]);
 }
 
 /**

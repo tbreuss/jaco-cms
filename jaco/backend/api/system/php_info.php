@@ -16,8 +16,8 @@ function action(): array
     preg_match("/<body[^>]*>(.*?)<\/body>/is", $data, $matches);
 
     if (empty($matches[1])) {
-        return [response\INTERNAL_SERVER_ERROR];
+        return response\internal_server_error([]);
     }
 
-    return [response\OK, ['content' => $matches[1]]];
+    return response\ok(['content' => $matches[1]]);
 }

@@ -39,5 +39,5 @@ function action(): array
         }
         \fclose($fp);
     }
-    return [response\OK, $lines];
+    return response\ok($lines);
 }

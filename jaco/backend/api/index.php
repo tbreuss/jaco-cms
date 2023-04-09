@@ -13,8 +13,8 @@ use const jaco\APP_VERSION;
  */
 function action(string $version = APP_VERSION): array
 {
-    return [response\OK, [
+    return response\ok([
         'name' => 'jaco',
         'version' => $version
-    ]];
+    ]);
 }

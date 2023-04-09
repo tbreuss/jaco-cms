@@ -13,9 +13,9 @@ use jaco\service\backup;
 function action(string $filter = '', string $sort = '-created'): array
 {
     [$backups, $filter, $sort] = backup\find_all($filter, $sort);
-    return [response\OK, [
+    return response\ok([
         'items' => $backups,
         'filter' => $filter,
         'sort' => $sort,
-    ]];
+    ]);
 }

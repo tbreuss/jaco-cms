@@ -16,8 +16,8 @@ function action(string $file): array
     $backup = backup\find_one($file);
 
     if ($backup) {
-        return [response\OK, (array)$backup];
+        return response\ok((array)$backup);
     }
 
-    return [response\NOT_FOUND];
+    return response\not_found([]);
 }

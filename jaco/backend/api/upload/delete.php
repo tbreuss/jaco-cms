@@ -23,14 +23,14 @@ function action(): array
     $errors = data\validate($data, validators());
 
     if (count($errors) > 0) {
-        return [response\UNPROCESSABLE_ENTITY, $errors];
+        return response\unprocessable_entity($errors);
     }
 
     if (upload\delete($data['fileName'])) {
-        return [response\OK];
+        return response\ok();
     }
 
-    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not delete upload']]];
+    return response\internal_server_error([['title' => 'Could not delete upload']]);
 }
 
 /**
