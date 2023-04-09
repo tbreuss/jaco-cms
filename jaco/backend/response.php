@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\response;
 
+use jaco\jsonschema;
+
 const OK = 200;
+const CREATED = 201;
 const BAD_REQUEST = 400;
 const FORBIDDEN = 403;
 const NOT_FOUND = 404;
@@ -15,6 +18,11 @@ const INTERNAL_SERVER_ERROR = 500;
 function ok(mixed $data = null): array
 {
     return [OK, $data];
+}
+
+function created(mixed $data = null): array
+{
+    return [CREATED, $data];
 }
 
 function bad_request(mixed $data): array
@@ -45,4 +53,17 @@ function unprocessable_entity(array $data): array
 function internal_server_error(array $data): array
 {
     return [INTERNAL_SERVER_ERROR, $data];
+}
+
+function validate(array|string $data, string $schema): array
+{
+    return jsonschema\validate_data($data, $schema);
+}
+
+function client_error(int $status, array $data = null): array
+{
+    if ($status < 400 || $status >= 500) {
+        return internal_server_error($data);
+    }
+    return [$status, $data];
 }

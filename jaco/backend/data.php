@@ -58,3 +58,29 @@ function validate(array $data, array $rules): array
     }
     return $errors;
 }
+
+function validate2(array $data, array $rules): array
+{
+    $errors = [];
+    $failed = [];
+    foreach ($rules as $rule) {
+        $name = $rule[0];
+        if (in_array($name, $failed)) {
+            continue;
+        }
+        $value = $data[$name] ?? null;
+        $callable = $rule[1];
+        $options = array_slice($rule, 2);
+        $options['value'] = $value;
+        [$status, $message] = call_user_func_array($callable, $options);
+        if ($status === true) {
+            continue;
+        }
+        $errors[] = [
+            $name,
+            str_replace('{value}', $value ?: $name, $message)
+        ];
+        $failed[] = $name;
+    }
+    return $errors;
+}

@@ -13,9 +13,9 @@ use jaco\service\page;
 function action(string $filter = '', string $sort = ''): array
 {
     [$pages, $filter, $sort] = page\find_all($filter, $sort);
-    return [response\OK, [
+    return response\ok([
         'items' => $pages,
         'filter' => $filter,
         'sort' => $sort,
-    ]];
+    ]);
 }

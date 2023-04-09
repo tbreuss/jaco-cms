@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\json;
+namespace jaco\jsonschema;
 
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Errors\ValidationError;
@@ -12,6 +12,9 @@ function validate_data(array|string $data, string $schema): array
 {
     $validator = new Validator();
     $validator->setMaxErrors(20);
+    $validator->resolver()->registerPrefix('http://jaco.tebe.ch', dirname(__DIR__) . '/schema');
+    //$validator->resolver()->registerFile('http://jaco.tebe.ch' . $schema, dirname(__DIR__) . '/schema' . $schema);
+
 
     if (is_array($data)) {
         $dataAsObject = json_decode(json_encode($data));
@@ -20,10 +23,10 @@ function validate_data(array|string $data, string $schema): array
     }
 
     if (is_file($schema)) {
-        $schema = file_get_contents($schema);
+        //$schema = file_get_contents($schema);
     }
 
-    $result = $validator->validate($dataAsObject, $schema);
+    $result = $validator->validate($dataAsObject, 'http://jaco.tebe.ch' . $schema);
 
     if ($result->isValid()) {
         return [];
@@ -46,7 +49,7 @@ function validate_data(array|string $data, string $schema): array
             'source' => [
                 'pointer' => join('/', $error->data()->path())
             ],
-            'title' => 'Validation Error',
+            'title' => 'Invalid input',
             'detail' => $formatter->formatErrorMessage($error, $customErrorMessage),
         ];
     };

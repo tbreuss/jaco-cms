@@ -22,20 +22,20 @@ function action(): array
     $errors = data\validate($data, validators());
 
     if (count($errors) > 0) {
-        return [response\UNPROCESSABLE_ENTITY, $errors];
+        return response\unprocessable_entity($errors);
     }
 
     [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['html']);
 
     if (!$status) {
-        return [response\INTERNAL_SERVER_ERROR, array_map(fn($error) => ['title' => $error], $htmlOrErrors)];
+        return response\internal_server_error(array_map(fn($error) => ['title' => $error], $htmlOrErrors));
     }
 
     if (page\update($data['fileName'], $htmlOrErrors)) {
-        return [response\OK];
+        return response\ok();
     }
 
-    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not update page']]];
+    return response\internal_server_error([['title' => 'Could not update page']]);
 }
 
 /**

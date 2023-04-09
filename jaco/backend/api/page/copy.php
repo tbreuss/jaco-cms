@@ -4,39 +4,152 @@ declare(strict_types=1);
 
 namespace jaco\api\page\copy;
 
-use jaco\json;
 use jaco\request;
 use jaco\response;
-use jaco\service\page;
+use jaco\service;
+use jaco\struct\page;
 
 /**
  * @phpstan-return array<int,mixed>
  */
-//#[\json_schema_request('schema/page/copy_request.json')]
-//#[\json_schema_response('schema/page/copy_response.json')]
-function action(): array
+function action_verbose(): array
 {
-    $data = request\get_post_values();
+    // API Schicht
 
-    $errors = json\validate_data($data, 'schema/api/page/copy/request.json');
+    $apiInput = request\get_post_values();
 
-    if (count($errors) > 0) {
+    $apiErrors = request\validate($apiInput, '/api/page/copy/request.json');
+
+    if (count($apiErrors) > 0) {
+        return response\bad_request($apiErrors);
+    }
+
+    // Service Schicht
+
+    $serviceInput = [
+        'srcFile' => $apiInput['srcFileName'],
+        'dstFile' => $apiInput['dstFileName'],
+        'dstTitle' => $apiInput['dstPageTitle']
+    ];
+
+    [$serviceStatus, $serviceOutput] = service\page\copy_by_array($serviceInput);
+
+    /*
+    $srcFileName = $data['srcFileName'];
+    $dstFileName = $data['dstFileName'];
+    $dstPageTitle = $data['dstPageTitle'];
+
+    [$serviceStatus, $serviceOutput] = page\copy_by_args($srcFileName, $dstFileName, $dstPageTitle);
+    */
+
+    if ($serviceStatus) {
+        $apiOutput = [
+            'file' => $serviceOutput->file,
+            'title' => $serviceOutput->title,
+            'created' => $serviceOutput->created
+        ];
+
+        $apiErrors = response\validate($apiOutput, '/api/page/copy/response.json');
+
+        if (count($apiErrors) > 0) {
+            return response\internal_server_error($apiErrors);
+        }
+
+        return response\created($apiOutput);
+    }
+
+    $transformedServiceErrors = transform_errors($serviceOutput, [
+        'srcFile' => 'srcFileName',
+        'dstFile' => 'dstFileName',
+        'dstTitle' => 'dstPageTitle'
+    ]);
+
+    $apiErrors = response\validate($transformedServiceErrors, '/api/errors.json');
+
+    if (count($apiErrors) > 0) {
+        return response\internal_server_error($apiErrors);
+    }
+
+    return response\unprocessable_entity($transformedServiceErrors);
+}
+
+/**
+ * @phpstan-return array<int,mixed>
+ */
+#[\validate_request('/api/page/copy/request.json')]
+#[\validate_response('/api/page/copy/response.json')]
+function action_attributes(array $data): array
+{
+    $serviceInput = [
+        'srcFile' => $data['srcFileName'],
+        'dstFile' => $data['dstFileName'],
+        'dstTitle' => $data['dstPageTitle']
+    ];
+
+    [$serviceStatus, $serviceOutput] = service\page\copy_by_array($serviceInput);
+
+    if ($serviceStatus) {
+        $apiOutput = [
+            'file' => $serviceOutput->file,
+            'title' => $serviceOutput->title,
+            'created' => $serviceOutput->created
+        ];
+        return response\created($apiOutput);
+    }
+
+    $apiErrors = transform_errors($serviceOutput, [
+        'srcFile' => 'srcFileName',
+        'dstFile' => 'dstFileName',
+        'dstTitle' => 'dstPageTitle'
+    ]);
+
+    return response\unprocessable_entity($apiErrors);
+}
+
+/**
+ * @phpstan-return array<int,mixed>
+ */
+#[\validate_request('/api/page/copy/request.json')]
+#[\validate_response('/api/page/copy/response.json')]
+function action(array $data): array
+{
+    [$serviceStatus, $serviceOutput] = service\page\copy_by_array([
+        'srcFile' => $data['srcFileName'],
+        'dstFile' => $data['dstFileName'],
+        'dstTitle' => $data['dstPageTitle']
+    ]);
+
+    if ($serviceStatus) {
+        /** @var page $serviceOutput */
+        return response\created([
+            'file' => $serviceOutput->file,
+            'title' => $serviceOutput->title,
+            'created' => $serviceOutput->created
+        ]);
+    } else {
+        /** @var array $serviceOutput */
         return response\unprocessable_entity(
-            $errors
+            transform_errors($serviceOutput, [
+                'srcFile' => 'srcFileName',
+                'dstFile' => 'dstFileName',
+                'dstTitle' => 'dstPageTitle'
+            ])
         );
     }
+}
 
-    [$status, $message] = page\copy(
-        $data['srcFileName'],
-        $data['dstFileName'],
-        $data['dstPageTitle']
-    );
-
-    if ($status) {
-        return response\ok();
+function transform_errors(array $errors, array $mapping): array
+{
+    $transformed = [];
+    foreach ($errors as $error) {
+        [$field, $message] = $error;
+        $transformed[] = [
+            'source' => [
+                'pointer' => $mapping[$field] ?: ''
+            ],
+            'title' => 'Validation Error',
+            'detail' => $message,
+        ];
     }
-
-    return response\unprocessable_entity(
-        [['detail' => $message, 'title' => 'Validation Error']]
-    );
+    return $transformed;
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\service\page;
 
+use jaco\data;
 use jaco\filesystem;
 use jaco\list;
 use jaco\html;
@@ -86,6 +87,61 @@ function copy(string $srcFile, string $dstFile, string $dstPageTitle): array
     $status = filesystem\write_file(WEB_DIR, $dstFile, $html);
 
     return $status ? [true, ''] : [false, 'Could not write file'];
+}
+
+function copy_by_args(string $srcFile, string $dstFile, string $dstTitle): array
+{
+    return copy_by_array([
+        'srcFile' => $srcFile,
+        'dstFile' => $dstFile,
+        'dstTitle' => $dstTitle,
+    ]);
+}
+
+function copy_by_array(array $input): array
+{
+    $data = data\filter($input, [
+        ['srcFile', 'jaco\data\filter\filename'],
+        ['dstFile', 'jaco\data\filter\filename'],
+        ['dstTitle', 'jaco\data\filter\string'],
+    ]);
+
+    $errors = data\validate2($data, [
+        ['srcFile', 'jaco\data\validator\required'],
+        ['srcFile', 'jaco\data\validator\file_exists'],
+        ['dstFile', 'jaco\data\validator\required'],
+        ['dstFile', 'jaco\data\validator\htmlfile_name'],
+        ['dstFile', 'jaco\data\validator\htmlfile_extension'],
+        ['dstFile', 'jaco\data\validator\file_not_in_jaco_dir'],
+        ['dstFile', 'jaco\data\validator\file_not_exists'],
+        ['dstTitle', 'jaco\data\validator\required'],
+    ]);
+
+    if (count($errors) > 0) {
+        return [false, $errors];
+    }
+
+    $html = filesystem\read_file(WEB_DIR, $data['srcFile']);
+
+    if ($html === null) {
+        return [false, [['srcFile', 'Could not read file content.']]];
+    }
+
+    $html = html\set_title($html, $data['dstTitle']);
+
+    $status = filesystem\write_file(WEB_DIR, $data['dstFile'], $html);
+
+    if ($status === false) {
+        return [false, [['dstFile', 'Could not write file content.']]];
+    }
+
+    $page = find_one($data['dstFile']);
+
+    if ($page === null) {
+        return [false, [['dstFile', 'Could not read new page.']]];
+    }
+
+    return [true, $page];
 }
 
 function create_from_template(string $srcFile, string $dstFile, string $dstPageTitle): bool

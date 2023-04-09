@@ -9,7 +9,7 @@ use jaco\response;
 /**
  * @phpstan-param string|array<mixed> $response
  */
-function emit(int $status, string|array $response): void
+function emit(int $status, string|array|null $response): void
 {
     ob_start();
     http_response_code($status);
@@ -19,7 +19,7 @@ function emit(int $status, string|array $response): void
     } elseif (is_array($response)) {
         header('Content-Type: application/json; charset=utf-8');
         echo match ($status) {
-            response\OK => send_data($response),
+            response\OK, response\CREATED => send_data($response),
             default => send_errors($response),
         };
     }

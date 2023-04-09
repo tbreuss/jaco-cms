@@ -20,14 +20,14 @@ function action(): array
 
     $errors = data\validate($data, validators());
     if (count($errors) > 0) {
-        return [response\UNPROCESSABLE_ENTITY, $errors];
+        return response\unprocessable_entity($errors);
     }
 
     if (page\create_from_template($data['pageTemplate'], $data['fileName'], $data['pageTitle'])) {
-        return [response\OK];
+        return response\ok();
     }
 
-    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not create page']]];
+    return response\internal_server_error([['title' => 'Could not create page']]);
 }
 
 /**

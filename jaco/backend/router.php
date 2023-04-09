@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace jaco\router;
 
 use jaco\auth;
-use jaco\json;
 use jaco\request;
 use jaco\response;
 
@@ -48,12 +47,12 @@ function dispatch(string $method, string $action): array
 
     $routes_by_action = filter_routes($routes, 'action', $action);
     if (count($routes_by_action) === 0) {
-        return [response\NOT_FOUND, [['title' => '404 Page Not Found']]];
+        return response\not_found([['title' => '404 Page Not Found']]);
     }
 
     $routes_by_method = filter_routes($routes_by_action, 'method', $method);
     if (count($routes_by_method) === 0) {
-        return [response\METHOD_NOT_ALLOWED, [['title' => '405 Method Not Allowed']]];
+        return response\method_not_allowed([['title' => '405 Method Not Allowed']]);
     }
 
     // take the first one if multiple routes exist
@@ -61,13 +60,13 @@ function dispatch(string $method, string $action): array
 
     if ($route['authenticated'] === true) {
         if (check_authorization() === false) {
-            return [response\FORBIDDEN, [['title' => '403 Forbidden']]];
+            return response\forbidden([['title' => '403 Forbidden']]);
         }
     }
 
     $response = call_action($route['callback']);
     if (!is_array($response) || !in_array(count($response), [1, 2]) || !is_int($response[0])) {
-        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Invalid Action Response Payload']]];
+        return response\internal_server_error([['title' => 'Invalid Action Response Payload']]);
     }
 
     return array_pad($response, 2, ''); // ensure array with two entries
@@ -84,17 +83,17 @@ function call_action(string $action): array|string
     foreach ($function->getAttributes() as $attribute) {
         $attributeName = $attribute->getName();
         $attributes[$attributeName] = match($attributeName) {
-            'json_schema_request', 'json_schema_response' => $attribute->getArguments()[0] ?? null,
+            'validate_request', 'validate_response' => $attribute->getArguments()[0] ?? null,
             default => null
         };
     }
 
     $parameters = [];
-    if (isset($attributes['json_schema_request'])) {
+    if (isset($attributes['validate_request'])) {
         $data = request\get_post_values();
-        $errors = json\validate_data($data, $attributes['json_schema_request']);
+        $errors = request\validate($data, $attributes['validate_request']);
         if (count($errors) > 0) {
-            return [response\UNPROCESSABLE_ENTITY, $errors];
+            return response\bad_request($errors);
         }
         $parameters['data'] = $data;
     } else {
@@ -111,16 +110,28 @@ function call_action(string $action): array|string
         }
     }
 
-    $response = call_user_func($action, ...$parameters);
+    try {
+        [$status, $response] = call_user_func($action, ...$parameters);
+    } catch (\TypeError $e) {
+        return response\bad_request([['detail' => $e->getMessage(), 'title' => 'Type Error']]);
+    }
 
-    if (isset($attributes['json_schema_response'])) {
-        $errors = json\validate_data($response, $attributes['json_schema_response']);
+    if (($status >= 400) && ($status < 500)) {
+        $errors = response\validate($response, '/api/errors.json');
         if (count($errors) > 0) {
-            return [response\UNPROCESSABLE_ENTITY, $errors];
+            return response\internal_server_error($errors);
+        }
+        return response\client_error($status, $response);
+    }
+
+    if (isset($attributes['validate_response'])) {
+        $errors = response\validate($response, $attributes['validate_response']);
+        if (count($errors) > 0) {
+            return response\internal_server_error($errors);
         }
     }
 
-    return $response;
+    return [$status, $response];
 }
 
 function check_authorization(): bool

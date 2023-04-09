@@ -1,3 +1,21 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
+    "$id": "http://jaco.tebe.ch/api/page/copy/response.json#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "file": {
+            "type": "string"
+        },
+        "title": {
+            "type": "string"
+        },
+        "created": {
+            "type": "integer"
+        }
+    },
+    "required": [
+        "file",
+        "title",
+        "created"
+    ]
 }
