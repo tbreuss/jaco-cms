@@ -9,6 +9,8 @@ use jaco\request;
 use jaco\response;
 use jaco\service\page;
 
+use const jaco\APP_DIR_NAME;
+
 /**
  * @phpstan-return array<int,mixed>
  */
@@ -52,8 +54,8 @@ function validators(): array
         ['fileName', 'jaco\data\validator\required'],
         ['fileName', 'jaco\data\validator\htmlfile_name'],
         ['fileName', 'jaco\data\validator\htmlfile_extension'],
-        ['fileName', 'jaco\data\validator\file_not_in_jaco_dir'],
-        ['fileName', 'jaco\data\validator\file_not_exists'],
+        ['fileName', 'jaco\data\validator\file_in_dir', 'dir' => APP_DIR_NAME],
+        ['fileName', 'jaco\data\validator\file_exists', 'negate' => true],
         ['pageTitle', 'jaco\data\validator\required'],
     ];
 }

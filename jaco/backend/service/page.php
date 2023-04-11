@@ -101,20 +101,20 @@ function copy_by_args(string $srcFile, string $dstFile, string $dstTitle): array
 function copy_by_array(array $input): array
 {
     $data = data\filter($input, [
-        ['srcFile', 'jaco\data\filter\filename'],
-        ['dstFile', 'jaco\data\filter\filename'],
-        ['dstTitle', 'jaco\data\filter\string'],
+        ['srcFile', 'filename'],
+        ['dstFile', 'filename'],
+        ['dstTitle', 'string'],
     ]);
 
     $errors = data\validate2($data, [
-        ['srcFile', 'jaco\data\validator\required'],
-        ['srcFile', 'jaco\data\validator\file_exists'],
-        ['dstFile', 'jaco\data\validator\required'],
-        ['dstFile', 'jaco\data\validator\htmlfile_name'],
-        ['dstFile', 'jaco\data\validator\htmlfile_extension'],
-        ['dstFile', 'jaco\data\validator\file_not_in_jaco_dir'],
-        ['dstFile', 'jaco\data\validator\file_not_exists'],
-        ['dstTitle', 'jaco\data\validator\required'],
+        ['srcFile', 'required'],
+        ['srcFile', 'file_exists'],
+        ['dstFile', 'required'],
+        ['dstFile', 'htmlfile_name'],
+        ['dstFile', 'htmlfile_extension'],
+        ['dstFile', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => false],
+        ['dstFile', 'file_exists', 'negate' => true],
+        ['dstTitle', 'required'],
     ]);
 
     if (count($errors) > 0) {

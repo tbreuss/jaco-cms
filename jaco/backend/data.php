@@ -15,7 +15,7 @@ function filter(array $data, array $filters): array
     foreach ($filters as $rule) {
         $name = $rule[0];
         $value = $data[$name] ?? null;
-        $callable = $rule[1];
+        $callable = 'jaco\\data\\filter\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         $filteredValue = call_user_func_array($callable, $options);
@@ -42,7 +42,7 @@ function validate(array $data, array $rules): array
             continue;
         }
         $value = $data[$name] ?? null;
-        $callable = $rule[1];
+        $callable = 'jaco\\data\\validator\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         [$status, $message] = call_user_func_array($callable, $options);
@@ -69,7 +69,12 @@ function validate2(array $data, array $rules): array
             continue;
         }
         $value = $data[$name] ?? null;
-        $callable = $rule[1];
+        $not = false;
+        if (str_starts_with($rule[1], '!')) {
+            $not = true;
+            $rule[1] = substr($rule[1], 1);
+        }
+        $callable = 'jaco\\data\\validator\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         [$status, $message] = call_user_func_array($callable, $options);
