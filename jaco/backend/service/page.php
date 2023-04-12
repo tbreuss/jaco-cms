@@ -112,7 +112,7 @@ function copy_by_array(array $input): array
         ['dstFile', 'required'],
         ['dstFile', 'htmlfile_name'],
         ['dstFile', 'htmlfile_extension'],
-        ['dstFile', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => false],
+        ['dstFile', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
         ['dstFile', 'file_exists', 'negate' => true],
         ['dstTitle', 'required'],
     ]);

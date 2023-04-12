@@ -111,7 +111,7 @@ function action_attributes(array $data): array
  */
 #[\validate_request('/api/page/copy/request.json')]
 #[\validate_response('/api/page/copy/response.json')]
-function action_2(array $data): array
+function action(array $data): array
 {
     [$serviceStatus, $serviceOutput] = service\page\copy_by_array([
         'srcFile' => $data['srcFileName'],
@@ -143,7 +143,7 @@ function action_2(array $data): array
  */
 #[\validate_request('/api/page/copy/request.json')]
 #[\validate_response('/api/page/copy/response.json')]
-function action(array $data): array
+function action_service(array $data): array
 {
     $input = [
         'srcFile' => $data['srcFileName'],
