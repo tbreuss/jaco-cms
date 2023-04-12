@@ -9,8 +9,8 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjb
 Content-Type: application/json
 
 {
-    "srcFileName": "index.html",
-    "dstFileName": "xxx_index.html",
+    "srcFileName": "",
+    "dstFileName": "",
     "dstPageTitle": "Xxx"
 }
 

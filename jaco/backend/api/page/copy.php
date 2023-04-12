@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\api\page\copy;
 
+use jaco\validate;
 use jaco\request;
 use jaco\response;
 use jaco\service;
@@ -76,8 +77,8 @@ function action_verbose(): array
 /**
  * @phpstan-return array<int,mixed>
  */
-#[\validate_request('/api/page/copy/request.json')]
-#[\validate_response('/api/page/copy/response.json')]
+#[validate\request('/api/page/copy/request.json')]
+#[validate\response('/api/page/copy/response.json')]
 function action_attributes(array $data): array
 {
     $serviceInput = [
@@ -109,8 +110,8 @@ function action_attributes(array $data): array
 /**
  * @phpstan-return array<int,mixed>
  */
-#[\validate_request('/api/page/copy/request.json')]
-#[\validate_response('/api/page/copy/response.json')]
+#[validate\request('/api/page/copy/request.json')]
+#[validate\response('/api/page/copy/response.json')]
 function action(array $data): array
 {
     [$serviceStatus, $serviceOutput] = service\page\copy_by_array([
@@ -119,30 +120,28 @@ function action(array $data): array
         'dstTitle' => $data['dstPageTitle']
     ]);
 
-    if ($serviceStatus) {
-        /** @var page $serviceOutput */
-        return response\created([
+    /** @var array|page $serviceOutput */
+    return match($serviceStatus) {
+        true => response\created([
             'file' => $serviceOutput->file,
             'title' => $serviceOutput->title,
             'created' => $serviceOutput->created
-        ]);
-    } else {
-        /** @var array $serviceOutput */
-        return response\unprocessable_entity(
+        ]),
+        false => response\unprocessable_entity(
             transform_errors($serviceOutput, [
                 'srcFile' => 'srcFileName',
                 'dstFile' => 'dstFileName',
                 'dstTitle' => 'dstPageTitle'
             ])
-        );
-    }
+        )
+    };
 }
 
 /**
  * @phpstan-return array<int,mixed>
  */
-#[\validate_request('/api/page/copy/request.json')]
-#[\validate_response('/api/page/copy/response.json')]
+#[validate\request('/api/page/copy/request.json')]
+#[validate\response('/api/page/copy/response.json')]
 function action_service(array $data): array
 {
     $input = [

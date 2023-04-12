@@ -211,6 +211,10 @@ function file_name_to_write(string $dir, string $file): string
 
 function validate_filename(string $dir, string $file, bool $isBackup = false): bool
 {
+    if (\strlen($file) === 0) {
+        return false;
+    }
+
     $abs_path = join($dir, $file);
 
     $filename = \pathinfo($abs_path, \PATHINFO_FILENAME);
@@ -324,10 +328,6 @@ function _rrmdir(string $dir): void
 
 function filter_filename(string $file): string
 {
-    if (!is_string($file)) {
-        return '';
-    }
-
     $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $file);
     $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
     $absolutes = [];

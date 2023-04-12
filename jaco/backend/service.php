@@ -14,20 +14,20 @@ function call(callable $service, array $arguments): array
     foreach ($function->getAttributes() as $attribute) {
         $attributeName = $attribute->getName();
         $attributes[$attributeName] = match($attributeName) {
-            'validate_input', 'validate_output' => $attribute->getArguments()[0] ?? null,
+            'jaco\validate\input', 'jaco\validate\output' => $attribute->getArguments()[0] ?? null,
             default => null
         };
     }
 
     $errors = [];
-    if (isset($attributes['validate_input'])) {
-        $errors = validate_input($arguments, $attributes['validate_input']);
+    if (isset($attributes['jaco\validate\input'])) {
+        $errors = validate_input($arguments, $attributes['jaco\validate\input']);
     }
 
     $output = $service($arguments, $errors);
 
-    if (isset($attributes['validate_output'])) {
-        $errors = validate_output($arguments, $attributes['validate_output']);
+    if (isset($attributes['jaco\validate\output'])) {
+        $errors = validate_output($arguments, $attributes['jaco\validate\output']);
         if (count($errors) > 0) {
             throw new \exception('JSON schema validation of service output failed');
         }

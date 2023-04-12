@@ -82,16 +82,16 @@ function call_action(string $action): array|string
     $attributes = [];
     foreach ($function->getAttributes() as $attribute) {
         $attributeName = $attribute->getName();
-        $attributes[$attributeName] = match($attributeName) {
-            'validate_request', 'validate_response' => $attribute->getArguments()[0] ?? null,
+        $attributes[$attributeName] = match ($attributeName) {
+            'jaco\validate\request', 'jaco\validate\response' => $attribute->getArguments()[0] ?? null,
             default => null
         };
     }
 
     $parameters = [];
-    if (isset($attributes['validate_request'])) {
+    if (isset($attributes['jaco\validate\request'])) {
         $data = request\get_post_values();
-        $errors = request\validate($data, $attributes['validate_request']);
+        $errors = request\validate($data, $attributes['jaco\validate\request']);
         if (count($errors) > 0) {
             return response\bad_request($errors);
         }
@@ -124,8 +124,8 @@ function call_action(string $action): array|string
         return response\client_error($status, $response);
     }
 
-    if (isset($attributes['validate_response'])) {
-        $errors = response\validate($response, $attributes['validate_response']);
+    if (isset($attributes['jaco\validate\response'])) {
+        $errors = response\validate($response, $attributes['jaco\validate\response']);
         if (count($errors) > 0) {
             return response\internal_server_error($errors);
         }

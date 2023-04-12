@@ -10,6 +10,7 @@ use jaco\list;
 use jaco\html;
 use jaco\struct\file;
 use jaco\struct\page;
+use jaco\validate;
 
 use const jaco\APP_DIR;
 use const jaco\APP_DIR_NAME;
@@ -144,8 +145,8 @@ function copy_by_array(array $input): array
     return [true, $page];
 }
 
-#[\validate_input('/service/page/copy/input.json')]
-#[\validate_output('/service/page/copy/output.json')]
+#[validate\input('/service/page/copy/input.json')]
+#[validate\output('/service/page/copy/output.json')]
 function copy_by_service(array $input, array $inputErrors = []): array
 {
     $data = data\filter($input, [
