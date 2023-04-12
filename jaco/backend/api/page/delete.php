@@ -49,7 +49,7 @@ function validators(): array
         ['fileName', 'required'],
         ['fileName', 'file_exists'],
         ['fileName', 'file_writeable'],
-        ['fileName', 'htmlfile_name'],
-        ['fileName', 'htmlfile_extension']
+        ['fileName', 'html_file_name'],
+        ['fileName', 'html_file_extension']
     ];
 }

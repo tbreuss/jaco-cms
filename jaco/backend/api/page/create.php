@@ -52,8 +52,8 @@ function validators(): array
     return [
         ['pageTemplate', 'required'],
         ['fileName', 'required'],
-        ['fileName', 'htmlfile_name'],
-        ['fileName', 'htmlfile_extension'],
+        ['fileName', 'html_file_name'],
+        ['fileName', 'html_file_extension'],
         ['fileName', 'file_in_dir', 'dir' => APP_DIR_NAME],
         ['fileName', 'file_exists', 'negate' => true],
         ['pageTitle', 'required'],

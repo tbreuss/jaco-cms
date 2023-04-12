@@ -65,7 +65,7 @@ function file_extension(mixed $value, array $allowedExtensions = []): array
  * @phpstan-return array{bool, string}
  * @deprecated
  */
-function htmlfile_extension(mixed $value): array
+function html_file_extension(mixed $value): array
 {
     if (is_string($value) && filesystem\validate_extension(WEB_DIR, $value)) {
         return [true, ''];
@@ -76,7 +76,7 @@ function htmlfile_extension(mixed $value): array
 /**
  * @phpstan-return array{bool, string}
  */
-function htmlfile_name(mixed $value, bool $isBackup = false): array
+function html_file_name(mixed $value, bool $isBackup = false): array
 {
     if (is_string($value) && filesystem\validate_filename(WEB_DIR, $value, $isBackup)) {
         return [true, ''];

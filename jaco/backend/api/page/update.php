@@ -58,8 +58,8 @@ function validators(): array
     return [
         ['fileName', 'required'],
         ['fileName', 'file_exists'],
-        ['fileName', 'htmlfile_name'],
-        ['fileName', 'htmlfile_extension'],
+        ['fileName', 'html_file_name'],
+        ['fileName', 'html_file_extension'],
         ['html', 'required'],
     ];
 }

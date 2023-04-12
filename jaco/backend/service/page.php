@@ -111,8 +111,8 @@ function copy_by_array(array $input): array
         ['srcFile', 'required'],
         ['srcFile', 'file_exists'],
         ['dstFile', 'required'],
-        ['dstFile', 'htmlfile_name'],
-        ['dstFile', 'htmlfile_extension'],
+        ['dstFile', 'html_file_name'],
+        ['dstFile', 'html_file_extension'],
         ['dstFile', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
         ['dstFile', 'file_exists', 'negate' => true],
         ['dstTitle', 'required'],
@@ -157,8 +157,8 @@ function copy_by_service(array $input, array $inputErrors = []): array
 
     $validationErrors = data\validate2($data, [
         ['srcFile', 'file_exists'],
-        ['dstFile', 'htmlfile_name'],
-        ['dstFile', 'htmlfile_extension'],
+        ['dstFile', 'html_file_name'],
+        ['dstFile', 'html_file_extension'],
         ['dstFile', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
         ['dstFile', 'file_exists', 'negate' => true],
     ]);

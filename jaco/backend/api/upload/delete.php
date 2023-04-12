@@ -52,7 +52,7 @@ function validators(): array
         ['fileName', 'required'],
         ['fileName', 'file_exists'],
         ['fileName', 'file_writeable'],
-        ['fileName', 'htmlfile_name'],
-        ['fileName', 'file_extension', 'allowed' => UPLOAD_EXTENSIONS]
+        ['fileName', 'html_file_name'],
+        ['fileName', 'file_extension', 'allowedExtensions' => UPLOAD_EXTENSIONS]
     ];
 }

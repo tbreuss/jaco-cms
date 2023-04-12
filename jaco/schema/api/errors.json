@@ -24,8 +24,7 @@
         },
         "required": [
             "title",
-            "detail",
-            "source"
+            "detail"
         ]
     }
 }
