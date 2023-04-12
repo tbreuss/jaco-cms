@@ -38,9 +38,9 @@ function action(): array
 function filters(): array
 {
     return [
-        ['pageTemplate', 'jaco\data\filter\filename'],
-        ['fileName', 'jaco\data\filter\filename'],
-        ['pageTitle', 'jaco\data\filter\html_specialchars'],
+        ['pageTemplate', 'filename'],
+        ['fileName', 'filename'],
+        ['pageTitle', 'html_specialchars'],
     ];
 }
 
@@ -50,12 +50,12 @@ function filters(): array
 function validators(): array
 {
     return [
-        ['pageTemplate', 'jaco\data\validator\required'],
-        ['fileName', 'jaco\data\validator\required'],
-        ['fileName', 'jaco\data\validator\htmlfile_name'],
-        ['fileName', 'jaco\data\validator\htmlfile_extension'],
-        ['fileName', 'jaco\data\validator\file_in_dir', 'dir' => APP_DIR_NAME],
-        ['fileName', 'jaco\data\validator\file_exists', 'negate' => true],
-        ['pageTitle', 'jaco\data\validator\required'],
+        ['pageTemplate', 'required'],
+        ['fileName', 'required'],
+        ['fileName', 'htmlfile_name'],
+        ['fileName', 'htmlfile_extension'],
+        ['fileName', 'file_in_dir', 'dir' => APP_DIR_NAME],
+        ['fileName', 'file_exists', 'negate' => true],
+        ['pageTitle', 'required'],
     ];
 }

@@ -144,6 +144,53 @@ function copy_by_array(array $input): array
     return [true, $page];
 }
 
+#[\validate_input('/service/page/copy/input.json')]
+#[\validate_output('/service/page/copy/output.json')]
+function copy_by_service(array $input, array $inputErrors = []): array
+{
+    $data = data\filter($input, [
+        ['srcFile', 'filename'],
+        ['dstFile', 'filename'],
+        ['dstTitle', 'string'],
+    ]);
+
+    $validationErrors = data\validate2($data, [
+        ['srcFile', 'file_exists'],
+        ['dstFile', 'htmlfile_name'],
+        ['dstFile', 'htmlfile_extension'],
+        ['dstFile', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
+        ['dstFile', 'file_exists', 'negate' => true],
+    ]);
+
+    $errors = array_merge($inputErrors, $validationErrors);
+
+    if (count($errors) > 0) {
+        return [false, $errors];
+    }
+
+    $html = filesystem\read_file(WEB_DIR, $data['srcFile']);
+
+    if ($html === null) {
+        return [false, [['srcFile', 'Could not read file content.']]];
+    }
+
+    $html = html\set_title($html, $data['dstTitle']);
+
+    $status = filesystem\write_file(WEB_DIR, $data['dstFile'], $html);
+
+    if ($status === false) {
+        return [false, [['dstFile', 'Could not write file content.']]];
+    }
+
+    $page = find_one($data['dstFile']);
+
+    if ($page === null) {
+        return [false, [['dstFile', 'Could not read new page.']]];
+    }
+
+    return [true, $page];
+}
+
 function create_from_template(string $srcFile, string $dstFile, string $dstPageTitle): bool
 {
     $html = filesystem\read_file(TEMPLATE_PAGE_DIR, $srcFile);

@@ -10,7 +10,7 @@ Content-Type: application/json
 
 {
     "srcFileName": "index.html",
-    "dstFileName": "xxx111.html",
+    "dstFileName": "xxx_index.html",
     "dstPageTitle": "Xxx"
 }
 

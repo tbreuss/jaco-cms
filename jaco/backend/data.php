@@ -69,11 +69,6 @@ function validate2(array $data, array $rules): array
             continue;
         }
         $value = $data[$name] ?? null;
-        $not = false;
-        if (str_starts_with($rule[1], '!')) {
-            $not = true;
-            $rule[1] = substr($rule[1], 1);
-        }
         $callable = 'jaco\\data\\validator\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;

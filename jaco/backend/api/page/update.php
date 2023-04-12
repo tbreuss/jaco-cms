@@ -44,9 +44,9 @@ function action(): array
 function filters(): array
 {
     return [
-        ['fileName', 'jaco\data\filter\string'],
-        ['fileName', 'jaco\data\filter\filename'],
-        ['html', 'jaco\data\filter\string'],
+        ['fileName', 'string'],
+        ['fileName', 'filename'],
+        ['html', 'string'],
     ];
 }
 
@@ -56,10 +56,10 @@ function filters(): array
 function validators(): array
 {
     return [
-        ['fileName', 'jaco\data\validator\required'],
-        ['fileName', 'jaco\data\validator\file_exists'],
-        ['fileName', 'jaco\data\validator\htmlfile_name'],
-        ['fileName', 'jaco\data\validator\htmlfile_extension'],
-        ['html', 'jaco\data\validator\required'],
+        ['fileName', 'required'],
+        ['fileName', 'file_exists'],
+        ['fileName', 'htmlfile_name'],
+        ['fileName', 'htmlfile_extension'],
+        ['html', 'required'],
     ];
 }

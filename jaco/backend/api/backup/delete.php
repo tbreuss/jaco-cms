@@ -38,7 +38,7 @@ function action(): array
 function filters(): array
 {
     return [
-        ['file', 'jaco\data\filter\filename']
+        ['file', 'filename']
     ];
 }
 
@@ -48,7 +48,7 @@ function filters(): array
 function validators(): array
 {
     return [
-        ['file', 'jaco\data\validator\required'],
-        ['file', 'jaco\data\validator\file_exists', 'dir' => BACKUP_DIR],
+        ['file', 'required'],
+        ['file', 'file_exists', 'dir' => BACKUP_DIR],
     ];
 }

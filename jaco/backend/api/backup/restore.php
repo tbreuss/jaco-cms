@@ -41,7 +41,7 @@ function action(): array
 function filters(): array
 {
     return [
-        ['file', 'jaco\data\filter\filename']
+        ['file', 'filename']
     ];
 }
 
@@ -51,9 +51,9 @@ function filters(): array
 function validators(): array
 {
     return [
-        ['file', 'jaco\data\validator\required'],
-        ['file', 'jaco\data\validator\file_exists', 'dir' => BACKUP_DIR],
-        ['file', 'jaco\data\validator\htmlfile_name', 'isBackup' => true],
-        ['file', 'jaco\data\validator\file_extension', 'allowed' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
+        ['file', 'required'],
+        ['file', 'file_exists', 'dir' => BACKUP_DIR],
+        ['file', 'htmlfile_name', 'isBackup' => true],
+        ['file', 'file_extension', 'allowed' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
     ];
 }

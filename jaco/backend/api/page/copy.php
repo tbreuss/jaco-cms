@@ -111,7 +111,7 @@ function action_attributes(array $data): array
  */
 #[\validate_request('/api/page/copy/request.json')]
 #[\validate_response('/api/page/copy/response.json')]
-function action(array $data): array
+function action_2(array $data): array
 {
     [$serviceStatus, $serviceOutput] = service\page\copy_by_array([
         'srcFile' => $data['srcFileName'],
@@ -130,6 +130,40 @@ function action(array $data): array
         /** @var array $serviceOutput */
         return response\unprocessable_entity(
             transform_errors($serviceOutput, [
+                'srcFile' => 'srcFileName',
+                'dstFile' => 'dstFileName',
+                'dstTitle' => 'dstPageTitle'
+            ])
+        );
+    }
+}
+
+/**
+ * @phpstan-return array<int,mixed>
+ */
+#[\validate_request('/api/page/copy/request.json')]
+#[\validate_response('/api/page/copy/response.json')]
+function action(array $data): array
+{
+    $input = [
+        'srcFile' => $data['srcFileName'],
+        'dstFile' => $data['dstFileName'],
+        'dstTitle' => $data['dstPageTitle']
+    ];
+
+    [$status, $output] = service\call('jaco\service\page\copy_by_service', $input);
+
+    if ($status) {
+        /** @var page $output */
+        return response\created([
+            'file' => $output->file,
+            'title' => $output->title,
+            'created' => $output->created
+        ]);
+    } else {
+        /** @var array $output */
+        return response\unprocessable_entity(
+            transform_errors($output, [
                 'srcFile' => 'srcFileName',
                 'dstFile' => 'dstFileName',
                 'dstTitle' => 'dstPageTitle'

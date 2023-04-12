@@ -38,8 +38,8 @@ function action(): array
 function filters(): array
 {
     return [
-        ['username', 'jaco\data\filter\string'],
-        ['password', 'jaco\data\filter\string']
+        ['username', 'string'],
+        ['password', 'string']
     ];
 }
 
@@ -49,7 +49,7 @@ function filters(): array
 function validators(): array
 {
     return [
-        ['username', 'jaco\data\validator\required'],
-        ['password', 'jaco\data\validator\required'],
+        ['username', 'required'],
+        ['password', 'required'],
     ];
 }
