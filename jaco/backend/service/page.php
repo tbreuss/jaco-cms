@@ -6,8 +6,8 @@ namespace jaco\service\page;
 
 use jaco\data;
 use jaco\filesystem;
-use jaco\list;
 use jaco\html;
+use jaco\list;
 use jaco\struct\file;
 use jaco\struct\page;
 use jaco\validate;
@@ -18,6 +18,10 @@ use const jaco\BACKUP_DIR;
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
 use const jaco\WEB_DIR;
+
+const ERROR = 'ERROR';
+const INVALID = 'INVALID';
+const SUCCESS = 'SUCCESS';
 
 /**
  * @phpstan-return array{0:page[],1:string,2:array{string,string}}
@@ -99,6 +103,10 @@ function copy_by_args(string $srcFile, string $dstFile, string $dstTitle): array
     ]);
 }
 
+/**
+ * @param array{srcFile: string, dstFile: string, dstTitle: string} $input
+ * @return array{0: string, 1: array}
+ */
 function copy_by_array(array $input): array
 {
     $data = data\filter($input, [
@@ -119,13 +127,13 @@ function copy_by_array(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return [false, $errors];
+        return [INVALID, $errors];
     }
 
     $html = filesystem\read_file(WEB_DIR, $data['srcFile']);
 
     if ($html === null) {
-        return [false, [['srcFile', 'Could not read file content.']]];
+        return [ERROR, [['srcFile', 'Could not read file content.']]];
     }
 
     $html = html\set_title($html, $data['dstTitle']);
@@ -133,16 +141,16 @@ function copy_by_array(array $input): array
     $status = filesystem\write_file(WEB_DIR, $data['dstFile'], $html);
 
     if ($status === false) {
-        return [false, [['dstFile', 'Could not write file content.']]];
+        return [ERROR, [['dstFile', 'Could not write file content.']]];
     }
 
     $page = find_one($data['dstFile']);
 
     if ($page === null) {
-        return [false, [['dstFile', 'Could not read new page.']]];
+        return [ERROR, [['dstFile', 'Could not read new page.']]];
     }
 
-    return [true, $page];
+    return [SUCCESS, (array)$page];
 }
 
 #[validate\input('/service/page/copy/input.json')]
@@ -166,13 +174,13 @@ function copy_by_service(array $input, array $inputErrors = []): array
     $errors = array_merge($inputErrors, $validationErrors);
 
     if (count($errors) > 0) {
-        return [false, $errors];
+        return [INVALID, $errors];
     }
 
     $html = filesystem\read_file(WEB_DIR, $data['srcFile']);
 
     if ($html === null) {
-        return [false, [['srcFile', 'Could not read file content.']]];
+        return [ERROR, [['srcFile', 'Could not read file content.']]];
     }
 
     $html = html\set_title($html, $data['dstTitle']);
@@ -180,16 +188,16 @@ function copy_by_service(array $input, array $inputErrors = []): array
     $status = filesystem\write_file(WEB_DIR, $data['dstFile'], $html);
 
     if ($status === false) {
-        return [false, [['dstFile', 'Could not write file content.']]];
+        return [ERROR, [['dstFile', 'Could not write file content.']]];
     }
 
     $page = find_one($data['dstFile']);
 
     if ($page === null) {
-        return [false, [['dstFile', 'Could not read new page.']]];
+        return [ERROR, [['dstFile', 'Could not read new page.']]];
     }
 
-    return [true, $page];
+    return [SUCCESS, $page];
 }
 
 function create_from_template(string $srcFile, string $dstFile, string $dstPageTitle): bool

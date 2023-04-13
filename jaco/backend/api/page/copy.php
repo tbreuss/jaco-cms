@@ -120,21 +120,36 @@ function action(array $data): array
         'dstTitle' => $data['dstPageTitle']
     ]);
 
-    /** @var array|page $serviceOutput */
-    return match($serviceStatus) {
-        true => response\created([
-            'file' => $serviceOutput->file,
-            'title' => $serviceOutput->title,
-            'created' => $serviceOutput->created
-        ]),
-        false => response\unprocessable_entity(
-            transform_errors($serviceOutput, [
-                'srcFile' => 'srcFileName',
-                'dstFile' => 'dstFileName',
-                'dstTitle' => 'dstPageTitle'
-            ])
-        )
-    };
+    if ($serviceStatus === service\page\SUCCESS) {
+        return response\created([
+            'file' => $serviceOutput['file'],
+            'title' => $serviceOutput['title'],
+            'created' => $serviceOutput['created']
+        ]);
+    }
+
+    if ($serviceStatus === service\page\INVALID) {
+        return response\unprocessable_entity(
+            transform_errors($serviceOutput, error_mapping())
+        );
+    }
+
+    if ($serviceStatus === service\page\ERROR) {
+        return response\internal_server_error(
+            transform_errors($serviceOutput, error_mapping())
+        );
+    }
+
+    return response\internal_server_error([]);
+}
+
+function error_mapping(): array
+{
+    return [
+        'srcFile' => 'srcFileName',
+        'dstFile' => 'dstFileName',
+        'dstTitle' => 'dstPageTitle'
+    ];
 }
 
 /**

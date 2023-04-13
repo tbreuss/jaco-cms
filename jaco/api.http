@@ -9,9 +9,9 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjb
 Content-Type: application/json
 
 {
-    "srcFileName": "",
-    "dstFileName": "",
-    "dstPageTitle": "Xxx"
+    "srcFileName": "index.html",
+    "dstFileName": "index_new.html",
+    "dstPageTitle": "New Index"
 }
 
 ### Backup list
