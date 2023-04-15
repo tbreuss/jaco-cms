@@ -5,19 +5,49 @@ declare(strict_types=1);
 namespace jaco\api\backup\view;
 
 use jaco\response;
+use jaco\service;
+use jaco\validate;
 
-use jaco\service\backup;
+const input_mapping = [
+    'file' => 'file',
+];
+
+const output_mapping = [
+    'file' => 'file',
+    'name' => 'name',
+    'title' => 'title',
+    'created' => 'created',
+    'backedUp' => 'backedUp',
+    'type' => 'type',
+    'content' => 'content'
+];
 
 /**
  * @phpstan-return array<int,mixed>
  */
+#[validate\response('/api/backup/view/response.json')]
 function action(string $file): array
 {
-    $backup = backup\find_one($file);
+    return service\call_from_api('jaco\service\backup\find_one', ['file' => $file], input_mapping, output_mapping);
 
-    if ($backup) {
-        return response\ok((array)$backup);
+    $serviceInput = service\transform_data(['file' => $file], input_mapping);
+
+    [$serviceStatus, $serviceOutput] = service\backup\find_one($serviceInput);
+
+    if ($serviceStatus === service\backup\SUCCESS) {
+        $serviceOutput = service\transform_data($serviceOutput, output_mapping);
+        return response\ok($serviceOutput);
     }
 
-    return response\not_found([]);
+    if ($serviceStatus === service\backup\INVALID) {
+        $apiOutput = service\transform_errors($serviceOutput, array_flip(input_mapping));
+        return response\unprocessable_entity($apiOutput);
+    }
+
+    if ($serviceStatus === service\backup\ERROR) {
+        $apiOutput = service\transform_errors($serviceOutput, array_flip(input_mapping));
+        return response\internal_server_error($apiOutput);
+    }
+
+    return response\internal_server_error(service\invalid_service_status());
 }

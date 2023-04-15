@@ -10,7 +10,6 @@ use jaco\html;
 use jaco\list;
 use jaco\struct\file;
 use jaco\struct\page;
-use jaco\validate;
 
 use const jaco\APP_DIR;
 use const jaco\APP_DIR_NAME;
@@ -60,54 +59,11 @@ function delete(string $file): bool
     return filesystem\delete_file(WEB_DIR, $file);
 }
 
-function copy(string $srcFile, string $dstFile, string $dstPageTitle): array
-{
-    $srcFile = filesystem\filter_filename($srcFile);
-    $dstFile = filesystem\filter_filename($dstFile);
-
-    $html = filesystem\read_file(WEB_DIR, $srcFile);
-
-    if ($html === null) {
-        return [false, 'Source file does not exist.'];
-    }
-
-    if (!filesystem\validate_filename(WEB_DIR, $dstFile)) {
-        return [false, 'Destination filename is invalid.'];
-    }
-
-    if (!filesystem\validate_extension(WEB_DIR, $dstFile)) {
-        return [false, 'Destination file extension is invalid.'];
-    }
-
-    if (filesystem\file_in_dir($dstFile, APP_DIR_NAME)) {
-        return [false, sprintf('Destination file must not be in the protected %s folder.', APP_DIR_NAME)];
-    }
-
-    if (filesystem\file_exists(WEB_DIR, $dstFile)) {
-        return [false, 'Destination file already exists.'];
-    }
-
-    $html = html\set_title($html, $dstPageTitle);
-
-    $status = filesystem\write_file(WEB_DIR, $dstFile, $html);
-
-    return $status ? [true, ''] : [false, 'Could not write file'];
-}
-
-function copy_by_args(string $srcFile, string $dstFile, string $dstTitle): array
-{
-    return copy_by_array([
-        'srcFile' => $srcFile,
-        'dstFile' => $dstFile,
-        'dstTitle' => $dstTitle,
-    ]);
-}
-
 /**
  * @param array{srcFile: string, dstFile: string, dstTitle: string} $input
  * @return array{0: string, 1: array}
  */
-function copy_by_array(array $input): array
+function copy(array $input): array
 {
     $data = data\filter($input, [
         ['srcFile', 'filename'],
@@ -151,53 +107,6 @@ function copy_by_array(array $input): array
     }
 
     return [SUCCESS, (array)$page];
-}
-
-#[validate\input('/service/page/copy/input.json')]
-#[validate\output('/service/page/copy/output.json')]
-function copy_by_service(array $input, array $inputErrors = []): array
-{
-    $data = data\filter($input, [
-        ['srcFile', 'filename'],
-        ['dstFile', 'filename'],
-        ['dstTitle', 'string'],
-    ]);
-
-    $validationErrors = data\validate2($data, [
-        ['srcFile', 'file_exists'],
-        ['dstFile', 'html_file_name'],
-        ['dstFile', 'html_file_extension'],
-        ['dstFile', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
-        ['dstFile', 'file_exists', 'negate' => true],
-    ]);
-
-    $errors = array_merge($inputErrors, $validationErrors);
-
-    if (count($errors) > 0) {
-        return [INVALID, $errors];
-    }
-
-    $html = filesystem\read_file(WEB_DIR, $data['srcFile']);
-
-    if ($html === null) {
-        return [ERROR, [['srcFile', 'Could not read file content.']]];
-    }
-
-    $html = html\set_title($html, $data['dstTitle']);
-
-    $status = filesystem\write_file(WEB_DIR, $data['dstFile'], $html);
-
-    if ($status === false) {
-        return [ERROR, [['dstFile', 'Could not write file content.']]];
-    }
-
-    $page = find_one($data['dstFile']);
-
-    if ($page === null) {
-        return [ERROR, [['dstFile', 'Could not read new page.']]];
-    }
-
-    return [SUCCESS, $page];
 }
 
 function create_from_template(string $srcFile, string $dstFile, string $dstPageTitle): bool

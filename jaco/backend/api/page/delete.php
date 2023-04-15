@@ -5,25 +5,24 @@ declare(strict_types=1);
 namespace jaco\api\page\delete;
 
 use jaco\data;
-use jaco\request;
 use jaco\response;
 use jaco\service\page;
+use jaco\validate;
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function action(): array
+#[validate\request('/api/page/delete/request.json')]
+#[validate\response('/api/null.json')]
+function action(array $apiInput): array
 {
-    $raw = request\get_post_values();
+    $errors = data\validate($apiInput, validators());
 
-    $data = data\filter($raw, filters());
-
-    $errors = data\validate($data, validators());
     if (count($errors) > 0) {
         return response\unprocessable_entity($errors);
     }
 
-    if (page\delete($data['fileName'])) {
+    if (page\delete($apiInput['fileName'])) {
         return response\ok();
     }
 

@@ -55,7 +55,7 @@ function internal_server_error(array $data): array
     return [INTERNAL_SERVER_ERROR, $data];
 }
 
-function validate(array|string $data, string $schema): array
+function validate(array|string|null $data, string $schema): array
 {
     return jsonschema\validate_data($data, $schema);
 }
@@ -63,6 +63,14 @@ function validate(array|string $data, string $schema): array
 function client_error(int $status, array $data = null): array
 {
     if ($status < 400 || $status >= 500) {
+        return internal_server_error($data);
+    }
+    return [$status, $data];
+}
+
+function server_error(int $status, array $data = null): array
+{
+    if ($status < 500 || $status >= 600) {
         return internal_server_error($data);
     }
     return [$status, $data];

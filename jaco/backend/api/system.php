@@ -6,10 +6,12 @@ namespace jaco\api\system;
 
 use jaco\response;
 use jaco\system;
+use jaco\validate;
 
 /**
  * @phpstan-return array<int,mixed>
  */
+#[validate\response('/api/system/response.json')]
 function action(): array
 {
     return response\ok([

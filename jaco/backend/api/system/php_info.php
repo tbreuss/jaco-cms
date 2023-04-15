@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\system\php_info;
 
 use jaco\response;
+use jaco\validate;
 
+#[validate\response('/api/diagnostics/php_info/response.json')]
 function action(): array
 {
     ob_start();

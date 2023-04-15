@@ -6,41 +6,29 @@ namespace jaco\api\login;
 
 use jaco\auth;
 use jaco\data;
-use jaco\request;
 use jaco\response;
+use jaco\validate;
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function action(): array
+#[validate\request('/api/login/request.json')]
+#[validate\response('/api/login/response.json')]
+function action(array $apiInput): array
 {
-    $raw = request\get_post_values();
+    $errors = data\validate($apiInput, validators());
 
-    $data = data\filter($raw, filters());
-
-    $errors = data\validate($data, validators());
     if (count($errors) > 0) {
         return response\unprocessable_entity($errors);
     }
 
-    $token = auth\authenticate($data['username'], $data['password']);
+    $token = auth\authenticate($apiInput['username'], $apiInput['password']);
 
     if ($token === null) {
         return response\unprocessable_entity([['title' => 'Validation Error', 'detail' => 'Authentication failed']]);
     }
 
     return response\ok(['token' => $token]);
-}
-
-/**
- * @return array<int, array{string, callable}>
- */
-function filters(): array
-{
-    return [
-        ['username', 'string'],
-        ['password', 'string']
-    ];
 }
 
 /**

@@ -8,7 +8,7 @@ use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Errors\ValidationError;
 use Opis\JsonSchema\Validator;
 
-function validate_data(array|string $data, string $schema): array
+function validate_data(array|string|null $data, string $schema): array
 {
     $validator = new Validator();
     $validator->setMaxErrors(20);
@@ -16,8 +16,10 @@ function validate_data(array|string $data, string $schema): array
 
     if (is_array($data)) {
         $dataAsObject = json_decode(json_encode($data));
-    } else {
+    } elseif(is_string($data)) {
         $dataAsObject = json_decode($data);
+    } else {
+        $dataAsObject = $data;
     }
 
     $result = $validator->validate($dataAsObject, 'http://jaco.tebe.ch' . $schema);

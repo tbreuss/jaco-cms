@@ -4,56 +4,40 @@ declare(strict_types=1);
 
 namespace jaco\api\backup\restore;
 
-use jaco\data;
-use jaco\request;
 use jaco\response;
-use jaco\service\backup;
+use jaco\service;
+use jaco\validate;
 
-use const jaco\PAGE_EXTENSIONS;
-use const jaco\BACKUP_DIR;
-use const jaco\UPLOAD_EXTENSIONS;
+const input_mapping = [
+    'file' => 'file',
+];
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function action(): array
+#[validate\request('/api/backup/restore/request.json')]
+#[validate\response('/api/null.json')]
+function action(array $apiInput): array
 {
-    $raw = request\get_post_values();
+    #return service\call_from_api('jaco\service\backup\restore', $apiInput, input_mapping);
 
-    $data = data\filter($raw, filters());
+    $serviceInput = service\transform_data($apiInput, input_mapping);
 
-    $errors = data\validate($data, validators());
+    [$serviceStatus, $serviceOutput] = service\backup\restore($serviceInput);
 
-    if (count($errors) > 0) {
-        return response\unprocessable_entity($errors);
-    }
-
-    if (backup\restore($data['file'])) {
+    if ($serviceStatus === service\backup\SUCCESS) {
         return response\ok();
     }
 
-    return response\internal_server_error([['title' => 'Could not restore backup']]);
-}
+    if ($serviceStatus === service\backup\INVALID) {
+        $apiOutput = service\transform_errors($serviceOutput, array_flip(input_mapping));
+        return response\unprocessable_entity($apiOutput);
+    }
 
-/**
- * @return array<int, array{string, callable}>
- */
-function filters(): array
-{
-    return [
-        ['file', 'filename']
-    ];
-}
+    if ($serviceStatus === service\backup\ERROR) {
+        $apiOutput = service\transform_errors($serviceOutput, array_flip(input_mapping));
+        return response\internal_server_error($apiOutput);
+    }
 
-/**
- * @return array<int, array{string, callable}>
- */
-function validators(): array
-{
-    return [
-        ['file', 'required'],
-        ['file', 'file_exists', 'dir' => BACKUP_DIR],
-        ['file', 'html_file_name', 'isBackup' => true],
-        ['file', 'file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
-    ];
+    return response\internal_server_error(service\invalid_service_status());
 }

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace jaco\api\translation;
 
 use jaco\response;
+use jaco\validate;
 
 use const jaco\DEFAULT_LANGUAGE;
 
 /**
  * @phpstan-return array<int,mixed>
  */
+#[validate\response('/api/translation/response.json')]
 function action(string $language = DEFAULT_LANGUAGE): array
 {
     $template = dirname(__DIR__, 2) . '/language/{language}.json';

@@ -84,3 +84,4 @@ function validate2(array $data, array $rules): array
     }
     return $errors;
 }
+

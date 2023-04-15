@@ -4,51 +4,40 @@ declare(strict_types=1);
 
 namespace jaco\api\backup\delete;
 
-use jaco\data;
-use jaco\request;
 use jaco\response;
-use jaco\service\backup;
+use jaco\service;
+use jaco\validate;
 
-use const jaco\BACKUP_DIR;
+const input_mapping = [
+    'file' => 'file',
+];
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function action(): array
+#[validate\request('/api/backup/delete/request.json')]
+#[validate\response('/api/null.json')]
+function action(array $apiInput): array
 {
-    $raw = request\get_post_values();
+    #return service\call_from_api('jaco\service\backup\delete', $apiInput, input_mapping);
 
-    $data = data\filter($raw, filters());
+    $serviceInput = service\transform_data($apiInput, input_mapping);
 
-    $errors = data\validate($data, validators());
-    if (count($errors) > 0) {
-        return response\unprocessable_entity($errors);
-    }
+    [$serviceStatus, $serviceOutput] = service\backup\delete($serviceInput);
 
-    if (backup\delete($data['file'])) {
+    if ($serviceStatus === service\backup\SUCCESS) {
         return response\ok();
     }
 
-    return response\internal_server_error([['title' => 'Could not restore backup']]);
-}
+    if ($serviceStatus === service\backup\INVALID) {
+        $apiOutput = service\transform_errors($serviceOutput, array_flip(input_mapping));
+        return response\unprocessable_entity($apiOutput);
+    }
 
-/**
- * @return array<int, array{string, callable}>
- */
-function filters(): array
-{
-    return [
-        ['file', 'filename']
-    ];
-}
+    if ($serviceStatus === service\backup\ERROR) {
+        $apiOutput = service\transform_errors($serviceOutput, array_flip(input_mapping));
+        return response\internal_server_error($apiOutput);
+    }
 
-/**
- * @return array<int, array{string, callable}>
- */
-function validators(): array
-{
-    return [
-        ['file', 'required'],
-        ['file', 'file_exists', 'dir' => BACKUP_DIR],
-    ];
+    return response\internal_server_error(service\invalid_service_status());
 }

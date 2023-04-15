@@ -95,7 +95,7 @@ function call_action(string $action): array|string
         if (count($errors) > 0) {
             return response\bad_request($errors);
         }
-        $parameters['data'] = $data;
+        $parameters['apiInput'] = $data;
     } else {
         foreach ($function->getParameters() as $parameter) {
             $name = $parameter->getName();
@@ -122,6 +122,14 @@ function call_action(string $action): array|string
             return response\internal_server_error($errors);
         }
         return response\client_error($status, $response);
+    }
+
+    if (($status >= 500) && ($status < 600)) {
+        $errors = response\validate($response, '/api/errors.json');
+        if (count($errors) > 0) {
+            return response\internal_server_error($errors);
+        }
+        return response\server_error($status, $response);
     }
 
     if (isset($attributes['jaco\validate\response'])) {

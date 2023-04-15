@@ -8,24 +8,24 @@ use jaco\data;
 use jaco\request;
 use jaco\response;
 use jaco\service\page;
+use jaco\validate;
 
 use const jaco\APP_DIR_NAME;
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function action(): array
+#[validate\request('/api/page/create/request.json')]
+#[validate\response('/api/null.json')]
+function action(array $apiInput): array
 {
-    $raw = request\get_post_values();
+    $errors = data\validate($apiInput, validators());
 
-    $data = data\filter($raw, filters());
-
-    $errors = data\validate($data, validators());
     if (count($errors) > 0) {
         return response\unprocessable_entity($errors);
     }
 
-    if (page\create_from_template($data['pageTemplate'], $data['fileName'], $data['pageTitle'])) {
+    if (page\create_from_template($apiInput['pageTemplate'], $apiInput['fileName'], $apiInput['pageTitle'])) {
         return response\ok();
     }
 
@@ -54,7 +54,7 @@ function validators(): array
         ['fileName', 'required'],
         ['fileName', 'html_file_name'],
         ['fileName', 'html_file_extension'],
-        ['fileName', 'file_in_dir', 'dir' => APP_DIR_NAME],
+        ['fileName', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
         ['fileName', 'file_exists', 'negate' => true],
         ['pageTitle', 'required'],
     ];
