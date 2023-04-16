@@ -8,7 +8,7 @@ export const PageListModel = {
   load: () => {
     PageListModel.isLoading = true
     return api.get('action=page/list&filter=' + PageListModel.filter + '&sort=' + PageListModel.sort)
-      .then(({data}) => {
+      .then((data) => {
         PageListModel.isLoading = false
         PageListModel.items = data.items
       })

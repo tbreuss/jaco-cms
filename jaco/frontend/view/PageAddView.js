@@ -37,7 +37,7 @@ const onSaveButtonClicked = (e) => {
     })
     .catch(({code, response}) => {
       if (code === 422) {
-        state.errors = response.errors
+        state.errors = response
       }
       m.redraw()
     })

@@ -39,7 +39,7 @@ const request = method => (url, options) => {
       if (code in handlers) {
         handlers[code](err)
       } else {
-        err.response.errors.forEach((error) => {
+        err.response.forEach((error) => {
           addDanger(error.title)
         })
         throw err

@@ -38,7 +38,7 @@ function send_errors(array $errors): string
             $errors[$index]['source']['pointer'] = '';
         }
     }
-    return json_encode(['errors' => $errors]);
+    return json_encode($errors);
 }
 
 /**
@@ -46,7 +46,7 @@ function send_errors(array $errors): string
  */
 function send_data(array $data): string
 {
-    $data = json_encode(['data' => $data]);
+    $data = json_encode($data);
     if ($data === false) {
         throw new \exception('Could not encode json');
     }

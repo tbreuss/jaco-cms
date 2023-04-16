@@ -41,7 +41,7 @@ const deleteAction = (page) => {
       })
       .catch(({code, response}) => {
         if (code === 422) {
-          addDanger(response.errors[0].title)
+          addDanger(response[0].title)
         }
         m.redraw()
       })

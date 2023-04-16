@@ -223,7 +223,9 @@ function update(array $input): array
 
     [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['content']);
 
-    if (!$status) {
+    if ($status) {
+        $data['content'] = $htmlOrErrors;
+    } else {
         return service\error([['content', \reset($htmlOrErrors)]]);
     }
 

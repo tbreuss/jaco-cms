@@ -12,8 +12,8 @@ const loadAndSetLocale = (newLocale) => {
 
   i18n.status = 'loading'
 
-  fetchMessages(newLocale, (messages) => {
-    i18n.messages = messages.data
+  fetchMessages(newLocale, (data) => {
+    i18n.messages = data
     i18n.currentLocale = newLocale
     i18n.status = 'idle'
   })

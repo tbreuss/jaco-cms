@@ -8,7 +8,7 @@ export const BackupListModel = {
   loadList: () => {
     BackupListModel.isLoading = true
     return api.get('action=backup/list&filter=' + BackupListModel.filter + '&sort=' + BackupListModel.sort)
-      .then(({data}) => {
+      .then((data) => {
         BackupListModel.items = data.items
         BackupListModel.isLoading = false
       })

@@ -8,7 +8,7 @@ export const UploadListModel = {
   load: () => {
     UploadListModel.isLoading = true
     return api.get('action=upload/list&filter=' + UploadListModel.filter + '&sort=' + UploadListModel.sort)
-      .then(({data}) => {
+      .then((data) => {
         UploadListModel.isLoading = false
         UploadListModel.items = data.items
       })

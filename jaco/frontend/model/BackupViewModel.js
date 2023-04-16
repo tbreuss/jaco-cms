@@ -6,7 +6,7 @@ export const BackupViewModel = {
   load: (file) => {
     BackupViewModel.isLoading = true
     return api.get('action=backup/view&file=' + file)
-      .then(({data}) => {
+      .then((data) => {
         BackupViewModel.item = data
         BackupViewModel.isLoading = false
       })
