@@ -151,13 +151,18 @@ function copy(array $input): array
         return service\error([['dstFile', 'Could not write file content.']]);
     }
 
-    $page = find_one($data['dstFile']);
+    $html = filesystem\read_file(WEB_DIR, $data['dstFile']);
 
-    if ($page === null) {
+    if ($html === null) {
         return service\error([['dstFile', 'Could not read new page.']]);
     }
 
-    return service\success((array)$page);
+    return service\success([
+        'file' => $data['dstFile'],
+        'title' => html\get_title($html),
+        'created' => filesystem\file_mtime($data['dstFile'], WEB_DIR),
+        'content' => $html
+    ]);
 }
 
 function create_from_template(array $input): array
