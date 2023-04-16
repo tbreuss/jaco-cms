@@ -19,9 +19,6 @@ use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
 use const jaco\WEB_DIR;
 
-/**
- * @phpstan-return array{0:page[],1:string,2:array{string,string}}
- */
 function find_all(array $input): array
 {
     $data = data\filter($input, [

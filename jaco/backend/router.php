@@ -75,10 +75,7 @@ function dispatch(string $method, string $action): array
     return array_pad($response, 2, ''); // ensure array with two entries
 }
 
-/**
- * @phpstan-return string|array<mixed>
- */
-function call_action(string $action): array|string
+function call_action(string $action): array
 {
     $function = new \ReflectionFunction($action);
 

@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\api\page\copy\try_outs;
 
-use jaco\validate;
-use jaco\request;
-use jaco\response;
+use jaco\attribute;
+use jaco\controller;
+use jaco\http\request;
+use jaco\http\response;
 use jaco\service;
 use jaco\struct\page;
 
@@ -33,7 +34,7 @@ function action_verbose(): array
         'dstTitle' => $apiInput['dstPageTitle']
     ];
 
-    [$serviceStatus, $serviceOutput] = service\page\copy_by_array($serviceInput);
+    [$serviceStatus, $serviceOutput] = service\try_outs\page\copy_by_array($serviceInput);
 
     /*
     $srcFileName = $data['srcFileName'];
@@ -45,9 +46,9 @@ function action_verbose(): array
 
     if ($serviceStatus) {
         $apiOutput = [
-            'file' => $serviceOutput->file,
-            'title' => $serviceOutput->title,
-            'created' => $serviceOutput->created
+            'file' => $serviceOutput['file'],
+            'title' => $serviceOutput['title'],
+            'created' => $serviceOutput['created']
         ];
 
         $apiErrors = response\validate($apiOutput, '/api/page/copy/response.json');
@@ -77,8 +78,8 @@ function action_verbose(): array
 /**
  * @phpstan-return array<int,mixed>
  */
-#[validate\request('/api/page/copy/request.json')]
-#[validate\response('/api/page/copy/response.json')]
+#[attribute\validate_request('/api/page/copy/request.json')]
+#[attribute\validate_response('/api/page/copy/response.json')]
 function action_attributes(array $data): array
 {
     $serviceInput = [
@@ -87,13 +88,13 @@ function action_attributes(array $data): array
         'dstTitle' => $data['dstPageTitle']
     ];
 
-    [$serviceStatus, $serviceOutput] = service\page\copy_by_array($serviceInput);
+    [$serviceStatus, $serviceOutput] = service\try_outs\page\copy_by_array($serviceInput);
 
     if ($serviceStatus) {
         $apiOutput = [
-            'file' => $serviceOutput->file,
-            'title' => $serviceOutput->title,
-            'created' => $serviceOutput->created
+            'file' => $serviceOutput['file'],
+            'title' => $serviceOutput['title'],
+            'created' => $serviceOutput['created']
         ];
         return response\created($apiOutput);
     }
@@ -110,17 +111,17 @@ function action_attributes(array $data): array
 /**
  * @phpstan-return array<int,mixed>
  */
-#[validate\request('/api/page/copy/request.json')]
-#[validate\response('/api/page/copy/response.json')]
+#[attribute\validate_request('/api/page/copy/request.json')]
+#[attribute\validate_response('/api/page/copy/response.json')]
 function action(array $data): array
 {
-    [$serviceStatus, $serviceOutput] = service\page\copy_by_array([
+    [$serviceStatus, $serviceOutput] = service\try_outs\page\copy_by_array([
         'srcFile' => $data['srcFileName'],
         'dstFile' => $data['dstFileName'],
         'dstTitle' => $data['dstPageTitle']
     ]);
 
-    if ($serviceStatus === service\page\SUCCESS) {
+    if ($serviceStatus === service\SUCCESS) {
         return response\created([
             'file' => $serviceOutput['file'],
             'title' => $serviceOutput['title'],
@@ -128,13 +129,13 @@ function action(array $data): array
         ]);
     }
 
-    if ($serviceStatus === service\page\INVALID) {
+    if ($serviceStatus === service\INVALID) {
         return response\unprocessable_entity(
             transform_errors($serviceOutput, error_mapping())
         );
     }
 
-    if ($serviceStatus === service\page\ERROR) {
+    if ($serviceStatus === service\ERROR) {
         return response\internal_server_error(
             transform_errors($serviceOutput, error_mapping())
         );
@@ -155,8 +156,8 @@ function error_mapping(): array
 /**
  * @phpstan-return array<int,mixed>
  */
-#[validate\request('/api/page/copy/request.json')]
-#[validate\response('/api/page/copy/response.json')]
+#[attribute\validate_request('/api/page/copy/request.json')]
+#[attribute\validate_response('/api/page/copy/response.json')]
 function action_service(array $data): array
 {
     $input = [
@@ -165,7 +166,7 @@ function action_service(array $data): array
         'dstTitle' => $data['dstPageTitle']
     ];
 
-    [$status, $output] = service\call('jaco\service\page\copy_by_service', $input);
+    [$status, $output] = controller\call_service('jaco\service\try_outs\page\copy_by_service', $input);
 
     if ($status) {
         /** @var page $output */

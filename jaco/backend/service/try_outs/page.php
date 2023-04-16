@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\service\page\try_outs;
+namespace jaco\service\try_outs\page;
 
 use jaco\data;
 use jaco\filesystem;
@@ -10,7 +10,7 @@ use jaco\html;
 use jaco\list;
 use jaco\struct\file;
 use jaco\struct\page;
-use jaco\validate;
+use jaco\attribute;
 
 use const jaco\APP_DIR;
 use const jaco\APP_DIR_NAME;
@@ -153,8 +153,8 @@ function copy_by_array(array $input): array
     return [SUCCESS, (array)$page];
 }
 
-#[validate\input('/service/page/copy/input.json')]
-#[validate\output('/service/page/copy/output.json')]
+#[attribute\validate_input('/service/page/copy/input.json')]
+#[attribute\validate_output('/service/page/copy/output.json')]
 function copy_by_service(array $input, array $inputErrors = []): array
 {
     $data = data\filter($input, [

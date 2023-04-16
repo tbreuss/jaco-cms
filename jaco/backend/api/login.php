@@ -31,9 +31,6 @@ function action(array $apiInput): array
     return response\ok(['token' => $token]);
 }
 
-/**
- * @return array<int, array{string, callable}>
- */
 function validators(): array
 {
     return [
