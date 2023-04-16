@@ -11,7 +11,7 @@ use const jaco\APP_DIR_NAME;
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\DIRECTORY_PERMISSIONS;
 
-function dir_exists(string $root, string $dir): bool
+function dir_exists(string $root, string $dir = ''): bool
 {
     $path = join($root, $dir);
     return \file_exists($path) && \is_dir($path);

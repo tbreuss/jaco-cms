@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace jaco\validate;
+namespace jaco\attribute;
 
 use Attribute;
 
 #[Attribute]
-class request
+class validate_request
 {
     private string $schema;
 
@@ -18,7 +18,7 @@ class request
 }
 
 #[Attribute]
-class response
+class validate_response
 {
     private string $schema;
 
@@ -29,7 +29,7 @@ class response
 }
 
 #[Attribute]
-class input
+class validate_input
 {
     private string $schema;
 
@@ -40,7 +40,7 @@ class input
 }
 
 #[Attribute]
-class output
+class validate_output
 {
     private string $schema;
 

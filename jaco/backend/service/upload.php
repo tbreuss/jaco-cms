@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\service\upload;
 
+use jaco\data;
 use jaco\filesystem;
 use jaco\list;
+use jaco\service;
 use jaco\struct\file;
 use jaco\struct\upload;
 
@@ -14,33 +16,78 @@ use const jaco\WEB_DIR;
 use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\BACKUP_DIR;
 
-/**
- * @phpstan-return array{0:upload[],1:string,2:array{string,string}}
- */
-function find_all(string $filter = '', string $sort = '-created'): array
+function find_all(array $input): array
 {
+    $data = data\filter($input, [
+        ['filter', 'safe'],
+        ['sort', 'safe']
+    ]);
+
+    $errors = data\validate2($data, [
+        ['filter', 'string'],
+        ['sort', 'string'],
+    ]);
+
+    if (count($errors) > 0) {
+        return [service\INVALID, $errors];
+    }
+
+    if (!filesystem\dir_exists(WEB_DIR)) {
+        return [service\ERROR, [['', 'Dir does not exist.']]];
+    }
+
     $files = filesystem\find_files_rec(WEB_DIR, UPLOAD_EXTENSIONS, [APP_DIR]);
-    $sort = sort_field($sort);
-    $uploads = create_list($files);
-    $uploads = list\filter($uploads, $filter);
+    $sort = _sort_field($data['sort']);
+    $uploads = _create_list($files);
+    $uploads = list\filter($uploads, $data['filter']);
     $uploads = list\sort($uploads, $sort);
-    return [$uploads, $filter, $sort];
+    $output = [$uploads, $data['filter'], $sort];
+
+    return [service\SUCCESS, $output];
 }
 
-function delete(string $file): bool
+/**
+ * @param array{file: string} $input
+ * @return array{0: string, 1: ?array}
+ */
+function delete(array $input): array
 {
-    $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
-    if (!$status) {
-        return false;
+    $data = data\filter($input, [
+        ['file', 'filename'],
+    ]);
+
+    $errors = data\validate2($data, [
+        ['file', 'required'],
+        ['file', 'file_exists'],
+        ['file', 'file_writeable'],
+        ['file', 'html_file_name'],
+        ['file', 'file_extension', 'allowedExtensions' => UPLOAD_EXTENSIONS]
+    ]);
+
+    if (count($errors) > 0) {
+        return [service\INVALID, $errors];
     }
-    return filesystem\delete_file(WEB_DIR, $file);
+
+    $status = filesystem\backup_file(WEB_DIR, $data['file'], BACKUP_DIR);
+
+    if (!$status) {
+        return [service\ERROR, [['file', 'Could not backup file.']]];
+    }
+
+    $status = filesystem\delete_file(WEB_DIR, $data['file']);
+
+    if (!$status) {
+        return [service\ERROR, [['file', 'Could not delete file.']]];
+    }
+
+    return [service\SUCCESS, null];
 }
 
 /**
  * @param file[] $files
  * @return upload[]
  */
-function create_list(array $files): array
+function _create_list(array $files): array
 {
     $list = [];
     foreach ($files as $file) {
@@ -58,7 +105,7 @@ function create_list(array $files): array
 /**
  * @return array{string, string}
  */
-function sort_field(string $sort): array
+function _sort_field(string $sort): array
 {
     $sortDir = str_starts_with($sort, '-') ? 'desc' : 'asc';
     $sortField = $sortDir === 'desc' ? substr($sort, 1) : $sort;

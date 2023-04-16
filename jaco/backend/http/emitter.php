@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace jaco\emitter;
+namespace jaco\http\emitter;
 
-use jaco\response;
+use jaco\http\response;
 
 /**
  * @phpstan-param string|array<mixed> $response

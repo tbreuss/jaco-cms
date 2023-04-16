@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\api\page\copy;
 
-use jaco\response;
+use jaco\attribute;
+use jaco\controller;
+use jaco\http\response;
 use jaco\service;
-use jaco\validate;
 
 const input_mapping = [
     'srcFileName' => 'srcFile',
@@ -22,28 +23,18 @@ const output_mapping = [
 /**
  * @phpstan-return array<int,mixed>
  */
-#[validate\request('/api/page/copy/request.json')]
-#[validate\response('/api/page/copy/response.json')]
+#[attribute\validate_request('/api/page/copy/request.json')]
+#[attribute\validate_response('/api/page/copy/response.json')]
 function action(array $apiInput): array
 {
-    $serviceInput = service\transform_data($apiInput, input_mapping);
+    $serviceInput = controller\transform_data($apiInput, input_mapping);
 
     [$serviceStatus, $serviceOutput] = service\page\copy($serviceInput);
 
-    if ($serviceStatus === service\page\SUCCESS) {
-        $apiOutput = service\transform_data($serviceOutput, output_mapping);
+    if ($serviceStatus === service\SUCCESS) {
+        $apiOutput = controller\transform_data($serviceOutput, output_mapping);
         return response\created($apiOutput);
     }
 
-    if ($serviceStatus === service\page\INVALID) {
-        $apiOutput = service\transform_errors($serviceOutput, array_flip(input_mapping));
-        return response\unprocessable_entity($apiOutput);
-    }
-
-    if ($serviceStatus === service\page\ERROR) {
-        $apiOutput = service\transform_errors($serviceOutput, array_flip(input_mapping));
-        return response\internal_server_error($apiOutput);
-    }
-
-    return response\internal_server_error(service\invalid_service_status());
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, input_mapping);
 }

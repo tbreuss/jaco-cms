@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require 'vendor/autoload.php';
 
-use jaco\emitter;
+use jaco\http\emitter;
 use jaco\router;
 
 set_error_handler('jaco\error\error_handler');

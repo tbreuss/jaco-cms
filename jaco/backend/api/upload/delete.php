@@ -4,43 +4,29 @@ declare(strict_types=1);
 
 namespace jaco\api\upload\delete;
 
-use jaco\data;
-use jaco\response;
-use jaco\service\upload;
-use jaco\validate;
+use jaco\attribute;
+use jaco\controller;
+use jaco\http\response;
+use jaco\service;
 
-use const jaco\UPLOAD_EXTENSIONS;
+const input_mapping = [
+    'fileName' => 'file',
+];
 
 /**
  * @phpstan-return array<int,mixed>
  */
-#[validate\request('/api/upload/delete/request.json')]
-#[validate\response('/api/null.json')]
+#[attribute\validate_request('/api/upload/delete/request.json')]
+#[attribute\validate_response('/api/null.json')]
 function action(array $apiInput): array
 {
-    $errors = data\validate($apiInput, validators());
+    $serviceInput = controller\transform_data($apiInput, input_mapping);
 
-    if (count($errors) > 0) {
-        return response\unprocessable_entity($errors);
-    }
+    [$serviceStatus, $serviceOutput] = service\upload\delete($serviceInput);
 
-    if (upload\delete($apiInput['fileName'])) {
+    if ($serviceStatus === service\SUCCESS) {
         return response\ok();
     }
 
-    return response\internal_server_error([['title' => 'Could not delete upload']]);
-}
-
-/**
- * @return array<int, array{string, callable}>
- */
-function validators(): array
-{
-    return [
-        ['fileName', 'required'],
-        ['fileName', 'file_exists'],
-        ['fileName', 'file_writeable'],
-        ['fileName', 'html_file_name'],
-        ['fileName', 'file_extension', 'allowedExtensions' => UPLOAD_EXTENSIONS]
-    ];
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, input_mapping);
 }

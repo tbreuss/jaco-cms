@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\api\system\php_info;
 
-use jaco\response;
-use jaco\validate;
+use jaco\attribute;
+use jaco\http\response;
 
-#[validate\response('/api/diagnostics/php_info/response.json')]
+#[attribute\validate_response('/api/diagnostics/php_info/response.json')]
 function action(): array
 {
     ob_start();

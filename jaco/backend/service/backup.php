@@ -8,6 +8,7 @@ use jaco\data;
 use jaco\filesystem;
 use jaco\html;
 use jaco\list;
+use jaco\service;
 use jaco\struct\backup;
 use jaco\struct\file;
 
@@ -16,21 +17,38 @@ use const jaco\PAGE_EXTENSIONS;
 use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\WEB_DIR;
 
-const ERROR = 'ERROR';
-const INVALID = 'INVALID';
-const SUCCESS = 'SUCCESS';
-
 /**
- * @phpstan-return array{0:backup[],1:string,2:array{string,string}}
+ * @param array{filter: string, sort: string} $input
+ * @return array{0: string, 1: array}
  */
-function find_all(string $filter = '', string $sort = '-created'): array
+function find_all(array $input): array
 {
+    $data = data\filter($input, [
+        ['filter', 'safe'],
+        ['sort', 'safe']
+    ]);
+
+    $errors = data\validate2($data, [
+        ['filter', 'string'],
+        ['sort', 'string'],
+    ]);
+
+    if (count($errors) > 0) {
+        return [service\INVALID, $errors];
+    }
+
+    if (!filesystem\dir_exists(BACKUP_DIR)) {
+        return [service\ERROR, [['', 'Dir does not exist.']]];
+    }
+
     $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
     $files = filesystem\find_files(BACKUP_DIR, $allowed);
-    $backups = create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
-    $backups = list\filter($backups, $filter);
-    $sort = sort_field($sort);
-    return [list\sort($backups, $sort), $filter, $sort];
+    $backups = _create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
+    $backups = list\filter($backups, $data['filter']);
+    $sort = _sort_field($data['sort']);
+    $output = [list\sort($backups, $sort), $data['filter'], $sort];
+
+    return [service\SUCCESS, $output];
 }
 
 function find_one(array $input): array
@@ -47,7 +65,7 @@ function find_one(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return [INVALID, $errors];
+        return [service\INVALID, $errors];
     }
 
     $file = $data['file'];
@@ -55,12 +73,12 @@ function find_one(array $input): array
     $content = filesystem\read_file(BACKUP_DIR, $file);
 
     if ($content === null) {
-        return [ERROR, [['file', 'Could not read file.']]];
+        return [service\ERROR, [['file', 'Could not read file.']]];
     }
 
     $extension = \pathinfo($file, PATHINFO_EXTENSION);
     $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
-    return [SUCCESS, (array)new backup(
+    return [service\SUCCESS, (array)new backup(
         $file,
         str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
         html\get_title($content),
@@ -89,16 +107,16 @@ function restore(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return [INVALID, $errors];
+        return [service\INVALID, $errors];
     }
 
     $status = filesystem\restore_file(BACKUP_DIR, $data['file'], WEB_DIR);
 
     if (!$status) {
-        return [ERROR, [['file', 'Could not restore file.']]];
+        return [service\ERROR, [['file', 'Could not restore file.']]];
     }
 
-    return [SUCCESS, null];
+    return [service\SUCCESS, null];
 }
 
 /**
@@ -117,16 +135,16 @@ function delete(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return [INVALID, $errors];
+        return [service\INVALID, $errors];
     }
 
     $status = filesystem\delete_file(BACKUP_DIR, $input['file']);
 
     if (!$status) {
-        return [ERROR, [['file', 'Could not delete file.']]];
+        return [service\ERROR, [['file', 'Could not delete file.']]];
     }
 
-    return [SUCCESS, null];
+    return [service\SUCCESS, null];
 }
 
 /**
@@ -134,7 +152,7 @@ function delete(array $input): array
  * @param string[] $pageExtensions
  * @return backup[]
  */
-function create_list(array $files, string $dir, array $pageExtensions): array
+function _create_list(array $files, string $dir, array $pageExtensions): array
 {
     $backups = [];
     foreach ($files as $file) {
@@ -154,7 +172,7 @@ function create_list(array $files, string $dir, array $pageExtensions): array
 /**
  * @phpstan-return array{string,string}
  */
-function sort_field(string $sort): array
+function _sort_field(string $sort): array
 {
     if (!in_array(ltrim($sort, '-'), ['backedUp', 'created', 'name', 'title', 'type'])) {
         return ['created', 'desc'];

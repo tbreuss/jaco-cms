@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\response;
+namespace jaco\http\response;
 
 use jaco\jsonschema;
 

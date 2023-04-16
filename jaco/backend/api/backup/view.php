@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\api\backup\view;
 
-use jaco\response;
+use jaco\attribute;
+use jaco\controller;
+use jaco\http\response;
 use jaco\service;
-use jaco\validate;
 
 const input_mapping = [
     'file' => 'file',
@@ -25,29 +26,31 @@ const output_mapping = [
 /**
  * @phpstan-return array<int,mixed>
  */
-#[validate\response('/api/backup/view/response.json')]
+#[attribute\validate_response('/api/backup/view/response.json')]
 function action(string $file): array
 {
-    return service\call_from_api('jaco\service\backup\find_one', ['file' => $file], input_mapping, output_mapping);
+    #return controller\call_service_from_api('jaco\service\backup\find_one', ['file' => $file], input_mapping, output_mapping);
 
-    $serviceInput = service\transform_data(['file' => $file], input_mapping);
+    $serviceInput = controller\transform_data(['file' => $file], input_mapping);
 
     [$serviceStatus, $serviceOutput] = service\backup\find_one($serviceInput);
 
-    if ($serviceStatus === service\backup\SUCCESS) {
-        $serviceOutput = service\transform_data($serviceOutput, output_mapping);
-        return response\ok($serviceOutput);
+    if ($serviceStatus === service\SUCCESS) {
+        $apiOutput = controller\transform_data($serviceOutput, output_mapping);
+        return response\ok($apiOutput);
     }
 
-    if ($serviceStatus === service\backup\INVALID) {
-        $apiOutput = service\transform_errors($serviceOutput, array_flip(input_mapping));
+    #return controller\handle_api_errors($serviceStatus, $serviceOutput, input_mapping);
+
+    if ($serviceStatus === service\INVALID) {
+        $apiOutput = controller\transform_client_errors($serviceOutput, array_flip(input_mapping));
         return response\unprocessable_entity($apiOutput);
     }
 
-    if ($serviceStatus === service\backup\ERROR) {
-        $apiOutput = service\transform_errors($serviceOutput, array_flip(input_mapping));
+    if ($serviceStatus === service\ERROR) {
+        $apiOutput = controller\transform_server_errors($serviceOutput, array_flip(input_mapping));
         return response\internal_server_error($apiOutput);
     }
 
-    return response\internal_server_error(service\invalid_service_status());
+    return response\internal_server_error(controller\invalid_service_status());
 }

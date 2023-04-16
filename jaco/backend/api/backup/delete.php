@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\api\backup\delete;
 
-use jaco\response;
+use jaco\attribute;
+use jaco\controller;
+use jaco\http\response;
 use jaco\service;
-use jaco\validate;
 
 const input_mapping = [
     'file' => 'file',
@@ -15,29 +16,17 @@ const input_mapping = [
 /**
  * @phpstan-return array<int,mixed>
  */
-#[validate\request('/api/backup/delete/request.json')]
-#[validate\response('/api/null.json')]
+#[attribute\validate_request('/api/backup/delete/request.json')]
+#[attribute\validate_response('/api/null.json')]
 function action(array $apiInput): array
 {
-    #return service\call_from_api('jaco\service\backup\delete', $apiInput, input_mapping);
-
-    $serviceInput = service\transform_data($apiInput, input_mapping);
+    $serviceInput = controller\transform_data($apiInput, input_mapping);
 
     [$serviceStatus, $serviceOutput] = service\backup\delete($serviceInput);
 
-    if ($serviceStatus === service\backup\SUCCESS) {
+    if ($serviceStatus === service\SUCCESS) {
         return response\ok();
     }
 
-    if ($serviceStatus === service\backup\INVALID) {
-        $apiOutput = service\transform_errors($serviceOutput, array_flip(input_mapping));
-        return response\unprocessable_entity($apiOutput);
-    }
-
-    if ($serviceStatus === service\backup\ERROR) {
-        $apiOutput = service\transform_errors($serviceOutput, array_flip(input_mapping));
-        return response\internal_server_error($apiOutput);
-    }
-
-    return response\internal_server_error(service\invalid_service_status());
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, input_mapping);
 }

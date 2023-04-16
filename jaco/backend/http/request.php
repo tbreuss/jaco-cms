@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\request;
+namespace jaco\http\request;
 
 use jaco\jsonschema;
 

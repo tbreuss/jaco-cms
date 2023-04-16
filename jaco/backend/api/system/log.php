@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace jaco\api\system\log;
 
-use jaco\response;
-use jaco\validate;
+use jaco\attribute;
+use jaco\http\response;
 
 use const jaco\ERROR_LOG;
 
-#[validate\response('/api/diagnostics/log/response.json')]
+#[attribute\validate_response('/api/diagnostics/log/response.json')]
 function action(): array
 {
     $lines = [];

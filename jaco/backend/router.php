@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace jaco\router;
 
 use jaco\auth;
-use jaco\request;
-use jaco\response;
+use jaco\http\request;
+use jaco\http\response;
+
+const VALIDATE_REQUEST_ATTRIBUTE = 'jaco\attribute\validate_request';
+const VALIDATE_RESPONSE_ATTRIBUTE = 'jaco\attribute\validate_response';
 
 /**
  * @phpstan-return array<int,array{method:string,action:string,callback:string,authenticated:bool}>
@@ -83,15 +86,15 @@ function call_action(string $action): array|string
     foreach ($function->getAttributes() as $attribute) {
         $attributeName = $attribute->getName();
         $attributes[$attributeName] = match ($attributeName) {
-            'jaco\validate\request', 'jaco\validate\response' => $attribute->getArguments()[0] ?? null,
+            VALIDATE_REQUEST_ATTRIBUTE, VALIDATE_RESPONSE_ATTRIBUTE => $attribute->getArguments()[0] ?? null,
             default => null
         };
     }
 
     $parameters = [];
-    if (isset($attributes['jaco\validate\request'])) {
+    if (isset($attributes[VALIDATE_REQUEST_ATTRIBUTE])) {
         $data = request\get_post_values();
-        $errors = request\validate($data, $attributes['jaco\validate\request']);
+        $errors = request\validate($data, $attributes[VALIDATE_REQUEST_ATTRIBUTE]);
         if (count($errors) > 0) {
             return response\bad_request($errors);
         }
@@ -132,8 +135,8 @@ function call_action(string $action): array|string
         return response\server_error($status, $response);
     }
 
-    if (isset($attributes['jaco\validate\response'])) {
-        $errors = response\validate($response, $attributes['jaco\validate\response']);
+    if (isset($attributes[VALIDATE_RESPONSE_ATTRIBUTE])) {
+        $errors = response\validate($response, $attributes[VALIDATE_RESPONSE_ATTRIBUTE]);
         if (count($errors) > 0) {
             return response\internal_server_error($errors);
         }

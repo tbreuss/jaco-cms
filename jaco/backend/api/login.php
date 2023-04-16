@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace jaco\api\login;
 
+use jaco\attribute;
 use jaco\auth;
 use jaco\data;
-use jaco\response;
-use jaco\validate;
+use jaco\http\response;
 
 /**
  * @phpstan-return array<int,mixed>
  */
-#[validate\request('/api/login/request.json')]
-#[validate\response('/api/login/response.json')]
+#[attribute\validate_request('/api/login/request.json')]
+#[attribute\validate_response('/api/login/response.json')]
 function action(array $apiInput): array
 {
     $errors = data\validate($apiInput, validators());
