@@ -343,5 +343,5 @@ function file_in_dir(string $file, string $dir): bool
 {
     $parts = explode(DIRECTORY_SEPARATOR, $file);
     $first = $parts[0] ?? '';
-    return $first === APP_DIR_NAME;
+    return $first === $dir;
 }

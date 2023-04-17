@@ -111,14 +111,11 @@ function file_exists(mixed $value, string $dir = WEB_DIR, bool $negate = false):
  */
 function file_in_dir(mixed $value, string $dir, bool $negate = false): array
 {
-    $parts = explode(DIRECTORY_SEPARATOR, $value);
-    $first = $parts[0] ?? '';
-
-    if (($negate === false) && ($first !== $dir)) {
+    if (!$negate && !filesystem\file_in_dir($value, $dir)) {
         return [false, sprintf('{value} must be in the %s folder.', $dir)];
     }
 
-    if (($negate === true) && ($first === $dir)) {
+    if ($negate && filesystem\file_in_dir($value, $dir)) {
         return [false, sprintf('{value} must not be in the %s folder.', $dir)];
     }
 
