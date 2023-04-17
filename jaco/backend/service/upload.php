@@ -29,11 +29,11 @@ function find_all(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return [service\INVALID, $errors];
+        return service\invalid($errors);
     }
 
     if (!filesystem\dir_exists(WEB_DIR)) {
-        return [service\ERROR, [['', 'Dir does not exist.']]];
+        return service\error([['', 'Dir does not exist.']]);
     }
 
     $files = filesystem\find_files_rec(WEB_DIR, UPLOAD_EXTENSIONS, [APP_DIR]);
@@ -43,7 +43,7 @@ function find_all(array $input): array
     $uploads = list\sort($uploads, $sort);
     $output = [$uploads, $data['filter'], $sort];
 
-    return [service\SUCCESS, $output];
+    return service\success($output);
 }
 
 /**
@@ -65,22 +65,22 @@ function delete(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return [service\INVALID, $errors];
+        return service\invalid($errors);
     }
 
     $status = filesystem\backup_file(WEB_DIR, $data['file'], BACKUP_DIR);
 
     if (!$status) {
-        return [service\ERROR, [['file', 'Could not backup file.']]];
+        return service\error([['file', 'Could not backup file.']]);
     }
 
     $status = filesystem\delete_file(WEB_DIR, $data['file']);
 
     if (!$status) {
-        return [service\ERROR, [['file', 'Could not delete file.']]];
+        return service\error([['file', 'Could not delete file.']]);
     }
 
-    return [service\SUCCESS, null];
+    return service\success(null);
 }
 
 /**
