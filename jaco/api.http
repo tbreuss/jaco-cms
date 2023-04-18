@@ -1,5 +1,5 @@
 ### Index
-GET http://127.0.0.1:9999/jaco/api.php?action=index&filter=&sort=file&XDEBUG_SESSION_START
+GET http://127.0.0.1:9999/jaco/api.php?action=index&XDEBUG_SESSION_START
 Accept: application/json
 
 ### Page list
