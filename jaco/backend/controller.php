@@ -57,7 +57,7 @@ function call_service_from_api(callable $callable, array $apiInput, array $input
     return handle_api_errors($serviceStatus, $serviceOutput, $inputMapping);
 }
 
-function handle_api_errors(string $serviceStatus, array $serviceOutput, array $inputMapping): array
+function handle_api_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): array
 {
     if ($serviceStatus === service\INVALID) {
         $apiOutput = transform_client_errors($serviceOutput, array_flip($inputMapping));
