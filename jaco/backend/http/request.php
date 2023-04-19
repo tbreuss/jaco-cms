@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace jaco\request;
+namespace jaco\http\request;
+
+use jaco\jsonschema;
 
 /**
  * @phpstan-return array<mixed>
@@ -35,4 +37,9 @@ function get_header_value(string $header): ?string
         }
     }
     return null;
+}
+
+function validate(array|string $data, string $schema): array
+{
+    return jsonschema\validate_data($data, $schema);
 }

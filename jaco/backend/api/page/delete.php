@@ -4,52 +4,29 @@ declare(strict_types=1);
 
 namespace jaco\api\page\delete;
 
-use jaco\data;
-use jaco\request;
-use jaco\response;
-use jaco\service\page;
+use jaco\attribute;
+use jaco\controller;
+use jaco\http\response;
+use jaco\service;
+
+const inputMapping = [
+    'fileName' => 'file',
+];
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function action(): array
+#[attribute\validate_request('/api/page/delete/request.json')]
+#[attribute\validate_response('/api/null.json')]
+function action(array $apiInput): array
 {
-    $raw = request\get_post_values();
+    $serviceInput = controller\transform_data($apiInput, inputMapping);
 
-    $data = data\filter($raw, filters());
+    [$serviceStatus, $serviceOutput] = service\page\delete($serviceInput);
 
-    $errors = data\validate($data, validators());
-    if (count($errors) > 0) {
-        return [response\UNPROCESSABLE_CONTENT, $errors];
+    if ($serviceStatus === service\SUCCESS) {
+        return response\ok();
     }
 
-    if (page\delete($data['fileName'])) {
-        return [response\OK];
-    }
-
-    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not delete page']]];
-}
-
-/**
- * @return array<int, array{string, callable}>
- */
-function filters(): array
-{
-    return [
-        ['fileName', 'jaco\data\filter\filename']
-    ];
-}
-
-/**
- * @return array<int, array{string, callable}>
- */
-function validators(): array
-{
-    return [
-        ['fileName', 'jaco\data\validator\required'],
-        ['fileName', 'jaco\data\validator\file_exists'],
-        ['fileName', 'jaco\data\validator\file_writeable'],
-        ['fileName', 'jaco\data\validator\htmlfile_name'],
-        ['fileName', 'jaco\data\validator\htmlfile_extension']
-    ];
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
 }

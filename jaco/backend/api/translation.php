@@ -4,19 +4,22 @@ declare(strict_types=1);
 
 namespace jaco\api\translation;
 
-use jaco\response;
-
-use const jaco\DEFAULT_LANGUAGE;
+use jaco\attribute;
+use jaco\controller;
+use jaco\http\response;
+use jaco\service;
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function action(string $language = DEFAULT_LANGUAGE): array
+#[attribute\validate_response('/api/translation/response.json')]
+function action(string $language): array
 {
-    $template = dirname(__DIR__, 2) . '/language/{language}.json';
-    $path = str_replace('{language}', $language, $template);
-    if (is_file($path)) {
-        return [response\OK, json_decode(file_get_contents($path), true)];
+    [$serviceStatus, $serviceOutput] = service\translation\all($language);
+
+    if ($serviceStatus === service\SUCCESS) {
+        return response\ok($serviceOutput); // no output mapping needed
     }
-    return action(DEFAULT_LANGUAGE);
+
+    return controller\handle_api_errors($serviceStatus, $serviceOutput);
 }

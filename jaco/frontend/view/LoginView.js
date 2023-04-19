@@ -27,13 +27,13 @@ const onLoginButtonClicked = (e) => {
     body: credentials,
     withCredentials: false
   })
-    .then(({data}) => {
+    .then((data) => {
       app.setAuthToken(data.token)
       m.route.set('/')
     })
     .catch(({code, response}) => {
       if (code === 422) {
-        state.errors = response.errors
+        state.errors = response
       }
       m.redraw()
     })

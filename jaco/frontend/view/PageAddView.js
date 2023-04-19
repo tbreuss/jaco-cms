@@ -24,7 +24,11 @@ const onSaveButtonClicked = (e) => {
   e.redraw = false
   api.post('action=page/create', {
     background: true, // no redraw
-    body: state,
+    body: {
+      fileName: state.fileName,
+      pageTitle: state.pageTitle,
+      pageTemplate: state.pageTemplate,
+    },
     withCredentials: false
   })
     .then(() => {
@@ -33,7 +37,7 @@ const onSaveButtonClicked = (e) => {
     })
     .catch(({code, response}) => {
       if (code === 422) {
-        state.errors = response.errors
+        state.errors = response
       }
       m.redraw()
     })

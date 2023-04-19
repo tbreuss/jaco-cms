@@ -32,7 +32,7 @@ function get_title(string $html): string
 
 function set_title(string $html, string $title): string
 {
-    $replaced = \preg_replace('/<title>(.*?)<\/title>/', '<title>' . $title . '</title>', $html);
+    $replaced = \preg_replace('/<title>(.*?)<\/title>/', '<title>' . \htmlspecialchars($title) . '</title>', $html);
     if ($replaced === null) {
         return $html;
     }

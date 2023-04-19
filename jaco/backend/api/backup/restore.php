@@ -4,56 +4,29 @@ declare(strict_types=1);
 
 namespace jaco\api\backup\restore;
 
-use jaco\data;
-use jaco\request;
-use jaco\response;
-use jaco\service\backup;
+use jaco\attribute;
+use jaco\controller;
+use jaco\http\response;
+use jaco\service;
 
-use const jaco\PAGE_EXTENSIONS;
-use const jaco\BACKUP_DIR;
-use const jaco\UPLOAD_EXTENSIONS;
+const inputMapping = [
+    'file' => 'file',
+];
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function action(): array
+#[attribute\validate_request('/api/backup/restore/request.json')]
+#[attribute\validate_response('/api/null.json')]
+function action(array $apiInput): array
 {
-    $raw = request\get_post_values();
+    $serviceInput = controller\transform_data($apiInput, inputMapping);
 
-    $data = data\filter($raw, filters());
+    [$serviceStatus, $serviceOutput] = service\backup\restore($serviceInput);
 
-    $errors = data\validate($data, validators());
-
-    if (count($errors) > 0) {
-        return [response\UNPROCESSABLE_CONTENT, $errors];
+    if ($serviceStatus === service\SUCCESS) {
+        return response\ok();
     }
 
-    if (backup\restore($data['file'])) {
-        return [response\OK];
-    }
-
-    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not restore backup']]];
-}
-
-/**
- * @return array<int, array{string, callable}>
- */
-function filters(): array
-{
-    return [
-        ['file', 'jaco\data\filter\filename']
-    ];
-}
-
-/**
- * @return array<int, array{string, callable}>
- */
-function validators(): array
-{
-    return [
-        ['file', 'jaco\data\validator\required'],
-        ['file', 'jaco\data\validator\file_exists', 'dir' => BACKUP_DIR],
-        ['file', 'jaco\data\validator\htmlfile_name', 'isBackup' => true],
-        ['file', 'jaco\data\validator\file_extension', 'allowed' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
-    ];
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
 }

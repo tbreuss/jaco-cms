@@ -4,7 +4,7 @@ export const PageTemplateModel = {
   list: [],
   loadList: () => {
     return api.get('action=template/pages')
-      .then(({data}) => {
+      .then((data) => {
         PageTemplateModel.list = data
       })
   }

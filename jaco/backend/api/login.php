@@ -4,52 +4,35 @@ declare(strict_types=1);
 
 namespace jaco\api\login;
 
-use jaco\auth;
-use jaco\data;
-use jaco\request;
-use jaco\response;
+use jaco\attribute;
+use jaco\controller;
+use jaco\http\response;
+use jaco\service;
+
+const inputMapping = [
+    'username' => 'username',
+    'password' => 'password',
+];
+
+const outputMapping = [
+    'token' => 'token',
+];
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function action(): array
+#[attribute\validate_request('/api/login/request.json')]
+#[attribute\validate_response('/api/login/response.json')]
+function action(array $apiInput): array
 {
-    $raw = request\get_post_values();
+    $serviceInput = controller\transform_data($apiInput, inputMapping);
 
-    $data = data\filter($raw, filters());
+    [$serviceStatus, $serviceOutput] = service\system\authenticate($serviceInput);
 
-    $errors = data\validate($data, validators());
-    if (count($errors) > 0) {
-        return [response\UNPROCESSABLE_CONTENT, $errors];
+    if ($serviceStatus === service\SUCCESS) {
+        $apiOutput = controller\transform_data($serviceOutput, outputMapping);
+        return response\ok($apiOutput);
     }
 
-    $token = auth\authenticate($data['username'], $data['password']);
-
-    if ($token === null) {
-        return [response\UNPROCESSABLE_CONTENT, [['title' => 'Validation Error', 'detail' => 'Authentication failed']]];
-    }
-
-    return [response\OK, ['token' => $token]];
-}
-
-/**
- * @return array<int, array{string, callable}>
- */
-function filters(): array
-{
-    return [
-        ['username', 'jaco\data\filter\string'],
-        ['password', 'jaco\data\filter\string']
-    ];
-}
-
-/**
- * @return array<int, array{string, callable}>
- */
-function validators(): array
-{
-    return [
-        ['username', 'jaco\data\validator\required'],
-        ['password', 'jaco\data\validator\required'],
-    ];
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
 }

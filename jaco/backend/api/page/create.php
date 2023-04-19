@@ -4,56 +4,31 @@ declare(strict_types=1);
 
 namespace jaco\api\page\create;
 
-use jaco\data;
-use jaco\request;
-use jaco\response;
-use jaco\service\page;
+use jaco\attribute;
+use jaco\controller;
+use jaco\http\response;
+use jaco\service;
+
+const inputMapping = [
+    'fileName' => 'dstFile',
+    'pageTitle' => 'dstTitle',
+    'pageTemplate' => 'srcFile'
+];
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function action(): array
+#[attribute\validate_request('/api/page/create/request.json')]
+#[attribute\validate_response('/api/null.json')]
+function action(array $apiInput): array
 {
-    $raw = request\get_post_values();
+    $serviceInput = controller\transform_data($apiInput, inputMapping);
 
-    $data = data\filter($raw, filters());
+    [$serviceStatus, $serviceOutput] = service\page\create_from_template($serviceInput);
 
-    $errors = data\validate($data, validators());
-    if (count($errors) > 0) {
-        return [response\UNPROCESSABLE_CONTENT, $errors];
+    if ($serviceStatus === service\SUCCESS) {
+        return response\created();
     }
 
-    if (page\create_from_template($data['pageTemplate'], $data['fileName'], $data['pageTitle'])) {
-        return [response\OK];
-    }
-
-    return [response\INTERNAL_SERVER_ERROR, [['title' => 'Could not create page']]];
-}
-
-/**
- * @return array<int, array{string, callable}>
- */
-function filters(): array
-{
-    return [
-        ['pageTemplate', 'jaco\data\filter\filename'],
-        ['fileName', 'jaco\data\filter\filename'],
-        ['pageTitle', 'jaco\data\filter\html_specialchars'],
-    ];
-}
-
-/**
- * @return array<int, array{string, callable}>
- */
-function validators(): array
-{
-    return [
-        ['pageTemplate', 'jaco\data\validator\required'],
-        ['fileName', 'jaco\data\validator\required'],
-        ['fileName', 'jaco\data\validator\htmlfile_name'],
-        ['fileName', 'jaco\data\validator\htmlfile_extension'],
-        ['fileName', 'jaco\data\validator\file_not_in_jaco_dir'],
-        ['fileName', 'jaco\data\validator\file_not_exists'],
-        ['pageTitle', 'jaco\data\validator\required'],
-    ];
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
 }

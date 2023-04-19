@@ -15,7 +15,7 @@ function filter(array $data, array $filters): array
     foreach ($filters as $rule) {
         $name = $rule[0];
         $value = $data[$name] ?? null;
-        $callable = $rule[1];
+        $callable = 'jaco\\data\\filter\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         $filteredValue = call_user_func_array($callable, $options);
@@ -27,11 +27,6 @@ function filter(array $data, array $filters): array
     return $filtered;
 }
 
-/**
- * @phpstan-param array<string,string> $data
- * @phpstan-param array<array<string>> $rules
- * @phpstan-return array<int,array<string,array<string,string>|string>>
- */
 function validate(array $data, array $rules): array
 {
     $errors = [];
@@ -42,7 +37,7 @@ function validate(array $data, array $rules): array
             continue;
         }
         $value = $data[$name] ?? null;
-        $callable = $rule[1];
+        $callable = 'jaco\\data\\validator\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         [$status, $message] = call_user_func_array($callable, $options);
@@ -50,11 +45,11 @@ function validate(array $data, array $rules): array
             continue;
         }
         $errors[] = [
-            'source' => ['pointer' => $name],
-            'title' => 'Validation Error',
-            'detail' => str_replace('{value}', $value ?: $name, $message)
+            $name,
+            str_replace('{value}', (string)($value ?: $name), $message)
         ];
         $failed[] = $name;
     }
     return $errors;
 }
+

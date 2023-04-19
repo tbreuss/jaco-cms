@@ -1,0 +1,62 @@
+### Index
+GET http://127.0.0.1:9999/jaco/api.php?action=index&XDEBUG_SESSION_START
+Accept: application/json
+
+### Translations
+GET http://127.0.0.1:9999/jaco/api.php?action=translations&language=en&XDEBUG_SESSION_START
+Accept: application/json
+
+### Authenticate
+POST http://127.0.0.1:9999/jaco/api.php?action=login&XDEBUG_SESSION_START
+Accept: application/json
+
+{
+    "username": "demo",
+    "password": "demo"
+}
+
+### System/Environment
+GET http://127.0.0.1:9999/jaco/api.php?action=system&XDEBUG_SESSION_START
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+
+### Page list
+GET http://127.0.0.1:9999/jaco/api.php?action=page/list&filter=&sort=file&XDEBUG_SESSION_START
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+
+### Page copy
+POST http://127.0.0.1:9999/jaco/api.php?action=page/copy&XDEBUG_SESSION_START
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+Content-Type: application/json
+
+{
+    "srcFileName": "index.html",
+    "dstFileName": "index_new.html",
+    "dstPageTitle": "New Index"
+}
+
+### Backup list
+GET http://localhost:9999/jaco/api.php?action=backup/list&filter=&sort=file&XDEBUG_SESSION_START
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+
+### Backup view
+GET http://localhost:9999/jaco/api.php?action=backup/view&file=index.html&XDEBUG_SESSION_START
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+
+### Upload list
+GET http://localhost:9999/jaco/api.php?action=upload/list&filter=&sort=file&XDEBUG_SESSION_START
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+
+### System log
+GET http://localhost:9999/jaco/api.php?action=system/log&XDEBUG_SESSION_START
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+
+### PHP info
+GET http://localhost:9999/jaco/api.php?action=system/php-info&XDEBUG_SESSION_START
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw

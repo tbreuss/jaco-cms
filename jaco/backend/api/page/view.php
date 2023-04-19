@@ -4,19 +4,36 @@ declare(strict_types=1);
 
 namespace jaco\api\page\view;
 
-use jaco\response;
-use jaco\service\page;
+use jaco\attribute;
+use jaco\controller;
+use jaco\http\response;
+use jaco\service;
+
+const inputMapping = [
+    'file' => 'file',
+];
+
+const outputMapping = [
+    'file' => 'file',
+    'title' => 'title',
+    'created' => 'created',
+    'content' => 'content',
+];
 
 /**
  * @phpstan-return array{0:int, 1?:array{file: string, title: string, created:int, content: ?string}}
  */
+#[attribute\validate_response('/api/page/view/response.json')]
 function action(string $file): array
 {
-    $page = page\find_one($file);
+    $serviceInput = controller\transform_data(['file' => $file], inputMapping);
 
-    if ($page === null) {
-        return [response\NOT_FOUND];
+    [$serviceStatus, $serviceOutput] = service\page\find_one($serviceInput);
+
+    if ($serviceStatus === service\SUCCESS) {
+        $apiOutput = controller\transform_data($serviceOutput, outputMapping);
+        return response\ok($apiOutput);
     }
 
-    return [response\OK, (array)$page];
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
 }

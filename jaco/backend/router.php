@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace jaco\router;
 
 use jaco\auth;
-use jaco\request;
-use jaco\response;
+use jaco\http\request;
+use jaco\http\response;
+
+const VALIDATE_REQUEST_ATTRIBUTE = 'jaco\attribute\validate_request';
+const VALIDATE_RESPONSE_ATTRIBUTE = 'jaco\attribute\validate_response';
 
 /**
  * @phpstan-return array<int,array{method:string,action:string,callback:string,authenticated:bool}>
@@ -47,12 +50,12 @@ function dispatch(string $method, string $action): array
 
     $routes_by_action = filter_routes($routes, 'action', $action);
     if (count($routes_by_action) === 0) {
-        return [response\NOT_FOUND, [['title' => '404 Page Not Found']]];
+        return response\not_found([['title' => '404 Page Not Found']]);
     }
 
     $routes_by_method = filter_routes($routes_by_action, 'method', $method);
     if (count($routes_by_method) === 0) {
-        return [response\METHOD_NOT_ALLOWED, [['title' => '405 Method Not Allowed']]];
+        return response\method_not_allowed([['title' => '405 Method Not Allowed']]);
     }
 
     // take the first one if multiple routes exist
@@ -60,39 +63,83 @@ function dispatch(string $method, string $action): array
 
     if ($route['authenticated'] === true) {
         if (check_authorization() === false) {
-            return [response\FORBIDDEN, [['title' => '403 Forbidden']]];
+            return response\forbidden([['title' => '403 Forbidden']]);
         }
     }
 
     $response = call_action($route['callback']);
     if (!is_array($response) || !in_array(count($response), [1, 2]) || !is_int($response[0])) {
-        return [response\INTERNAL_SERVER_ERROR, [['title' => 'Invalid Action Response Payload']]];
+        return response\internal_server_error([['title' => 'Invalid Action Response Payload']]);
     }
 
     return array_pad($response, 2, ''); // ensure array with two entries
 }
 
-/**
- * @phpstan-return string|array<mixed>
- */
-function call_action(string $action): array|string
+function call_action(string $action): array
 {
     $function = new \ReflectionFunction($action);
 
+    $attributes = [];
+    foreach ($function->getAttributes() as $attribute) {
+        $attributeName = $attribute->getName();
+        $attributes[$attributeName] = match ($attributeName) {
+            VALIDATE_REQUEST_ATTRIBUTE, VALIDATE_RESPONSE_ATTRIBUTE => $attribute->getArguments()[0] ?? null,
+            default => null
+        };
+    }
+
     $parameters = [];
-    foreach ($function->getParameters() as $parameter) {
-        $name = $parameter->getName();
-        if ($parameter->isOptional()) {
-            $default = $parameter->getDefaultValue();
-            $parameters[$name] = $default;
+    if (isset($attributes[VALIDATE_REQUEST_ATTRIBUTE])) {
+        $data = request\get_post_values();
+        $errors = request\validate($data, $attributes[VALIDATE_REQUEST_ATTRIBUTE]);
+        if (count($errors) > 0) {
+            return response\bad_request($errors);
         }
-        $value = filter_input(INPUT_GET, $name, FILTER_UNSAFE_RAW);
-        if ($value) {
-            $parameters[$name] = $value;
+        $parameters['apiInput'] = $data;
+    } else {
+        foreach ($function->getParameters() as $parameter) {
+            $name = $parameter->getName();
+            if ($parameter->isOptional()) {
+                $default = $parameter->getDefaultValue();
+                $parameters[$name] = $default;
+            }
+            $value = filter_input(INPUT_GET, $name, FILTER_UNSAFE_RAW);
+            if ($value) {
+                $parameters[$name] = $value;
+            }
         }
     }
 
-    return call_user_func($action, ...$parameters);
+    try {
+        [$status, $response] = call_user_func($action, ...$parameters);
+    } catch (\TypeError $e) {
+        return response\bad_request([['detail' => $e->getMessage(), 'title' => 'Type Error']]);
+    }
+
+    if (($status >= 400) && ($status < 500)) {
+        $errors = response\validate($response, '/api/errors.json');
+        if (count($errors) > 0) {
+            return response\internal_server_error($errors);
+        }
+        return response\client_error($status, $response);
+    }
+
+    if (($status >= 500) && ($status < 600)) {
+        $errors = response\validate($response, '/api/errors.json');
+        if (count($errors) > 0) {
+            return response\internal_server_error($errors);
+        }
+        return response\server_error($status, $response);
+    }
+
+    if (isset($attributes[VALIDATE_RESPONSE_ATTRIBUTE])) {
+        $errors = response\validate($response, $attributes[VALIDATE_RESPONSE_ATTRIBUTE]);
+        if (count($errors) > 0) {
+            return response\internal_server_error($errors);
+        }
+    }
+
+    return [$status, $response];
 }
 
 function check_authorization(): bool

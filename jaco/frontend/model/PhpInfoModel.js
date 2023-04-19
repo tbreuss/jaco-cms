@@ -6,7 +6,7 @@ export const PhpInfoModel = {
   load: () => {
     PhpInfoModel.isLoading = true
     return api.get('action=system/php-info')
-      .then(({data}) => {
+      .then((data) => {
         PhpInfoModel.data = data
         PhpInfoModel.isLoading = false
       })

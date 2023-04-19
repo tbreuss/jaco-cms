@@ -1,0 +1,21 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "file": {
+            "type": "string"
+        },
+        "title": {
+            "type": "string"
+        },
+        "created": {
+            "type": "integer"
+        }
+    },
+    "required": [
+        "file",
+        "title",
+        "created"
+    ],
+    "additionalProperties": false
+}

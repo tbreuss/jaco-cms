@@ -1,0 +1,61 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "items": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "backedUp": {
+                        "type": "integer"
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "created": {
+                        "type": "integer"
+                    },
+                    "file": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "backedUp",
+                    "content",
+                    "created",
+                    "file",
+                    "name",
+                    "title",
+                    "type"
+                ]
+            }
+        },
+        "filter": {
+            "type": "string"
+        },
+        "sort": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 2,
+            "maxItems": 2
+        }
+    },
+    "required": [
+        "items",
+        "filter",
+        "sort"
+    ],
+    "additionalProperties": false
+}

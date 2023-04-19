@@ -6,7 +6,7 @@ export const PageEditModel = {
   load: (file) => {
     PageEditModel.isLoading = true
     return api.get('action=page/view&file=' + file)
-      .then(({data}) => {
+      .then((data) => {
         PageEditModel.item = data
         PageEditModel.isLoading = false
       })

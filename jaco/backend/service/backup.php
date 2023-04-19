@@ -4,59 +4,147 @@ declare(strict_types=1);
 
 namespace jaco\service\backup;
 
+use jaco\data;
 use jaco\filesystem;
 use jaco\html;
 use jaco\list;
+use jaco\service;
 use jaco\struct\backup;
 use jaco\struct\file;
 
-use const jaco\PAGE_EXTENSIONS;
 use const jaco\BACKUP_DIR;
-use const jaco\WEB_DIR;
+use const jaco\PAGE_EXTENSIONS;
 use const jaco\UPLOAD_EXTENSIONS;
+use const jaco\WEB_DIR;
 
 /**
- * @phpstan-return array{0:backup[],1:string,2:array{string,string}}
+ * @param array{filter: string, sort: string} $input
+ * @return array{0: string, 1: array}
  */
-function find_all(string $filter = '', string $sort = '-created'): array
+function find_all(array $input): array
 {
-    $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
-    $files = filesystem\find_files(BACKUP_DIR, $allowed);
-    $backups = create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
-    $backups = list\filter($backups, $filter);
-    $sort = sort_field($sort);
-    return [list\sort($backups, $sort), $filter, $sort];
-}
+    $data = data\filter($input, [
+        ['filter', 'safe'],
+        ['sort', 'safe']
+    ]);
 
-function find_one(string $file): ?backup
-{
-    $content = filesystem\read_file(BACKUP_DIR, $file);
+    $errors = data\validate($data, [
+        ['filter', 'string'],
+        ['sort', 'string'],
+    ]);
 
-    if (isset($content)) {
-        $extension = \pathinfo($file, PATHINFO_EXTENSION);
-        $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
-        return new backup(
-            $file,
-            str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
-            html\get_title($content),
-            filesystem\restore_timestamp_from_file_name($file),
-            filesystem\file_mtime($file, BACKUP_DIR),
-            $type,
-            $type === 'page' ? $content : base64_encode($content)
-        );
+    if (count($errors) > 0) {
+        return service\invalid($errors);
     }
 
-    return null;
+    if (!filesystem\dir_exists(BACKUP_DIR)) {
+        return service\error([['', 'Dir does not exist.']]);
+    }
+
+    $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
+    $files = filesystem\find_files(BACKUP_DIR, $allowed);
+    $backups = _create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
+    $backups = list\filter($backups, $data['filter']);
+    $sort = _sort_field($data['sort']);
+    $output = [list\sort($backups, $sort), $data['filter'], $sort];
+
+    return service\success($output);
 }
 
-function restore(string $file): bool
+function find_one(array $input): array
 {
-    return filesystem\restore_file(BACKUP_DIR, $file, WEB_DIR);
+    $data = data\filter($input, [
+        ['file', 'filename'],
+    ]);
+
+    $errors = data\validate($data, [
+        ['file', 'required'],
+        ['file', 'file_exists', 'dir' => BACKUP_DIR],
+        ['file', 'file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
+        ['file', 'html_file_name', 'isBackup' => true],
+    ]);
+
+    if (count($errors) > 0) {
+        return service\invalid($errors);
+    }
+
+    $file = $data['file'];
+
+    $content = filesystem\read_file(BACKUP_DIR, $file);
+
+    if ($content === null) {
+        return service\error([['file', 'Could not read file.']]);
+    }
+
+    $extension = \pathinfo($file, PATHINFO_EXTENSION);
+    $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
+    return service\success((array)new backup(
+        $file,
+        str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
+        html\get_title($content),
+        filesystem\restore_timestamp_from_file_name($file),
+        filesystem\file_mtime($file, BACKUP_DIR),
+        $type,
+        $type === 'page' ? $content : base64_encode($content)
+    ));
 }
 
-function delete(string $file): bool
+/**
+ * @param array{file: string} $input
+ * @return array{0: string, 1: ?array}
+ */
+function restore(array $input): array
 {
-    return filesystem\delete_file(BACKUP_DIR, $file);
+    $data = data\filter($input, [
+        ['file', 'filename'],
+    ]);
+
+    $errors = data\validate($data, [
+        ['file', 'required'],
+        ['file', 'file_exists', 'dir' => BACKUP_DIR],
+        ['file', 'file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
+        ['file', 'html_file_name', 'isBackup' => true],
+    ]);
+
+    if (count($errors) > 0) {
+        return service\invalid($errors);
+    }
+
+    $status = filesystem\restore_file(BACKUP_DIR, $data['file'], WEB_DIR);
+
+    if (!$status) {
+        return service\error([['file', 'Could not restore file.']]);
+    }
+
+    return service\success(null);
+}
+
+/**
+ * @param array{file: string} $input
+ * @return array{0: string, 1: ?array}
+ */
+function delete(array $input): array
+{
+    $data = data\filter($input, [
+        ['file', 'filename'],
+    ]);
+
+    $errors = data\validate($data, [
+        ['file', 'required'],
+        ['file', 'file_exists', 'dir' => BACKUP_DIR],
+    ]);
+
+    if (count($errors) > 0) {
+        return service\invalid($errors);
+    }
+
+    $status = filesystem\delete_file(BACKUP_DIR, $input['file']);
+
+    if (!$status) {
+        return service\error([['file', 'Could not delete file.']]);
+    }
+
+    return service\success(null);
 }
 
 /**
@@ -64,7 +152,7 @@ function delete(string $file): bool
  * @param string[] $pageExtensions
  * @return backup[]
  */
-function create_list(array $files, string $dir, array $pageExtensions): array
+function _create_list(array $files, string $dir, array $pageExtensions): array
 {
     $backups = [];
     foreach ($files as $file) {
@@ -84,7 +172,7 @@ function create_list(array $files, string $dir, array $pageExtensions): array
 /**
  * @phpstan-return array{string,string}
  */
-function sort_field(string $sort): array
+function _sort_field(string $sort): array
 {
     if (!in_array(ltrim($sort, '-'), ['backedUp', 'created', 'name', 'title', 'type'])) {
         return ['created', 'desc'];

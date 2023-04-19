@@ -4,18 +4,37 @@ declare(strict_types=1);
 
 namespace jaco\api\page\list;
 
-use jaco\response;
-use jaco\service\page;
+use jaco\attribute;
+use jaco\controller;
+use jaco\http\response;
+use jaco\service;
+
+const inputMapping = [
+    'filter' => 'filter',
+    'sort' => 'sort',
+];
+
+const outputMapping = [
+    'items',
+    'filter',
+    'sort',
+];
 
 /**
  * @phpstan-return array<int,mixed>
  */
-function action(string $filter = '', string $sort = ''): array
+#[attribute\validate_response('/api/page/list/response.json')]
+function action(string $filter = '', string $sort = '-created'): array
 {
-    [$pages, $filter, $sort] = page\find_all($filter, $sort);
-    return [response\OK, [
-        'items' => $pages,
-        'filter' => $filter,
-        'sort' => $sort,
-    ]];
+    $apiInput = ['filter' => $filter, 'sort' => $sort];
+    $serviceInput = controller\transform_data($apiInput, inputMapping);
+
+    [$serviceStatus, $serviceOutput] = service\page\find_all($serviceInput);
+
+    if ($serviceStatus === service\SUCCESS) {
+        $apiOutput = controller\transform_data($serviceOutput, outputMapping);
+        return response\ok($apiOutput);
+    }
+
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
 }

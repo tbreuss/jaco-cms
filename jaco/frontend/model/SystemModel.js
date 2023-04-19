@@ -4,7 +4,7 @@ export const SystemModel = {
   info: {},
   load: () => {
     return api.get('action=system')
-      .then(({data}) => {
+      .then((data) => {
         SystemModel.info = data
       })
   }
