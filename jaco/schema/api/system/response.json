@@ -22,5 +22,6 @@
         "classes",
         "constants",
         "functions"
-    ]
+    ],
+    "additionalProperties": false
 }

@@ -25,6 +25,7 @@
         "required": [
             "title",
             "detail"
-        ]
+        ],
+        "additionalProperties": false
     }
 }

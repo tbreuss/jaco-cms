@@ -16,5 +16,6 @@
         "file",
         "title",
         "created"
-    ]
+    ],
+    "additionalProperties": false
 }
