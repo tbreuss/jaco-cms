@@ -10,7 +10,5 @@ function command(array $options = [], array $arguments = [])
 {
     [, $serviceOutput] = service\system\version();
 
-    fwrite(STDOUT, 'Version' . PHP_EOL);
-    fwrite(STDOUT, '-name: ' . $serviceOutput['name'] . PHP_EOL);
-    fwrite(STDOUT, '-version: ' . $serviceOutput['version'] . PHP_EOL);
+    fwrite(STDOUT, $serviceOutput['name'] . ' ' . $serviceOutput['version'] . PHP_EOL);
 }
