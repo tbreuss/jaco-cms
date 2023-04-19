@@ -28,7 +28,7 @@ function find_all(array $input): array
         ['sort', 'safe']
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['filter', 'string'],
         ['sort', 'string'],
     ]);
@@ -57,7 +57,7 @@ function find_one(array $input): array
         ['file', 'filename'],
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['file', 'required'],
         ['file', 'file_exists', 'dir' => BACKUP_DIR],
         ['file', 'file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
@@ -99,7 +99,7 @@ function restore(array $input): array
         ['file', 'filename'],
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['file', 'required'],
         ['file', 'file_exists', 'dir' => BACKUP_DIR],
         ['file', 'file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
@@ -129,7 +129,7 @@ function delete(array $input): array
         ['file', 'filename'],
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['file', 'required'],
         ['file', 'file_exists', 'dir' => BACKUP_DIR],
     ]);

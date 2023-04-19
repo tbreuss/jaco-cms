@@ -115,7 +115,7 @@ function copy_by_array(array $input): array
         ['dstTitle', 'string'],
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['srcFile', 'required'],
         ['srcFile', 'file_exists'],
         ['dstFile', 'required'],
@@ -163,7 +163,7 @@ function copy_by_service(array $input, array $inputErrors = []): array
         ['dstTitle', 'string'],
     ]);
 
-    $validationErrors = data\validate2($data, [
+    $validationErrors = data\validate($data, [
         ['srcFile', 'file_exists'],
         ['dstFile', 'html_file_name'],
         ['dstFile', 'html_file_extension'],

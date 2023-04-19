@@ -23,7 +23,7 @@ function find_all(array $input): array
         ['sort', 'safe']
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['filter', 'string'],
         ['sort', 'string'],
     ]);
@@ -56,7 +56,7 @@ function delete(array $input): array
         ['file', 'filename'],
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['file', 'required'],
         ['file', 'file_exists'],
         ['file', 'file_writeable'],

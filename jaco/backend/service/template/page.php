@@ -15,7 +15,7 @@ function find_all(array $input): array
 {
     $data = data\filter($input, []);
 
-    $errors = data\validate2($data, []);
+    $errors = data\validate($data, []);
 
     if (count($errors) > 0) {
         return service\invalid($errors);

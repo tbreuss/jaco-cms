@@ -26,7 +26,7 @@ function find_all(array $input): array
         ['sort', 'safe'],
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['filter', 'string'],
         ['sort', 'string'],
     ]);
@@ -50,7 +50,7 @@ function find_one(array $input): array
         ['file', 'filename'],
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['file', 'required'],
         ['file', 'file_exists', 'dir' => WEB_DIR],
         ['file', 'file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS)],
@@ -80,7 +80,7 @@ function delete(array $input): array
         ['file', 'filename'],
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['file', 'required'],
         ['file', 'file_exists', 'dir' => WEB_DIR],
         ['file', 'file_writeable'],
@@ -119,7 +119,7 @@ function copy(array $input): array
         ['dstTitle', 'string'],
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['srcFile', 'required'],
         ['srcFile', 'file_exists'],
         ['dstFile', 'required'],
@@ -170,7 +170,7 @@ function create_from_template(array $input): array
         ['dstTitle', 'string'],
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['srcFile', 'required'],
         ['dstFile', 'required'],
         ['dstFile', 'html_file_name'],
@@ -209,7 +209,7 @@ function update(array $input): array
         ['content', 'string'],
     ]);
 
-    $errors = data\validate2($data, [
+    $errors = data\validate($data, [
         ['file', 'required'],
         ['file', 'file_exists'],
         ['file', 'html_file_name'],
