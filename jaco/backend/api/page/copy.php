@@ -14,6 +14,7 @@ const inputMapping = [
     'dstFileName' => 'dstFile',
     'dstPageTitle' => 'dstTitle'
 ];
+
 const outputMapping = [
     'file' => 'file',
     'title' => 'title',
