@@ -12,9 +12,9 @@ use jaco\struct\file;
 use jaco\struct\upload;
 
 use const jaco\APP_DIR;
-use const jaco\WEB_DIR;
-use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\BACKUP_DIR;
+use const jaco\UPLOAD_EXTENSIONS;
+use const jaco\WEB_DIR;
 
 function find_all(array $input): array
 {

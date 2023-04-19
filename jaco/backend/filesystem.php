@@ -7,9 +7,8 @@ namespace jaco\filesystem;
 use jaco\strings;
 use jaco\struct;
 
-use const jaco\APP_DIR_NAME;
-use const jaco\PAGE_EXTENSIONS;
 use const jaco\DIRECTORY_PERMISSIONS;
+use const jaco\PAGE_EXTENSIONS;
 
 function dir_exists(string $root, string $dir = ''): bool
 {

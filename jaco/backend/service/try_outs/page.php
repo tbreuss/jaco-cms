@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace jaco\service\try_outs\page;
 
+use jaco\attribute;
 use jaco\data;
 use jaco\filesystem;
 use jaco\html;
 use jaco\list;
 use jaco\struct\file;
 use jaco\struct\page;
-use jaco\attribute;
 
 use const jaco\APP_DIR;
 use const jaco\APP_DIR_NAME;
