@@ -19,11 +19,11 @@ function action(): array
     [$serviceStatus, $serviceOutput] = service\template\page\find_all([]);
 
     if ($serviceStatus === service\SUCCESS) {
-        $apiOutput = controller\transform_data($serviceOutput, 'jaco\api\template\pages\_outputMapping');
+        $apiOutput = controller\transform_data($serviceOutput, 'jaco\api\template\pages\_output_mapping');
         return response\ok($apiOutput);
     }
 
-    return controller\handle_api_errors($serviceStatus, $serviceOutput, []);
+    return controller\handle_api_errors($serviceStatus, $serviceOutput);
 }
 
 function _output_mapping(array $data): array
