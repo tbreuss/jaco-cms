@@ -19,7 +19,7 @@ function action(): array
     [$serviceStatus, $serviceOutput] = service\template\page\find_all([]);
 
     if ($serviceStatus === service\SUCCESS) {
-        $apiOutput = controller\transform_data($serviceOutput, 'jaco\api\template\pages\_output_mapping');
+        $apiOutput = controller\transform_data($serviceOutput, 'jaco\api\template\pages\_outputMapping');
         return response\ok($apiOutput);
     }
 

@@ -9,7 +9,7 @@ use jaco\controller;
 use jaco\http\response;
 use jaco\service;
 
-const input_mapping = [
+const inputMapping = [
     'fileName' => 'file',
     'html' => 'content',
 ];
@@ -21,7 +21,7 @@ const input_mapping = [
 #[attribute\validate_response('/api/null.json')]
 function action(array $apiInput): array
 {
-    $serviceInput = controller\transform_data($apiInput, input_mapping);
+    $serviceInput = controller\transform_data($apiInput, inputMapping);
 
     [$serviceStatus, $serviceOutput] = service\page\update($serviceInput);
 
@@ -29,5 +29,5 @@ function action(array $apiInput): array
         return response\created();
     }
 
-    return controller\handle_api_errors($serviceStatus, $serviceOutput, input_mapping);
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
 }

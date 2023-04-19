@@ -9,11 +9,11 @@ use jaco\controller;
 use jaco\http\response;
 use jaco\service;
 
-const input_mapping = [
+const inputMapping = [
     'file' => 'file',
 ];
 
-const output_mapping = [
+const outputMapping = [
     'file' => 'file',
     'title' => 'title',
     'created' => 'created',
@@ -26,14 +26,14 @@ const output_mapping = [
 #[attribute\validate_response('/api/page/view/response.json')]
 function action(string $file): array
 {
-    $serviceInput = controller\transform_data(['file' => $file], input_mapping);
+    $serviceInput = controller\transform_data(['file' => $file], inputMapping);
 
     [$serviceStatus, $serviceOutput] = service\page\find_one($serviceInput);
 
     if ($serviceStatus === service\SUCCESS) {
-        $apiOutput = controller\transform_data($serviceOutput, output_mapping);
+        $apiOutput = controller\transform_data($serviceOutput, outputMapping);
         return response\ok($apiOutput);
     }
 
-    return controller\handle_api_errors($serviceStatus, $serviceOutput, input_mapping);
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
 }

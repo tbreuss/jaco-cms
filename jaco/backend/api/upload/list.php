@@ -9,12 +9,12 @@ use jaco\controller;
 use jaco\http\response;
 use jaco\service;
 
-const input_mapping = [
+const inputMapping = [
     'filter' => 'filter',
     'sort' => 'sort',
 ];
 
-const output_mapping = [
+const outputMapping = [
     'items',
     'filter',
     'sort',
@@ -27,14 +27,14 @@ const output_mapping = [
 function action(string $filter = '', string $sort = '-created'): array
 {
     $apiInput = ['filter' => $filter, 'sort' => $sort];
-    $serviceInput = controller\transform_data($apiInput, input_mapping);
+    $serviceInput = controller\transform_data($apiInput, inputMapping);
 
     [$serviceStatus, $serviceOutput] = service\upload\find_all($serviceInput);
 
     if ($serviceStatus === service\SUCCESS) {
-        $apiOutput = controller\transform_data($serviceOutput, output_mapping);
+        $apiOutput = controller\transform_data($serviceOutput, outputMapping);
         return response\ok($apiOutput);
     }
 
-    return controller\handle_api_errors($serviceStatus, $serviceOutput, input_mapping);
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
 }

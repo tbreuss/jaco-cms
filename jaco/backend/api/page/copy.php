@@ -9,12 +9,12 @@ use jaco\controller;
 use jaco\http\response;
 use jaco\service;
 
-const input_mapping = [
+const inputMapping = [
     'srcFileName' => 'srcFile',
     'dstFileName' => 'dstFile',
     'dstPageTitle' => 'dstTitle'
 ];
-const output_mapping = [
+const outputMapping = [
     'file' => 'file',
     'title' => 'title',
     'created' => 'created',
@@ -27,14 +27,14 @@ const output_mapping = [
 #[attribute\validate_response('/api/page/copy/response.json')]
 function action(array $apiInput): array
 {
-    $serviceInput = controller\transform_data($apiInput, input_mapping);
+    $serviceInput = controller\transform_data($apiInput, inputMapping);
 
     [$serviceStatus, $serviceOutput] = service\page\copy($serviceInput);
 
     if ($serviceStatus === service\SUCCESS) {
-        $apiOutput = controller\transform_data($serviceOutput, output_mapping);
+        $apiOutput = controller\transform_data($serviceOutput, outputMapping);
         return response\created($apiOutput);
     }
 
-    return controller\handle_api_errors($serviceStatus, $serviceOutput, input_mapping);
+    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
 }
