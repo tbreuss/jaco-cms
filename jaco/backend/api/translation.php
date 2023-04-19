@@ -9,13 +9,11 @@ use jaco\controller;
 use jaco\http\response;
 use jaco\service;
 
-use const jaco\DEFAULT_LANGUAGE;
-
 /**
  * @phpstan-return array<int,mixed>
  */
 #[attribute\validate_response('/api/translation/response.json')]
-function action(string $language = DEFAULT_LANGUAGE): array
+function action(string $language): array
 {
     [$serviceStatus, $serviceOutput] = service\translation\all($language);
 

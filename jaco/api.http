@@ -2,6 +2,10 @@
 GET http://127.0.0.1:9999/jaco/api.php?action=index&XDEBUG_SESSION_START
 Accept: application/json
 
+### Translations
+GET http://127.0.0.1:9999/jaco/api.php?action=translations&language=it&XDEBUG_SESSION_START
+Accept: application/json
+
 ### System/Environment
 GET http://127.0.0.1:9999/jaco/api.php?action=system&XDEBUG_SESSION_START
 Accept: application/json
