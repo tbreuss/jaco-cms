@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 function dir_recursive($dir, &$results = array()) {
     foreach (scandir($dir) as $value) {
         $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
