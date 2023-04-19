@@ -13,21 +13,18 @@ use const jaco\APP_VERSION;
 
 function authenticate(array $input): array
 {
-    $data = data\filter($input, [
-        ['username', 'string'],
-        ['password', 'string'],
-    ]);
-
-    $errors = data\validate($data, [
+    $errors = data\validate($input, [
         ['username', 'required'],
+        ['username', 'string'],
         ['password', 'required'],
+        ['password', 'string'],
     ]);
 
     if (count($errors) > 0) {
         return service\invalid($errors);
     }
 
-    $token = auth\authenticate($data['username'], $data['password']);
+    $token = auth\authenticate($input['username'], $input['password']);
 
     if ($token === null) {
         return service\invalid([['', 'Authentication failed.']]);

@@ -80,8 +80,11 @@ function transform_data(array $data, array|callable $mapping): array
 
     $mapped = [];
     foreach ($mapping as $from => $to) {
-        $mapped[$to] = $data[$from];
+        if (array_key_exists($from, $data)) {
+            $mapped[$to] = $data[$from];
+        }
     }
+
     return $mapped;
 }
 
