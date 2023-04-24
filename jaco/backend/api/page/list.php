@@ -5,20 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\page\list;
 
 use jaco\attribute;
-use jaco\controller;
+use jaco\domain;
 use jaco\http\response;
-use jaco\service;
-
-const inputMapping = [
-    'filter' => 'filter',
-    'sort' => 'sort',
-];
-
-const outputMapping = [
-    'items',
-    'filter',
-    'sort',
-];
+use jaco\responder;
 
 /**
  * @phpstan-return array<int,mixed>
@@ -26,15 +15,28 @@ const outputMapping = [
 #[attribute\validate_response('/api/page/list/response.json')]
 function action(string $filter = '', string $sort = '-created'): array
 {
-    $apiInput = ['filter' => $filter, 'sort' => $sort];
-    $serviceInput = controller\transform_data($apiInput, inputMapping);
+    $payload = domain\page\find_all([
+        'filter' => $filter,
+        'sort' => $sort
+    ]);
 
-    [$serviceStatus, $serviceOutput] = service\page\find_all($serviceInput);
+    return responder($payload);
+}
 
-    if ($serviceStatus === service\SUCCESS) {
-        $apiOutput = controller\transform_data($serviceOutput, outputMapping);
-        return response\ok($apiOutput);
+function responder(array $payload): array
+{
+    [$status, $data] = $payload;
+
+    if ($status === domain\SUCCESS) {
+        [$items, $filter, $sort] = $data;
+        return response\ok([
+            'items' => $items,
+            'filter' => $filter,
+            'sort' => $sort,
+        ]);
     }
 
-    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
+    return responder\api_errors($payload, [
+        'file' => 'fileName',
+    ]);
 }

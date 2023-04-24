@@ -7,7 +7,7 @@ namespace jaco\api\index;
 use jaco\attribute;
 use jaco\controller;
 use jaco\http\response;
-use jaco\service;
+use jaco\domain;
 
 const outputMapping = [
     'name' => 'name',
@@ -20,7 +20,7 @@ const outputMapping = [
 #[attribute\validate_response('/api/index/response.json')]
 function action(): array
 {
-    [, $serviceOutput] = service\system\version();
+    [, $serviceOutput] = domain\system\version();
 
     $apiOutput = controller\transform_data($serviceOutput, outputMapping);
 

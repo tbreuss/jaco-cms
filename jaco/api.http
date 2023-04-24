@@ -20,11 +20,6 @@ GET http://127.0.0.1:9999/jaco/api.php?action=system&XDEBUG_SESSION_START
 Accept: application/json
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
 
-### Page list
-GET http://127.0.0.1:9999/jaco/api.php?action=page/list&filter=&sort=file&XDEBUG_SESSION_START
-Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
-
 ### Page copy
 POST http://127.0.0.1:9999/jaco/api.php?action=page/copy&XDEBUG_SESSION_START
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
@@ -32,9 +27,49 @@ Content-Type: application/json
 
 {
     "srcFileName": "index.html",
-    "dstFileName": "index_new.html",
+    "dstFileName": "jaco/index_new.html",
     "dstPageTitle": "New Index"
 }
+
+### Page create
+POST http://127.0.0.1:9999/jaco/api.php?action=page/create&XDEBUG_SESSION_START
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+Content-Type: application/json
+
+{
+    "pageTemplate": "sample_one.html",
+    "fileName": "",
+    "pageTitle": ""
+}
+
+### Page delete
+POST http://127.0.0.1:9999/jaco/api.php?action=page/delete&XDEBUG_SESSION_START
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+Content-Type: application/json
+
+{
+    "fileName": "xxx_index_new.html"
+}
+
+### Page list
+GET http://127.0.0.1:9999/jaco/api.php?action=page/list&filter=&sort=file&XDEBUG_SESSION_START
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+
+### Page update
+POST http://127.0.0.1:9999/jaco/api.php?action=page/update&XDEBUG_SESSION_START
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+Content-Type: application/json
+
+{
+    "fileName": "index_new.html",
+    "html": "xxx"
+}
+
+### Page view
+GET http://127.0.0.1:9999/jaco/api.php?action=page/view&file=index.html&XDEBUG_SESSION_START
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
 
 ### Backup list
 GET http://localhost:9999/jaco/api.php?action=backup/list&filter=&sort=file&XDEBUG_SESSION_START

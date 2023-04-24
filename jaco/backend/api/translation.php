@@ -7,7 +7,7 @@ namespace jaco\api\translation;
 use jaco\attribute;
 use jaco\controller;
 use jaco\http\response;
-use jaco\service;
+use jaco\domain;
 
 /**
  * @phpstan-return array<int,mixed>
@@ -15,9 +15,9 @@ use jaco\service;
 #[attribute\validate_response('/api/translation/response.json')]
 function action(string $language): array
 {
-    [$serviceStatus, $serviceOutput] = service\translation\all($language);
+    [$serviceStatus, $serviceOutput] = domain\translation\all($language);
 
-    if ($serviceStatus === service\SUCCESS) {
+    if ($serviceStatus === domain\SUCCESS) {
         return response\ok($serviceOutput); // no output mapping needed
     }
 

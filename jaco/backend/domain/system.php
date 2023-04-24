@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace jaco\service\system;
+namespace jaco\domain\system;
 
 use jaco\auth;
 use jaco\data;
-use jaco\service;
+use jaco\domain;
 use jaco\system;
 
 use const jaco\APP_VERSION;
@@ -21,21 +21,21 @@ function authenticate(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return service\invalid($errors);
+        return domain\invalid($errors);
     }
 
     $token = auth\authenticate($input['username'], $input['password']);
 
     if ($token === null) {
-        return service\invalid([['', 'Authentication failed.']]);
+        return domain\invalid([['', 'Authentication failed.']]);
     }
 
-    return service\success(['token' => $token]);
+    return domain\success(['token' => $token]);
 }
 
 function environment(): array
 {
-    return service\success([
+    return domain\success([
         system\defined_classes(),
         system\defined_constants(),
         system\defined_functions(),
@@ -44,7 +44,7 @@ function environment(): array
 
 function version(): array
 {
-    return service\success([
+    return domain\success([
         'name' => 'jaco',
         'version' => APP_VERSION
     ]);

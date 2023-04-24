@@ -5,20 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\page\view;
 
 use jaco\attribute;
-use jaco\controller;
+use jaco\domain;
 use jaco\http\response;
-use jaco\service;
-
-const inputMapping = [
-    'file' => 'file',
-];
-
-const outputMapping = [
-    'file' => 'file',
-    'title' => 'title',
-    'created' => 'created',
-    'content' => 'content',
-];
+use jaco\responder;
 
 /**
  * @phpstan-return array{0:int, 1?:array{file: string, title: string, created:int, content: ?string}}
@@ -26,14 +15,27 @@ const outputMapping = [
 #[attribute\validate_response('/api/page/view/response.json')]
 function action(string $file): array
 {
-    $serviceInput = controller\transform_data(['file' => $file], inputMapping);
+    $payload = domain\page\find_one([
+        'file' => $file
+    ]);
 
-    [$serviceStatus, $serviceOutput] = service\page\find_one($serviceInput);
+    return responder($payload);
+}
 
-    if ($serviceStatus === service\SUCCESS) {
-        $apiOutput = controller\transform_data($serviceOutput, outputMapping);
-        return response\ok($apiOutput);
+function responder(array $payload): array
+{
+    [$status, $data] = $payload;
+
+    if ($status === domain\SUCCESS) {
+        return response\ok([
+            'file' => $data['file'],
+            'title' => $data['title'],
+            'created' => $data['created'],
+            'content' => $data['content'],
+        ]);
     }
 
-    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
+    return responder\api_errors($payload, [
+        'file' => 'file',
+    ]);
 }

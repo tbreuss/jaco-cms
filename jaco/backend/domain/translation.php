@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace jaco\service\translation;
+namespace jaco\domain\translation;
 
-use jaco\service;
+use jaco\domain;
 
 use const jaco\DEFAULT_LANGUAGE;
 
@@ -12,7 +12,7 @@ function all(string $language): array
 {
     $translations = _load($language);
 
-    return service\success($translations);
+    return domain\success($translations);
 }
 
 function one(string $language, string $key): string

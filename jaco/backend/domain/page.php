@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace jaco\service\page;
+namespace jaco\domain\page;
 
 use jaco\data;
 use jaco\filesystem;
 use jaco\html;
 use jaco\list;
-use jaco\service;
+use jaco\domain;
 use jaco\struct\file;
 use jaco\struct\page;
 
@@ -32,7 +32,7 @@ function find_all(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return service\invalid($errors);
+        return domain\invalid($errors);
     }
 
     $files = filesystem\find_files_rec(WEB_DIR, PAGE_EXTENSIONS, [APP_DIR]);
@@ -41,7 +41,7 @@ function find_all(array $input): array
     $sort = _sort_field($data['sort']);
     $output = [list\sort($pages, $sort), $data['filter'], $sort];
 
-    return service\success($output);
+    return domain\success($output);
 }
 
 function find_one(array $input): array
@@ -57,16 +57,16 @@ function find_one(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return service\invalid($errors);
+        return domain\invalid($errors);
     }
 
     $html = filesystem\read_file(WEB_DIR, $data['file']);
 
     if ($html === null) {
-        return service\error([['file', 'Could not read file.']]);
+        return domain\error([['file', 'Could not read file.']]);
     }
 
-    return service\success([
+    return domain\success([
         'file' => $data['file'],
         'title' => html\get_title($html),
         'created' => filesystem\file_mtime($data['file'], WEB_DIR),
@@ -89,22 +89,22 @@ function delete(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return service\invalid($errors);
+        return domain\invalid($errors);
     }
 
     $status = filesystem\backup_file(WEB_DIR, $data['file'], BACKUP_DIR);
 
     if (!$status) {
-        return service\error([['file', 'Could not backup file.']]);
+        return domain\error([['file', 'Could not backup file.']]);
     }
 
     $status = filesystem\delete_file(WEB_DIR, $data['file']);
 
     if (!$status) {
-        return service\error([['file', 'Could not delete file.']]);
+        return domain\error([['file', 'Could not delete file.']]);
     }
 
-    return service\success(null);
+    return domain\success(null);
 }
 
 /**
@@ -131,13 +131,13 @@ function copy(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return service\invalid($errors);
+        return domain\invalid($errors);
     }
 
     $html = filesystem\read_file(WEB_DIR, $data['srcFile']);
 
     if ($html === null) {
-        return service\error([['srcFile', 'Could not read file content.']]);
+        return domain\error([['srcFile', 'Could not read file content.']]);
     }
 
     $html = html\set_title($html, $data['dstTitle']);
@@ -145,16 +145,16 @@ function copy(array $input): array
     $status = filesystem\write_file(WEB_DIR, $data['dstFile'], $html);
 
     if ($status === false) {
-        return service\error([['dstFile', 'Could not write file content.']]);
+        return domain\error([['dstFile', 'Could not write file content.']]);
     }
 
     $html = filesystem\read_file(WEB_DIR, $data['dstFile']);
 
     if ($html === null) {
-        return service\error([['dstFile', 'Could not read new page.']]);
+        return domain\error([['dstFile', 'Could not read new page.']]);
     }
 
-    return service\success([
+    return domain\success([
         'file' => $data['dstFile'],
         'title' => html\get_title($html),
         'created' => filesystem\file_mtime($data['dstFile'], WEB_DIR),
@@ -181,13 +181,13 @@ function create_from_template(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return service\invalid($errors);
+        return domain\invalid($errors);
     }
 
     $html = filesystem\read_file(TEMPLATE_PAGE_DIR, $data['srcFile']);
 
     if ($html === null) {
-        return service\error([['srcFile', 'Could not read file.']]);
+        return domain\error([['srcFile', 'Could not read file.']]);
     }
 
     $html = html\set_title($html, $data['dstTitle']);
@@ -195,10 +195,10 @@ function create_from_template(array $input): array
     $status = filesystem\write_file(WEB_DIR, $data['dstFile'], $html);
 
     if (!$status) {
-        return service\error([['dstFile', 'Could not write file.']]);
+        return domain\error([['dstFile', 'Could not write file.']]);
     }
 
-    return service\success(null);
+    return domain\success(null);
 }
 
 function update(array $input): array
@@ -218,7 +218,7 @@ function update(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return service\invalid($errors);
+        return domain\invalid($errors);
     }
 
     [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['content']);
@@ -226,22 +226,22 @@ function update(array $input): array
     if ($status) {
         $data['content'] = $htmlOrErrors;
     } else {
-        return service\error([['content', \reset($htmlOrErrors)]]);
+        return domain\error([['content', \reset($htmlOrErrors)]]);
     }
 
     $status = filesystem\backup_file(WEB_DIR, $data['file'], BACKUP_DIR);
 
     if (!$status) {
-        return service\error([['file', 'Could not backup file.']]);
+        return domain\error([['file', 'Could not backup file.']]);
     }
 
     $status = filesystem\write_file(WEB_DIR, $data['file'], $data['content']);
 
     if (!$status) {
-        return service\error([['file', 'Could not write content to file.']]);
+        return domain\error([['file', 'Could not write content to file.']]);
     }
 
-    return service\success(null);
+    return domain\success(null);
 }
 
 /**

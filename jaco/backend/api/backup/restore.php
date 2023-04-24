@@ -7,7 +7,7 @@ namespace jaco\api\backup\restore;
 use jaco\attribute;
 use jaco\controller;
 use jaco\http\response;
-use jaco\service;
+use jaco\domain;
 
 const inputMapping = [
     'file' => 'file',
@@ -18,13 +18,13 @@ const inputMapping = [
  */
 #[attribute\validate_request('/api/backup/restore/request.json')]
 #[attribute\validate_response('/api/null.json')]
-function action(array $apiInput): array
+function action(array $bodyParams): array
 {
-    $serviceInput = controller\transform_data($apiInput, inputMapping);
+    $serviceInput = controller\transform_data($bodyParams, inputMapping);
 
-    [$serviceStatus, $serviceOutput] = service\backup\restore($serviceInput);
+    [$serviceStatus, $serviceOutput] = domain\backup\restore($serviceInput);
 
-    if ($serviceStatus === service\SUCCESS) {
+    if ($serviceStatus === domain\SUCCESS) {
         return response\ok();
     }
 

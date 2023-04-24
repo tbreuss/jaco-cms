@@ -7,7 +7,7 @@ namespace jaco\api\system;
 use jaco\attribute;
 use jaco\controller;
 use jaco\http\response;
-use jaco\service;
+use jaco\domain;
 
 const outputMapping = [
     'classes',
@@ -21,7 +21,7 @@ const outputMapping = [
 #[attribute\validate_response('/api/system/response.json')]
 function action(): array
 {
-    [, $serviceOutput] = service\system\environment();
+    [, $serviceOutput] = domain\system\environment();
 
     $apiOutput = controller\transform_data($serviceOutput, outputMapping);
 

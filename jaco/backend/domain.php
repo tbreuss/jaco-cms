@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\service;
+namespace jaco\domain;
 
 use jaco\jsonschema;
 

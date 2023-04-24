@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace jaco\controller;
 
 use jaco\http\response;
-use jaco\service;
+use jaco\domain;
 
 const VALIDATE_INPUT_ATTRIBUTE = 'jaco\attribute\validate_input';
 const VALIDATE_OUTPUT_ATTRIBUTE = 'jaco\attribute\validate_output';
@@ -25,13 +25,13 @@ function call_service(callable $service, array $arguments): array
 
     $errors = [];
     if (isset($attributes[VALIDATE_INPUT_ATTRIBUTE])) {
-        $errors = service\validate_input($arguments, $attributes[VALIDATE_INPUT_ATTRIBUTE]);
+        $errors = domain\validate_input($arguments, $attributes[VALIDATE_INPUT_ATTRIBUTE]);
     }
 
     $output = $service($arguments, $errors);
 
     if (isset($attributes[VALIDATE_OUTPUT_ATTRIBUTE])) {
-        $errors = service\validate_output($arguments, $attributes[VALIDATE_OUTPUT_ATTRIBUTE]);
+        $errors = domain\validate_output($arguments, $attributes[VALIDATE_OUTPUT_ATTRIBUTE]);
         if (count($errors) > 0) {
             throw new \exception('JSON schema validation of service output failed');
         }
@@ -46,7 +46,7 @@ function call_service_from_api(callable $callable, array $apiInput, array $input
 
     [$serviceStatus, $serviceOutput] = call_service($callable, $serviceInput);
 
-    if ($serviceStatus === service\SUCCESS) {
+    if ($serviceStatus === domain\SUCCESS) {
         if ($serviceOutput === null) {
             return response\ok($serviceOutput);
         }
@@ -59,12 +59,12 @@ function call_service_from_api(callable $callable, array $apiInput, array $input
 
 function handle_api_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): array
 {
-    if ($serviceStatus === service\INVALID) {
+    if ($serviceStatus === domain\INVALID) {
         $apiOutput = transform_client_errors($serviceOutput, array_flip($inputMapping));
         return response\unprocessable_entity($apiOutput);
     }
 
-    if ($serviceStatus === service\ERROR) {
+    if ($serviceStatus === domain\ERROR) {
         $apiOutput = transform_server_errors($serviceOutput, array_flip($inputMapping));
         return response\internal_server_error($apiOutput);
     }

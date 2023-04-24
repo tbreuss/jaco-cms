@@ -5,28 +5,33 @@ declare(strict_types=1);
 namespace jaco\api\page\delete;
 
 use jaco\attribute;
-use jaco\controller;
+use jaco\domain;
 use jaco\http\response;
-use jaco\service;
-
-const inputMapping = [
-    'fileName' => 'file',
-];
+use jaco\responder;
 
 /**
  * @phpstan-return array<int,mixed>
  */
 #[attribute\validate_request('/api/page/delete/request.json')]
 #[attribute\validate_response('/api/null.json')]
-function action(array $apiInput): array
+function action(array $bodyParams): array
 {
-    $serviceInput = controller\transform_data($apiInput, inputMapping);
+    $payload = domain\page\delete([
+        'file' => $bodyParams['fileName']
+    ]);
 
-    [$serviceStatus, $serviceOutput] = service\page\delete($serviceInput);
+    return responder($payload);
+}
 
-    if ($serviceStatus === service\SUCCESS) {
+function responder(array $payload): array
+{
+    [$status] = $payload;
+
+    if ($status === domain\SUCCESS) {
         return response\ok();
     }
 
-    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
+    return responder\api_errors($payload, [
+        'file' => 'fileName',
+    ]);
 }

@@ -46,10 +46,9 @@ function validate(array $data, array $rules): array
         }
         $errors[] = [
             $name,
-            str_replace('{value}', (string)($value ?: $name), $message)
+            str_replace('{value}', (string)($value ?: 'Value'), $message)
         ];
         $failed[] = $name;
     }
     return $errors;
 }
-

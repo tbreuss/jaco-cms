@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\service\try_outs\page;
+namespace jaco\domain\try_outs\page;
 
 use jaco\attribute;
 use jaco\data;

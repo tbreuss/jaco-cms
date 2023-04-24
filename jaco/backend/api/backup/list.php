@@ -7,7 +7,7 @@ namespace jaco\api\backup\list;
 use jaco\attribute;
 use jaco\controller;
 use jaco\http\response;
-use jaco\service;
+use jaco\domain;
 
 const inputMapping = [
     'filter' => 'filter',
@@ -29,9 +29,9 @@ function action(string $filter = '', string $sort = '-created'): array
     $apiInput = ['filter' => $filter, 'sort' => $sort];
     $serviceInput = controller\transform_data($apiInput, inputMapping);
 
-    [$serviceStatus, $serviceOutput] = service\backup\find_all($serviceInput);
+    [$serviceStatus, $serviceOutput] = domain\backup\find_all($serviceInput);
 
-    if ($serviceStatus === service\SUCCESS) {
+    if ($serviceStatus === domain\SUCCESS) {
         $apiOutput = controller\transform_data($serviceOutput, outputMapping);
         return response\ok($apiOutput);
     }

@@ -88,21 +88,30 @@ function call_action(string $action): array
         };
     }
 
-    $parameters = [];
+    // request body params
     if (isset($attributes[VALIDATE_REQUEST_ATTRIBUTE])) {
-        $data = request\get_post_values();
-        $errors = request\validate($data, $attributes[VALIDATE_REQUEST_ATTRIBUTE]);
+        $bodyParams = request\get_post_values();
+        $errors = request\validate($bodyParams, $attributes[VALIDATE_REQUEST_ATTRIBUTE]);
         if (count($errors) > 0) {
             return response\bad_request($errors);
         }
-        $parameters['apiInput'] = $data;
     } else {
-        foreach ($function->getParameters() as $parameter) {
-            $name = $parameter->getName();
-            if ($parameter->isOptional()) {
-                $default = $parameter->getDefaultValue();
-                $parameters[$name] = $default;
-            }
+        $bodyParams = [];
+    }
+
+    $parameters = [];
+    foreach ($function->getParameters() as $parameter) {
+        $name = $parameter->getName();
+        $type = $parameter->getType()->getName();
+
+        if ($parameter->isOptional()) {
+            $default = $parameter->getDefaultValue();
+            $parameters[$name] = $default;
+        }
+
+        if (in_array($name, ['bodyParams', 'apiInput']) && ($type === 'array')) {
+            $parameters[$name] = $bodyParams;
+        } else {
             $value = filter_input(INPUT_GET, $name, FILTER_UNSAFE_RAW);
             if ($value) {
                 $parameters[$name] = $value;
@@ -111,7 +120,7 @@ function call_action(string $action): array
     }
 
     try {
-        [$status, $response] = call_user_func($action, ...$parameters);
+        [$status, $response] = call_user_func_array($action, $parameters);
     } catch (\TypeError $e) {
         return response\bad_request([['detail' => $e->getMessage(), 'title' => 'Type Error']]);
     }

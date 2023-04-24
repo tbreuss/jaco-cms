@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace jaco\service\backup;
+namespace jaco\domain\backup;
 
 use jaco\data;
 use jaco\filesystem;
 use jaco\html;
 use jaco\list;
-use jaco\service;
+use jaco\domain;
 use jaco\struct\backup;
 use jaco\struct\file;
 
@@ -34,11 +34,11 @@ function find_all(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return service\invalid($errors);
+        return domain\invalid($errors);
     }
 
     if (!filesystem\dir_exists(BACKUP_DIR)) {
-        return service\error([['', 'Dir does not exist.']]);
+        return domain\error([['', 'Dir does not exist.']]);
     }
 
     $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
@@ -48,7 +48,7 @@ function find_all(array $input): array
     $sort = _sort_field($data['sort']);
     $output = [list\sort($backups, $sort), $data['filter'], $sort];
 
-    return service\success($output);
+    return domain\success($output);
 }
 
 function find_one(array $input): array
@@ -65,7 +65,7 @@ function find_one(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return service\invalid($errors);
+        return domain\invalid($errors);
     }
 
     $file = $data['file'];
@@ -73,12 +73,12 @@ function find_one(array $input): array
     $content = filesystem\read_file(BACKUP_DIR, $file);
 
     if ($content === null) {
-        return service\error([['file', 'Could not read file.']]);
+        return domain\error([['file', 'Could not read file.']]);
     }
 
     $extension = \pathinfo($file, PATHINFO_EXTENSION);
     $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
-    return service\success((array)new backup(
+    return domain\success((array)new backup(
         $file,
         str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
         html\get_title($content),
@@ -107,16 +107,16 @@ function restore(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return service\invalid($errors);
+        return domain\invalid($errors);
     }
 
     $status = filesystem\restore_file(BACKUP_DIR, $data['file'], WEB_DIR);
 
     if (!$status) {
-        return service\error([['file', 'Could not restore file.']]);
+        return domain\error([['file', 'Could not restore file.']]);
     }
 
-    return service\success(null);
+    return domain\success(null);
 }
 
 /**
@@ -135,16 +135,16 @@ function delete(array $input): array
     ]);
 
     if (count($errors) > 0) {
-        return service\invalid($errors);
+        return domain\invalid($errors);
     }
 
     $status = filesystem\delete_file(BACKUP_DIR, $input['file']);
 
     if (!$status) {
-        return service\error([['file', 'Could not delete file.']]);
+        return domain\error([['file', 'Could not delete file.']]);
     }
 
-    return service\success(null);
+    return domain\success(null);
 }
 
 /**

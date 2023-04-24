@@ -7,7 +7,7 @@ namespace jaco\api\template\pages;
 use jaco\attribute;
 use jaco\controller;
 use jaco\http\response;
-use jaco\service;
+use jaco\domain;
 use jaco\struct\page;
 
 /**
@@ -16,9 +16,9 @@ use jaco\struct\page;
 #[attribute\validate_response('/api/template/response.json')]
 function action(): array
 {
-    [$serviceStatus, $serviceOutput] = service\template\page\find_all([]);
+    [$serviceStatus, $serviceOutput] = domain\template\page\find_all([]);
 
-    if ($serviceStatus === service\SUCCESS) {
+    if ($serviceStatus === domain\SUCCESS) {
         $apiOutput = controller\transform_data($serviceOutput, 'jaco\api\template\pages\_output_mapping');
         return response\ok($apiOutput);
     }

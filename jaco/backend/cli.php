@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace jaco\cli;
 
 use jaco\controller;
-use jaco\service;
+use jaco\domain;
 
 function transform_data(array $data, array|callable $mapping): array
 {
@@ -14,17 +14,17 @@ function transform_data(array $data, array|callable $mapping): array
 
 function handle_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): void
 {
-    if ($serviceStatus === service\SUCCESS) {
+    if ($serviceStatus === domain\SUCCESS) {
         exit(0);
     }
 
-    if ($serviceStatus === service\INVALID) {
+    if ($serviceStatus === domain\INVALID) {
         $cliOutput = controller\transform_client_errors($serviceOutput, array_flip($inputMapping));
         render_errors($cliOutput);
         exit(1);
     }
 
-    if ($serviceStatus === service\ERROR) {
+    if ($serviceStatus === domain\ERROR) {
         $cliOutput = controller\transform_server_errors($serviceOutput, array_flip($inputMapping));
         render_errors($cliOutput);
         exit(2);

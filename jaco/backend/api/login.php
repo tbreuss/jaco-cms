@@ -7,7 +7,7 @@ namespace jaco\api\login;
 use jaco\attribute;
 use jaco\controller;
 use jaco\http\response;
-use jaco\service;
+use jaco\domain;
 
 const inputMapping = [
     'username' => 'username',
@@ -23,13 +23,13 @@ const outputMapping = [
  */
 #[attribute\validate_request('/api/login/request.json')]
 #[attribute\validate_response('/api/login/response.json')]
-function action(array $apiInput): array
+function action(array $bodyParams): array
 {
-    $serviceInput = controller\transform_data($apiInput, inputMapping);
+    $serviceInput = controller\transform_data($bodyParams, inputMapping);
 
-    [$serviceStatus, $serviceOutput] = service\system\authenticate($serviceInput);
+    [$serviceStatus, $serviceOutput] = domain\system\authenticate($serviceInput);
 
-    if ($serviceStatus === service\SUCCESS) {
+    if ($serviceStatus === domain\SUCCESS) {
         $apiOutput = controller\transform_data($serviceOutput, outputMapping);
         return response\ok($apiOutput);
     }
