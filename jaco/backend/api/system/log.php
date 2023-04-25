@@ -5,41 +5,20 @@ declare(strict_types=1);
 namespace jaco\api\system\log;
 
 use jaco\attribute;
+use jaco\domain;
 use jaco\http\response;
-
-use const jaco\ERROR_LOG;
 
 #[attribute\validate_response('/api/diagnostics/log/response.json')]
 function action(): array
 {
-    $lines = [];
+    $payload = domain\system\log();
 
-    if (\file_exists(ERROR_LOG)) {
-        $fp = \fopen(ERROR_LOG, 'r');
+    return responder($payload);
+}
 
-        $pos = -2; // Skip final new line character (Set to -1 if not present)
+function responder($payload): array
+{
+    [, $data] = $payload;
 
-        $i = 0;
-        $currentLine = '';
-
-        while (-1 !== \fseek($fp, $pos, SEEK_END)) {
-            $char = \fgetc($fp);
-            if (PHP_EOL == $char) {
-                $lines[] = $currentLine;
-                $currentLine = '';
-                $i++;
-                if ($i >= 1000) {
-                    break;
-                }
-            } else {
-                $currentLine = $char . $currentLine;
-            }
-            $pos--;
-        }
-        if (\trim($currentLine) !== '') {
-            $lines[] = $currentLine; // Grab final line
-        }
-        \fclose($fp);
-    }
-    return response\ok($lines);
+    return response\ok($data);
 }

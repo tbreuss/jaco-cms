@@ -37,6 +37,7 @@ function responder(array $payload): array
     }
 
     return responder\api_errors($payload, [
-        'file' => 'fileName',
+        'filter' => 'filter',
+        'sort' => 'sort',
     ]);
 }

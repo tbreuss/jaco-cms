@@ -5,21 +5,27 @@ declare(strict_types=1);
 namespace jaco\api\system\php_info;
 
 use jaco\attribute;
+use jaco\domain;
 use jaco\http\response;
+use jaco\responder;
 
 #[attribute\validate_response('/api/diagnostics/php_info/response.json')]
 function action(): array
 {
-    ob_start();
-    phpinfo();
-    $data = ob_get_contents();
-    ob_clean();
+    $payload = domain\system\phpinfo();
 
-    preg_match("/<body[^>]*>(.*?)<\/body>/is", $data, $matches);
+    return responder($payload);
+}
 
-    if (empty($matches[1])) {
-        return response\internal_server_error([]);
+function responder(array $payload): array
+{
+    [$status, $data] = $payload;
+
+    if ($status === domain\SUCCESS) {
+        return response\ok([
+            'content' => $data,
+        ]);
     }
 
-    return response\ok(['content' => $matches[1]]);
+    return responder\api_errors($payload);
 }

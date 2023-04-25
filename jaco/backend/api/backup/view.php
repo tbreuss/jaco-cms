@@ -5,23 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\backup\view;
 
 use jaco\attribute;
-use jaco\controller;
-use jaco\http\response;
 use jaco\domain;
-
-const inputMapping = [
-    'file' => 'file',
-];
-
-const outputMapping = [
-    'file' => 'file',
-    'name' => 'name',
-    'title' => 'title',
-    'created' => 'created',
-    'backedUp' => 'backedUp',
-    'type' => 'type',
-    'content' => 'content'
-];
+use jaco\http\response;
+use jaco\responder;
 
 /**
  * @phpstan-return array<int,mixed>
@@ -29,28 +15,30 @@ const outputMapping = [
 #[attribute\validate_response('/api/backup/view/response.json')]
 function action(string $file): array
 {
-    #return controller\call_service_from_api('jaco\service\backup\find_one', ['file' => $file], inputMapping, outputMapping);
+    $payload = domain\backup\find_one([
+        'file' => $file,
+    ]);
 
-    $serviceInput = controller\transform_data(['file' => $file], inputMapping);
+    return responder($payload);
+}
 
-    [$serviceStatus, $serviceOutput] = domain\backup\find_one($serviceInput);
+function responder(array $payload): array
+{
+    [$status, $data] = $payload;
 
-    if ($serviceStatus === domain\SUCCESS) {
-        $apiOutput = controller\transform_data($serviceOutput, outputMapping);
-        return response\ok($apiOutput);
+    if ($status === domain\SUCCESS) {
+        return response\ok([
+            'file' => $data['file'],
+            'name' => $data['name'],
+            'title' => $data['title'],
+            'created' => $data['created'],
+            'backedUp' => $data['backedUp'],
+            'content' => $data['content'],
+            'type' => $data['type'],
+        ]);
     }
 
-    #return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
-
-    if ($serviceStatus === domain\INVALID) {
-        $apiOutput = controller\transform_client_errors($serviceOutput, array_flip(inputMapping));
-        return response\unprocessable_entity($apiOutput);
-    }
-
-    if ($serviceStatus === domain\ERROR) {
-        $apiOutput = controller\transform_server_errors($serviceOutput, array_flip(inputMapping));
-        return response\internal_server_error($apiOutput);
-    }
-
-    return response\internal_server_error(controller\invalid_service_status());
+    return responder\api_errors($payload, [
+        'file' => 'file',
+    ]);
 }

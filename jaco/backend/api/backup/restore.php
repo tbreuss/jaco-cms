@@ -5,13 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\backup\restore;
 
 use jaco\attribute;
-use jaco\controller;
-use jaco\http\response;
 use jaco\domain;
-
-const inputMapping = [
-    'file' => 'file',
-];
+use jaco\http\response;
+use jaco\responder;
 
 /**
  * @phpstan-return array<int,mixed>
@@ -20,13 +16,22 @@ const inputMapping = [
 #[attribute\validate_response('/api/null.json')]
 function action(array $bodyParams): array
 {
-    $serviceInput = controller\transform_data($bodyParams, inputMapping);
+    $payload = domain\backup\restore([
+        'file' => $bodyParams['file'],
+    ]);
 
-    [$serviceStatus, $serviceOutput] = domain\backup\restore($serviceInput);
+    return responder($payload);
+}
 
-    if ($serviceStatus === domain\SUCCESS) {
+function responder(array $payload): array
+{
+    [$status] = $payload;
+
+    if ($status === domain\SUCCESS) {
         return response\ok();
     }
 
-    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
+    return responder\api_errors($payload, [
+        'file' => 'file',
+    ]);
 }

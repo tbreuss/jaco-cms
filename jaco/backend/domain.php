@@ -20,7 +20,7 @@ function invalid(array $errors): array
     return [INVALID, $errors];
 }
 
-function success(?array $data): array
+function success(array|string|null $data): array|string
 {
     return [SUCCESS, $data];
 }

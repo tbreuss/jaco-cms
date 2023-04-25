@@ -5,14 +5,8 @@ declare(strict_types=1);
 namespace jaco\api\index;
 
 use jaco\attribute;
-use jaco\controller;
-use jaco\http\response;
 use jaco\domain;
-
-const outputMapping = [
-    'name' => 'name',
-    'version' => 'version',
-];
+use jaco\http\response;
 
 /**
  * @phpstan-return array<int,mixed>
@@ -20,9 +14,17 @@ const outputMapping = [
 #[attribute\validate_response('/api/index/response.json')]
 function action(): array
 {
-    [, $serviceOutput] = domain\system\version();
+    $payload = domain\system\version();
 
-    $apiOutput = controller\transform_data($serviceOutput, outputMapping);
+    return responder($payload);
+}
 
-    return response\ok($apiOutput);
+function responder($payload): array
+{
+    [, $data] = $payload;
+
+    return response\ok([
+        'name' => $data['name'],
+        'version' => $data['version'],
+    ]);
 }

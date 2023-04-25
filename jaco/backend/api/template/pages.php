@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\template\pages;
 
 use jaco\attribute;
-use jaco\controller;
-use jaco\http\response;
 use jaco\domain;
+use jaco\http\response;
+use jaco\responder;
 use jaco\struct\page;
 
 /**
@@ -16,23 +16,24 @@ use jaco\struct\page;
 #[attribute\validate_response('/api/template/response.json')]
 function action(): array
 {
-    [$serviceStatus, $serviceOutput] = domain\template\page\find_all([]);
+    $payload = domain\template\page\find_all([]);
 
-    if ($serviceStatus === domain\SUCCESS) {
-        $apiOutput = controller\transform_data($serviceOutput, 'jaco\api\template\pages\_output_mapping');
-        return response\ok($apiOutput);
-    }
-
-    return controller\handle_api_errors($serviceStatus, $serviceOutput);
+    return responder($payload);
 }
 
-function _output_mapping(array $data): array
+function responder($payload): array
 {
-    return array_map(function(page $item): array {
-        return [
-            'file' => $item->file,
-            'title' => $item->title,
-            'created' => $item->created,
-        ];
-    }, $data);
+    [$status, $data] = $payload;
+
+    if ($status === domain\SUCCESS) {
+        return response\ok(
+            array_map(fn(page $item): array => [
+                'file' => $item->file,
+                'title' => $item->title,
+                'created' => $item->created,
+            ], $data)
+        );
+    }
+
+    return responder\api_errors($payload);
 }

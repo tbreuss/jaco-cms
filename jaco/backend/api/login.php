@@ -5,18 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\login;
 
 use jaco\attribute;
-use jaco\controller;
-use jaco\http\response;
 use jaco\domain;
-
-const inputMapping = [
-    'username' => 'username',
-    'password' => 'password',
-];
-
-const outputMapping = [
-    'token' => 'token',
-];
+use jaco\http\response;
+use jaco\responder;
 
 /**
  * @phpstan-return array<int,mixed>
@@ -25,14 +16,26 @@ const outputMapping = [
 #[attribute\validate_response('/api/login/response.json')]
 function action(array $bodyParams): array
 {
-    $serviceInput = controller\transform_data($bodyParams, inputMapping);
+    $payload = domain\system\authenticate([
+        'username' => $bodyParams['username'],
+        'password' => $bodyParams['password'],
+    ]);
 
-    [$serviceStatus, $serviceOutput] = domain\system\authenticate($serviceInput);
+    return responder($payload);
+}
 
-    if ($serviceStatus === domain\SUCCESS) {
-        $apiOutput = controller\transform_data($serviceOutput, outputMapping);
-        return response\ok($apiOutput);
+function responder(array $payload): array
+{
+    [$status, $data] = $payload;
+
+    if ($status === domain\SUCCESS) {
+        return response\ok([
+            'token' => $data['token'],
+        ]);
     }
 
-    return controller\handle_api_errors($serviceStatus, $serviceOutput, inputMapping);
+    return responder\api_errors($payload, [
+        'username' => 'username',
+        'password' => 'password',
+    ]);
 }
