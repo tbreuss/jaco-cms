@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace jaco\api\system;
 
 use jaco\attribute;
-use jaco\http\response;
 use jaco\domain;
+use jaco\http\response;
 
 /**
  * @phpstan-return array<int,mixed>
