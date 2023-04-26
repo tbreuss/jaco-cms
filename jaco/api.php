@@ -37,7 +37,7 @@ router\post('page/delete', 'jaco\api\page\delete\action', true);
 router\post('page/update', 'jaco\api\page\update\action', true);
 router\get('system', 'jaco\api\system\action', true);
 router\get('system/log', 'jaco\api\system\log\action', true);
-router\get('system/php-info', 'jaco\api\system\php_info\action', true);
+router\get('system/php-info', 'jaco\api\system\phpinfo\action', true);
 router\get('template/pages', 'jaco\api\template\pages\action', true);
 router\get('upload/list', 'jaco\api\upload\list\action', true);
 router\post('upload/delete', 'jaco\api\upload\delete\action', true);

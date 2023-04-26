@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace jaco\api\system\php_info;
+namespace jaco\api\system\phpinfo;
 
 use jaco\attribute;
 use jaco\domain;
 use jaco\http\response;
 use jaco\responder;
 
-#[attribute\validate_response('/api/diagnostics/php_info/response.json')]
+#[attribute\validate_response('/api/diagnostics/phpinfo/response.json')]
 function action(): array
 {
     $payload = domain\system\phpinfo();
