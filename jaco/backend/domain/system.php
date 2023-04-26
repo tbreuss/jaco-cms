@@ -86,7 +86,7 @@ function phpinfo(): array
 
     \preg_match("/<body[^>]*>(.*?)<\/body>/is", $data, $matches);
 
-    if (empty($matches[1])) {
+    if (!isset($matches[1])) {
         return domain\error([['', 'Could not parse phpinfo output.']]);
     }
 

@@ -102,7 +102,7 @@ function call_action(string $action): array
     $parameters = [];
     foreach ($function->getParameters() as $parameter) {
         $name = $parameter->getName();
-        $type = $parameter->getType()->getName();
+        $type = $parameter->getType()->getName(); // @phpstan-ignore-line
 
         if ($parameter->isOptional()) {
             $default = $parameter->getDefaultValue();
