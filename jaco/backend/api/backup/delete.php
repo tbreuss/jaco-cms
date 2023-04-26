@@ -9,9 +9,6 @@ use jaco\domain;
 use jaco\http\response;
 use jaco\responder;
 
-/**
- * @phpstan-return array<int,mixed>
- */
 #[attribute\validate_request('/api/backup/delete/request.json')]
 #[attribute\validate_response('/api/null.json')]
 function action(array $bodyParams): array

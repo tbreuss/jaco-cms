@@ -16,7 +16,7 @@ function action(): array
     return responder($payload);
 }
 
-function responder($payload): array
+function responder(array $payload): array
 {
     [, $data] = $payload;
 

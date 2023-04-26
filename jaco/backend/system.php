@@ -8,9 +8,6 @@ use const jaco\WEB_DIR;
 
 const SECRETS = ['jaco\SECRET_KEY', 'jaco\PASSWORD'];
 
-/**
- * @phpstan-return array<int,string>
- */
 function defined_classes(): array
 {
     $classes = [];
@@ -23,9 +20,6 @@ function defined_classes(): array
     return $classes;
 }
 
-/**
- * @phpstan-return array<string,string>
- */
 function defined_constants(): array
 {
     $constants = [];
@@ -47,9 +41,6 @@ function defined_constants(): array
     return $constants;
 }
 
-/**
- * @phpstan-return array<int,string>
- */
 function defined_functions(): array
 {
     $functions = [];

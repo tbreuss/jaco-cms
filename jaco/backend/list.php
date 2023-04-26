@@ -21,9 +21,6 @@ function filter(array $list, string $filter): array
     });
 }
 
-/**
- * @phpstan-param array{string,string} $sort
- */
 function sort(array $list, array $sort): array
 {
     [$sortField, $sortDir] = $sort;

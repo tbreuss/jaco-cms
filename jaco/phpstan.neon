@@ -2,7 +2,10 @@ parameters:
     bootstrapFiles:
         - vendor/autoload.php
         - constants.php
-    level: 5
+    ignoreErrors:
+        - '#with no value type specified in iterable type array.#'
+        - '#return type has no value type specified in iterable type array.#'
+    level: 6
     paths:
         - api.php
         - backend

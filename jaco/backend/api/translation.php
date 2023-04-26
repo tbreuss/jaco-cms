@@ -9,9 +9,6 @@ use jaco\domain;
 use jaco\http\response;
 use jaco\responder;
 
-/**
- * @phpstan-return array<int,mixed>
- */
 #[attribute\validate_response('/api/translation/response.json')]
 function action(string $language): array
 {
@@ -20,7 +17,7 @@ function action(string $language): array
     return responder($payload);
 }
 
-function responder($payload): array
+function responder(array $payload): array
 {
     [$status, $data] = $payload;
 

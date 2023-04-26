@@ -11,9 +11,6 @@ use jaco\http\response;
 const VALIDATE_REQUEST_ATTRIBUTE = 'jaco\attribute\validate_request';
 const VALIDATE_RESPONSE_ATTRIBUTE = 'jaco\attribute\validate_response';
 
-/**
- * @phpstan-return array<int,array{method:string,action:string,callback:string,authenticated:bool}>
- */
 function &routes(): array
 {
     static $routes = [];
@@ -41,9 +38,6 @@ function post(string $action, callable $callback, bool $authenticated): void
     route('POST', $action, $callback, $authenticated);
 }
 
-/**
- * @phpstan-return array{int, array<int,array<string,array<string,string>|string>>}
- */
 function dispatch(string $method, string $action): array
 {
     $routes = routes();
@@ -164,10 +158,6 @@ function check_authorization(): bool
     return auth\is_authenticated($token);
 }
 
-/**
- * @phpstan-param array<int,array{method:string,action:string,callback:string,authenticated:bool}> $routes
- * @phpstan-return array<int,array{method:string,action:string,callback:string,authenticated:bool}>
- */
 function filter_routes(array $routes, string $column, string $search): array
 {
     $matched = array_keys(array_column($routes, $column), $search);

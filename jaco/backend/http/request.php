@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\http\request;
 
-use jaco\jsonschema;
+use jaco\json;
 
-/**
- * @phpstan-return array<mixed>
- */
 function get_post_values(): array
 {
     $contents = file_get_contents('php://input');
@@ -41,5 +38,5 @@ function get_header_value(string $header): ?string
 
 function validate(array|string $data, string $schema): array
 {
-    return jsonschema\validate_data($data, $schema);
+    return json\schema\validate_data($data, $schema);
 }

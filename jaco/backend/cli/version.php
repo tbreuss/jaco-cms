@@ -6,7 +6,7 @@ namespace jaco\cli\version;
 
 use jaco\domain;
 
-function command(array $options = [], array $arguments = [])
+function command(array $options = [], array $arguments = []): void
 {
     [, $serviceOutput] = domain\system\version();
 

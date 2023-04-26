@@ -20,7 +20,6 @@ class HttpUnauthorizedException extends Exception
 }
 
 // errors see https://jsonapi.org/format/#error-objects
-
 function exception_handler(\Throwable $t): void
 {
     $code = $t->getCode();

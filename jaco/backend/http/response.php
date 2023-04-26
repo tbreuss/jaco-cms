@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\http\response;
 
-use jaco\jsonschema;
+use jaco\json;
 
 const OK = 200;
 const CREATED = 201;
@@ -57,7 +57,7 @@ function internal_server_error(array $data): array
 
 function validate(array|string|null $data, string $schema): array
 {
-    return jsonschema\validate_data($data, $schema);
+    return json\schema\validate_data($data, $schema);
 }
 
 function client_error(int $status, array $data = null): array

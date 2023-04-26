@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\domain;
 
-use jaco\jsonschema;
+use jaco\json;
 
 const ERROR = 'ERROR';
 const INVALID = 'INVALID';
@@ -27,10 +27,10 @@ function success(array|string|null $data = null): array
 
 function validate_input(array $input, string $schema): array
 {
-    return jsonschema\validate_service($input, $schema);
+    return json\schema\validate_service($input, $schema);
 }
 
 function validate_output(array $output, string $schema): array
 {
-    return jsonschema\validate_service($output, $schema);
+    return json\schema\validate_service($output, $schema);
 }

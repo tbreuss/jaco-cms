@@ -9,9 +9,6 @@ use jaco\domain;
 use jaco\http\response;
 use jaco\responder;
 
-/**
- * @phpstan-return array{0:int, 1?:array{file: string, title: string, created:int, content: ?string}}
- */
 #[attribute\validate_response('/api/page/view/response.json')]
 function action(string $file): array
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\jsonschema;
+namespace jaco\json\schema;
 
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Errors\ValidationError;
@@ -12,7 +12,7 @@ function validate_data(array|string|null $data, string $schema): array
 {
     $validator = new Validator();
     $validator->setMaxErrors(20);
-    $validator->resolver()->registerPrefix('http://jaco.tebe.ch', dirname(__DIR__) . '/schema');
+    $validator->resolver()->registerPrefix('http://jaco.tebe.ch', dirname(__DIR__, 2) . '/schema');
 
     if (is_array($data)) {
         $dataAsObject = json_decode(json_encode($data));
@@ -55,7 +55,7 @@ function validate_service(array $data, string $schema): array
 {
     $validator = new Validator();
     $validator->setMaxErrors(20);
-    $validator->resolver()->registerPrefix('http://jaco.tebe.ch', dirname(__DIR__) . '/schema');
+    $validator->resolver()->registerPrefix('http://jaco.tebe.ch', dirname(__DIR__, 2) . '/schema');
 
     $dataAsObject = json_decode(json_encode($data));
 

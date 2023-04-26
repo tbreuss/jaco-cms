@@ -169,9 +169,6 @@ function _create_list(array $files, string $dir, array $pageExtensions): array
     return $backups;
 }
 
-/**
- * @phpstan-return array{string,string}
- */
 function _sort_field(string $sort): array
 {
     if (!in_array(ltrim($sort, '-'), ['backedUp', 'created', 'name', 'title', 'type'])) {

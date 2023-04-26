@@ -8,9 +8,6 @@ use jaco\filesystem;
 
 use const jaco\WEB_DIR;
 
-/**
- * @phpstan-return array{bool, string}
- */
 function numeric(mixed $value): array
 {
     if (is_numeric($value)) {
@@ -19,9 +16,6 @@ function numeric(mixed $value): array
     return [false, '{value} must be a number.'];
 }
 
-/**
- * @phpstan-return array{bool, string}
- */
 function string(mixed $value): array
 {
     if (is_string($value)) {
@@ -30,9 +24,6 @@ function string(mixed $value): array
     return [false, '{value} must be a string.'];
 }
 
-/**
- * @phpstan-return array{bool, string}
- */
 function required(mixed $value): array
 {
     if (!is_null($value)) {
@@ -41,9 +32,6 @@ function required(mixed $value): array
     return [false, '{value} cannot be blank.'];
 }
 
-/**
- * @phpstan-return array{bool, string}
- */
 function safe(): array
 {
     return [true, ''];
@@ -61,10 +49,6 @@ function file_extension(mixed $value, array $allowedExtensions = []): array
     return [false, '{value} is an invalid extension'];
 }
 
-/**
- * @phpstan-return array{bool, string}
- * @deprecated
- */
 function html_file_extension(mixed $value): array
 {
     if (is_string($value) && filesystem\validate_extension(WEB_DIR, $value)) {
@@ -73,9 +57,6 @@ function html_file_extension(mixed $value): array
     return [false, '{value} is an invalid extension'];
 }
 
-/**
- * @phpstan-return array{bool, string}
- */
 function html_file_name(mixed $value, bool $isBackup = false): array
 {
     if (is_string($value) && filesystem\validate_filename(WEB_DIR, $value, $isBackup)) {
@@ -84,9 +65,6 @@ function html_file_name(mixed $value, bool $isBackup = false): array
     return [false, '{value} is an invalid filename'];
 }
 
-/**
- * @phpstan-return array{bool, string}
- */
 function file_writeable(mixed $value): array
 {
     if (is_string($value) && filesystem\file_is_writable(WEB_DIR, $value)) {
@@ -95,9 +73,6 @@ function file_writeable(mixed $value): array
     return [false, '{value} is not writeable.'];
 }
 
-/**
- * @phpstan-return array{bool, string}
- */
 function file_exists(mixed $value, string $dir = WEB_DIR, bool $negate = false): array
 {
     if (is_string($value) && (filesystem\file_exists($dir, $value) === !$negate)) {
@@ -106,9 +81,6 @@ function file_exists(mixed $value, string $dir = WEB_DIR, bool $negate = false):
     return [false, $negate === false ? '{value} does not exist.' : '{value} must not exist.'];
 }
 
-/**
- * @phpstan-return array{bool, string}
- */
 function file_in_dir(mixed $value, string $dir, bool $negate = false): array
 {
     if (!$negate && !filesystem\file_in_dir($value, $dir)) {

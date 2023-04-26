@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace jaco\data;
 
-/**
- * @phpstan-param array<string,mixed> $data
- * @phpstan-param array<int,mixed> $filters
- * @return array<string,mixed>
- */
 function filter(array $data, array $filters): array
 {
     $filtered = [];

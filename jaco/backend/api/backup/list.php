@@ -9,9 +9,6 @@ use jaco\domain;
 use jaco\http\response;
 use jaco\responder;
 
-/**
- * @phpstan-return array<int,mixed>
- */
 #[attribute\validate_response('/api/backup/list/response.json')]
 function action(string $filter = '', string $sort = '-created'): array
 {

@@ -10,9 +10,6 @@ use jaco\http\response;
 use jaco\responder;
 use jaco\struct\page;
 
-/**
- * @phpstan-return array<int,mixed>
- */
 #[attribute\validate_response('/api/template/response.json')]
 function action(): array
 {
@@ -21,7 +18,7 @@ function action(): array
     return responder($payload);
 }
 
-function responder($payload): array
+function responder(array $payload): array
 {
     [$status, $data] = $payload;
 

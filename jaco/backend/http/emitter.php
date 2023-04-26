@@ -6,9 +6,6 @@ namespace jaco\http\emitter;
 
 use jaco\http\response;
 
-/**
- * @phpstan-param string|array<mixed> $response
- */
 function emit(int $status, string|array|null $response): void
 {
     ob_start();
@@ -27,9 +24,6 @@ function emit(int $status, string|array|null $response): void
     exit;
 }
 
-/**
- * @phpstan-param array<mixed> $errors
- */
 function send_errors(array $errors): string
 {
     // keep errors consistent (like in json-api spec)
@@ -41,9 +35,6 @@ function send_errors(array $errors): string
     return json_encode($errors);
 }
 
-/**
- * @phpstan-param array<mixed> $data
- */
 function send_data(array $data): string
 {
     $data = json_encode($data);
