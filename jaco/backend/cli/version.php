@@ -8,7 +8,14 @@ use jaco\domain;
 
 function command(array $options = [], array $arguments = []): void
 {
-    [, $serviceOutput] = domain\system\version();
+    $payload = domain\system\version();
 
-    fwrite(STDOUT, $serviceOutput['name'] . ' ' . $serviceOutput['version'] . PHP_EOL);
+    responder($payload);
+}
+
+function responder(array $payload): void
+{
+    [, $data] = $payload;
+
+    fwrite(STDOUT, $data['name'] . ' ' . $data['version'] . PHP_EOL);
 }

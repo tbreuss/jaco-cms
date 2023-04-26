@@ -2,15 +2,10 @@
 
 declare(strict_types=1);
 
-namespace jaco\cli;
+namespace jaco\cli\responder;
 
 use jaco\controller;
 use jaco\domain;
-
-function transform_data(array $data, array|callable $mapping): array
-{
-    return controller\transform_data($data, $mapping);
-}
 
 function handle_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): void
 {
@@ -19,13 +14,13 @@ function handle_errors(string $serviceStatus, array $serviceOutput, array $input
     }
 
     if ($serviceStatus === domain\INVALID) {
-        $cliOutput = controller\transform_client_errors($serviceOutput, array_flip($inputMapping));
+        $cliOutput = controller\transform_client_errors($serviceOutput, $inputMapping);
         render_errors($cliOutput);
         exit(1);
     }
 
     if ($serviceStatus === domain\ERROR) {
-        $cliOutput = controller\transform_server_errors($serviceOutput, array_flip($inputMapping));
+        $cliOutput = controller\transform_server_errors($serviceOutput, $inputMapping);
         render_errors($cliOutput);
         exit(2);
     }

@@ -4,25 +4,31 @@ declare(strict_types=1);
 
 namespace jaco\cli\auth\token;
 
-use jaco\cli;
+use jaco\cli\responder;
 use jaco\domain;
-
-const inputMapping = [
-    'user' => 'username',
-    'pass' => 'password',
-];
 
 function command(array $options = [], array $arguments = []): void
 {
-    $serviceInput = cli\transform_data($options, inputMapping);
+    $payload = domain\system\authenticate([
+        'username' => $options['user'],
+        'password' => $options['pass'],
+    ]);
 
-    [$serviceStatus, $serviceOutput] = domain\system\authenticate($serviceInput);
+    responder($payload, $options);
+}
 
-    if ($serviceStatus === domain\SUCCESS) {
-        fwrite(STDOUT, sprintf('The token for user %s is:', $options['user']) . PHP_EOL);
-        fwrite(STDOUT, $serviceOutput['token'] . PHP_EOL);
+function responder(array $payload, array $options): void
+{
+    [$status, $data] = $payload;
+
+    if ($status === domain\SUCCESS) {
+        fwrite(STDOUT, sprintf('The token for user "%s" is:', $options['user']) . PHP_EOL);
+        fwrite(STDOUT, $data['token'] . PHP_EOL);
         exit(0);
     }
 
-    cli\handle_errors($serviceStatus, $serviceOutput, inputMapping);
+    responder\handle_errors($status, $data, [
+        'user' => 'username',
+        'pass' => 'password',
+    ]);
 }

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\api\template\pages;
 
+use jaco\api\responder;
 use jaco\attribute;
 use jaco\domain;
 use jaco\http\response;
-use jaco\responder;
 use jaco\struct\page;
 
 #[attribute\validate_response('/api/template/response.json')]
