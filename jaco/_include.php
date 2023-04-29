@@ -7,7 +7,7 @@ function dir_recursive($dir, &$results = array()) {
         $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
         if (!is_dir($path)) {
             $results[] = $path;
-        } else if ($value != "." && $value != "..") {
+        } else if (($value != ".") && ($value != "..")) {
             dir_recursive($path, $results);
         }
     }

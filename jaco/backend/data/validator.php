@@ -10,26 +10,43 @@ use const jaco\WEB_DIR;
 
 function numeric(mixed $value): array
 {
-    if (is_numeric($value)) {
-        return [true, ''];
+    if (!is_numeric($value)) {
+        return [false, '{value} must be a number.'];
     }
-    return [false, '{value} must be a number.'];
+    return [true, ''];
 }
 
-function string(mixed $value): array
+function string(mixed $value, ?int $min = null, ?int $max = null): array
 {
-    if (is_string($value)) {
-        return [true, ''];
+    if (!is_string($value)) {
+        return [false, '{value} must be a string.'];
     }
-    return [false, '{value} must be a string.'];
+    if ($min && (strlen($value) < abs($min))) {
+        return [false, "{value} is too short, minimum is $min characters."];
+    }
+    if ($max && (strlen($value) > abs($max))) {
+        return [false, "{value} is too long, maximum is $max characters."];
+    }
+    return [true, ''];
 }
 
-function required(mixed $value): array
+function required(array|string|float|int|bool|null $value): array
 {
-    if (!is_null($value)) {
-        return [true, ''];
+    $emptyMsg = '{value} cannot be blank.';
+
+    if (is_null($value)) {
+        return [false, $emptyMsg];
     }
-    return [false, '{value} cannot be blank.'];
+
+    if (is_array($value) && (count($value) === 0)) {
+        return [false, $emptyMsg];
+    }
+
+    if (is_string($value) && (strlen($value) === 0)) {
+        return [false, $emptyMsg];
+    }
+
+    return [true, ''];
 }
 
 function safe(): array
@@ -41,47 +58,47 @@ function safe(): array
  * @param string[] $allowedExtensions
  * @return array{boolean, string}
  */
-function file_extension(mixed $value, array $allowedExtensions = []): array
+function file_extension(string $value, array $allowedExtensions = []): array
 {
-    if (is_string($value) && filesystem\validate_extension(WEB_DIR, $value, $allowedExtensions)) {
+    if (filesystem\validate_extension(WEB_DIR, $value, $allowedExtensions)) {
         return [true, ''];
     }
     return [false, '{value} is an invalid extension'];
 }
 
-function html_file_extension(mixed $value): array
+function html_file_extension(string $value): array
 {
-    if (is_string($value) && filesystem\validate_extension(WEB_DIR, $value)) {
+    if (filesystem\validate_extension(WEB_DIR, $value)) {
         return [true, ''];
     }
     return [false, '{value} is an invalid extension'];
 }
 
-function html_file_name(mixed $value, bool $isBackup = false): array
+function html_file_name(string $value, bool $isBackup = false): array
 {
-    if (is_string($value) && filesystem\validate_filename(WEB_DIR, $value, $isBackup)) {
+    if (filesystem\validate_filename(WEB_DIR, $value, $isBackup)) {
         return [true, ''];
     }
     return [false, '{value} is an invalid filename'];
 }
 
-function file_writeable(mixed $value): array
+function file_writeable(string $value): array
 {
-    if (is_string($value) && filesystem\file_is_writable(WEB_DIR, $value)) {
+    if (filesystem\file_is_writable(WEB_DIR, $value)) {
         return [true, ''];
     }
     return [false, '{value} is not writeable.'];
 }
 
-function file_exists(mixed $value, string $dir = WEB_DIR, bool $negate = false): array
+function file_exists(string $value, string $dir = WEB_DIR, bool $negate = false): array
 {
-    if (is_string($value) && (filesystem\file_exists($dir, $value) === !$negate)) {
+    if (filesystem\file_exists($dir, $value) === !$negate) {
         return [true, ''];
     }
     return [false, $negate === false ? '{value} does not exist.' : '{value} must not exist.'];
 }
 
-function file_in_dir(mixed $value, string $dir, bool $negate = false): array
+function file_in_dir(string $value, string $dir, bool $negate = false): array
 {
     if (!$negate && !filesystem\file_in_dir($value, $dir)) {
         return [false, sprintf('{value} must be in the %s folder.', $dir)];
