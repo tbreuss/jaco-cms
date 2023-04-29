@@ -12,10 +12,10 @@ use jaco\http\response;
 #[attribute\validate_response('/api/upload/list/response.json')]
 function action(string $filter = '', string $sort = '-created'): array
 {
-    $payload = domain\upload\find_all([
-        'filter' => $filter,
-        'sort' => $sort
-    ]);
+    $payload = domain\upload\find_all(
+        filteredBy: $filter,
+        sortedBy: $sort
+    );
 
     return responder($payload);
 }
@@ -34,7 +34,7 @@ function responder(array $payload): array
     }
 
     return responder\api_errors($payload, [
-        'filter' => 'filter',
-        'sort' => 'sort',
+        'filteredBy' => 'filter',
+        'sortedBy' => 'sort',
     ]);
 }

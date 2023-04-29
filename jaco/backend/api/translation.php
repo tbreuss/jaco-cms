@@ -12,7 +12,9 @@ use jaco\http\response;
 #[attribute\validate_response('/api/translation/response.json')]
 function action(string $language): array
 {
-    $payload = domain\translation\all($language);
+    $payload = domain\translation\load_all(
+        forLanguage: $language
+    );
 
     return responder($payload);
 }

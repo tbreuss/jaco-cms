@@ -13,9 +13,9 @@ use jaco\http\response;
 #[attribute\validate_response('/api/null.json')]
 function action(array $bodyParams): array
 {
-    $payload = domain\upload\delete([
-        'file' => $bodyParams['fileName']
-    ]);
+    $payload = domain\upload\delete(
+        file: $bodyParams['fileName']
+    );
 
     return responder($payload);
 }

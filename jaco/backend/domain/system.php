@@ -12,20 +12,26 @@ use jaco\system;
 use const jaco\APP_VERSION;
 use const jaco\ERROR_LOG;
 
-function authenticate(array $input): array
+function authenticate(string $username, string $withPassword): array
 {
-    $errors = data\validate($input, [
-        ['username', 'required'],
-        ['username', 'string'],
-        ['password', 'required'],
-        ['password', 'string'],
-    ]);
+    $errors = data\validate(
+        [
+            'username' => $username,
+            'withPassword' => $withPassword,
+        ],
+        [
+            ['username', 'required'],
+            ['username', 'string'],
+            ['withPassword', 'required'],
+            ['withPassword', 'string'],
+        ]
+    );
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
     }
 
-    $token = auth\authenticate($input['username'], $input['password']);
+    $token = auth\authenticate($username, $withPassword);
 
     if ($token === null) {
         return domain\invalid([['', 'Authentication failed.']]);

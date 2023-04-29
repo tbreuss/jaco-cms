@@ -13,10 +13,10 @@ use jaco\http\response;
 #[attribute\validate_response('/api/login/response.json')]
 function action(array $bodyParams): array
 {
-    $payload = domain\system\authenticate([
-        'username' => $bodyParams['username'],
-        'password' => $bodyParams['password'],
-    ]);
+    $payload = domain\system\authenticate(
+        username: $bodyParams['username'],
+        withPassword: $bodyParams['password'],
+    );
 
     return responder($payload);
 }
@@ -33,6 +33,6 @@ function responder(array $payload): array
 
     return responder\api_errors($payload, [
         'username' => 'username',
-        'password' => 'password',
+        'withPassword' => 'password',
     ]);
 }

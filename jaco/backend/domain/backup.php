@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace jaco\domain\backup;
 
 use jaco\data;
+use jaco\domain;
 use jaco\filesystem;
 use jaco\html;
 use jaco\list;
-use jaco\domain;
 use jaco\struct\backup;
 use jaco\struct\file;
 
@@ -18,20 +18,20 @@ use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\WEB_DIR;
 
 /**
- * @param array{filter: string, sort: string} $input
  * @return array{0: string, 1: array}
  */
-function find_all(array $input): array
+function find_all(string $filteredBy, string $sortedBy): array
 {
-    $data = data\filter($input, [
-        ['filter', 'safe'],
-        ['sort', 'safe']
-    ]);
-
-    $errors = data\validate($data, [
-        ['filter', 'string'],
-        ['sort', 'string'],
-    ]);
+    $errors = data\validate(
+        [
+            'filteredBy' => $filteredBy,
+            'sortedBy' => $sortedBy
+        ],
+        [
+            ['filteredBy', 'string'],
+            ['sortedBy', 'string'],
+        ]
+    );
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
@@ -44,31 +44,29 @@ function find_all(array $input): array
     $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
     $files = filesystem\find_files(BACKUP_DIR, $allowed);
     $backups = _create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
-    $backups = list\filter($backups, $data['filter']);
-    $sort = _sort_field($data['sort']);
-    $output = [list\sort($backups, $sort), $data['filter'], $sort];
+    $backups = list\filter($backups, $filteredBy);
+    $sort = _sort_field($sortedBy);
+    $output = [list\sort($backups, $sort), $filteredBy, $sort];
 
     return domain\success($output);
 }
 
-function find_one(array $input): array
+function find(string $file): array
 {
-    $data = data\filter($input, [
-        ['file', 'filename'],
+    $file = data\filter_var($file, [
+        ['filename'],
     ]);
 
-    $errors = data\validate($data, [
-        ['file', 'required'],
-        ['file', 'file_exists', 'dir' => BACKUP_DIR],
-        ['file', 'file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
-        ['file', 'html_file_name', 'isBackup' => true],
+    $errors = data\validate_var($file, 'file', [
+        ['required'],
+        ['file_exists', 'dir' => BACKUP_DIR],
+        ['file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
+        ['html_file_name', 'isBackup' => true],
     ]);
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
     }
-
-    $file = $data['file'];
 
     $content = filesystem\read_file(BACKUP_DIR, $file);
 
@@ -78,39 +76,40 @@ function find_one(array $input): array
 
     $extension = \pathinfo($file, PATHINFO_EXTENSION);
     $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
-    return domain\success((array)new backup(
-        $file,
-        str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
-        html\get_title($content),
-        filesystem\restore_timestamp_from_file_name($file),
-        filesystem\file_mtime($file, BACKUP_DIR),
-        $type,
-        $type === 'page' ? $content : base64_encode($content)
-    ));
+    return domain\success(
+        (array)new backup(
+            $file,
+            str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
+            html\get_title($content),
+            filesystem\restore_timestamp_from_file_name($file),
+            filesystem\file_mtime($file, BACKUP_DIR),
+            $type,
+            $type === 'page' ? $content : base64_encode($content)
+        )
+    );
 }
 
 /**
- * @param array{file: string} $input
  * @return array{0: string, 1: ?array}
  */
-function restore(array $input): array
+function restore(string $file): array
 {
-    $data = data\filter($input, [
-        ['file', 'filename'],
+    $file = data\filter_var($file, [
+        ['filename'],
     ]);
 
-    $errors = data\validate($data, [
-        ['file', 'required'],
-        ['file', 'file_exists', 'dir' => BACKUP_DIR],
-        ['file', 'file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
-        ['file', 'html_file_name', 'isBackup' => true],
+    $errors = data\validate_var($file, 'file', [
+        ['required'],
+        ['file_exists', 'dir' => BACKUP_DIR],
+        ['file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
+        ['html_file_name', 'isBackup' => true],
     ]);
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
     }
 
-    $status = filesystem\restore_file(BACKUP_DIR, $data['file'], WEB_DIR);
+    $status = filesystem\restore_file(BACKUP_DIR, $file, WEB_DIR);
 
     if (!$status) {
         return domain\error([['file', 'Could not restore file.']]);
@@ -120,25 +119,24 @@ function restore(array $input): array
 }
 
 /**
- * @param array{file: string} $input
  * @return array{0: string, 1: ?array}
  */
-function delete(array $input): array
+function delete(string $file): array
 {
-    $data = data\filter($input, [
-        ['file', 'filename'],
+    $file = data\filter_var($file, [
+        ['filename'],
     ]);
 
-    $errors = data\validate($data, [
-        ['file', 'required'],
-        ['file', 'file_exists', 'dir' => BACKUP_DIR],
+    $errors = data\validate_var($file, 'file', [
+        ['required'],
+        ['file_exists', 'dir' => BACKUP_DIR],
     ]);
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
     }
 
-    $status = filesystem\delete_file(BACKUP_DIR, $input['file']);
+    $status = filesystem\delete_file(BACKUP_DIR, $file);
 
     if (!$status) {
         return domain\error([['file', 'Could not delete file.']]);

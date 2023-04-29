@@ -13,11 +13,11 @@ use jaco\http\response;
 #[attribute\validate_response('/api/page/copy/response.json')]
 function action(array $bodyParams): array
 {
-    $payload = domain\page\copy([
-        'srcFile' => $bodyParams['srcFileName'],
-        'dstFile' => $bodyParams['dstFileName'],
-        'dstTitle' => $bodyParams['dstPageTitle'],
-    ]);
+    $payload = domain\page\copy(
+        file: $bodyParams['srcFileName'],
+        toFile: $bodyParams['dstFileName'],
+        withTitle: $bodyParams['dstPageTitle'],
+    );
 
     return responder($payload);
 }
@@ -35,8 +35,8 @@ function responder(array $payload): array
     }
 
     return responder\api_errors($payload, [
-        'srcFile' => 'srcFileName',
-        'dstFile' => 'dstFileName',
-        'dstTitle' => 'dstPageTitle',
+        'file' => 'srcFileName',
+        'toFile' => 'dstFileName',
+        'withTitle' => 'dstPageTitle',
     ]);
 }

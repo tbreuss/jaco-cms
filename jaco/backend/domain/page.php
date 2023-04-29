@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace jaco\domain\page;
 
 use jaco\data;
+use jaco\domain;
 use jaco\filesystem;
 use jaco\html;
 use jaco\list;
-use jaco\domain;
 use jaco\struct\file;
 use jaco\struct\page;
 
@@ -19,17 +19,18 @@ use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
 use const jaco\WEB_DIR;
 
-function find_all(array $input): array
+function find_all(string $filteredBy, string $sortedBy): array
 {
-    $data = data\filter($input, [
-        ['filter', 'safe'],
-        ['sort', 'safe'],
-    ]);
-
-    $errors = data\validate($data, [
-        ['filter', 'string'],
-        ['sort', 'string'],
-    ]);
+    $errors = data\validate(
+        [
+            'filteredBy' => $filteredBy,
+            'sortedBy' => $sortedBy,
+        ],
+        [
+            ['filteredBy', 'string'],
+            ['sortedBy', 'string'],
+        ]
+    );
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
@@ -37,68 +38,68 @@ function find_all(array $input): array
 
     $files = filesystem\find_files_rec(WEB_DIR, PAGE_EXTENSIONS, [APP_DIR]);
     $pages = _create_list($files, WEB_DIR);
-    $pages = list\filter($pages, $data['filter']);
-    $sort = _sort_field($data['sort']);
-    $output = [list\sort($pages, $sort), $data['filter'], $sort];
+    $pages = list\filter($pages, $filteredBy);
+    $sortedBy = _sort_field($sortedBy);
+    $output = [list\sort($pages, $sortedBy), $filteredBy, $sortedBy];
 
     return domain\success($output);
 }
 
-function find_one(array $input): array
+function find(string $file): array
 {
-    $data = data\filter($input, [
-        ['file', 'filename'],
+    $file = data\filter_var($file, [
+        ['filename'],
     ]);
 
-    $errors = data\validate($data, [
-        ['file', 'required'],
-        ['file', 'file_exists', 'dir' => WEB_DIR],
-        ['file', 'file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS)],
+    $errors = data\validate_var($file, 'file', [
+        ['required'],
+        ['file_exists', 'dir' => WEB_DIR],
+        ['file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS)],
     ]);
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
     }
 
-    $html = filesystem\read_file(WEB_DIR, $data['file']);
+    $html = filesystem\read_file(WEB_DIR, $file);
 
     if ($html === null) {
         return domain\error([['file', 'Could not read file.']]);
     }
 
     return domain\success([
-        'file' => $data['file'],
+        'file' => $file,
         'title' => html\get_title($html),
-        'created' => filesystem\file_mtime($data['file'], WEB_DIR),
+        'created' => filesystem\file_mtime($file, WEB_DIR),
         'content' => $html
     ]);
 }
 
-function delete(array $input): array
+function delete(string $file): array
 {
-    $data = data\filter($input, [
-        ['file', 'filename'],
+    $file = data\filter_var($file, [
+        ['filename'],
     ]);
 
-    $errors = data\validate($data, [
-        ['file', 'required'],
-        ['file', 'file_exists', 'dir' => WEB_DIR],
-        ['file', 'file_writeable'],
-        ['file', 'html_file_name'],
-        ['file', 'html_file_extension']
+    $errors = data\validate_var($file, 'file', [
+        ['required'],
+        ['file_exists', 'dir' => WEB_DIR],
+        ['file_writeable'],
+        ['html_file_name'],
+        ['html_file_extension']
     ]);
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
     }
 
-    $status = filesystem\backup_file(WEB_DIR, $data['file'], BACKUP_DIR);
+    $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
 
     if (!$status) {
         return domain\error([['file', 'Could not backup file.']]);
     }
 
-    $status = filesystem\delete_file(WEB_DIR, $data['file']);
+    $status = filesystem\delete_file(WEB_DIR, $file);
 
     if (!$status) {
         return domain\error([['file', 'Could not delete file.']]);
@@ -108,125 +109,144 @@ function delete(array $input): array
 }
 
 /**
- * @param array{srcFile: string, dstFile: string, dstTitle: string} $input
  * @return array{0: string, 1: array}
  */
-function copy(array $input): array
+function copy(string $file, string $toFile, string $withTitle): array
 {
-    $data = data\filter($input, [
-        ['srcFile', 'filename'],
-        ['dstFile', 'filename'],
-        ['dstTitle', 'string'],
-    ]);
+    $data = data\filter(
+        [
+            'file' => $file,
+            'toFile' => $toFile,
+            'withTitle' => $withTitle,
+        ],
+        [
+            ['file', 'filename'],
+            ['toFile', 'filename'],
+            ['withTitle', 'string'],
+        ]
+    );
 
     $errors = data\validate($data, [
-        ['srcFile', 'required'],
-        ['srcFile', 'file_exists'],
-        ['dstFile', 'required'],
-        ['dstFile', 'html_file_name'],
-        ['dstFile', 'html_file_extension'],
-        ['dstFile', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
-        ['dstFile', 'file_exists', 'negate' => true],
-        ['dstTitle', 'required'],
+        ['file', 'required'],
+        ['file', 'file_exists'],
+        ['toFile', 'required'],
+        ['toFile', 'html_file_name'],
+        ['toFile', 'html_file_extension'],
+        ['toFile', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
+        ['toFile', 'file_exists', 'negate' => true],
+        ['withTitle', 'required'],
     ]);
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
     }
 
-    $html = filesystem\read_file(WEB_DIR, $data['srcFile']);
+    $html = filesystem\read_file(WEB_DIR, $data['file']);
 
     if ($html === null) {
-        return domain\error([['srcFile', 'Could not read file content.']]);
+        return domain\error([['file', 'Could not read file content.']]);
     }
 
-    $html = html\set_title($html, $data['dstTitle']);
+    $html = html\set_title($html, $data['withTitle']);
 
-    $status = filesystem\write_file(WEB_DIR, $data['dstFile'], $html);
+    $status = filesystem\write_file(WEB_DIR, $data['toFile'], $html);
 
     if ($status === false) {
-        return domain\error([['dstFile', 'Could not write file content.']]);
+        return domain\error([['toFile', 'Could not write file content.']]);
     }
 
-    $html = filesystem\read_file(WEB_DIR, $data['dstFile']);
+    $html = filesystem\read_file(WEB_DIR, $data['toFile']);
 
     if ($html === null) {
-        return domain\error([['dstFile', 'Could not read new page.']]);
+        return domain\error([['toFile', 'Could not read new page.']]);
     }
 
     return domain\success([
-        'file' => $data['dstFile'],
+        'file' => $data['toFile'],
         'title' => html\get_title($html),
-        'created' => filesystem\file_mtime($data['dstFile'], WEB_DIR),
+        'created' => filesystem\file_mtime($data['toFile'], WEB_DIR),
         'content' => $html
     ]);
 }
 
-function create_from_template(array $input): array
+function create(string $file, string $fromTemplate, string $withTitle): array
 {
-    $data = data\filter($input, [
-        ['srcFile', 'filename'],
-        ['dstFile', 'filename'],
-        ['dstTitle', 'string'],
-    ]);
+    $data = data\filter(
+        [
+            'file' => $file,
+            'fromTemplate' => $fromTemplate,
+            'withTitle' => $withTitle
+        ],
+        [
+            ['fromTemplate', 'filename'],
+            ['file', 'filename'],
+            ['withTitle', 'string'],
+        ]
+    );
 
     $errors = data\validate($data, [
-        ['srcFile', 'required'],
-        ['dstFile', 'required'],
-        ['dstFile', 'html_file_name'],
-        ['dstFile', 'html_file_extension'],
-        ['dstFile', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
-        ['dstFile', 'file_exists', 'negate' => true],
-        ['dstTitle', 'required'],
+        ['file', 'required'],
+        ['file', 'html_file_name'],
+        ['file', 'html_file_extension'],
+        ['file', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
+        ['file', 'file_exists', 'negate' => true],
+        ['fromTemplate', 'required'],
+        ['withTitle', 'required'],
     ]);
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
     }
 
-    $html = filesystem\read_file(TEMPLATE_PAGE_DIR, $data['srcFile']);
+    $html = filesystem\read_file(TEMPLATE_PAGE_DIR, $data['fromTemplate']);
 
     if ($html === null) {
-        return domain\error([['srcFile', 'Could not read file.']]);
+        return domain\error([['fromTemplate', 'Could not read file.']]);
     }
 
-    $html = html\set_title($html, $data['dstTitle']);
+    $html = html\set_title($html, $data['withTitle']);
 
-    $status = filesystem\write_file(WEB_DIR, $data['dstFile'], $html);
+    $status = filesystem\write_file(WEB_DIR, $data['file'], $html);
 
     if (!$status) {
-        return domain\error([['dstFile', 'Could not write file.']]);
+        return domain\error([['file', 'Could not write file.']]);
     }
 
     return domain\success(null);
 }
 
-function update(array $input): array
+function update(string $file, string $withContent): array
 {
-    $data = data\filter($input, [
-        ['file', 'string'],
-        ['file', 'filename'],
-        ['content', 'string'],
-    ]);
+    $data = data\filter(
+        [
+            'file' => $file,
+            'withContent' => $withContent
+        ],
+        [
+            ['file', 'string'],
+            ['file', 'filename'],
+            ['withContent', 'string'],
+        ]
+    );
 
     $errors = data\validate($data, [
         ['file', 'required'],
         ['file', 'file_exists'],
         ['file', 'html_file_name'],
         ['file', 'html_file_extension'],
-        ['content', 'required'],
+        ['withContent', 'required'],
     ]);
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
     }
 
-    [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['content']);
+    [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['withContent']);
 
     if ($status) {
-        $data['content'] = $htmlOrErrors;
+        $data['withContent'] = $htmlOrErrors;
     } else {
-        return domain\error([['content', \reset($htmlOrErrors)]]);
+        return domain\error([['withContent', \reset($htmlOrErrors)]]);
     }
 
     $status = filesystem\backup_file(WEB_DIR, $data['file'], BACKUP_DIR);
@@ -235,7 +255,7 @@ function update(array $input): array
         return domain\error([['file', 'Could not backup file.']]);
     }
 
-    $status = filesystem\write_file(WEB_DIR, $data['file'], $data['content']);
+    $status = filesystem\write_file(WEB_DIR, $data['file'], $data['withContent']);
 
     if (!$status) {
         return domain\error([['file', 'Could not write content to file.']]);

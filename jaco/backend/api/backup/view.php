@@ -12,9 +12,9 @@ use jaco\http\response;
 #[attribute\validate_response('/api/backup/view/response.json')]
 function action(string $file): array
 {
-    $payload = domain\backup\find_one([
-        'file' => $file,
-    ]);
+    $payload = domain\backup\find(
+        file: $file
+    );
 
     return responder($payload);
 }

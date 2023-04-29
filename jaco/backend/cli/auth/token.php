@@ -9,10 +9,10 @@ use jaco\domain;
 
 function command(array $options = [], array $arguments = []): void
 {
-    $payload = domain\system\authenticate([
-        'username' => $options['user'],
-        'password' => $options['pass'],
-    ]);
+    $payload = domain\system\authenticate(
+        username: $options['user'],
+        withPassword: $options['pass'],
+    );
 
     responder($payload, $options);
 }
@@ -28,7 +28,7 @@ function responder(array $payload, array $options): void
     }
 
     responder\handle_errors($status, $data, [
-        'user' => 'username',
-        'pass' => 'password',
+        'username' => 'user',
+        'withPassword' => 'pass',
     ]);
 }

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace jaco\domain\upload;
 
 use jaco\data;
+use jaco\domain;
 use jaco\filesystem;
 use jaco\list;
-use jaco\domain;
 use jaco\struct\file;
 use jaco\struct\upload;
 
@@ -16,17 +16,17 @@ use const jaco\BACKUP_DIR;
 use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\WEB_DIR;
 
-function find_all(array $input): array
+function find_all(string $filteredBy, string $sortedBy): array
 {
-    $data = data\filter($input, [
-        ['filter', 'safe'],
-        ['sort', 'safe']
-    ]);
-
-    $errors = data\validate($data, [
-        ['filter', 'string'],
-        ['sort', 'string'],
-    ]);
+    $errors = data\validate(
+        [
+            'filteredBy' => $filteredBy,
+            'sortedBy' => $sortedBy,
+        ], [
+            ['filteredBy', 'string'],
+            ['sortedBy', 'string'],
+        ]
+    );
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
@@ -37,44 +37,43 @@ function find_all(array $input): array
     }
 
     $files = filesystem\find_files_rec(WEB_DIR, UPLOAD_EXTENSIONS, [APP_DIR]);
-    $sort = _sort_field($data['sort']);
+    $sort = _sort_field($sortedBy);
     $uploads = _create_list($files);
-    $uploads = list\filter($uploads, $data['filter']);
+    $uploads = list\filter($uploads, $filteredBy);
     $uploads = list\sort($uploads, $sort);
-    $output = [$uploads, $data['filter'], $sort];
+    $output = [$uploads, $filteredBy, $sort];
 
     return domain\success($output);
 }
 
 /**
- * @param array{file: string} $input
  * @return array{0: string, 1: ?array}
  */
-function delete(array $input): array
+function delete(string $file): array
 {
-    $data = data\filter($input, [
-        ['file', 'filename'],
+    $file = data\filter_var($file, [
+        ['filename'],
     ]);
 
-    $errors = data\validate($data, [
-        ['file', 'required'],
-        ['file', 'file_exists'],
-        ['file', 'file_writeable'],
-        ['file', 'html_file_name'],
-        ['file', 'file_extension', 'allowedExtensions' => UPLOAD_EXTENSIONS]
+    $errors = data\validate_var($file, 'file', [
+        ['required'],
+        ['file_exists'],
+        ['file_writeable'],
+        ['html_file_name'],
+        ['file_extension', 'allowedExtensions' => UPLOAD_EXTENSIONS]
     ]);
 
     if (count($errors) > 0) {
         return domain\invalid($errors);
     }
 
-    $status = filesystem\backup_file(WEB_DIR, $data['file'], BACKUP_DIR);
+    $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
 
     if (!$status) {
         return domain\error([['file', 'Could not backup file.']]);
     }
 
-    $status = filesystem\delete_file(WEB_DIR, $data['file']);
+    $status = filesystem\delete_file(WEB_DIR, $file);
 
     if (!$status) {
         return domain\error([['file', 'Could not delete file.']]);

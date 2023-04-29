@@ -13,10 +13,10 @@ use jaco\http\response;
 #[attribute\validate_response('/api/null.json')]
 function action(array $bodyParams): array
 {
-    $payload = domain\page\update([
-        'file' => $bodyParams['fileName'],
-        'content' => $bodyParams['html'],
-    ]);
+    $payload = domain\page\update(
+        file: $bodyParams['fileName'],
+        withContent: $bodyParams['html'],
+    );
 
     return responder($payload);
 }
@@ -31,6 +31,6 @@ function responder(array $payload): array
 
     return responder\api_errors($payload, [
         'file' => 'fileName',
-        'content' => 'html',
+        'withContent' => 'html',
     ]);
 }

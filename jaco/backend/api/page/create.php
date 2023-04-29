@@ -13,11 +13,11 @@ use jaco\http\response;
 #[attribute\validate_response('/api/null.json')]
 function action(array $bodyParams): array
 {
-    $payload = domain\page\create_from_template([
-        'srcFile' => $bodyParams['pageTemplate'],
-        'dstFile' => $bodyParams['fileName'],
-        'dstTitle' => $bodyParams['pageTitle'],
-    ]);
+    $payload = domain\page\create(
+        file: $bodyParams['fileName'],
+        fromTemplate: $bodyParams['pageTemplate'],
+        withTitle: $bodyParams['pageTitle']
+    );
 
     return responder($payload);
 }
@@ -31,8 +31,8 @@ function responder(array $payload): array
     }
 
     return responder\api_errors($payload, [
-        'srcFile' => 'pageTemplate',
-        'dstFile' => 'fileName',
-        'dstTitle' => 'pageTitle',
+        'file' => 'fileName',
+        'fromTemplate' => 'pageTemplate',
+        'withTitle' => 'pageTitle',
     ]);
 }

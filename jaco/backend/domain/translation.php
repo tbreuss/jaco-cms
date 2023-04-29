@@ -8,18 +8,18 @@ use jaco\domain;
 
 use const jaco\DEFAULT_LANGUAGE;
 
-function all(string $language): array
+function load_all(string $forLanguage): array
 {
-    $translations = _load($language);
+    $translations = _load($forLanguage);
 
     return domain\success($translations);
 }
 
-function one(string $language, string $key): string
+function load_one(string $forLanguage, string $withKey): string
 {
-    $translations = _load($language);
+    $translations = _load($forLanguage);
 
-    return $translations[$key] ?? $key;
+    return $translations[$withKey] ?? $withKey;
 }
 
 function _load(string $language): array
