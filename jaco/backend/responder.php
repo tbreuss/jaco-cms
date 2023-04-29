@@ -10,6 +10,9 @@ use jaco\domain;
 const VALIDATE_INPUT_ATTRIBUTE = 'jaco\attribute\validate_input';
 const VALIDATE_OUTPUT_ATTRIBUTE = 'jaco\attribute\validate_output';
 
+/**
+ * @deprecated
+ */
 function call_service(callable $service, array $arguments): array
 {
     $function = new \ReflectionFunction($service);
@@ -40,6 +43,9 @@ function call_service(callable $service, array $arguments): array
     return $output;
 }
 
+/**
+ * @deprecated
+ */
 function call_service_from_api(
     callable $callable,
     array $apiInput,
@@ -61,6 +67,9 @@ function call_service_from_api(
     return handle_api_errors($serviceStatus, $serviceOutput, $inputMapping);
 }
 
+/**
+ * @deprecated
+ */
 function handle_api_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): array
 {
     if ($serviceStatus === domain\INVALID) {
@@ -76,6 +85,9 @@ function handle_api_errors(string $serviceStatus, array $serviceOutput, array $i
     return response\internal_server_error(invalid_service_status());
 }
 
+/**
+ * @deprecated
+ */
 function transform_data(array $data, array|callable $mapping): array
 {
     if (is_callable($mapping)) {
