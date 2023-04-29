@@ -10,13 +10,12 @@ const SECRETS = ['jaco\SECRET_KEY', 'jaco\PASSWORD'];
 
 function defined_classes(): array
 {
-    $classes = [];
-    foreach (get_declared_classes() as $class) {
-        if (str_starts_with($class, 'jaco\\')) {
-            $classes[] = $class;
-        }
-    }
+    $classes = array_filter(
+        get_declared_classes(),
+        fn($class) => str_starts_with($class, 'jaco\\')
+    );
     sort($classes);
+
     return $classes;
 }
 
@@ -43,12 +42,11 @@ function defined_constants(): array
 
 function defined_functions(): array
 {
-    $functions = [];
-    foreach (get_defined_functions()['user'] as $function) {
-        if (str_starts_with($function, 'jaco\\')) {
-            $functions[] = $function;
-        }
-    }
+    $functions = array_filter(
+        get_defined_functions()['user'],
+        fn($class) => str_starts_with($class, 'jaco\\')
+    );
     sort($functions);
+
     return $functions;
 }

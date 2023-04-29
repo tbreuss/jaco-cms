@@ -27,7 +27,7 @@ function filter_one(string|float|int|bool|null $var, array $filters): string|flo
     $name = '__name__';
     $data = [$name => $var];
 
-    $filters = array_map(function($rule) use ($name) {
+    $filters = array_map(function ($rule) use ($name) {
         array_unshift($rule, $name);
         return $rule;
     }, $filters);
@@ -67,7 +67,7 @@ function validate_one(string|float|int|bool|null $var, string $name, array $rule
 {
     $data = [$name => $var];
 
-    $rules = array_map(function($rule) use ($name) {
+    $rules = array_map(function ($rule) use ($name) {
         array_unshift($rule, $name);
         return $rule;
     }, $rules);

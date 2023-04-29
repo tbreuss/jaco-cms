@@ -120,12 +120,15 @@ function backup_file(string $dir, string $file, string $bakDir): bool
 {
     $modTime = file_mtime($file, $dir);
     $srcPath = join($dir, $file);
-    $dstPath = join($bakDir, \sprintf(
-        '%s_%s_%s',
-        \date('Ymd_His', $modTime),
-        strings\random(4),
-        \str_replace('/', '|', $file)
-    ));
+    $dstPath = join(
+        $bakDir,
+        \sprintf(
+            '%s_%s_%s',
+            \date('Ymd_His', $modTime),
+            strings\random(4),
+            \str_replace('/', '|', $file)
+        )
+    );
     return \copy($srcPath, $dstPath); // triggers an error
 }
 
@@ -262,8 +265,13 @@ function find_files(string $inDir, array $allowedExtensions, bool $withContent =
  * @param string[] $excludedDirectories
  * @return struct\file[]
  */
-function find_files_rec(string $dir, array $extensions, array $excludedDirectories = [], int $maxDepth = -1, bool $withContent = false): array
-{
+function find_files_rec(
+    string $dir,
+    array $extensions,
+    array $excludedDirectories = [],
+    int $maxDepth = -1,
+    bool $withContent = false
+): array {
     $excludedFiles = ['.git', '.idea', '.DS_Store', '.vscode', '.gitignore'];
 
     $onFileAcceptHandler = function (\SplFileInfo $file) use ($extensions, $excludedDirectories, $excludedFiles) {
@@ -316,10 +324,11 @@ function _rrmdir(string $dir): void
         $objects = \scandir($dir);
         foreach ($objects as $object) {
             if (($object != ".") && ($object != "..")) {
-                if (\is_dir($dir . DIRECTORY_SEPARATOR . $object) && !\is_link($dir . "/" . $object))
+                if (\is_dir($dir . DIRECTORY_SEPARATOR . $object) && !\is_link($dir . "/" . $object)) {
                     _rrmdir($dir . DIRECTORY_SEPARATOR . $object);
-                else
+                } else {
                     \unlink($dir . DIRECTORY_SEPARATOR . $object);
+                }
             }
         }
         \rmdir($dir);
@@ -333,7 +342,9 @@ function filter_filename(string $file): string
     $absolutes = [];
     foreach ($parts as $part) {
         $part = trim($part, '.');
-        if ($part === '') continue;
+        if ($part === '') {
+            continue;
+        }
         $absolutes[] = $part;
     }
     return implode(DIRECTORY_SEPARATOR, $absolutes);

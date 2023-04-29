@@ -47,7 +47,9 @@ function filename(mixed $value): string
     $absolutes = [];
     foreach ($parts as $part) {
         $part = trim($part, '.');
-        if ($part === '') continue;
+        if ($part === '') {
+            continue;
+        }
         $absolutes[] = $part;
     }
     return implode(DIRECTORY_SEPARATOR, $absolutes);

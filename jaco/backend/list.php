@@ -9,7 +9,7 @@ function filter(array $list, string $filter): array
     if (\strlen($filter) === 0) {
         return $list;
     }
-    return array_filter($list, function($item) use ($filter) {
+    return array_filter($list, function ($item) use ($filter) {
         $filter = \str_replace('/', '|', $filter);
         $data = (array)$item;
         foreach ($data as $value) {

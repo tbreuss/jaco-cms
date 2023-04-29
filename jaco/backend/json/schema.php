@@ -16,7 +16,7 @@ function validate_data(array|string|null $data, string $schema): array
 
     if (is_array($data)) {
         $dataAsObject = json_decode(json_encode($data));
-    } elseif(is_string($data)) {
+    } elseif (is_string($data)) {
         $dataAsObject = json_decode($data);
     } else {
         $dataAsObject = $data;

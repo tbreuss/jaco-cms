@@ -17,7 +17,7 @@ function call_service(callable $service, array $arguments): array
     $attributes = [];
     foreach ($function->getAttributes() as $attribute) {
         $attributeName = $attribute->getName();
-        $attributes[$attributeName] = match($attributeName) {
+        $attributes[$attributeName] = match ($attributeName) {
             VALIDATE_INPUT_ATTRIBUTE, VALIDATE_OUTPUT_ATTRIBUTE => $attribute->getArguments()[0] ?? null,
             default => null
         };
@@ -40,8 +40,12 @@ function call_service(callable $service, array $arguments): array
     return $output;
 }
 
-function call_service_from_api(callable $callable, array $apiInput, array $inputMapping, ?array $outputMapping = null): array
-{
+function call_service_from_api(
+    callable $callable,
+    array $apiInput,
+    array $inputMapping,
+    ?array $outputMapping = null
+): array {
     $serviceInput = transform_data($apiInput, $inputMapping);
 
     [$serviceStatus, $serviceOutput] = call_service($callable, $serviceInput);
