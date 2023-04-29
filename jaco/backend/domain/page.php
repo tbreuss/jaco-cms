@@ -19,6 +19,8 @@ use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
 use const jaco\WEB_DIR;
 
+const SORT_PARAMETERS = ['created', 'file', 'title'];
+
 /**
  * @return array{string, array}
  */
@@ -32,6 +34,7 @@ function find_all(string $filteredBy, string $sortedBy): array
         [
             ['filteredBy', 'string'],
             ['sortedBy', 'string'],
+            ['sortedBy', 'sort_parameter', 'fields' => SORT_PARAMETERS],
         ]
     );
 
@@ -309,7 +312,7 @@ function _create_one(string $dir, string $file, int $modified, ?string $content 
  */
 function _sort_field(string $sort): array
 {
-    if (!in_array(ltrim($sort, '-'), ['created', 'file', 'title'])) {
+    if (!in_array(ltrim($sort, '-'), SORT_PARAMETERS)) {
         return ['created', 'desc'];
     }
     $sortDir = str_starts_with($sort, '-') ? 'desc' : 'asc';

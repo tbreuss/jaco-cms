@@ -15,13 +15,17 @@ function emit(int $status, string|array|null $response): void
         echo $response;
     } elseif (is_array($response)) {
         header('Content-Type: application/json; charset=utf-8');
-        echo match ($status) {
-            response\OK, response\CREATED => send_data($response),
-            default => send_errors($response),
-        };
+        if (response\is_2xx($status)) {
+            echo send_data($response);
+        } elseif (response\is_4xx($status)) {
+            echo send_errors($response);
+        } elseif (response\is_5xx($status)) {
+            echo send_errors($response);
+        }
     }
+
     ob_end_flush();
-    exit;
+    exit(0);
 }
 
 function send_errors(array $errors): string
@@ -32,14 +36,20 @@ function send_errors(array $errors): string
             $errors[$index]['source']['pointer'] = '';
         }
     }
-    return json_encode($errors);
+    return _json_encode($errors);
 }
 
 function send_data(array $data): string
 {
-    $data = json_encode($data);
-    if ($data === false) {
-        throw new \exception('Could not encode json');
+    return _json_encode($data);
+}
+
+function _json_encode(array $data): string
+{
+    $json = json_encode($data, JSON_PRESERVE_ZERO_FRACTION);
+    if ($json === false) {
+        http_response_code(response\INTERNAL_SERVER_ERROR);
+        return '[{"title":"Server Error","detail":"Could not JSON encode data"}]';
     }
-    return $data;
+    return $json;
 }

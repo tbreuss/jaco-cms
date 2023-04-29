@@ -62,7 +62,7 @@ function validate(array|string|null $data, string $schema): array
 
 function client_error(int $status, array $data = null): array
 {
-    if ($status < 400 || $status >= 500) {
+    if (!is_4xx($status)) {
         return internal_server_error($data);
     }
     return [$status, $data];
@@ -70,8 +70,28 @@ function client_error(int $status, array $data = null): array
 
 function server_error(int $status, array $data = null): array
 {
-    if ($status < 500 || $status >= 600) {
+    if (!is_5xx($status)) {
         return internal_server_error($data);
     }
     return [$status, $data];
+}
+
+function is_2xx(int $status): bool
+{
+    return $status >= 200 && $status < 300;
+}
+
+function is_3xx(int $status): bool
+{
+    return $status >= 300 && $status < 400;
+}
+
+function is_4xx(int $status): bool
+{
+    return $status >= 400 && $status < 500;
+}
+
+function is_5xx(int $status): bool
+{
+    return $status >= 500 && $status < 600;
 }

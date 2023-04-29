@@ -16,6 +16,8 @@ use const jaco\BACKUP_DIR;
 use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\WEB_DIR;
 
+const SORT_PARAMETERS = ['file', 'extension', 'size', 'created'];
+
 /**
  * @return array{string, array}
  */
@@ -25,9 +27,11 @@ function find_all(string $filteredBy, string $sortedBy): array
         [
             'filteredBy' => $filteredBy,
             'sortedBy' => $sortedBy,
-        ], [
+        ],
+        [
             ['filteredBy', 'string'],
             ['sortedBy', 'string'],
+            ['sortedBy', 'sort_parameter', 'fields' => SORT_PARAMETERS],
         ]
     );
 
@@ -109,6 +113,9 @@ function _create_list(array $files): array
  */
 function _sort_field(string $sort): array
 {
+    if (!in_array(ltrim($sort, '-'), SORT_PARAMETERS)) {
+        return ['created', 'desc'];
+    }
     $sortDir = str_starts_with($sort, '-') ? 'desc' : 'asc';
     $sortField = $sortDir === 'desc' ? substr($sort, 1) : $sort;
     return [$sortField, $sortDir];

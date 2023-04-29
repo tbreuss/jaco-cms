@@ -110,3 +110,13 @@ function file_in_dir(string $value, string $dir, bool $negate = false): array
 
     return [true, ''];
 }
+
+function sort_parameter(string $value, array $fields = []): array
+{
+    $field = ltrim($value, '-');
+    if (!in_array($field, $fields)) {
+        return [false, '{value} is a invalid sort parameter.'];
+    }
+
+    return [true, ''];
+}

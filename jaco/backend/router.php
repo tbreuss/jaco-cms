@@ -24,7 +24,7 @@ function route(string $method, string $action, callable $callback, bool $authent
         'method' => $method,
         'action' => $action,
         'callback' => $callback,
-        'authenticated' => $authenticated
+        'authenticated' => $authenticated,
     ];
 }
 
@@ -119,7 +119,7 @@ function call_action(string $action): array
         return response\bad_request([['detail' => $e->getMessage(), 'title' => 'Type Error']]);
     }
 
-    if (($status >= 400) && ($status < 500)) {
+    if (response\is_4xx($status)) {
         $errors = response\validate($response, '/api/errors.json');
         if (count($errors) > 0) {
             return response\internal_server_error($errors);
@@ -127,7 +127,7 @@ function call_action(string $action): array
         return response\client_error($status, $response);
     }
 
-    if (($status >= 500) && ($status < 600)) {
+    if (response\is_5xx($status)) {
         $errors = response\validate($response, '/api/errors.json');
         if (count($errors) > 0) {
             return response\internal_server_error($errors);

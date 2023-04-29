@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\controller;
+namespace jaco\responder;
 
 use jaco\http\response;
 use jaco\domain;

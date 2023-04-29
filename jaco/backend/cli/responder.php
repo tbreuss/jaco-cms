@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\cli\responder;
 
-use jaco\controller;
+use jaco\responder;
 use jaco\domain;
 
 function handle_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): void
@@ -14,18 +14,18 @@ function handle_errors(string $serviceStatus, array $serviceOutput, array $input
     }
 
     if ($serviceStatus === domain\INVALID) {
-        $cliOutput = controller\transform_client_errors($serviceOutput, $inputMapping);
+        $cliOutput = responder\transform_client_errors($serviceOutput, $inputMapping);
         render_errors($cliOutput);
         exit(1);
     }
 
     if ($serviceStatus === domain\ERROR) {
-        $cliOutput = controller\transform_server_errors($serviceOutput, $inputMapping);
+        $cliOutput = responder\transform_server_errors($serviceOutput, $inputMapping);
         render_errors($cliOutput);
         exit(2);
     }
 
-    $cliOutput = controller\invalid_service_status();
+    $cliOutput = responder\invalid_service_status();
     render_errors($cliOutput);
     exit(3);
 }
