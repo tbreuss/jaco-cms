@@ -12,6 +12,9 @@ use jaco\system;
 use const jaco\APP_VERSION;
 use const jaco\ERROR_LOG;
 
+/**
+ * @return array{string, array}
+ */
 function authenticate(string $username, string $withPassword): array
 {
     $errors = data\validate(
@@ -40,6 +43,9 @@ function authenticate(string $username, string $withPassword): array
     return domain\success(['token' => $token]);
 }
 
+/**
+ * @return array{string, array}
+ */
 function environment(): array
 {
     return domain\success([
@@ -49,6 +55,9 @@ function environment(): array
     ]);
 }
 
+/**
+ * @return array{string, array}
+ */
 function log(): array
 {
     $lines = [];
@@ -83,6 +92,9 @@ function log(): array
     return domain\success($lines);
 }
 
+/**
+ * @return array{string, array}
+ */
 function phpinfo(): array
 {
     \ob_start();
@@ -99,6 +111,9 @@ function phpinfo(): array
     return domain\success($matches[1]);
 }
 
+/**
+ * @return array{string, array}
+ */
 function version(): array
 {
     return domain\success([

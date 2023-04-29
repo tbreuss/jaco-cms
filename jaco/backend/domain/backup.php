@@ -18,7 +18,7 @@ use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\WEB_DIR;
 
 /**
- * @return array{0: string, 1: array}
+ * @return array{string, array}
  */
 function find_all(string $filteredBy, string $sortedBy): array
 {
@@ -51,13 +51,16 @@ function find_all(string $filteredBy, string $sortedBy): array
     return domain\success($output);
 }
 
+/**
+ * @return array{string, array}
+ */
 function find(string $file): array
 {
-    $file = data\filter_var($file, [
+    $file = data\filter_one($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_var($file, 'file', [
+    $errors = data\validate_one($file, 'file', [
         ['required'],
         ['file_exists', 'dir' => BACKUP_DIR],
         ['file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
@@ -90,15 +93,15 @@ function find(string $file): array
 }
 
 /**
- * @return array{0: string, 1: ?array}
+ * @return array{string, array}
  */
 function restore(string $file): array
 {
-    $file = data\filter_var($file, [
+    $file = data\filter_one($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_var($file, 'file', [
+    $errors = data\validate_one($file, 'file', [
         ['required'],
         ['file_exists', 'dir' => BACKUP_DIR],
         ['file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
@@ -119,15 +122,15 @@ function restore(string $file): array
 }
 
 /**
- * @return array{0: string, 1: ?array}
+ * @return array{string, array}
  */
 function delete(string $file): array
 {
-    $file = data\filter_var($file, [
+    $file = data\filter_one($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_var($file, 'file', [
+    $errors = data\validate_one($file, 'file', [
         ['required'],
         ['file_exists', 'dir' => BACKUP_DIR],
     ]);

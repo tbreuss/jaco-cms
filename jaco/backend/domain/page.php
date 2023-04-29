@@ -19,6 +19,9 @@ use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
 use const jaco\WEB_DIR;
 
+/**
+ * @return array{string, array}
+ */
 function find_all(string $filteredBy, string $sortedBy): array
 {
     $errors = data\validate(
@@ -45,13 +48,16 @@ function find_all(string $filteredBy, string $sortedBy): array
     return domain\success($output);
 }
 
+/**
+ * @return array{string, array}
+ */
 function find(string $file): array
 {
-    $file = data\filter_var($file, [
+    $file = data\filter_one($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_var($file, 'file', [
+    $errors = data\validate_one($file, 'file', [
         ['required'],
         ['file_exists', 'dir' => WEB_DIR],
         ['file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS)],
@@ -75,13 +81,16 @@ function find(string $file): array
     ]);
 }
 
+/**
+ * @return array{string, array}
+ */
 function delete(string $file): array
 {
-    $file = data\filter_var($file, [
+    $file = data\filter_one($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_var($file, 'file', [
+    $errors = data\validate_one($file, 'file', [
         ['required'],
         ['file_exists', 'dir' => WEB_DIR],
         ['file_writeable'],
@@ -109,7 +118,7 @@ function delete(string $file): array
 }
 
 /**
- * @return array{0: string, 1: array}
+ * @return array{string, array}
  */
 function copy(string $file, string $toFile, string $withTitle): array
 {
@@ -169,6 +178,9 @@ function copy(string $file, string $toFile, string $withTitle): array
     ]);
 }
 
+/**
+ * @return array{string, array}
+ */
 function create(string $file, string $fromTemplate, string $withTitle): array
 {
     $data = data\filter(
@@ -215,6 +227,9 @@ function create(string $file, string $fromTemplate, string $withTitle): array
     return domain\success(null);
 }
 
+/**
+ * @return array{string, array}
+ */
 function update(string $file, string $withContent): array
 {
     $data = data\filter(

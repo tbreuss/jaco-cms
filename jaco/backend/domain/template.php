@@ -13,6 +13,9 @@ use jaco\struct\file;
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
 
+/**
+ * @return array{string, array}
+ */
 function page_templates(array $input): array
 {
     $data = data\filter($input, []);
@@ -42,7 +45,10 @@ function page_templates(array $input): array
     );
 }
 
+/**
+ * @return array{string, array}
+ */
 function content_templates(): array
 {
-    return []; // TODO
+    return domain\error([['', 'TODO: implement this.']]); // TODO
 }

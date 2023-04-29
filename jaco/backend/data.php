@@ -22,7 +22,7 @@ function filter(array $data, array $filters): array
     return $filtered;
 }
 
-function filter_var(string|float|int|bool|null $var, array $filters): string|float|int|bool|null
+function filter_one(string|float|int|bool|null $var, array $filters): string|float|int|bool|null
 {
     $name = '__name__';
     $data = [$name => $var];
@@ -63,7 +63,7 @@ function validate(array $data, array $rules): array
     return $errors;
 }
 
-function validate_var(string|float|int|bool|null $var, string $name, array $rules): array
+function validate_one(string|float|int|bool|null $var, string $name, array $rules): array
 {
     $data = [$name => $var];
 

@@ -16,6 +16,9 @@ use const jaco\BACKUP_DIR;
 use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\WEB_DIR;
 
+/**
+ * @return array{string, array}
+ */
 function find_all(string $filteredBy, string $sortedBy): array
 {
     $errors = data\validate(
@@ -47,15 +50,15 @@ function find_all(string $filteredBy, string $sortedBy): array
 }
 
 /**
- * @return array{0: string, 1: ?array}
+ * @return array{string, array}
  */
 function delete(string $file): array
 {
-    $file = data\filter_var($file, [
+    $file = data\filter_one($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_var($file, 'file', [
+    $errors = data\validate_one($file, 'file', [
         ['required'],
         ['file_exists'],
         ['file_writeable'],
