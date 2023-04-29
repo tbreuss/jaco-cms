@@ -71,6 +71,12 @@ GET http://127.0.0.1:9999/jaco/api.php?action=page/view&file=index.html&XDEBUG_S
 Accept: application/json
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
 
+### Template pages
+GET http://localhost:9999/jaco/api.php?action=template/pages&XDEBUG_SESSION_START
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+
+
 ### Backup list
 GET http://localhost:9999/jaco/api.php?action=backup/list&filter=&sort=file&XDEBUG_SESSION_START
 Accept: application/json

@@ -8,12 +8,11 @@ use jaco\api\responder;
 use jaco\attribute;
 use jaco\domain;
 use jaco\http\response;
-use jaco\struct\page;
 
 #[attribute\validate_response('/api/template/response.json')]
 function action(): array
 {
-    $payload = domain\template\page\find_all([]);
+    $payload = domain\template\page_templates([]);
 
     return responder($payload);
 }
@@ -24,10 +23,10 @@ function responder(array $payload): array
 
     if ($status === domain\SUCCESS) {
         return response\ok(
-            array_map(fn(page $item): array => [
-                'file' => $item->file,
-                'title' => $item->title,
-                'created' => $item->created,
+            array_map(fn(array $item): array => [
+                'file' => $item['file'],
+                'title' => $item['title'],
+                'created' => $item['created'],
             ], $data)
         );
     }

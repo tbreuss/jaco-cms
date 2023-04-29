@@ -249,12 +249,12 @@ function validate_extension(string $dir, string $file, array $allowed = PAGE_EXT
 }
 
 /**
- * @param string[] $extensions
+ * @param string[] $allowedExtensions
  * @return struct\file[]
  */
-function find_files(string $dir, array $extensions): array
+function find_files(string $inDir, array $allowedExtensions, bool $withContent = false): array
 {
-    return find_files_rec($dir, $extensions, [], 0);
+    return find_files_rec($inDir, $allowedExtensions, [], 0, $withContent);
 }
 
 /**
@@ -262,7 +262,7 @@ function find_files(string $dir, array $extensions): array
  * @param string[] $excludedDirectories
  * @return struct\file[]
  */
-function find_files_rec(string $dir, array $extensions, array $excludedDirectories = [], int $maxDepth = -1): array
+function find_files_rec(string $dir, array $extensions, array $excludedDirectories = [], int $maxDepth = -1, bool $withContent = false): array
 {
     $excludedFiles = ['.git', '.idea', '.DS_Store', '.vscode', '.gitignore'];
 
@@ -302,7 +302,8 @@ function find_files_rec(string $dir, array $extensions, array $excludedDirectori
             \ltrim($relfile, '\\/'),
             $file->getExtension(),
             $file->getMTime(),
-            $file->getSize()
+            $file->getSize(),
+            $withContent ? read_file($dir, $relfile) : null
         );
     }
 
