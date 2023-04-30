@@ -9,6 +9,9 @@ use jaco\filesystem;
 
 use const jaco\WEB_DIR;
 
+/**
+ * @testdox Filesystem Module
+ */
 final class FileFunctionsTest extends TestCase
 {
     protected function setUp(): void
@@ -26,26 +29,26 @@ final class FileFunctionsTest extends TestCase
         }
     }
 
-    public function testFileExistsWithExistingFile(): void
+    public function testExistingFileCanBeChecked(): void
     {
         touch(WEB_DIR . '/test/foo.html');
         $this->assertTrue(filesystem\file_exists(WEB_DIR, 'test/foo.html'));
     }
 
-    public function testFileExistsWithNotExistingFile(): void
+    public function testNotExistingFileCanBeChecked(): void
     {
         $this->assertFalse(filesystem\file_exists(WEB_DIR, 'xxx.html'));
         $this->assertFalse(filesystem\file_exists(WEB_DIR, 'xxx/yyy/zzz.html'));
     }
 
-    public function testIsWritableWithWritableFile(): void
+    public function testWritableFileCanBeChecked(): void
     {
         filesystem\make_dir_rec(WEB_DIR, 'test/is_writeable');
         touch(WEB_DIR . '/test/is_writeable/a.html');
         $this->assertTrue(filesystem\file_is_writable(WEB_DIR, 'test/is_writeable/a.html'));
     }
 
-    public function testIsWritableWithNotWritableFile(): void
+    public function testNotWritableFileCanBeChecked(): void
     {
         filesystem\make_dir_rec(WEB_DIR, 'test/is_writeable');
         touch(WEB_DIR . '/test/is_writeable/a.html');
@@ -53,13 +56,13 @@ final class FileFunctionsTest extends TestCase
         $this->assertFalse(filesystem\file_is_writable(WEB_DIR, 'test/foo/writeable.html'));
     }
 
-    public function testMakeDir(): void
+    public function testDirectoryCanBeCreated(): void
     {
         filesystem\make_dir(WEB_DIR, 'foo/abc');
         $this->assertTrue(is_dir(WEB_DIR . '/foo/abc'));
     }
 
-    public function testMakeDirRecursive(): void
+    public function testDirectoryCanBeCreatedRecursively(): void
     {
         filesystem\make_dir_rec(WEB_DIR, 'foo/bar/baz');
         $this->assertTrue(is_dir(WEB_DIR . '/foo'));
