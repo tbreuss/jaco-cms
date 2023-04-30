@@ -60,6 +60,10 @@ function environment(): array
  */
 function log(int $size = 100): array
 {
+    if ($size < 1) {
+        return domain\success([]);
+    }
+
     $lines = [];
     if (\file_exists(ERROR_LOG)) {
         $fp = \fopen(ERROR_LOG, 'r');

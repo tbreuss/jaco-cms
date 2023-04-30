@@ -6,42 +6,29 @@ require_once 'vendor/autoload.php';
 
 require('constants.php');
 
-use Garden\Cli\Cli;
+use Ahc\Cli\Application;
 
-$cli = new Cli();
+use const jaco\APP_VERSION;
 
-$cli->command('version')
-    ->description('Show version info.');
+$app = new Application('Jaco CLI', APP_VERSION);
 
-$cli->command('auth:token')
-    ->description('Get token for credentials.')
-    ->opt('user:u', 'The Username.', true)
-    ->opt('pass:p', 'The Password.', true);
+$app->command('sys:version', 'Show version info.')
+    ->action('jaco\cli\version\command');
 
-$cli->command('push')
-    ->description('Pull data from a remote server.')
-    ->opt('host:h', 'Connect to host.', true)
-    ->opt('port:P', 'Port number to use.', false, 'integer')
-    ->opt('user:u', 'User for login if not current user.', true)
-    ->opt('password:p', 'Password to use when connecting to server.')
-    ->opt('database:d', 'The name of the database to dump.', true);
+$app->command('sys:log', 'Show log entries.')
+    ->option('-s --size', 'Number of lines to show', 'intval', 100)
+    ->action('jaco\cli\system\log\command');
 
-$cli->command('pull')
-    ->description('Pull data from a remote server.')
-    ->opt('host:h', 'Connect to host.', true)
-    ->opt('port:P', 'Port number to use.', false, 'integer')
-    ->opt('user:u', 'User for login if not current user.', true);
+$app->command('auth:token', 'Get token for credential.')
+    ->option('-u --user', 'The Username', 'strval', '')
+    ->option('-p --pass', 'The Password', 'strval', '')
+    ->action('jaco\cli\auth\token\command');
 
+$app->onException(function (Throwable $e, int $exitCode) {
+    echo $e->getMessage();
+    exit($exitCode);
+});
 
-// Parse and return cli args.
-$args = $cli->parse($argv);
-
-$callback = sprintf('jaco\cli\%s\command', str_replace(':', '\\', $args->getCommand()));
-
-if (is_callable($callback)) {
-    $callback($args->getOpts(), $args->getArgs());
-} else {
-    fwrite(STDOUT, sprintf('Command %s not found.', $args->getCommand()) . PHP_EOL);
-}
+$app->handle($argv);
 
 exit(0);

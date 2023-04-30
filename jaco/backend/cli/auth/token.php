@@ -7,22 +7,22 @@ namespace jaco\cli\auth\token;
 use jaco\cli\responder;
 use jaco\domain;
 
-function command(array $options = [], array $arguments = []): void
+function command(string $user, string $pass): void
 {
     $payload = domain\system\authenticate(
-        username: $options['user'],
-        withPassword: $options['pass'],
+        username: $user,
+        withPassword: $pass,
     );
 
-    responder($payload, $options);
+    responder($payload, $user);
 }
 
-function responder(array $payload, array $options): void
+function responder(array $payload, string $user): void
 {
     [$status, $data] = $payload;
 
     if ($status === domain\SUCCESS) {
-        fwrite(STDOUT, sprintf('The token for user "%s" is:', $options['user']) . PHP_EOL);
+        fwrite(STDOUT, sprintf('The token for user "%s" is:', $user) . PHP_EOL);
         fwrite(STDOUT, $data['token'] . PHP_EOL);
         exit(0);
     }

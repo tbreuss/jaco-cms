@@ -5,7 +5,7 @@
         "ext-libxml": "*",
         "firebase/php-jwt": "^6.1",
         "opis/json-schema": "^2.3",
-        "vanilla/garden-cli": "^3.1"
+        "adhocore/cli": "^1.6"
     },
     "autoload": {
         "files": [
