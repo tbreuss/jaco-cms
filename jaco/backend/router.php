@@ -123,7 +123,7 @@ function call_action(string $action, ?string $requestJsonSchema, ?string $respon
     }
 
     if (response\is_4xx($status)) {
-        $errors = response\validate($response, '/api/errors.json');
+        $errors = response\validate($response, 'errors.json');
         if (count($errors) > 0) {
             return response\internal_server_error($errors);
         }
@@ -131,7 +131,7 @@ function call_action(string $action, ?string $requestJsonSchema, ?string $respon
     }
 
     if (response\is_5xx($status)) {
-        $errors = response\validate($response, '/api/errors.json');
+        $errors = response\validate($response, 'errors.json');
         if (count($errors) > 0) {
             return response\internal_server_error($errors);
         }

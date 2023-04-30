@@ -9,7 +9,9 @@ use jaco\http\response;
 
 function action(): array
 {
-    $payload = domain\system\log();
+    $payload = domain\system\log(
+        size: 1000
+    );
 
     return responder($payload);
 }

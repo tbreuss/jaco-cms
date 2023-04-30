@@ -27,3 +27,4 @@ define('jaco\SECRET_KEY', $settings['jaco\SECRET_KEY'] ?? openssl_random_pseudo_
 define('jaco\USERNAME', $settings['jaco\USERNAME'] ?? 'admin');
 define('jaco\PASSWORD', $settings['jaco\PASSWORD'] ?? openssl_random_pseudo_bytes(32));
 define('jaco\ERROR_LOG', __DIR__ . '/runtime/log/error.log');
+define('jaco\JSON_SCHEMA_URL', 'https://jaco.tebe.ch');

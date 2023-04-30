@@ -12,10 +12,7 @@
             "type": "string",
             "minLength": 4,
             "maxLength": 128,
-            "pattern": "[A-Za-z0-9-_]",
-            "$error": {
-                "_pattern": "huhu, thats wrong"
-            }
+            "pattern": "[A-Za-z0-9-_]"
         },
         "dstTitle": {
             "type": "string",

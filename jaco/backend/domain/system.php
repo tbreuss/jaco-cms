@@ -58,7 +58,7 @@ function environment(): array
 /**
  * @return array{string, array}
  */
-function log(): array
+function log(int $size = 100): array
 {
     $lines = [];
     if (\file_exists(ERROR_LOG)) {
@@ -75,7 +75,7 @@ function log(): array
                 $lines[] = $currentLine;
                 $currentLine = '';
                 $i++;
-                if ($i >= 1000) {
+                if ($i >= $size) {
                     break;
                 }
             } else {

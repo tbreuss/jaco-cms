@@ -21,3 +21,4 @@ define('jaco\SECRET_KEY', 'test_1234');
 define('jaco\USERNAME', 'test_user');
 define('jaco\PASSWORD', 'test_pass');
 define('jaco\ERROR_LOG', __DIR__ . '/runtime/log/error.log');
+define('jaco\JSON_SCHEMA_URL', 'https://jaco.tebe.ch');

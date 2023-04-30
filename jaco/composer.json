@@ -9,7 +9,7 @@
     },
     "autoload": {
         "files": [
-            "_include.php"
+            "autoload.php"
         ]
     },
     "require-dev": {
