@@ -59,7 +59,7 @@ function find_all(string $filteredBy, string $sortedBy): array
  */
 function find(string $file): array
 {
-    $file = data\filter_one($file, [
+    $file = data\sanitize_one($file, [
         ['filename'],
     ]);
 
@@ -100,7 +100,7 @@ function find(string $file): array
  */
 function restore(string $file): array
 {
-    $file = data\filter_one($file, [
+    $file = data\sanitize_one($file, [
         ['filename'],
     ]);
 
@@ -129,7 +129,7 @@ function restore(string $file): array
  */
 function delete(string $file): array
 {
-    $file = data\filter_one($file, [
+    $file = data\sanitize_one($file, [
         ['filename'],
     ]);
 

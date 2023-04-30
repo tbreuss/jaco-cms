@@ -58,7 +58,7 @@ function find_all(string $filteredBy, string $sortedBy): array
  */
 function delete(string $file): array
 {
-    $file = data\filter_one($file, [
+    $file = data\sanitize_one($file, [
         ['filename'],
     ]);
 

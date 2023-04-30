@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace jaco\data;
 
-function filter(array $data, array $filters): array
+function sanitize(array $data, array $filters): array
 {
     $filtered = [];
     foreach ($filters as $rule) {
         $name = $rule[0];
         $value = $data[$name] ?? null;
-        $callable = 'jaco\\data\\filter\\' . $rule[1];
+        $callable = 'jaco\\data\\sanitize\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         $filteredValue = call_user_func_array($callable, $options);
@@ -22,7 +22,7 @@ function filter(array $data, array $filters): array
     return $filtered;
 }
 
-function filter_one(string|float|int|bool|null $var, array $filters): string|float|int|bool|null
+function sanitize_one(string|float|int|bool|null $var, array $filters): string|float|int|bool|null
 {
     $name = '__name__';
     $data = [$name => $var];
@@ -32,7 +32,7 @@ function filter_one(string|float|int|bool|null $var, array $filters): string|flo
         return $rule;
     }, $filters);
 
-    $filtered = filter($data, $filters);
+    $filtered = sanitize($data, $filters);
 
     return $filtered[$name] ?? null;
 }
@@ -47,7 +47,7 @@ function validate(array $data, array $rules): array
             continue;
         }
         $value = $data[$name] ?? null;
-        $callable = 'jaco\\data\\validator\\' . $rule[1];
+        $callable = 'jaco\\data\\validate\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         [$status, $message] = call_user_func_array($callable, $options);

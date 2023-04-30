@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\data\validator;
+namespace jaco\data\validate;
 
 use jaco\filesystem;
 

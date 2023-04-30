@@ -56,7 +56,7 @@ function find_all(string $filteredBy, string $sortedBy): array
  */
 function find(string $file): array
 {
-    $file = data\filter_one($file, [
+    $file = data\sanitize_one($file, [
         ['filename'],
     ]);
 
@@ -89,7 +89,7 @@ function find(string $file): array
  */
 function delete(string $file): array
 {
-    $file = data\filter_one($file, [
+    $file = data\sanitize_one($file, [
         ['filename'],
     ]);
 
@@ -125,7 +125,7 @@ function delete(string $file): array
  */
 function copy(string $file, string $toFile, string $withTitle): array
 {
-    $data = data\filter(
+    $data = data\sanitize(
         [
             'file' => $file,
             'toFile' => $toFile,
@@ -186,7 +186,7 @@ function copy(string $file, string $toFile, string $withTitle): array
  */
 function create(string $file, string $fromTemplate, string $withTitle): array
 {
-    $data = data\filter(
+    $data = data\sanitize(
         [
             'file' => $file,
             'fromTemplate' => $fromTemplate,
@@ -235,7 +235,7 @@ function create(string $file, string $fromTemplate, string $withTitle): array
  */
 function update(string $file, string $withContent): array
 {
-    $data = data\filter(
+    $data = data\sanitize(
         [
             'file' => $file,
             'withContent' => $withContent

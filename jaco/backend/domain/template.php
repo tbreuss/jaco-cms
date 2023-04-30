@@ -18,7 +18,7 @@ use const jaco\TEMPLATE_PAGE_DIR;
  */
 function page_templates(array $input): array
 {
-    $data = data\filter($input, []);
+    $data = data\sanitize($input, []);
 
     $errors = data\validate($data, []);
 
