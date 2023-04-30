@@ -17,25 +17,27 @@ function &routes(): array
     return $routes;
 }
 
-function route(string $method, string $action, callable $callback, bool $authenticated): void
+function add(string $method, string $route, callable $callback, bool $authenticated, ?string $requestSchema = null, ?string $responseSchema = null): void
 {
     $routes = &routes();
     $routes[] = [
         'method' => $method,
-        'action' => $action,
+        'action' => $route,
         'callback' => $callback,
         'authenticated' => $authenticated,
+        'requestJsonSchema' => $requestSchema,
+        'responseJsonSchema' => $responseSchema,
     ];
 }
 
-function get(string $action, callable $callback, bool $authenticated): void
+function get(string $route, callable $callback, bool $authenticated, ?string $requestSchema = null, ?string $responseSchema = null): void
 {
-    route('GET', $action, $callback, $authenticated);
+    add('GET', $route, $callback, $authenticated, $requestSchema, $responseSchema);
 }
 
-function post(string $action, callable $callback, bool $authenticated): void
+function post(string $route, callable $callback, bool $authenticated, ?string $requestSchema = null, ?string $responseSchema = null): void
 {
-    route('POST', $action, $callback, $authenticated);
+    add('POST', $route, $callback, $authenticated, $requestSchema, $responseSchema);
 }
 
 function dispatch(string $method, string $action): array
@@ -61,7 +63,7 @@ function dispatch(string $method, string $action): array
         }
     }
 
-    $response = call_action($route['callback']);
+    $response = call_action($route['callback'], $route['requestJsonSchema'], $route['responseJsonSchema']);
     if (!is_array($response) || !in_array(count($response), [1, 2]) || !is_int($response[0])) {
         return response\internal_server_error([['title' => 'Invalid Action Response Payload']]);
     }
@@ -69,7 +71,7 @@ function dispatch(string $method, string $action): array
     return array_pad($response, 2, ''); // ensure array with two entries
 }
 
-function call_action(string $action): array
+function call_action(string $action, ?string $requestJsonSchema, ?string $responseJsonSchema): array
 {
     $function = new \ReflectionFunction($action);
 
@@ -83,9 +85,10 @@ function call_action(string $action): array
     }
 
     // request body params
-    if (isset($attributes[VALIDATE_REQUEST_ATTRIBUTE])) {
+    if (isset($attributes[VALIDATE_REQUEST_ATTRIBUTE]) || ($requestJsonSchema !== null)) {
+        $jsonSchema = $attributes[VALIDATE_REQUEST_ATTRIBUTE] ?? $requestJsonSchema;
         $bodyParams = request\get_post_values();
-        $errors = request\validate($bodyParams, $attributes[VALIDATE_REQUEST_ATTRIBUTE]);
+        $errors = request\validate($bodyParams, $jsonSchema);
         if (count($errors) > 0) {
             return response\bad_request($errors);
         }
@@ -135,8 +138,9 @@ function call_action(string $action): array
         return response\server_error($status, $response);
     }
 
-    if (isset($attributes[VALIDATE_RESPONSE_ATTRIBUTE])) {
-        $errors = response\validate($response, $attributes[VALIDATE_RESPONSE_ATTRIBUTE]);
+    if (isset($attributes[VALIDATE_RESPONSE_ATTRIBUTE])  || ($responseJsonSchema !== null)) {
+        $jsonSchema = $attributes[VALIDATE_RESPONSE_ATTRIBUTE] ?? $responseJsonSchema;
+        $errors = response\validate($response, $jsonSchema);
         if (count($errors) > 0) {
             return response\internal_server_error($errors);
         }

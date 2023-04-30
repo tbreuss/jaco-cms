@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\template\pages;
 
 use jaco\api\responder;
-use jaco\attribute;
 use jaco\domain;
 use jaco\http\response;
 
-#[attribute\validate_response('/api/template/response.json')]
 function action(): array
 {
     $payload = domain\template\page_templates([]);

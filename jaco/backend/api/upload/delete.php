@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\upload\delete;
 
 use jaco\api\responder;
-use jaco\attribute;
 use jaco\domain;
 use jaco\http\response;
 
-#[attribute\validate_request('/api/upload/delete/request.json')]
-#[attribute\validate_response('/api/null.json')]
 function action(array $bodyParams): array
 {
     $payload = domain\upload\delete(

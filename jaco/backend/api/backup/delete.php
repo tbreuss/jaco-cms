@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\backup\delete;
 
 use jaco\api\responder;
-use jaco\attribute;
 use jaco\domain;
 use jaco\http\response;
 
-#[attribute\validate_request('/api/backup/delete/request.json')]
-#[attribute\validate_response('/api/null.json')]
 function action(array $bodyParams): array
 {
     $payload = domain\backup\delete(

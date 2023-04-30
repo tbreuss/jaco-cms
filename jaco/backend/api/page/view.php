@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\page\view;
 
 use jaco\api\responder;
-use jaco\attribute;
 use jaco\domain;
 use jaco\http\response;
 
-#[attribute\validate_response('/api/page/view/response.json')]
 function action(string $file): array
 {
     $payload = domain\page\find(

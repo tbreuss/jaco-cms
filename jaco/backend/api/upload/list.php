@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\upload\list;
 
 use jaco\api\responder;
-use jaco\attribute;
 use jaco\domain;
 use jaco\http\response;
 
-#[attribute\validate_response('/api/upload/list/response.json')]
 function action(string $filter = '', string $sort = '-created'): array
 {
     $payload = domain\upload\find_all(

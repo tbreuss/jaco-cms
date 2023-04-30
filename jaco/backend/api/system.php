@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace jaco\api\system;
 
-use jaco\attribute;
 use jaco\domain;
 use jaco\http\response;
 
-#[attribute\validate_response('/api/system/response.json')]
 function action(): array
 {
     $payload = domain\system\environment();
