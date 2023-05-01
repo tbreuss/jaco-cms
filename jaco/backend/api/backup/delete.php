@@ -25,7 +25,7 @@ function responder(array $payload): array
         return response\ok();
     }
 
-    return responder\api_errors($payload, [
+    return responder\errors($payload, [
         'file' => 'file',
     ]);
 }

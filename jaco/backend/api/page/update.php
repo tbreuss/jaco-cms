@@ -26,7 +26,7 @@ function responder(array $payload): array
         return response\created();
     }
 
-    return responder\api_errors($payload, [
+    return responder\errors($payload, [
         'file' => 'fileName',
         'withContent' => 'html',
     ]);

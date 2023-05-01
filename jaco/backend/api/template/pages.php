@@ -29,5 +29,5 @@ function responder(array $payload): array
         );
     }
 
-    return responder\api_errors($payload);
+    return responder\errors($payload);
 }

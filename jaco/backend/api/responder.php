@@ -8,7 +8,7 @@ use jaco\domain;
 use jaco\http\response;
 use jaco\responder;
 
-function api_errors(array $payload, array $mapping = []): array
+function errors(array $payload, array $mapping = []): array
 {
     [$status, $data] = $payload;
 
