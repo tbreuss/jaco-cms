@@ -261,9 +261,7 @@ window.addClickHandler = () => {
 
       const button = document.createElement('button')
       button.innerText = 'Choose file'
-      button.onclick = e => {
-        e.stopPropagation()
-
+      button.onclick = () => {
         // within onclick handler because it doesn't work outside!
         const inputFile = document.createElement('input')
         inputFile.type = 'file'
@@ -279,9 +277,6 @@ window.addClickHandler = () => {
             resizeImage(readerEvent.target.result, file.type, width, height, scaleType, editableImageExtended)
             editableImageExtended.setAttribute('data-jaco-editable-image-file', file.name)
           }
-        }
-        inputFile.onclick = e => {
-          e.preventDefault()
         }
         inputFile.click()
       }
