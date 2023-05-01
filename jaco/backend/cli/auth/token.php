@@ -27,7 +27,7 @@ function responder(array $payload, string $user): void
         exit(0);
     }
 
-    responder\handle_errors($status, $data, [
+    responder\errors($status, $data, [
         'username' => 'user',
         'withPassword' => 'pass',
     ]);

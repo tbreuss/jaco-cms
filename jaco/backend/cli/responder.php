@@ -7,7 +7,7 @@ namespace jaco\cli\responder;
 use jaco\responder;
 use jaco\domain;
 
-function handle_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): void
+function errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): void
 {
     if ($serviceStatus === domain\SUCCESS) {
         exit(0);
