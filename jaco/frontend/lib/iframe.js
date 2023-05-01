@@ -10,9 +10,8 @@ export const iframe = {
   makeEditable: () => {
     const contentDocument = iframe.contentDocument()
     const contentWindow = iframe.contentWindow()
-
     if (contentDocument.getElementById('editorInstanceJavascript')) {
-      contentWindow.initEditors()
+      contentWindow.initRichTextEditor()
       contentWindow.initImages()
     } else {
       const script = contentDocument.createElement('script')

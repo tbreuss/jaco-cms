@@ -180,6 +180,12 @@ window.addClickHandler = () => {
 
     const editableImage = event.target.closest('[data-jaco-editable-image]')
     if (editableImage) {
+
+      editableImage.onload = () => {
+        console.debug('image loaded')
+        window.resize()
+      }
+
       const input = document.createElement('input')
       input.type = 'file'
       input.onchange = e => {
@@ -189,6 +195,8 @@ window.addClickHandler = () => {
         reader.onload = readerEvent => {
           resizeImage(readerEvent.target.result, file.type, width, height, 'fill', editableImage)
           editableImage.setAttribute('data-jaco-editable-image-file', file.name)
+        }
+        reader.onloadend = () => {
         }
         reader.readAsDataURL(file)
       }
@@ -491,6 +499,11 @@ window.onresize = () => {
   }
   removeTempImageElements()
   initImages()
+  console.debug('window resized')
+}
+
+window.resize = () => {
+  window.dispatchEvent(new Event('resize'));
 }
 
 window.addClickHandler()
