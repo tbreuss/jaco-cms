@@ -1,21 +1,5 @@
-import {BackupEditView} from './view/backup/BackupEditView.js'
-import {BackupListView} from './view/backup/BackupListView.js'
 import {DefaultLayout} from './layout/Default.js'
-import {LoginView} from './view/LoginView.js'
-import {LogoutView} from './view/LogoutView.js'
 import {Notifications} from './service/Notifications.js'
-import {PageAddView} from './view/PageAddView.js'
-import {PageCopyView} from './view/PageCopyView.js'
-import {PageDeleteView} from './view/PageDeleteView.js'
-import {PageEditView} from './view/page/PageEditView.js'
-import {PageInlineEditView} from './view/PageInlineEditView.js'
-import {PageGotoView} from './view/PageGotoView.js'
-import {PageListView} from './view/page/PageListView.js'
-import {PhpInfoView} from './view/PhpInfoView.js'
-import {PhpLogView} from './view/PhpLogView.js'
-import {StartView} from './view/StartView.js'
-import {SystemView} from './view/SystemView.js'
-import {UploadListView} from './view/upload/UploadListView.js'
 
 Number.prototype.pad = function (size) {
   let s = String(this)
@@ -42,94 +26,155 @@ Number.prototype.toDateTime = function () {
   return parts.join('')
 }
 
+const loadComponent = async (path) => {
+  const name = path
+    .split('/')
+    .slice(-1)
+    .shift()
+    .replace('.js', '')
+  const module = await import('./view/' + path)
+  return module[name]
+}
+
 // notifications
 m.mount(document.getElementById('toasts'), Notifications)
 
 // application
 m.route(document.getElementById('app'), '/', {
   '/': {
-    render: () => {
-      return m(DefaultLayout, m(StartView))
+    onmatch:  () => {
+      return loadComponent('StartView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/backups': {
-    render: () => {
-      return m(DefaultLayout, m(BackupListView))
+    onmatch:  () => {
+      return loadComponent('backup/BackupListView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/backups/view/:file': {
+    onmatch:  () => {
+      return loadComponent('backup/BackupEditView.js')
+    },
     render: (vnode) => {
-      return m(DefaultLayout, m(BackupEditView, vnode.attrs))
+      return m(DefaultLayout, m(vnode.tag, vnode.attrs))
     }
   },
   '/pages': {
-    render: () => {
-      return m(DefaultLayout, m(PageListView))
+    onmatch:  () => {
+      return loadComponent('page/PageListView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/pages/edit/:file': {
+    onmatch:  () => {
+      return loadComponent('page/PageEditView.js')
+    },
     render: (vnode) => {
-      return m(DefaultLayout, m(PageEditView, vnode.attrs))
+      return m(DefaultLayout, m(vnode.tag, vnode.attrs))
     }
   },
   '/page-add': {
-    render: () => {
-      return m(DefaultLayout, m(PageAddView))
+    onmatch:  () => {
+      return loadComponent('PageAddView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/page-edit': {
-    render: () => {
-      return m(DefaultLayout, m(PageInlineEditView))
+    onmatch:  () => {
+      return loadComponent('PageInlineEditView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/page-copy': {
-    render: () => {
-      return m(DefaultLayout, m(PageCopyView))
+    onmatch:  () => {
+      return loadComponent('PageCopyView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/page-delete': {
-    render: () => {
-      return m(DefaultLayout, m(PageDeleteView))
+    onmatch:  () => {
+      return loadComponent('PageDeleteView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/page-goto': {
-    render: () => {
-      return m(DefaultLayout, m(PageGotoView))
+    onmatch:  () => {
+      return loadComponent('PageGotoView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/uploads': {
-    render: () => {
-      return m(DefaultLayout, m(UploadListView))
+    onmatch:  () => {
+      return loadComponent('upload/UploadListView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/uploads/edit/:file': {
+    onmatch:  () => {
+      return loadComponent('upload/ViewUploadView.js')
+    },
     render: (vnode) => {
-      return m(DefaultLayout, m(ViewUploadView, vnode.attrs))
+      return m(DefaultLayout, m(vnode.tag, vnode.attrs))
     }
   },
   '/login': {
-    render: () => {
-      return m(DefaultLayout, m(LoginView))
+    onmatch:  () => {
+      return loadComponent('LoginView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/logout': {
-    render: () => {
-      return m(DefaultLayout, m(LogoutView))
+    onmatch:  () => {
+      return loadComponent('LogoutView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/system/env': {
-    render: () => {
-      return m(DefaultLayout, m(SystemView))
+    onmatch:  () => {
+      return loadComponent('SystemView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/system/log': {
-    render: () => {
-      return m(DefaultLayout, m(PhpLogView))
+    onmatch:  () => {
+      return loadComponent('PhpLogView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   },
   '/system/php-info': {
-    render: () => {
-      return m(DefaultLayout, m(PhpInfoView))
+    onmatch:  () => {
+      return loadComponent('PhpInfoView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
     }
   }
 })
