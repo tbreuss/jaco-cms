@@ -13,11 +13,11 @@ register_shutdown_function('jaco\error\fatal_handler');
 
 require('constants.php');
 
-ini_set('error_reporting', (string)E_ALL);
-ini_set('display_errors', '0');
-ini_set('display_startup_errors', '0');
-ini_set('log_errors', '1');
-ini_set('error_log', jaco\ERROR_LOG);
+ini_set('error_reporting', (string)jaco\PHP_ERROR_REPORTING);
+ini_set('display_errors', (string)jaco\PHP_DISPLAY_ERRORS);
+ini_set('display_startup_errors', (string)jaco\PHP_DISPLAY_STARTUP_ERRORS);
+ini_set('log_errors', (string)jaco\PHP_LOG_ERRORS);
+ini_set('error_log', (string)jaco\PHP_ERROR_LOG);
 
 // public routes
 

@@ -10,7 +10,7 @@ use jaco\domain;
 use jaco\system;
 
 use const jaco\APP_VERSION;
-use const jaco\ERROR_LOG;
+use const jaco\PHP_ERROR_LOG;
 
 /**
  * @return array{string, array}
@@ -65,8 +65,8 @@ function log(int $size = 100): array
     }
 
     $lines = [];
-    if (\file_exists(ERROR_LOG)) {
-        $fp = \fopen(ERROR_LOG, 'r');
+    if (\file_exists(PHP_ERROR_LOG)) {
+        $fp = \fopen(PHP_ERROR_LOG, 'r');
 
         $pos = -2; // Skip final new line character (Set to -1 if not present)
 
