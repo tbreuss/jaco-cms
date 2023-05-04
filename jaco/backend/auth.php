@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\auth;
 
-const AUDIENCE = 'com.jaco';
-const ISSUER = 'com.jaco';
+const AUDIENCE = 'ch.tebe.jaco';
+const ISSUER = 'ch.tebe.jaco';
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -20,14 +20,7 @@ function authenticate(string $username, string $password): ?string
         return null;
     }
 
-    $payload = [
-        'iss' => ISSUER,
-        'aud' => AUDIENCE,
-        'iat' => time(),
-        'nbf' => time(),
-    ];
-
-    return JWT::encode($payload, SECRET_KEY, 'HS512');
+    return create_token($username);
 }
 
 function is_authenticated(string $token): bool
@@ -37,6 +30,29 @@ function is_authenticated(string $token): bool
     } catch (\Exception) {
         return false;
     }
-    return ($payload->iss === ISSUER)
-        && ($payload->aud === AUDIENCE);
+    if (($payload->iss !== ISSUER) || ($payload->aud !== AUDIENCE)) {
+        return false;
+    }
+    if ($payload->user !== USERNAME) {
+        return false;
+    }
+    if ($payload->admin === false) {
+        return false;
+    }
+
+    return true;
+}
+
+function create_token(string $username): string
+{
+    $payload = [
+        'iss' => ISSUER,
+        'aud' => AUDIENCE,
+        'iat' => time(),
+        'nbf' => time(),
+        'user' => $username,
+        'admin' => true,
+    ];
+
+    return JWT::encode($payload, SECRET_KEY, 'HS512');
 }
