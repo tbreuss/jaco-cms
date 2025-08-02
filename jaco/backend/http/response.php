@@ -60,7 +60,7 @@ function validate(array|string|null $data, string $schema): array
     return json\schema\validate_data($data, $schema);
 }
 
-function client_error(int $status, array $data = null): array
+function client_error(int $status, ?array $data = null): array
 {
     if (!is_4xx($status)) {
         return internal_server_error($data);
@@ -68,7 +68,7 @@ function client_error(int $status, array $data = null): array
     return [$status, $data];
 }
 
-function server_error(int $status, array $data = null): array
+function server_error(int $status, ?array $data = null): array
 {
     if (!is_5xx($status)) {
         return internal_server_error($data);
