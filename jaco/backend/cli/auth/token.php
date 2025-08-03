@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace jaco\cli\auth\token;
 
-use jaco\cli\responder;
 use jaco\domain;
 use jaco\lib\payload;
+use jaco\lib\responder;
 
 function command(string $user, string $pass): void
 {
@@ -28,7 +28,7 @@ function responder(array $payload, string $user): void
         exit(0);
     }
 
-    responder\errors($status, $data, [
+    responder\cli_errors($status, $data, [
         'username' => 'user',
         'withPassword' => 'pass',
     ]);

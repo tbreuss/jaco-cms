@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\api\page\update;
 
-use jaco\api\responder;
 use jaco\domain;
 use jaco\lib\http\response;
 use jaco\lib\payload;
+use jaco\lib\responder;
 
 function action(array $bodyParams): array
 {
@@ -27,7 +27,7 @@ function responder(array $payload): array
         return response\created();
     }
 
-    return responder\errors($payload, [
+    return responder\api_errors($payload, [
         'file' => 'fileName',
         'withContent' => 'html',
     ]);

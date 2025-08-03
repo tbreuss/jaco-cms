@@ -105,6 +105,60 @@ function transform_data(array $data, array|callable $mapping): array
     return $mapped;
 }
 
+function api_errors(array $payload, array $mapping = []): array
+{
+    [$status, $data] = $payload;
+
+    if ($status === payload\INVALID) {
+        $output = transform_client_errors($data, $mapping);
+        return response\unprocessable_entity($output);
+    }
+
+    if ($status === payload\ERROR) {
+        $output = transform_server_errors($data, $mapping);
+        return response\internal_server_error($output);
+    }
+
+    return response\internal_server_error(
+        invalid_service_status()
+    );
+}
+
+function cli_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): void
+{
+    if ($serviceStatus === payload\SUCCESS) {
+        exit(0);
+    }
+
+    if ($serviceStatus === payload\INVALID) {
+        $cliOutput = transform_client_errors($serviceOutput, $inputMapping);
+        render_errors($cliOutput);
+        exit(1);
+    }
+
+    if ($serviceStatus === payload\ERROR) {
+        $cliOutput = transform_server_errors($serviceOutput, $inputMapping);
+        render_errors($cliOutput);
+        exit(2);
+    }
+
+    $cliOutput = invalid_service_status();
+    render_errors($cliOutput);
+    exit(3);
+}
+
+function render_errors(array $errors): void
+{
+    foreach ($errors as $error) {
+        fwrite(STDOUT, $error['title'] . ': ');
+        fwrite(STDOUT, $error['detail'] . ' ');
+        if (!empty($error['source']['pointer'])) {
+            fwrite(STDOUT, '(' . $error['source']['pointer'] . ')');
+        }
+        fwrite(STDOUT, PHP_EOL);
+    }
+}
+
 function transform_errors(array $errors, array|callable $mapping, string $title): array
 {
     if (is_callable($mapping)) {
