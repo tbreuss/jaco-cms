@@ -71,7 +71,7 @@ function dispatch(string $method, string $action): array
     return array_pad($response, 2, ''); // ensure array with two entries
 }
 
-function call_action(string $action, ?string $requestJsonSchema, ?string $responseJsonSchema): array
+function call_action(callable $action, ?string $requestJsonSchema, ?string $responseJsonSchema): array
 {
     $function = new \ReflectionFunction($action);
 
