@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace jaco\http\response;
+namespace jaco\lib\http\response;
 
-use jaco\json;
+use jaco\lib\json;
 
 const OK = 200;
 const CREATED = 201;

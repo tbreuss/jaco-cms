@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace jaco\api\system;
 
 use jaco\domain;
-use jaco\http\response;
+use jaco\lib\http\response;
 
 function action(): array
 {

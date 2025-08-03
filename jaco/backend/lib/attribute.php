@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\attribute;
+namespace jaco\lib\attribute;
 
 use Attribute;
 

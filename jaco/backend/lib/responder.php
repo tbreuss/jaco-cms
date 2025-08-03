@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace jaco\responder;
+namespace jaco\lib\responder;
 
-use jaco\http\response;
+use jaco\lib\http\response;
 use jaco\domain;
 
-const VALIDATE_INPUT_ATTRIBUTE = 'jaco\attribute\validate_input';
-const VALIDATE_OUTPUT_ATTRIBUTE = 'jaco\attribute\validate_output';
+const VALIDATE_INPUT_ATTRIBUTE = 'jaco\lib\attribute\validate_input';
+const VALIDATE_OUTPUT_ATTRIBUTE = 'jaco\lib\attribute\validate_output';
 
 /**
  * @deprecated

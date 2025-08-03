@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\cli\responder;
 
-use jaco\responder;
+use jaco\lib\responder;
 use jaco\domain;
 
 function errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): void

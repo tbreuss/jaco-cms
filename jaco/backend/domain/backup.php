@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace jaco\domain\backup;
 
-use jaco\data;
+use jaco\lib\data;
 use jaco\domain;
-use jaco\filesystem;
-use jaco\html;
-use jaco\list;
-use jaco\struct\backup;
+use jaco\lib\filesystem;
+use jaco\lib\html;
+use jaco\lib\list;
 use jaco\struct\file;
 
 use const jaco\BACKUP_DIR;
@@ -18,6 +17,20 @@ use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['backedUp', 'created', 'name', 'title', 'type'];
+
+class backup
+{
+    public function __construct(
+        public string $file,
+        public string $name,
+        public string $title,
+        public int $created,
+        public int $backedUp,
+        public string $type,
+        public string $content = ''
+    ) {
+    }
+}
 
 /**
  * @return array{string, array}

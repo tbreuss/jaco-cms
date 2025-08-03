@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\data;
+namespace jaco\lib\data;
 
 function sanitize(array $data, array $filters): array
 {
@@ -10,7 +10,7 @@ function sanitize(array $data, array $filters): array
     foreach ($filters as $rule) {
         $name = $rule[0];
         $value = $data[$name] ?? null;
-        $callable = 'jaco\\data\\sanitize\\' . $rule[1];
+        $callable = 'jaco\\lib\\data\\sanitize\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         $filteredValue = call_user_func_array($callable, $options);
@@ -47,7 +47,7 @@ function validate(array $data, array $rules): array
             continue;
         }
         $value = $data[$name] ?? null;
-        $callable = 'jaco\\data\\validate\\' . $rule[1];
+        $callable = 'jaco\\lib\\data\\validate\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         [$status, $message] = call_user_func_array($callable, $options);

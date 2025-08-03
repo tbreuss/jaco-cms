@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\data\sanitize;
+namespace jaco\lib\data\sanitize;
 
 function integer(mixed $value): int
 {

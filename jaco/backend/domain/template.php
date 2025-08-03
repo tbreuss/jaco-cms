@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\domain\template;
 
-use jaco\data;
+use jaco\lib\data;
 use jaco\domain;
-use jaco\filesystem;
-use jaco\html;
+use jaco\lib\filesystem;
+use jaco\lib\html;
 use jaco\struct\file;
 
 use const jaco\PAGE_EXTENSIONS;

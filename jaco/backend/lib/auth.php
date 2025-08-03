@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\auth;
+namespace jaco\lib\auth;
 
 const AUDIENCE = 'ch.tebe.jaco';
 const ISSUER = 'ch.tebe.jaco';

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\domain\system;
 
-use jaco\auth;
-use jaco\data;
+use jaco\lib\auth;
+use jaco\lib\data;
 use jaco\domain;
-use jaco\system;
+use jaco\lib\system;
 
 use const jaco\APP_VERSION;
 use const jaco\PHP_ERROR_LOG;

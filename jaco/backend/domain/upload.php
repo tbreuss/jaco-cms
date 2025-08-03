@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace jaco\domain\upload;
 
-use jaco\data;
+use jaco\lib\data;
 use jaco\domain;
-use jaco\filesystem;
-use jaco\list;
+use jaco\lib\filesystem;
+use jaco\lib\list;
 use jaco\struct\file;
-use jaco\struct\upload;
 
 use const jaco\APP_DIR;
 use const jaco\BACKUP_DIR;
@@ -17,6 +16,18 @@ use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['file', 'extension', 'size', 'created'];
+
+class upload
+{
+    public function __construct(
+        public string $file,
+        public string $extension,
+        public int $size,
+        public int $created,
+        public ?string $content
+    ) {
+    }
+}
 
 /**
  * @return array{string, array}

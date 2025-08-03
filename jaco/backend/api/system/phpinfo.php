@@ -6,7 +6,7 @@ namespace jaco\api\system\phpinfo;
 
 use jaco\api\responder;
 use jaco\domain;
-use jaco\http\response;
+use jaco\lib\http\response;
 
 function action(): array
 {

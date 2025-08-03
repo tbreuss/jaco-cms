@@ -2,13 +2,24 @@
 
 declare(strict_types=1);
 
-namespace jaco\filesystem;
+namespace jaco\lib\filesystem;
 
-use jaco\strings;
-use jaco\struct;
+use jaco\lib\strings;
 
 use const jaco\DIRECTORY_PERMISSIONS;
 use const jaco\PAGE_EXTENSIONS;
+
+class file
+{
+    public function __construct(
+        public string $file,
+        public string $extension,
+        public int $modified,
+        public int $size,
+        public ?string $content = null,
+    ) {
+    }
+}
 
 function dir_exists(string $root, string $dir = ''): bool
 {
@@ -253,7 +264,7 @@ function validate_extension(string $dir, string $file, array $allowed = PAGE_EXT
 
 /**
  * @param string[] $allowedExtensions
- * @return struct\file[]
+ * @return file[]
  */
 function find_files(string $inDir, array $allowedExtensions, bool $withContent = false): array
 {
@@ -263,7 +274,7 @@ function find_files(string $inDir, array $allowedExtensions, bool $withContent =
 /**
  * @param string[] $extensions
  * @param string[] $excludedDirectories
- * @return struct\file[]
+ * @return file[]
  */
 function find_files_rec(
     string $dir,
@@ -306,7 +317,7 @@ function find_files_rec(
         }
         $pathname = $file->getPathname();
         $relfile = \substr($pathname, \strlen($dir));
-        $files[] = new struct\file(
+        $files[] = new file(
             \ltrim($relfile, '\\/'),
             $file->getExtension(),
             $file->getMTime(),

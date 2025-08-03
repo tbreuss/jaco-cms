@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace jaco\data\validate;
+namespace jaco\lib\data\validate;
 
-use jaco\filesystem;
+use jaco\lib\filesystem;
 
 use const jaco\WEB_DIR;
 

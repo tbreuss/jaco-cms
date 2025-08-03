@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\json\schema;
+namespace jaco\lib\json\schema;
 
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Errors\ValidationError;
@@ -14,7 +14,7 @@ function validate_data(array|string|null $data, string $schema): array
 {
     $validator = new Validator();
     $validator->setMaxErrors(20);
-    $validator->resolver()->registerPrefix(JSON_SCHEMA_URL, dirname(__DIR__, 2) . '/schema/');
+    $validator->resolver()->registerPrefix(JSON_SCHEMA_URL, dirname(__DIR__, 3) . '/schema/');
 
     if (is_array($data)) {
         $dataAsObject = json_decode(json_encode($data));

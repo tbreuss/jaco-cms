@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\system;
+namespace jaco\lib\system;
 
 use const jaco\WEB_DIR;
 

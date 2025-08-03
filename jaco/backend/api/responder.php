@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace jaco\api\responder;
 
 use jaco\domain;
-use jaco\http\response;
-use jaco\responder;
+use jaco\lib\http\response;
+use jaco\lib\responder;
 
 function errors(array $payload, array $mapping = []): array
 {

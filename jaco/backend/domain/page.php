@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace jaco\domain\page;
 
-use jaco\data;
+use jaco\lib\data;
 use jaco\domain;
-use jaco\filesystem;
-use jaco\html;
-use jaco\list;
+use jaco\lib\filesystem;
+use jaco\lib\html;
+use jaco\lib\list;
 use jaco\struct\file;
-use jaco\struct\page;
 
 use const jaco\APP_DIR;
 use const jaco\APP_DIR_NAME;
@@ -20,6 +19,17 @@ use const jaco\TEMPLATE_PAGE_DIR;
 use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['created', 'file', 'title'];
+
+class page
+{
+    public function __construct(
+        public string $file,
+        public string $title,
+        public int $created,
+        public ?string $content
+    ) {
+    }
+}
 
 /**
  * @return array{string, array}

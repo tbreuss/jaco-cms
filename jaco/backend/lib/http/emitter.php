@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace jaco\http\emitter;
+namespace jaco\lib\http\emitter;
 
-use jaco\http\response;
+use jaco\lib\http\response;
 
 function emit(int $status, string|array|null $response): void
 {

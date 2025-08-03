@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace jaco\router;
+namespace jaco\lib\router;
 
-use jaco\auth;
-use jaco\http\request;
-use jaco\http\response;
+use jaco\lib\auth;
+use jaco\lib\http\request;
+use jaco\lib\http\response;
 
-const VALIDATE_REQUEST_ATTRIBUTE = 'jaco\attribute\validate_request';
-const VALIDATE_RESPONSE_ATTRIBUTE = 'jaco\attribute\validate_response';
+const VALIDATE_REQUEST_ATTRIBUTE = 'jaco\lib\attribute\validate_request';
+const VALIDATE_RESPONSE_ATTRIBUTE = 'jaco\lib\attribute\validate_response';
 
 function &routes(): array
 {

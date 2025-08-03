@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\domain;
 
-use jaco\json;
+use jaco\lib\json;
 
 const ERROR = 'ERROR';
 const INVALID = 'INVALID';

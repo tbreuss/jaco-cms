@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\strings;
+namespace jaco\lib\strings;
 
 function random(int $length = 6): string
 {
