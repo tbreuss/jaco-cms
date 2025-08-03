@@ -7,6 +7,7 @@ namespace jaco\api\upload\list;
 use jaco\api\responder;
 use jaco\domain;
 use jaco\lib\http\response;
+use jaco\lib\payload;
 
 function action(string $filter = '', string $sort = '-created'): array
 {
@@ -22,7 +23,7 @@ function responder(array $payload): array
 {
     [$status, $data] = $payload;
 
-    if ($status === domain\SUCCESS) {
+    if ($status === payload\SUCCESS) {
         [$items, $filter, $sort] = $data;
         return response\ok([
             'items' => $items,

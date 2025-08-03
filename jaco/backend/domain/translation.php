@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\domain\translation;
 
-use jaco\domain;
+use jaco\lib\payload;
 
 use const jaco\DEFAULT_LANGUAGE;
 
@@ -15,7 +15,7 @@ function load_all(string $forLanguage): array
 {
     $translations = _load($forLanguage);
 
-    return domain\success($translations);
+    return payload\success($translations);
 }
 
 /**
@@ -25,7 +25,7 @@ function load_one(string $forLanguage, string $withKey): array
 {
     $translations = _load($forLanguage);
 
-    return domain\success($translations[$withKey] ?? $withKey);
+    return payload\success($translations[$withKey] ?? $withKey);
 }
 
 function _load(string $language): array

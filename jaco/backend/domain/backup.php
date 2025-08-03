@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace jaco\domain\backup;
 
 use jaco\lib\data;
-use jaco\domain;
 use jaco\lib\filesystem;
 use jaco\lib\html;
 use jaco\lib\list;
+use jaco\lib\payload;
 
 use const jaco\BACKUP_DIR;
 use const jaco\PAGE_EXTENSIONS;
@@ -49,11 +49,11 @@ function find_all(string $filteredBy, string $sortedBy): array
     );
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return payload\invalid($errors);
     }
 
     if (!filesystem\dir_exists(BACKUP_DIR)) {
-        return domain\error([['', 'Dir does not exist.']]);
+        return payload\error([['', 'Dir does not exist.']]);
     }
 
     $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
@@ -63,7 +63,7 @@ function find_all(string $filteredBy, string $sortedBy): array
     $sort = _sort_field($sortedBy);
     $output = [list\sort($backups, $sort), $filteredBy, $sort];
 
-    return domain\success($output);
+    return payload\success($output);
 }
 
 /**
@@ -83,18 +83,18 @@ function find(string $file): array
     ]);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return payload\invalid($errors);
     }
 
     $content = filesystem\read_file(BACKUP_DIR, $file);
 
     if ($content === null) {
-        return domain\error([['file', 'Could not read file.']]);
+        return payload\error([['file', 'Could not read file.']]);
     }
 
     $extension = \pathinfo($file, PATHINFO_EXTENSION);
     $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
-    return domain\success(
+    return payload\success(
         (array)new backup(
             $file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
@@ -124,16 +124,16 @@ function restore(string $file): array
     ]);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return payload\invalid($errors);
     }
 
     $status = filesystem\restore_file(BACKUP_DIR, $file, WEB_DIR);
 
     if (!$status) {
-        return domain\error([['file', 'Could not restore file.']]);
+        return payload\error([['file', 'Could not restore file.']]);
     }
 
-    return domain\success(null);
+    return payload\success(null);
 }
 
 /**
@@ -151,16 +151,16 @@ function delete(string $file): array
     ]);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return payload\invalid($errors);
     }
 
     $status = filesystem\delete_file(BACKUP_DIR, $file);
 
     if (!$status) {
-        return domain\error([['file', 'Could not delete file.']]);
+        return payload\error([['file', 'Could not delete file.']]);
     }
 
-    return domain\success(null);
+    return payload\success(null);
 }
 
 /**

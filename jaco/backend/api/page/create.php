@@ -7,6 +7,7 @@ namespace jaco\api\page\create;
 use jaco\api\responder;
 use jaco\domain;
 use jaco\lib\http\response;
+use jaco\lib\payload;
 
 function action(array $bodyParams): array
 {
@@ -23,7 +24,7 @@ function responder(array $payload): array
 {
     [$status] = $payload;
 
-    if ($status === domain\SUCCESS) {
+    if ($status === payload\SUCCESS) {
         return response\created();
     }
 

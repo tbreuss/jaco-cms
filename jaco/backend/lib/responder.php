@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace jaco\lib\responder;
 
-use jaco\lib\http\response;
 use jaco\domain;
+use jaco\lib\http\response;
+use jaco\lib\payload;
 
 const VALIDATE_INPUT_ATTRIBUTE = 'jaco\lib\attribute\validate_input';
 const VALIDATE_OUTPUT_ATTRIBUTE = 'jaco\lib\attribute\validate_output';
@@ -56,7 +57,7 @@ function call_service_from_api(
 
     [$serviceStatus, $serviceOutput] = call_service($callable, $serviceInput);
 
-    if ($serviceStatus === domain\SUCCESS) {
+    if ($serviceStatus === payload\SUCCESS) {
         if ($serviceOutput === null) {
             return response\ok($serviceOutput);
         }
@@ -72,12 +73,12 @@ function call_service_from_api(
  */
 function handle_api_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): array
 {
-    if ($serviceStatus === domain\INVALID) {
+    if ($serviceStatus === payload\INVALID) {
         $apiOutput = transform_client_errors($serviceOutput, array_flip($inputMapping));
         return response\unprocessable_entity($apiOutput);
     }
 
-    if ($serviceStatus === domain\ERROR) {
+    if ($serviceStatus === payload\ERROR) {
         $apiOutput = transform_server_errors($serviceOutput, array_flip($inputMapping));
         return response\internal_server_error($apiOutput);
     }

@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace jaco\cli\responder;
 
+use jaco\lib\payload;
 use jaco\lib\responder;
-use jaco\domain;
 
 function errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): void
 {
-    if ($serviceStatus === domain\SUCCESS) {
+    if ($serviceStatus === payload\SUCCESS) {
         exit(0);
     }
 
-    if ($serviceStatus === domain\INVALID) {
+    if ($serviceStatus === payload\INVALID) {
         $cliOutput = responder\transform_client_errors($serviceOutput, $inputMapping);
         render_errors($cliOutput);
         exit(1);
     }
 
-    if ($serviceStatus === domain\ERROR) {
+    if ($serviceStatus === payload\ERROR) {
         $cliOutput = responder\transform_server_errors($serviceOutput, $inputMapping);
         render_errors($cliOutput);
         exit(2);

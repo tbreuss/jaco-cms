@@ -6,6 +6,7 @@ namespace jaco\cli\auth\token;
 
 use jaco\cli\responder;
 use jaco\domain;
+use jaco\lib\payload;
 
 function command(string $user, string $pass): void
 {
@@ -21,7 +22,7 @@ function responder(array $payload, string $user): void
 {
     [$status, $data] = $payload;
 
-    if ($status === domain\SUCCESS) {
+    if ($status === payload\SUCCESS) {
         fwrite(STDOUT, sprintf('The token for user "%s" is:', $user) . PHP_EOL);
         fwrite(STDOUT, $data['token'] . PHP_EOL);
         exit(0);

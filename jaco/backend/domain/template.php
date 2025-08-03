@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace jaco\domain\template;
 
 use jaco\lib\data;
-use jaco\domain;
 use jaco\lib\filesystem;
 use jaco\lib\html;
+use jaco\lib\payload;
 
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
@@ -22,11 +22,11 @@ function page_templates(array $input): array
     $errors = data\validate($data, []);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return payload\invalid($errors);
     }
 
     if (!filesystem\dir_exists(TEMPLATE_PAGE_DIR)) {
-        return domain\error([['', 'Dir does not exist.']]);
+        return payload\error([['', 'Dir does not exist.']]);
     }
 
     $files = filesystem\find_files(
@@ -35,7 +35,7 @@ function page_templates(array $input): array
         withContent: true
     );
 
-    return domain\success(
+    return payload\success(
         array_map(fn(filesystem\file $file): array => [
             'file' => $file->file,
             'title' => html\get_title($file->content),
@@ -49,5 +49,5 @@ function page_templates(array $input): array
  */
 function content_templates(): array
 {
-    return domain\error([['', 'TODO: implement this.']]); // TODO
+    return payload\error([['', 'TODO: implement this.']]); // TODO
 }

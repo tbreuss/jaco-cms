@@ -6,7 +6,7 @@ namespace jaco\domain\system;
 
 use jaco\lib\auth;
 use jaco\lib\data;
-use jaco\domain;
+use jaco\lib\payload;
 use jaco\lib\system;
 
 use const jaco\APP_VERSION;
@@ -31,16 +31,16 @@ function authenticate(string $username, string $withPassword): array
     );
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return payload\invalid($errors);
     }
 
     $token = auth\authenticate($username, $withPassword);
 
     if ($token === null) {
-        return domain\invalid([['', 'Authentication failed.']]);
+        return payload\invalid([['', 'Authentication failed.']]);
     }
 
-    return domain\success(['token' => $token]);
+    return payload\success(['token' => $token]);
 }
 
 /**
@@ -48,7 +48,7 @@ function authenticate(string $username, string $withPassword): array
  */
 function environment(): array
 {
-    return domain\success([
+    return payload\success([
         system\defined_classes(),
         system\defined_constants(),
         system\defined_functions(),
@@ -61,7 +61,7 @@ function environment(): array
 function log(int $size = 100): array
 {
     if ($size < 1) {
-        return domain\success([]);
+        return payload\success([]);
     }
 
     $lines = [];
@@ -93,7 +93,7 @@ function log(int $size = 100): array
         \fclose($fp);
     }
 
-    return domain\success($lines);
+    return payload\success($lines);
 }
 
 /**
@@ -109,10 +109,10 @@ function phpinfo(): array
     \preg_match("/<body[^>]*>(.*?)<\/body>/is", $data, $matches);
 
     if (!isset($matches[1])) {
-        return domain\error([['', 'Could not parse phpinfo output.']]);
+        return payload\error([['', 'Could not parse phpinfo output.']]);
     }
 
-    return domain\success($matches[1]);
+    return payload\success($matches[1]);
 }
 
 /**
@@ -120,7 +120,7 @@ function phpinfo(): array
  */
 function version(): array
 {
-    return domain\success([
+    return payload\success([
         'name' => 'jaco',
         'version' => APP_VERSION
     ]);

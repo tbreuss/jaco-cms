@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace jaco\domain\upload;
 
 use jaco\lib\data;
-use jaco\domain;
 use jaco\lib\filesystem;
 use jaco\lib\list;
+use jaco\lib\payload;
 
 use const jaco\APP_DIR;
 use const jaco\BACKUP_DIR;
@@ -46,11 +46,11 @@ function find_all(string $filteredBy, string $sortedBy): array
     );
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return payload\invalid($errors);
     }
 
     if (!filesystem\dir_exists(WEB_DIR)) {
-        return domain\error([['', 'Dir does not exist.']]);
+        return payload\error([['', 'Dir does not exist.']]);
     }
 
     $files = filesystem\find_files_rec(WEB_DIR, UPLOAD_EXTENSIONS, [APP_DIR]);
@@ -60,7 +60,7 @@ function find_all(string $filteredBy, string $sortedBy): array
     $uploads = list\sort($uploads, $sort);
     $output = [$uploads, $filteredBy, $sort];
 
-    return domain\success($output);
+    return payload\success($output);
 }
 
 /**
@@ -81,22 +81,22 @@ function delete(string $file): array
     ]);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return payload\invalid($errors);
     }
 
     $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
 
     if (!$status) {
-        return domain\error([['file', 'Could not backup file.']]);
+        return payload\error([['file', 'Could not backup file.']]);
     }
 
     $status = filesystem\delete_file(WEB_DIR, $file);
 
     if (!$status) {
-        return domain\error([['file', 'Could not delete file.']]);
+        return payload\error([['file', 'Could not delete file.']]);
     }
 
-    return domain\success(null);
+    return payload\success(null);
 }
 
 /**
