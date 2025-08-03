@@ -7,5 +7,10 @@ parameters:
         - '#return type has no value type specified in iterable type array.#'
     level: 6
     paths:
-        - api.php
         - backend
+        - api.php
+        - autoload.php
+        - cli.php
+        - constants.php
+        - settings.dist.php
+        - settings.php
