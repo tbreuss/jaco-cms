@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\error;
+namespace jaco\lib\error;
 
 use jaco\lib\http\emitter;
 use jaco\lib\http\response;

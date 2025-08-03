@@ -8,7 +8,6 @@ use jaco\lib\data;
 use jaco\domain;
 use jaco\lib\filesystem;
 use jaco\lib\list;
-use jaco\struct\file;
 
 use const jaco\APP_DIR;
 use const jaco\BACKUP_DIR;
@@ -101,7 +100,7 @@ function delete(string $file): array
 }
 
 /**
- * @param file[] $files
+ * @param filesystem\file[] $files
  * @return upload[]
  */
 function _create_list(array $files): array

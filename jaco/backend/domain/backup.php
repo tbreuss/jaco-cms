@@ -9,7 +9,6 @@ use jaco\domain;
 use jaco\lib\filesystem;
 use jaco\lib\html;
 use jaco\lib\list;
-use jaco\struct\file;
 
 use const jaco\BACKUP_DIR;
 use const jaco\PAGE_EXTENSIONS;
@@ -165,7 +164,7 @@ function delete(string $file): array
 }
 
 /**
- * @param file[] $files
+ * @param filesystem\file[] $files
  * @param string[] $pageExtensions
  * @return backup[]
  */

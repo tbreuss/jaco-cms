@@ -9,7 +9,6 @@ use jaco\domain;
 use jaco\lib\filesystem;
 use jaco\lib\html;
 use jaco\lib\list;
-use jaco\struct\file;
 
 use const jaco\APP_DIR;
 use const jaco\APP_DIR_NAME;
@@ -293,7 +292,7 @@ function update(string $file, string $withContent): array
 }
 
 /**
- * @param file[] $files
+ * @param filesystem\file[] $files
  * @return page[]
  */
 function _create_list(array $files, string $dir): array

@@ -8,7 +8,6 @@ use jaco\lib\data;
 use jaco\domain;
 use jaco\lib\filesystem;
 use jaco\lib\html;
-use jaco\struct\file;
 
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
@@ -37,7 +36,7 @@ function page_templates(array $input): array
     );
 
     return domain\success(
-        array_map(fn(file $file): array => [
+        array_map(fn(filesystem\file $file): array => [
             'file' => $file->file,
             'title' => html\get_title($file->content),
             'created' => $file->modified

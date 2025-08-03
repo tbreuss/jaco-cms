@@ -7,9 +7,9 @@ require 'vendor/autoload.php';
 use jaco\lib\http\emitter;
 use jaco\lib\router;
 
-set_error_handler('jaco\error\error_handler');
-set_exception_handler('jaco\error\exception_handler');
-register_shutdown_function('jaco\error\fatal_handler');
+set_error_handler('jaco\lib\error\error_handler');
+set_exception_handler('jaco\lib\error\exception_handler');
+register_shutdown_function('jaco\lib\error\fatal_handler');
 
 require('constants.php');
 
