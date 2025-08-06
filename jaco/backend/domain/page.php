@@ -288,7 +288,7 @@ function _create_list(array $files, string $dir): array
     return $pages;
 }
 
-function _create_one(string $dir, string $file, int $modified, ?string $content = null): page
+function _create_one(string $dir, string $file, int $modified, ?string $content = null): Page
 {
     $html = filesystem\read_file($dir, $file);
 

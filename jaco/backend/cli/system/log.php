@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace jaco\cli\system\log;
 
-use jaco\domain;
+use jaco\domain\system;
 
 function command(int $size): void
 {
-    $payload = domain\system\log(
+    $payload = system\log(
         size: $size
     );
 
     responder($payload);
 }
 
-function responder(array $payload): void
+function responder(system\DomainPayload $payload): void
 {
-    [, $data] = $payload;
-
-    array_walk($data, function(string $line) {
+    foreach ($payload->data as $line) {
         echo $line . PHP_EOL;
-    });
+    }
 }

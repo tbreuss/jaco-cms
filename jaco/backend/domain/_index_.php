@@ -24,17 +24,17 @@ class Payload
         $this->isSuccess = $this->status === self::SUCCESS;
     }
 
-    public static function error(array $errors): Payload
+    public static function error(array $errors): static
     {
         return new static(self::ERROR, $errors);
     }
 
-    public static function invalid(array $errors): Payload
+    public static function invalid(array $errors): static
     {
         return new static(self::INVALID, $errors);
     }
 
-    public static function success(array|string|null $data = null): Payload
+    public static function success(array|string|null $data = null): static
     {
         return new static(self::SUCCESS, $data);
     }

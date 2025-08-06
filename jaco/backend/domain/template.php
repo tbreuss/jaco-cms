@@ -35,7 +35,7 @@ function page_templates(array $input): DomainPayload
     );
 
     return DomainPayload::success(
-        array_map(fn(filesystem\file $file): array => [
+        array_map(fn(filesystem\File $file): array => [
             'file' => $file->file,
             'title' => html\get_title($file->content),
             'created' => $file->modified
