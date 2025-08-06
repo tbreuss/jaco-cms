@@ -6,7 +6,7 @@ namespace jaco\domain\translation;
 
 use const jaco\DEFAULT_LANGUAGE;
 
-class DomainPayload extends \jaco\domain\Payload
+final class DomainPayload extends \jaco\domain\Payload
 {}
 
 function load_all(string $forLanguage): DomainPayload

@@ -15,7 +15,7 @@ use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['file', 'extension', 'size', 'created'];
 
-class Upload
+final class Upload
 {
     public function __construct(
         public string $file,
@@ -27,7 +27,7 @@ class Upload
     }
 }
 
-class DomainPayload extends \jaco\domain\Payload
+final class DomainPayload extends \jaco\domain\Payload
 {}
 
 function find_all(string $filteredBy, string $sortedBy): DomainPayload

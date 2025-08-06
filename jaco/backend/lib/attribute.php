@@ -7,7 +7,7 @@ namespace jaco\lib\attribute;
 use Attribute;
 
 #[Attribute(Attribute::IS_REPEATABLE | Attribute::TARGET_FUNCTION)]
-class validate
+final class validate
 {
     const REQUEST = 1;
     const RESPONSE = 1;
@@ -20,7 +20,7 @@ class validate
 }
 
 #[Attribute]
-class validate_request
+final class validate_request
 {
     public function __construct(
         public string $schema
@@ -29,7 +29,7 @@ class validate_request
 }
 
 #[Attribute]
-class validate_response
+final class validate_response
 {
     public function __construct(
         public string $schema
@@ -38,7 +38,7 @@ class validate_response
 }
 
 #[Attribute]
-class validate_input
+final class validate_input
 {
     public function __construct(
         public string $schema
@@ -47,7 +47,7 @@ class validate_input
 }
 
 #[Attribute]
-class validate_output
+final class validate_output
 {
     public function __construct(
         public string $schema

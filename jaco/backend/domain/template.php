@@ -11,7 +11,7 @@ use jaco\lib\html;
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
 
-class DomainPayload extends \jaco\domain\Payload
+final class DomainPayload extends \jaco\domain\Payload
 {}
 
 function page_templates(array $input): DomainPayload

@@ -8,7 +8,7 @@ use jaco\lib\filesystem;
 
 use const jaco\WEB_DIR;
 
-class Result
+final class Result
 {
     public function __construct(
         public bool $isValid,

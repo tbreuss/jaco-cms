@@ -9,7 +9,7 @@ use jaco\lib\strings;
 use const jaco\DIRECTORY_PERMISSIONS;
 use const jaco\PAGE_EXTENSIONS;
 
-class File
+final class File
 {
     public function __construct(
         public string $file,

@@ -18,7 +18,7 @@ use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['created', 'file', 'title'];
 
-class Page
+final class Page
 {
     public function __construct(
         public string $file,
@@ -29,7 +29,7 @@ class Page
     }
 }
 
-class DomainPayload extends \jaco\domain\Payload
+final class DomainPayload extends \jaco\domain\Payload
 {}
 
 function find_all(string $filteredBy, string $sortedBy): DomainPayload

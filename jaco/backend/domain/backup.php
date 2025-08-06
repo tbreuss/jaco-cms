@@ -16,7 +16,7 @@ use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['backedUp', 'created', 'name', 'title', 'type'];
 
-class Backup
+final class Backup
 {
     public function __construct(
         public string $file,
@@ -30,7 +30,7 @@ class Backup
     }
 }
 
-class DomainPayload extends \jaco\domain\Payload
+final class DomainPayload extends \jaco\domain\Payload
 {}
 
 function find_all(string $filteredBy, string $sortedBy): DomainPayload

@@ -15,7 +15,7 @@ class Payload
     public readonly bool $isInvalid;
     public readonly bool $isSuccess;
 
-    public function __construct(
+    final public function __construct(
         readonly public string $status,
         readonly public mixed $data = null,
     ) {

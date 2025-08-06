@@ -11,7 +11,7 @@ use jaco\lib\system;
 use const jaco\APP_VERSION;
 use const jaco\PHP_ERROR_LOG;
 
-class DomainPayload extends \jaco\domain\Payload
+final class DomainPayload extends \jaco\domain\Payload
 {}
 
 function authenticate(string $username, string $withPassword): DomainPayload
