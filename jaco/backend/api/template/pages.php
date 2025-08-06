@@ -15,7 +15,7 @@ function action(): array
     return responder($payload);
 }
 
-function responder(template\TemplatePayload $payload): array
+function responder(template\DomainPayload $payload): array
 {
     if ($payload->isSuccess) {
         return response\ok(

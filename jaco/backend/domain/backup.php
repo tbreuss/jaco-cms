@@ -16,7 +16,7 @@ use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['backedUp', 'created', 'name', 'title', 'type'];
 
-class backup
+class Backup
 {
     public function __construct(
         public string $file,
@@ -30,10 +30,10 @@ class backup
     }
 }
 
-class BackupPayload extends \jaco\domain\Payload
+class DomainPayload extends \jaco\domain\Payload
 {}
 
-function find_all(string $filteredBy, string $sortedBy): BackupPayload
+function find_all(string $filteredBy, string $sortedBy): DomainPayload
 {
     $errors = data\validate(
         [
@@ -48,11 +48,11 @@ function find_all(string $filteredBy, string $sortedBy): BackupPayload
     );
 
     if (count($errors) > 0) {
-        return BackupPayload::invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     if (!filesystem\dir_exists(BACKUP_DIR)) {
-        return BackupPayload::error([['', 'Dir does not exist.']]);
+        return DomainPayload::error([['', 'Dir does not exist.']]);
     }
 
     $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
@@ -62,10 +62,10 @@ function find_all(string $filteredBy, string $sortedBy): BackupPayload
     $sort = _sort_field($sortedBy);
     $output = [list\sort($backups, $sort), $filteredBy, $sort];
 
-    return BackupPayload::success($output);
+    return DomainPayload::success($output);
 }
 
-function find(string $file): BackupPayload
+function find(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -79,19 +79,19 @@ function find(string $file): BackupPayload
     ]);
 
     if (count($errors) > 0) {
-        return BackupPayload::invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $content = filesystem\read_file(BACKUP_DIR, $file);
 
     if ($content === null) {
-        return BackupPayload::error([['file', 'Could not read file.']]);
+        return DomainPayload::error([['file', 'Could not read file.']]);
     }
 
     $extension = \pathinfo($file, PATHINFO_EXTENSION);
     $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
-    return BackupPayload::success(
-        (array)new backup(
+    return DomainPayload::success(
+        (array)new Backup(
             $file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
             html\get_title($content),
@@ -103,7 +103,7 @@ function find(string $file): BackupPayload
     );
 }
 
-function restore(string $file): BackupPayload
+function restore(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -117,19 +117,19 @@ function restore(string $file): BackupPayload
     ]);
 
     if (count($errors) > 0) {
-        return BackupPayload::invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $status = filesystem\restore_file(BACKUP_DIR, $file, WEB_DIR);
 
     if (!$status) {
-        return BackupPayload::error([['file', 'Could not restore file.']]);
+        return DomainPayload::error([['file', 'Could not restore file.']]);
     }
 
-    return BackupPayload::success();
+    return DomainPayload::success();
 }
 
-function delete(string $file): BackupPayload
+function delete(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -141,29 +141,29 @@ function delete(string $file): BackupPayload
     ]);
 
     if (count($errors) > 0) {
-        return BackupPayload::invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $status = filesystem\delete_file(BACKUP_DIR, $file);
 
     if (!$status) {
-        return BackupPayload::error([['file', 'Could not delete file.']]);
+        return DomainPayload::error([['file', 'Could not delete file.']]);
     }
 
-    return BackupPayload::success();
+    return DomainPayload::success();
 }
 
 /**
- * @param filesystem\file[] $files
+ * @param filesystem\File[] $files
  * @param string[] $pageExtensions
- * @return backup[]
+ * @return Backup[]
  */
 function _create_list(array $files, string $dir, array $pageExtensions): array
 {
     $backups = [];
     foreach ($files as $file) {
         $content = filesystem\read_file($dir, $file->file);
-        $backups[] = new backup(
+        $backups[] = new Backup(
             $file->file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file->file, 21)),
             html\get_title($content),

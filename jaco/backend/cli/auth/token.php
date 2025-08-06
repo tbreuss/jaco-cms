@@ -17,7 +17,7 @@ function command(string $user, string $pass): void
     responder($payload, $user);
 }
 
-function responder(system\SystemPayload $payload, string $user): void
+function responder(system\DomainPayload $payload, string $user): void
 {
     if ($payload->isSuccess) {
         fwrite(STDOUT, sprintf('The token for user "%s" is:', $user) . PHP_EOL);

@@ -11,10 +11,10 @@ use jaco\lib\system;
 use const jaco\APP_VERSION;
 use const jaco\PHP_ERROR_LOG;
 
-class SystemPayload extends \jaco\domain\Payload
+class DomainPayload extends \jaco\domain\Payload
 {}
 
-function authenticate(string $username, string $withPassword): SystemPayload
+function authenticate(string $username, string $withPassword): DomainPayload
 {
     $errors = data\validate(
         [
@@ -30,31 +30,31 @@ function authenticate(string $username, string $withPassword): SystemPayload
     );
 
     if (count($errors) > 0) {
-        return SystemPayload::invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $token = auth\authenticate($username, $withPassword);
 
     if ($token === null) {
-        return SystemPayload::invalid([['', 'Authentication failed.']]);
+        return DomainPayload::invalid([['', 'Authentication failed.']]);
     }
 
-    return SystemPayload::success(['token' => $token]);
+    return DomainPayload::success(['token' => $token]);
 }
 
-function environment(): SystemPayload
+function environment(): DomainPayload
 {
-    return SystemPayload::success([
+    return DomainPayload::success([
         system\defined_classes(),
         system\defined_constants(),
         system\defined_functions(),
     ]);
 }
 
-function log(int $size = 100): SystemPayload
+function log(int $size = 100): DomainPayload
 {
     if ($size < 1) {
-        return SystemPayload::success([]);
+        return DomainPayload::success([]);
     }
 
     $lines = [];
@@ -86,10 +86,10 @@ function log(int $size = 100): SystemPayload
         \fclose($fp);
     }
 
-    return SystemPayload::success($lines);
+    return DomainPayload::success($lines);
 }
 
-function phpinfo(): SystemPayload
+function phpinfo(): DomainPayload
 {
     \ob_start();
     \phpinfo();
@@ -99,15 +99,15 @@ function phpinfo(): SystemPayload
     \preg_match("/<body[^>]*>(.*?)<\/body>/is", $data, $matches);
 
     if (!isset($matches[1])) {
-        return SystemPayload::error([['', 'Could not parse phpinfo output.']]);
+        return DomainPayload::error([['', 'Could not parse phpinfo output.']]);
     }
 
-    return SystemPayload::success($matches[1]);
+    return DomainPayload::success($matches[1]);
 }
 
-function version(): SystemPayload
+function version(): DomainPayload
 {
-    return SystemPayload::success([
+    return DomainPayload::success([
         'name' => 'jaco',
         'version' => APP_VERSION
     ]);

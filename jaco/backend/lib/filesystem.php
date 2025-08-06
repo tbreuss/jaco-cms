@@ -9,7 +9,7 @@ use jaco\lib\strings;
 use const jaco\DIRECTORY_PERMISSIONS;
 use const jaco\PAGE_EXTENSIONS;
 
-class file
+class File
 {
     public function __construct(
         public string $file,
@@ -264,7 +264,7 @@ function validate_extension(string $dir, string $file, array $allowed = PAGE_EXT
 
 /**
  * @param string[] $allowedExtensions
- * @return file[]
+ * @return File[]
  */
 function find_files(string $inDir, array $allowedExtensions, bool $withContent = false): array
 {
@@ -274,7 +274,7 @@ function find_files(string $inDir, array $allowedExtensions, bool $withContent =
 /**
  * @param string[] $extensions
  * @param string[] $excludedDirectories
- * @return file[]
+ * @return File[]
  */
 function find_files_rec(
     string $dir,
@@ -317,7 +317,7 @@ function find_files_rec(
         }
         $pathname = $file->getPathname();
         $relfile = \substr($pathname, \strlen($dir));
-        $files[] = new file(
+        $files[] = new File(
             \ltrim($relfile, '\\/'),
             $file->getExtension(),
             $file->getMTime(),

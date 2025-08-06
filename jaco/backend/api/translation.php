@@ -17,7 +17,7 @@ function action(string $language): array
     return responder($payload);
 }
 
-function responder(translation\TranslationPayload $payload): array
+function responder(translation\DomainPayload $payload): array
 {
     if ($payload->isSuccess) {
         return response\ok($payload->data);

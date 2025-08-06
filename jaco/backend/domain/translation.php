@@ -6,21 +6,21 @@ namespace jaco\domain\translation;
 
 use const jaco\DEFAULT_LANGUAGE;
 
-class TranslationPayload extends \jaco\domain\Payload
+class DomainPayload extends \jaco\domain\Payload
 {}
 
-function load_all(string $forLanguage): TranslationPayload
+function load_all(string $forLanguage): DomainPayload
 {
     $translations = _load($forLanguage);
 
-    return TranslationPayload::success($translations);
+    return DomainPayload::success($translations);
 }
 
-function load_one(string $forLanguage, string $withKey): TranslationPayload
+function load_one(string $forLanguage, string $withKey): DomainPayload
 {
     $translations = _load($forLanguage);
 
-    return TranslationPayload::success($translations[$withKey] ?? $withKey);
+    return DomainPayload::success($translations[$withKey] ?? $withKey);
 }
 
 function _load(string $language): array

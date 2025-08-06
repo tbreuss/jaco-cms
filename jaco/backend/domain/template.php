@@ -11,21 +11,21 @@ use jaco\lib\html;
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
 
-class TemplatePayload extends \jaco\domain\Payload
+class DomainPayload extends \jaco\domain\Payload
 {}
 
-function page_templates(array $input): TemplatePayload
+function page_templates(array $input): DomainPayload
 {
     $data = data\sanitize($input, []);
 
     $errors = data\validate($data, []);
 
     if (count($errors) > 0) {
-        return TemplatePayload::invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     if (!filesystem\dir_exists(TEMPLATE_PAGE_DIR)) {
-        return TemplatePayload::error([['', 'Dir does not exist.']]);
+        return DomainPayload::error([['', 'Dir does not exist.']]);
     }
 
     $files = filesystem\find_files(
@@ -34,7 +34,7 @@ function page_templates(array $input): TemplatePayload
         withContent: true
     );
 
-    return TemplatePayload::success(
+    return DomainPayload::success(
         array_map(fn(filesystem\file $file): array => [
             'file' => $file->file,
             'title' => html\get_title($file->content),
@@ -43,7 +43,7 @@ function page_templates(array $input): TemplatePayload
     );
 }
 
-function content_templates(): TemplatePayload
+function content_templates(): DomainPayload
 {
-    return TemplatePayload::error([['', 'TODO: implement this.']]); // TODO
+    return DomainPayload::error([['', 'TODO: implement this.']]); // TODO
 }

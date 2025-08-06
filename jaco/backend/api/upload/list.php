@@ -18,7 +18,7 @@ function action(string $filter = '', string $sort = '-created'): array
     return responder($payload);
 }
 
-function responder(upload\UploadPayload $payload): array
+function responder(upload\DomainPayload $payload): array
 {
     if ($payload->isSuccess) {
         [$items, $filter, $sort] = $payload->data;

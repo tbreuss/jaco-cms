@@ -15,7 +15,7 @@ use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['file', 'extension', 'size', 'created'];
 
-class upload
+class Upload
 {
     public function __construct(
         public string $file,
@@ -27,10 +27,10 @@ class upload
     }
 }
 
-class UploadPayload extends \jaco\domain\Payload
+class DomainPayload extends \jaco\domain\Payload
 {}
 
-function find_all(string $filteredBy, string $sortedBy): UploadPayload
+function find_all(string $filteredBy, string $sortedBy): DomainPayload
 {
     $errors = data\validate(
         [
@@ -45,11 +45,11 @@ function find_all(string $filteredBy, string $sortedBy): UploadPayload
     );
 
     if (count($errors) > 0) {
-        return UploadPayload::invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     if (!filesystem\dir_exists(WEB_DIR)) {
-        return UploadPayload::error([['', 'Dir does not exist.']]);
+        return DomainPayload::error([['', 'Dir does not exist.']]);
     }
 
     $files = filesystem\find_files_rec(WEB_DIR, UPLOAD_EXTENSIONS, [APP_DIR]);
@@ -59,10 +59,10 @@ function find_all(string $filteredBy, string $sortedBy): UploadPayload
     $uploads = list\sort($uploads, $sort);
     $output = [$uploads, $filteredBy, $sort];
 
-    return UploadPayload::success($output);
+    return DomainPayload::success($output);
 }
 
-function delete(string $file): UploadPayload
+function delete(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -77,33 +77,33 @@ function delete(string $file): UploadPayload
     ]);
 
     if (count($errors) > 0) {
-        return UploadPayload::invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
 
     if (!$status) {
-        return UploadPayload::error([['file', 'Could not backup file.']]);
+        return DomainPayload::error([['file', 'Could not backup file.']]);
     }
 
     $status = filesystem\delete_file(WEB_DIR, $file);
 
     if (!$status) {
-        return UploadPayload::error([['file', 'Could not delete file.']]);
+        return DomainPayload::error([['file', 'Could not delete file.']]);
     }
 
-    return UploadPayload::success();
+    return DomainPayload::success();
 }
 
 /**
- * @param filesystem\file[] $files
- * @return upload[]
+ * @param filesystem\File[] $files
+ * @return Upload[]
  */
 function _create_list(array $files): array
 {
     $list = [];
     foreach ($files as $file) {
-        $list[] = new upload(
+        $list[] = new Upload(
             $file->file,
             $file->extension,
             $file->size,

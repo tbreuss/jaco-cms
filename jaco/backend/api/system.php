@@ -14,7 +14,7 @@ function action(): array
     return responder($payload);
 }
 
-function responder(system\SystemPayload $payload): array
+function responder(system\DomainPayload $payload): array
 {
     [$classes, $constants, $functions] = $payload->data;
 

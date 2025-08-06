@@ -17,7 +17,7 @@ function action(array $bodyParams): array
     return responder($payload);
 }
 
-function responder(upload\UploadPayload $payload): array
+function responder(upload\DomainPayload $payload): array
 {
     if ($payload->isSuccess) {
         return response\ok();

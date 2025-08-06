@@ -17,7 +17,7 @@ function action(array $bodyParams): array
     return responder($payload);
 }
 
-function responder(backup\BackupPayload $payload): array
+function responder(backup\DomainPayload $payload): array
 {
     if ($payload->isSuccess) {
         return response\ok();
