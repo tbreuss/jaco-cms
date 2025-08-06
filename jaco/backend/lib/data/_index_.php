@@ -50,13 +50,14 @@ function validate(array $data, array $rules): array
         $callable = 'jaco\\lib\\data\\validate\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
-        [$status, $message] = call_user_func_array($callable, $options);
-        if ($status === true) {
+        /** @var data\validate\Result $result */
+        $result = call_user_func_array($callable, $options);
+        if ($result->isValid) {
             continue;
         }
         $errors[] = [
             $name,
-            str_replace('{value}', (string)($value ?: 'Value'), $message)
+            str_replace('{value}', (string)($value ?: 'Value'), $result->message)
         ];
         $failed[] = $name;
     }
