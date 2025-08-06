@@ -6,7 +6,6 @@ namespace jaco\lib\responder;
 
 use jaco\domain;
 use jaco\lib\http\response;
-use jaco\lib\payload;
 
 const VALIDATE_INPUT_ATTRIBUTE = 'jaco\lib\attribute\validate_input';
 const VALIDATE_OUTPUT_ATTRIBUTE = 'jaco\lib\attribute\validate_output';
@@ -57,7 +56,7 @@ function call_service_from_api(
 
     [$serviceStatus, $serviceOutput] = call_service($callable, $serviceInput);
 
-    if ($serviceStatus === payload\SUCCESS) {
+    if ($serviceStatus === domain\Payload::SUCCESS) {
         if ($serviceOutput === null) {
             return response\ok($serviceOutput);
         }
@@ -73,12 +72,12 @@ function call_service_from_api(
  */
 function handle_api_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): array
 {
-    if ($serviceStatus === payload\INVALID) {
+    if ($serviceStatus === domain\Payload::INVALID) {
         $apiOutput = transform_client_errors($serviceOutput, array_flip($inputMapping));
         return response\unprocessable_entity($apiOutput);
     }
 
-    if ($serviceStatus === payload\ERROR) {
+    if ($serviceStatus === domain\Payload::ERROR) {
         $apiOutput = transform_server_errors($serviceOutput, array_flip($inputMapping));
         return response\internal_server_error($apiOutput);
     }
@@ -105,17 +104,15 @@ function transform_data(array $data, array|callable $mapping): array
     return $mapped;
 }
 
-function api_errors(array $payload, array $mapping = []): array
+function api_errors(domain\Payload $payload, array $mapping = []): array
 {
-    [$status, $data] = $payload;
-
-    if ($status === payload\INVALID) {
-        $output = transform_client_errors($data, $mapping);
+    if ($payload->isInvalid) {
+        $output = transform_client_errors($payload->data, $mapping);
         return response\unprocessable_entity($output);
     }
 
-    if ($status === payload\ERROR) {
-        $output = transform_server_errors($data, $mapping);
+    if ($payload->isError) {
+        $output = transform_server_errors($payload->data, $mapping);
         return response\internal_server_error($output);
     }
 
@@ -126,17 +123,17 @@ function api_errors(array $payload, array $mapping = []): array
 
 function cli_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): void
 {
-    if ($serviceStatus === payload\SUCCESS) {
+    if ($serviceStatus === domain\Payload::SUCCESS) {
         exit(0);
     }
 
-    if ($serviceStatus === payload\INVALID) {
+    if ($serviceStatus === domain\Payload::INVALID) {
         $cliOutput = transform_client_errors($serviceOutput, $inputMapping);
         render_errors($cliOutput);
         exit(1);
     }
 
-    if ($serviceStatus === payload\ERROR) {
+    if ($serviceStatus === domain\Payload::ERROR) {
         $cliOutput = transform_server_errors($serviceOutput, $inputMapping);
         render_errors($cliOutput);
         exit(2);

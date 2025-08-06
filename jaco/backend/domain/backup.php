@@ -8,7 +8,6 @@ use jaco\lib\data;
 use jaco\lib\filesystem;
 use jaco\lib\html;
 use jaco\lib\list;
-use jaco\lib\payload;
 
 use const jaco\BACKUP_DIR;
 use const jaco\PAGE_EXTENSIONS;
@@ -31,10 +30,10 @@ class backup
     }
 }
 
-/**
- * @return array{string, array}
- */
-function find_all(string $filteredBy, string $sortedBy): array
+class BackupPayload extends \jaco\domain\Payload
+{}
+
+function find_all(string $filteredBy, string $sortedBy): BackupPayload
 {
     $errors = data\validate(
         [
@@ -49,11 +48,11 @@ function find_all(string $filteredBy, string $sortedBy): array
     );
 
     if (count($errors) > 0) {
-        return payload\invalid($errors);
+        return BackupPayload::invalid($errors);
     }
 
     if (!filesystem\dir_exists(BACKUP_DIR)) {
-        return payload\error([['', 'Dir does not exist.']]);
+        return BackupPayload::error([['', 'Dir does not exist.']]);
     }
 
     $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
@@ -63,13 +62,10 @@ function find_all(string $filteredBy, string $sortedBy): array
     $sort = _sort_field($sortedBy);
     $output = [list\sort($backups, $sort), $filteredBy, $sort];
 
-    return payload\success($output);
+    return BackupPayload::success($output);
 }
 
-/**
- * @return array{string, array}
- */
-function find(string $file): array
+function find(string $file): BackupPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -83,18 +79,18 @@ function find(string $file): array
     ]);
 
     if (count($errors) > 0) {
-        return payload\invalid($errors);
+        return BackupPayload::invalid($errors);
     }
 
     $content = filesystem\read_file(BACKUP_DIR, $file);
 
     if ($content === null) {
-        return payload\error([['file', 'Could not read file.']]);
+        return BackupPayload::error([['file', 'Could not read file.']]);
     }
 
     $extension = \pathinfo($file, PATHINFO_EXTENSION);
     $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
-    return payload\success(
+    return BackupPayload::success(
         (array)new backup(
             $file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
@@ -107,10 +103,7 @@ function find(string $file): array
     );
 }
 
-/**
- * @return array{string, array}
- */
-function restore(string $file): array
+function restore(string $file): BackupPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -124,22 +117,19 @@ function restore(string $file): array
     ]);
 
     if (count($errors) > 0) {
-        return payload\invalid($errors);
+        return BackupPayload::invalid($errors);
     }
 
     $status = filesystem\restore_file(BACKUP_DIR, $file, WEB_DIR);
 
     if (!$status) {
-        return payload\error([['file', 'Could not restore file.']]);
+        return BackupPayload::error([['file', 'Could not restore file.']]);
     }
 
-    return payload\success(null);
+    return BackupPayload::success();
 }
 
-/**
- * @return array{string, array}
- */
-function delete(string $file): array
+function delete(string $file): BackupPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -151,16 +141,16 @@ function delete(string $file): array
     ]);
 
     if (count($errors) > 0) {
-        return payload\invalid($errors);
+        return BackupPayload::invalid($errors);
     }
 
     $status = filesystem\delete_file(BACKUP_DIR, $file);
 
     if (!$status) {
-        return payload\error([['file', 'Could not delete file.']]);
+        return BackupPayload::error([['file', 'Could not delete file.']]);
     }
 
-    return payload\success(null);
+    return BackupPayload::success();
 }
 
 /**

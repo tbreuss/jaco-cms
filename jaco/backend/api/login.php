@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace jaco\api\login;
 
-use jaco\domain;
+use jaco\domain\system;
 use jaco\lib\http\response;
-use jaco\lib\payload;
 use jaco\lib\responder;
 
 function action(array $bodyParams): array
 {
-    $payload = domain\system\authenticate(
+    $payload = system\authenticate(
         username: $bodyParams['username'],
         withPassword: $bodyParams['password'],
     );
@@ -19,13 +18,11 @@ function action(array $bodyParams): array
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(system\SystemPayload $payload): array
 {
-    [$status, $data] = $payload;
-
-    if ($status === payload\SUCCESS) {
+    if ($payload->isSuccess) {
         return response\ok([
-            'token' => $data['token'],
+            'token' => $payload->data['token'],
         ]);
     }
 

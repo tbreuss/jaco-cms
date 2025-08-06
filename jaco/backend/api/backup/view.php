@@ -4,33 +4,30 @@ declare(strict_types=1);
 
 namespace jaco\api\backup\view;
 
-use jaco\domain;
+use jaco\domain\backup;
 use jaco\lib\http\response;
-use jaco\lib\payload;
 use jaco\lib\responder;
 
 function action(string $file): array
 {
-    $payload = domain\backup\find(
+    $payload = backup\find(
         file: $file
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(backup\BackupPayload $payload): array
 {
-    [$status, $data] = $payload;
-
-    if ($status === payload\SUCCESS) {
+    if ($payload->isSuccess) {
         return response\ok([
-            'file' => $data['file'],
-            'name' => $data['name'],
-            'title' => $data['title'],
-            'created' => $data['created'],
-            'backedUp' => $data['backedUp'],
-            'content' => $data['content'],
-            'type' => $data['type'],
+            'file' => $payload->data['file'],
+            'name' => $payload->data['name'],
+            'title' => $payload->data['title'],
+            'created' => $payload->data['created'],
+            'backedUp' => $payload->data['backedUp'],
+            'content' => $payload->data['content'],
+            'type' => $payload->data['type'],
         ]);
     }
 

@@ -7,26 +7,25 @@ namespace jaco\domain\template;
 use jaco\lib\data;
 use jaco\lib\filesystem;
 use jaco\lib\html;
-use jaco\lib\payload;
 
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
 
-/**
- * @return array{string, array}
- */
-function page_templates(array $input): array
+class TemplatePayload extends \jaco\domain\Payload
+{}
+
+function page_templates(array $input): TemplatePayload
 {
     $data = data\sanitize($input, []);
 
     $errors = data\validate($data, []);
 
     if (count($errors) > 0) {
-        return payload\invalid($errors);
+        return TemplatePayload::invalid($errors);
     }
 
     if (!filesystem\dir_exists(TEMPLATE_PAGE_DIR)) {
-        return payload\error([['', 'Dir does not exist.']]);
+        return TemplatePayload::error([['', 'Dir does not exist.']]);
     }
 
     $files = filesystem\find_files(
@@ -35,7 +34,7 @@ function page_templates(array $input): array
         withContent: true
     );
 
-    return payload\success(
+    return TemplatePayload::success(
         array_map(fn(filesystem\file $file): array => [
             'file' => $file->file,
             'title' => html\get_title($file->content),
@@ -44,10 +43,7 @@ function page_templates(array $input): array
     );
 }
 
-/**
- * @return array{string, array}
- */
-function content_templates(): array
+function content_templates(): TemplatePayload
 {
-    return payload\error([['', 'TODO: implement this.']]); // TODO
+    return TemplatePayload::error([['', 'TODO: implement this.']]); // TODO
 }

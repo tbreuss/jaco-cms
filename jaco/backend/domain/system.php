@@ -6,16 +6,15 @@ namespace jaco\domain\system;
 
 use jaco\lib\auth;
 use jaco\lib\data;
-use jaco\lib\payload;
 use jaco\lib\system;
 
 use const jaco\APP_VERSION;
 use const jaco\PHP_ERROR_LOG;
 
-/**
- * @return array{string, array}
- */
-function authenticate(string $username, string $withPassword): array
+class SystemPayload extends \jaco\domain\Payload
+{}
+
+function authenticate(string $username, string $withPassword): SystemPayload
 {
     $errors = data\validate(
         [
@@ -31,37 +30,31 @@ function authenticate(string $username, string $withPassword): array
     );
 
     if (count($errors) > 0) {
-        return payload\invalid($errors);
+        return SystemPayload::invalid($errors);
     }
 
     $token = auth\authenticate($username, $withPassword);
 
     if ($token === null) {
-        return payload\invalid([['', 'Authentication failed.']]);
+        return SystemPayload::invalid([['', 'Authentication failed.']]);
     }
 
-    return payload\success(['token' => $token]);
+    return SystemPayload::success(['token' => $token]);
 }
 
-/**
- * @return array{string, array}
- */
-function environment(): array
+function environment(): SystemPayload
 {
-    return payload\success([
+    return SystemPayload::success([
         system\defined_classes(),
         system\defined_constants(),
         system\defined_functions(),
     ]);
 }
 
-/**
- * @return array{string, array}
- */
-function log(int $size = 100): array
+function log(int $size = 100): SystemPayload
 {
     if ($size < 1) {
-        return payload\success([]);
+        return SystemPayload::success([]);
     }
 
     $lines = [];
@@ -93,13 +86,10 @@ function log(int $size = 100): array
         \fclose($fp);
     }
 
-    return payload\success($lines);
+    return SystemPayload::success($lines);
 }
 
-/**
- * @return array{string, array}
- */
-function phpinfo(): array
+function phpinfo(): SystemPayload
 {
     \ob_start();
     \phpinfo();
@@ -109,18 +99,15 @@ function phpinfo(): array
     \preg_match("/<body[^>]*>(.*?)<\/body>/is", $data, $matches);
 
     if (!isset($matches[1])) {
-        return payload\error([['', 'Could not parse phpinfo output.']]);
+        return SystemPayload::error([['', 'Could not parse phpinfo output.']]);
     }
 
-    return payload\success($matches[1]);
+    return SystemPayload::success($matches[1]);
 }
 
-/**
- * @return array{string, array}
- */
-function version(): array
+function version(): SystemPayload
 {
-    return payload\success([
+    return SystemPayload::success([
         'name' => 'jaco',
         'version' => APP_VERSION
     ]);

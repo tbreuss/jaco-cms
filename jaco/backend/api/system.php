@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace jaco\api\system;
 
-use jaco\domain;
+use jaco\domain\system;
 use jaco\lib\http\response;
 
 function action(): array
 {
-    $payload = domain\system\environment();
+    $payload = system\environment();
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(system\SystemPayload $payload): array
 {
-    [, $data] = $payload;
-    [$classes, $constants, $functions] = $data;
+    [$classes, $constants, $functions] = $payload->data;
 
     return response\ok([
         'classes' => $classes,

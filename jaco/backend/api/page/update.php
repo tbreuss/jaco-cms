@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace jaco\api\page\update;
 
-use jaco\domain;
+use jaco\domain\page;
 use jaco\lib\http\response;
-use jaco\lib\payload;
 use jaco\lib\responder;
 
 function action(array $bodyParams): array
 {
-    $payload = domain\page\update(
+    $payload = page\update(
         file: $bodyParams['fileName'],
         withContent: $bodyParams['html'],
     );
@@ -19,11 +18,9 @@ function action(array $bodyParams): array
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(page\PagePayload $payload): array
 {
-    [$status] = $payload;
-
-    if ($status === payload\SUCCESS) {
+    if ($payload->isSuccess) {
         return response\created();
     }
 

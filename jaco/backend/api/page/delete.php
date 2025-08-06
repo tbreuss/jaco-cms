@@ -4,25 +4,22 @@ declare(strict_types=1);
 
 namespace jaco\api\page\delete;
 
-use jaco\domain;
+use jaco\domain\page;
 use jaco\lib\http\response;
-use jaco\lib\payload;
 use jaco\lib\responder;
 
 function action(array $bodyParams): array
 {
-    $payload = domain\page\delete(
+    $payload = page\delete(
         file: $bodyParams['fileName']
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(page\PagePayload $payload): array
 {
-    [$status] = $payload;
-
-    if ($status === payload\SUCCESS) {
+    if ($payload->isSuccess) {
         return response\ok();
     }
 

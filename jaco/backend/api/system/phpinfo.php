@@ -4,25 +4,22 @@ declare(strict_types=1);
 
 namespace jaco\api\system\phpinfo;
 
-use jaco\domain;
+use jaco\domain\system;
 use jaco\lib\http\response;
-use jaco\lib\payload;
 use jaco\lib\responder;
 
 function action(): array
 {
-    $payload = domain\system\phpinfo();
+    $payload = system\phpinfo();
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(system\SystemPayload $payload): array
 {
-    [$status, $data] = $payload;
-
-    if ($status === payload\SUCCESS) {
+    if ($payload->isSuccess) {
         return response\ok([
-            'content' => $data,
+            'content' => $payload->data,
         ]);
     }
 

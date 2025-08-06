@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace jaco\api\page\copy;
 
-use jaco\domain;
+use jaco\domain\page;
 use jaco\lib\http\response;
-use jaco\lib\payload;
 use jaco\lib\responder;
 
 function action(array $bodyParams): array
 {
-    $payload = domain\page\copy(
+    $payload = page\copy(
         file: $bodyParams['srcFileName'],
         toFile: $bodyParams['dstFileName'],
         withTitle: $bodyParams['dstPageTitle'],
@@ -20,15 +19,13 @@ function action(array $bodyParams): array
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(page\PagePayload $payload): array
 {
-    [$status, $data] = $payload;
-
-    if ($status === payload\SUCCESS) {
+    if ($payload->isSuccess) {
         return response\created([
-            'file' => $data['file'],
-            'title' => $data['title'],
-            'created' => $data['created'],
+            'file' => $payload->data['file'],
+            'title' => $payload->data['title'],
+            'created' => $payload->data['created'],
         ]);
     }
 

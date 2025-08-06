@@ -7,7 +7,6 @@ namespace jaco\domain\upload;
 use jaco\lib\data;
 use jaco\lib\filesystem;
 use jaco\lib\list;
-use jaco\lib\payload;
 
 use const jaco\APP_DIR;
 use const jaco\BACKUP_DIR;
@@ -28,10 +27,10 @@ class upload
     }
 }
 
-/**
- * @return array{string, array}
- */
-function find_all(string $filteredBy, string $sortedBy): array
+class UploadPayload extends \jaco\domain\Payload
+{}
+
+function find_all(string $filteredBy, string $sortedBy): UploadPayload
 {
     $errors = data\validate(
         [
@@ -46,11 +45,11 @@ function find_all(string $filteredBy, string $sortedBy): array
     );
 
     if (count($errors) > 0) {
-        return payload\invalid($errors);
+        return UploadPayload::invalid($errors);
     }
 
     if (!filesystem\dir_exists(WEB_DIR)) {
-        return payload\error([['', 'Dir does not exist.']]);
+        return UploadPayload::error([['', 'Dir does not exist.']]);
     }
 
     $files = filesystem\find_files_rec(WEB_DIR, UPLOAD_EXTENSIONS, [APP_DIR]);
@@ -60,13 +59,10 @@ function find_all(string $filteredBy, string $sortedBy): array
     $uploads = list\sort($uploads, $sort);
     $output = [$uploads, $filteredBy, $sort];
 
-    return payload\success($output);
+    return UploadPayload::success($output);
 }
 
-/**
- * @return array{string, array}
- */
-function delete(string $file): array
+function delete(string $file): UploadPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -81,22 +77,22 @@ function delete(string $file): array
     ]);
 
     if (count($errors) > 0) {
-        return payload\invalid($errors);
+        return UploadPayload::invalid($errors);
     }
 
     $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
 
     if (!$status) {
-        return payload\error([['file', 'Could not backup file.']]);
+        return UploadPayload::error([['file', 'Could not backup file.']]);
     }
 
     $status = filesystem\delete_file(WEB_DIR, $file);
 
     if (!$status) {
-        return payload\error([['file', 'Could not delete file.']]);
+        return UploadPayload::error([['file', 'Could not delete file.']]);
     }
 
-    return payload\success(null);
+    return UploadPayload::success();
 }
 
 /**

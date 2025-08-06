@@ -4,28 +4,23 @@ declare(strict_types=1);
 
 namespace jaco\domain\translation;
 
-use jaco\lib\payload;
-
 use const jaco\DEFAULT_LANGUAGE;
 
-/**
- * @return array{string, array}
- */
-function load_all(string $forLanguage): array
+class TranslationPayload extends \jaco\domain\Payload
+{}
+
+function load_all(string $forLanguage): TranslationPayload
 {
     $translations = _load($forLanguage);
 
-    return payload\success($translations);
+    return TranslationPayload::success($translations);
 }
 
-/**
- * @return array{string, array}
- */
-function load_one(string $forLanguage, string $withKey): array
+function load_one(string $forLanguage, string $withKey): TranslationPayload
 {
     $translations = _load($forLanguage);
 
-    return payload\success($translations[$withKey] ?? $withKey);
+    return TranslationPayload::success($translations[$withKey] ?? $withKey);
 }
 
 function _load(string $language): array

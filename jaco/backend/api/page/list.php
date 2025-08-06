@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace jaco\api\page\list;
 
-use jaco\domain;
+use jaco\domain\page;
 use jaco\lib\http\response;
-use jaco\lib\payload;
 use jaco\lib\responder;
 
 function action(string $filter = '', string $sort = '-created'): array
 {
-    $payload = domain\page\find_all(
+    $payload = page\find_all(
         filteredBy: $filter,
         sortedBy: $sort
     );
@@ -19,12 +18,10 @@ function action(string $filter = '', string $sort = '-created'): array
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(page\PagePayload $payload): array
 {
-    [$status, $data] = $payload;
-
-    if ($status === payload\SUCCESS) {
-        [$items, $filter, $sort] = $data;
+    if ($payload->isSuccess) {
+        [$items, $filter, $sort] = $payload->data;
         return response\ok([
             'items' => $items,
             'filter' => $filter,

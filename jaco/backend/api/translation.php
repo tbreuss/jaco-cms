@@ -4,26 +4,23 @@ declare(strict_types=1);
 
 namespace jaco\api\translation;
 
-use jaco\domain;
+use jaco\domain\translation;
 use jaco\lib\http\response;
-use jaco\lib\payload;
 use jaco\lib\responder;
 
 function action(string $language): array
 {
-    $payload = domain\translation\load_all(
+    $payload = translation\load_all(
         forLanguage: $language
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(translation\TranslationPayload $payload): array
 {
-    [$status, $data] = $payload;
-
-    if ($status === payload\SUCCESS) {
-        return response\ok($data);
+    if ($payload->isSuccess) {
+        return response\ok($payload->data);
     }
 
     return responder\api_errors($payload);

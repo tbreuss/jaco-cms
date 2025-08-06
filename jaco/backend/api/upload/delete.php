@@ -4,25 +4,22 @@ declare(strict_types=1);
 
 namespace jaco\api\upload\delete;
 
-use jaco\domain;
+use jaco\domain\upload;
 use jaco\lib\http\response;
-use jaco\lib\payload;
 use jaco\lib\responder;
 
 function action(array $bodyParams): array
 {
-    $payload = domain\upload\delete(
+    $payload = upload\delete(
         file: $bodyParams['fileName']
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(upload\UploadPayload $payload): array
 {
-    [$status] = $payload;
-
-    if ($status === payload\SUCCESS) {
+    if ($payload->isSuccess) {
         return response\ok();
     }
 

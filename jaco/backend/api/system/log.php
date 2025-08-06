@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace jaco\api\system\log;
 
-use jaco\domain;
+use jaco\domain\system;
 use jaco\lib\http\response;
 
 function action(): array
 {
-    $payload = domain\system\log(
+    $payload = system\log(
         size: 1000
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(system\SystemPayload $payload): array
 {
-    [, $data] = $payload;
-
-    return response\ok($data);
+    return response\ok($payload->data);
 }

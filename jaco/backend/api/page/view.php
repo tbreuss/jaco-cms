@@ -4,30 +4,27 @@ declare(strict_types=1);
 
 namespace jaco\api\page\view;
 
-use jaco\domain;
+use jaco\domain\page;
 use jaco\lib\http\response;
-use jaco\lib\payload;
 use jaco\lib\responder;
 
 function action(string $file): array
 {
-    $payload = domain\page\find(
+    $payload = page\find(
         file: $file
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(page\PagePayload $payload): array
 {
-    [$status, $data] = $payload;
-
-    if ($status === payload\SUCCESS) {
+    if ($payload->isSuccess) {
         return response\ok([
-            'file' => $data['file'],
-            'title' => $data['title'],
-            'created' => $data['created'],
-            'content' => $data['content'],
+            'file' => $payload->data['file'],
+            'title' => $payload->data['title'],
+            'created' => $payload->data['created'],
+            'content' => $payload->data['content'],
         ]);
     }
 
