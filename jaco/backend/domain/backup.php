@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\domain\backup;
 
@@ -25,26 +23,24 @@ final class Backup
         public int $created,
         public int $backedUp,
         public string $type,
-        public string $content = ''
-    ) {
-    }
+        public string $content = '',
+    ) {}
 }
 
-final class DomainPayload extends \jaco\domain\Payload
-{}
+final class DomainPayload extends \jaco\domain\Payload {}
 
 function find_backups(string $filteredBy, string $sortedBy): DomainPayload
 {
     $errors = data\validate(
         [
             'filteredBy' => $filteredBy,
-            'sortedBy' => $sortedBy
+            'sortedBy' => $sortedBy,
         ],
         [
             ['filteredBy', 'string'],
             ['sortedBy', 'string'],
             ['sortedBy', 'sort_parameter', 'fields' => SORT_PARAMETERS],
-        ]
+        ],
     );
 
     if (count($errors) > 0) {
@@ -91,15 +87,15 @@ function find_backup(string $file): DomainPayload
     $extension = \pathinfo($file, PATHINFO_EXTENSION);
     $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
     return DomainPayload::success(
-        (array)new Backup(
+        (array) new Backup(
             $file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
             html\get_title($content),
             filesystem\restore_timestamp_from_file_name($file),
             filesystem\file_mtime($file, BACKUP_DIR),
             $type,
-            $type === 'page' ? $content : base64_encode($content)
-        )
+            $type === 'page' ? $content : base64_encode($content),
+        ),
     );
 }
 
@@ -169,7 +165,7 @@ function create_list(array $files, string $dir, array $pageExtensions): array
             html\get_title($content),
             filesystem\restore_timestamp_from_file_name($file->file),
             $file->modified,
-            in_array($file->extension, $pageExtensions) ? 'page' : 'upload'
+            in_array($file->extension, $pageExtensions) ? 'page' : 'upload',
         );
     }
     return $backups;

@@ -1,12 +1,11 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\page\copy;
 
 use jaco\domain\page\DomainPayload;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
+
 use function jaco\domain\page\copy_page;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;

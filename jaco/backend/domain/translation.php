@@ -1,13 +1,10 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\domain\translation;
 
 use const jaco\DEFAULT_LANGUAGE;
 
-final class DomainPayload extends \jaco\domain\Payload
-{}
+final class DomainPayload extends \jaco\domain\Payload {}
 
 function load_translations(string $forLanguage): DomainPayload
 {

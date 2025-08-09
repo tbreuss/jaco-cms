@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\domain\upload;
 
@@ -22,13 +20,11 @@ final class Upload
         public string $extension,
         public int $size,
         public int $created,
-        public ?string $content
-    ) {
-    }
+        public ?string $content,
+    ) {}
 }
 
-final class DomainPayload extends \jaco\domain\Payload
-{}
+final class DomainPayload extends \jaco\domain\Payload {}
 
 function find_uploads(string $filteredBy, string $sortedBy): DomainPayload
 {
@@ -41,7 +37,7 @@ function find_uploads(string $filteredBy, string $sortedBy): DomainPayload
             ['filteredBy', 'string'],
             ['sortedBy', 'string'],
             ['sortedBy', 'sort_parameter', 'fields' => SORT_PARAMETERS],
-        ]
+        ],
     );
 
     if (count($errors) > 0) {
@@ -73,7 +69,7 @@ function delete_upload(string $file): DomainPayload
         ['file_exists'],
         ['file_writeable'],
         ['html_file_name'],
-        ['file_extension', 'allowedExtensions' => UPLOAD_EXTENSIONS]
+        ['file_extension', 'allowedExtensions' => UPLOAD_EXTENSIONS],
     ]);
 
     if (count($errors) > 0) {
@@ -108,7 +104,7 @@ function create_list(array $files): array
             $file->extension,
             $file->size,
             $file->modified,
-            null
+            null,
         );
     }
     return $list;

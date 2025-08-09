@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\core\router;
 
@@ -8,6 +6,7 @@ use jaco\core\auth;
 use jaco\core\http\request;
 use jaco\core\http\response;
 use jaco\core\http\Status;
+
 use function jaco\core\http\json_response;
 use function jaco\core\http\response\is_4xx;
 use function jaco\core\http\response\is_5xx;
@@ -79,7 +78,7 @@ function call_action(callable $action, ?string $requestJsonSchema, ?string $resp
         $attributeName = $attribute->getName();
         $attributes[$attributeName] = match ($attributeName) {
             VALIDATE_REQUEST_ATTRIBUTE, VALIDATE_RESPONSE_ATTRIBUTE => $attribute->getArguments()[0] ?? null,
-            default => null
+            default => null,
         };
     }
 

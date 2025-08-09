@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\domain\template;
 
@@ -10,8 +8,7 @@ use jaco\core\html;
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
 
-final class DomainPayload extends \jaco\domain\Payload
-{}
+final class DomainPayload extends \jaco\domain\Payload {}
 
 final class Template
 {
@@ -19,8 +16,7 @@ final class Template
         public string $file,
         public string $title,
         public int $created,
-    ) {
-    }
+    ) {}
 }
 
 function find_page_templates(): DomainPayload
@@ -32,7 +28,7 @@ function find_page_templates(): DomainPayload
     $files = filesystem\find_files(
         inDir: TEMPLATE_PAGE_DIR,
         allowedExtensions: PAGE_EXTENSIONS,
-        withContent: true
+        withContent: true,
     );
 
     return DomainPayload::success(
@@ -40,7 +36,7 @@ function find_page_templates(): DomainPayload
             file: $file->file,
             title: html\get_title($file->content),
             created: $file->modified,
-        ), $files)
+        ), $files),
     );
 }
 

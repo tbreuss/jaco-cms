@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\core\data;
 
@@ -57,7 +55,7 @@ function validate(array $data, array $rules): array
         }
         $errors[] = [
             $name,
-            str_replace('{value}', (string)($value ?: 'Value'), $result->message)
+            str_replace('{value}', (string) ($value ?: 'Value'), $result->message),
         ];
         $failed[] = $name;
     }

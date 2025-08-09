@@ -1,10 +1,9 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\cli\version;
 
 use jaco\domain\system\DomainPayload;
+
 use function jaco\domain\system\get_version;
 
 function command(): void

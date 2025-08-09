@@ -1,11 +1,10 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\login;
 
 use jaco\domain\system\DomainPayload;
 use jaco\core\http\Response;
+
 use function jaco\domain\system\authenticate_user;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\core\data\sanitize;
 
@@ -9,7 +7,7 @@ function integer(mixed $value): int
     if (!is_scalar($value)) {
         return 0;
     }
-    return (int)$value;
+    return (int) $value;
 }
 
 function float(mixed $value): float
@@ -17,7 +15,7 @@ function float(mixed $value): float
     if (!is_scalar($value)) {
         return 0.0;
     }
-    return (float)$value;
+    return (float) $value;
 }
 
 function string(mixed $value): string
@@ -25,7 +23,7 @@ function string(mixed $value): string
     if (!is_scalar($value)) {
         return '';
     }
-    return (string)$value;
+    return (string) $value;
 }
 
 function html_specialchars(mixed $value): string

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\core\json\schema;
 
@@ -43,7 +41,7 @@ function validate_data(array|string|null $data, string $schema): array
         }
         return [
             'source' => [
-                'pointer' => join('/', $error->data()->path())
+                'pointer' => join('/', $error->data()->path()),
             ],
             'title' => 'Invalid data',
             'detail' => $formatter->formatErrorMessage($error, $customErrorMessage),

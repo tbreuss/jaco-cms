@@ -1,11 +1,10 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\page\view;
 
 use jaco\domain\page\DomainPayload;
 use jaco\core\http\Response;
+
 use function jaco\domain\page\find_page;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
@@ -13,7 +12,7 @@ use function jaco\core\responder\api_errors;
 function action(string $file): Response
 {
     $payload = find_page(
-        file: $file
+        file: $file,
     );
 
     return responder($payload);

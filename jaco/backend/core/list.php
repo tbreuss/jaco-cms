@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\core\list;
 
@@ -11,9 +9,9 @@ function filter(array $list, string $filter): array
     }
     return array_filter($list, function ($item) use ($filter) {
         $filter = \str_replace('/', '|', $filter);
-        $data = (array)$item;
+        $data = (array) $item;
         foreach ($data as $value) {
-            if (\stripos((string)$value, $filter) !== false) {
+            if (\stripos((string) $value, $filter) !== false) {
                 return true;
             }
         }
@@ -30,12 +28,12 @@ function sort(array $list, array $sort): array
             if ($isNumeric) {
                 return $a->$sortField <=> $b->$sortField;
             }
-            return strcmp((string)$a->$sortField, (string)$b->$sortField);
+            return strcmp((string) $a->$sortField, (string) $b->$sortField);
         }
         if ($isNumeric) {
             return $b->$sortField <=> $a->$sortField;
         }
-        return strcmp((string)$b->$sortField, (string)$a->$sortField);
+        return strcmp((string) $b->$sortField, (string) $a->$sortField);
     });
     return $list;
 }

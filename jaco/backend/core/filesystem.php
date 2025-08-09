@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\core\filesystem;
 
@@ -17,8 +15,7 @@ final class File
         public int $modified,
         public int $size,
         public ?string $content = null,
-    ) {
-    }
+    ) {}
 }
 
 function dir_exists(string $root, string $dir = ''): bool
@@ -137,8 +134,8 @@ function backup_file(string $dir, string $file, string $bakDir): bool
             '%s_%s_%s',
             \date('Ymd_His', $modTime),
             strings\random(4),
-            \str_replace('/', '|', $file)
-        )
+            \str_replace('/', '|', $file),
+        ),
     );
     return \copy($srcPath, $dstPath); // triggers an error
 }
@@ -281,7 +278,7 @@ function find_files_rec(
     array $extensions,
     array $excludedDirectories = [],
     int $maxDepth = -1,
-    bool $withContent = false
+    bool $withContent = false,
 ): array {
     $excludedFiles = ['.git', '.idea', '.DS_Store', '.vscode', '.gitignore'];
 
@@ -303,8 +300,8 @@ function find_files_rec(
     $rii = new \RecursiveIteratorIterator(
         new \RecursiveCallbackFilterIterator(
             new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
-            $onFileAcceptHandler
-        )
+            $onFileAcceptHandler,
+        ),
     );
 
     $rii->setMaxDepth($maxDepth);
@@ -322,7 +319,7 @@ function find_files_rec(
             $file->getExtension(),
             $file->getMTime(),
             $file->getSize(),
-            $withContent ? read_file($dir, $relfile) : null
+            $withContent ? read_file($dir, $relfile) : null,
         );
     }
 

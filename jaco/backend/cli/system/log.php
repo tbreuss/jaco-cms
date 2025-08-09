@@ -1,16 +1,15 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\cli\system\log;
 
 use jaco\domain\system\DomainPayload;
+
 use function jaco\domain\system\get_log_entries;
 
 function command(int $size): void
 {
     $payload = get_log_entries(
-        size: $size
+        size: $size,
     );
 
     responder($payload);

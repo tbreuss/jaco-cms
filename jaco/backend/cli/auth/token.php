@@ -1,10 +1,9 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\cli\auth\token;
 
 use jaco\domain\system\DomainPayload;
+
 use function jaco\domain\system\authenticate_user;
 use function jaco\core\responder\cli_errors;
 

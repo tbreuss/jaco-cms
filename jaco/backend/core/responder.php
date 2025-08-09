@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\core\responder;
 
@@ -9,6 +7,7 @@ use jaco\domain\Payload;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
 use JetBrains\PhpStorm\NoReturn;
+
 use function jaco\core\http\json_response;
 
 function api_errors(domain\Payload $payload, array $mapping = []): Response
@@ -76,7 +75,7 @@ function transform_errors(array $errors, array|callable $mapping, string $title)
         [$field, $message] = $error;
         $transformed[] = [
             'source' => [
-                'pointer' => $mapping[$field] ?? ''
+                'pointer' => $mapping[$field] ?? '',
             ],
             'title' => $title,
             'detail' => $message,

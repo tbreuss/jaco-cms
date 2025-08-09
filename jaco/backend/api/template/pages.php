@@ -1,12 +1,11 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\template\pages;
 
 use jaco\domain\template\DomainPayload;
 use jaco\domain\template\Template;
 use jaco\core\http\Response;
+
 use function jaco\domain\template\find_page_templates;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
@@ -26,7 +25,7 @@ function responder(DomainPayload $payload): Response
                 'file' => $item->file,
                 'title' => $item->title,
                 'created' => $item->created,
-            ], $payload->data)
+            ], $payload->data),
         );
     }
 

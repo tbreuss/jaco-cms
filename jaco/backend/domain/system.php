@@ -1,17 +1,15 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\domain\system;
 
 use jaco\core\auth;
 use jaco\core\data;
 use jaco\core\system;
+
 use const jaco\APP_VERSION;
 use const jaco\PHP_ERROR_LOG;
 
-final class DomainPayload extends \jaco\domain\Payload
-{}
+final class DomainPayload extends \jaco\domain\Payload {}
 
 function authenticate_user(string $username, string $withPassword): DomainPayload
 {
@@ -25,7 +23,7 @@ function authenticate_user(string $username, string $withPassword): DomainPayloa
             ['username', 'string'],
             ['withPassword', 'required'],
             ['withPassword', 'string'],
-        ]
+        ],
     );
 
     if (count($errors) > 0) {
@@ -108,6 +106,6 @@ function get_version(): DomainPayload
 {
     return DomainPayload::success([
         'name' => 'jaco',
-        'version' => APP_VERSION
+        'version' => APP_VERSION,
     ]);
 }

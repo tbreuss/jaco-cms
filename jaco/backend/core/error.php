@@ -1,23 +1,15 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\core\error;
 
 use jaco\core\http\emitter;
 use jaco\core\http\response;
 
-class Exception extends \Exception
-{
-}
+class Exception extends \Exception {}
 
-class ActionNotFound extends Exception
-{
-}
+class ActionNotFound extends Exception {}
 
-class HttpUnauthorizedException extends Exception
-{
-}
+class HttpUnauthorizedException extends Exception {}
 
 // errors see https://jsonapi.org/format/#error-objects
 function exception_handler(\Throwable $t): void
@@ -29,8 +21,8 @@ function exception_handler(\Throwable $t): void
     emitter\emit(response\INTERNAL_SERVER_ERROR, [
         [
             'title' => get_error_type($t->getCode()),
-            'detail' => $message
-        ]
+            'detail' => $message,
+        ],
     ]);
 }
 
@@ -43,8 +35,8 @@ function error_handler(int $errno, string $errstr, string $errfile, int $errline
     emitter\emit(response\INTERNAL_SERVER_ERROR, [
         [
             'title' => get_error_type($errno),
-            'detail' => $message
-        ]
+            'detail' => $message,
+        ],
     ]);
 
     return true;
@@ -63,8 +55,8 @@ function fatal_handler(): void
         emitter\emit(response\INTERNAL_SERVER_ERROR, [
             [
                 'title' => get_error_type($error['type']),
-                'detail' => $message
-            ]
+                'detail' => $message,
+            ],
         ]);
     }
 }

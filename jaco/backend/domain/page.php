@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\domain\page;
 
@@ -24,13 +22,11 @@ final class Page
         public string $file,
         public string $title,
         public int $created,
-        public ?string $content
-    ) {
-    }
+        public ?string $content,
+    ) {}
 }
 
-final class DomainPayload extends \jaco\domain\Payload
-{}
+final class DomainPayload extends \jaco\domain\Payload {}
 
 function find_pages(string $filteredBy, string $sortedBy): DomainPayload
 {
@@ -43,7 +39,7 @@ function find_pages(string $filteredBy, string $sortedBy): DomainPayload
             ['filteredBy', 'string'],
             ['sortedBy', 'string'],
             ['sortedBy', 'sort_parameter', 'fields' => SORT_PARAMETERS],
-        ]
+        ],
     );
 
     if (count($errors) > 0) {
@@ -85,7 +81,7 @@ function find_page(string $file): DomainPayload
         'file' => $file,
         'title' => html\get_title($html),
         'created' => filesystem\file_mtime($file, WEB_DIR),
-        'content' => $html
+        'content' => $html,
     ]);
 }
 
@@ -100,7 +96,7 @@ function delete_page(string $file): DomainPayload
         ['file_exists', 'dir' => WEB_DIR],
         ['file_writeable'],
         ['html_file_name'],
-        ['html_file_extension']
+        ['html_file_extension'],
     ]);
 
     if (count($errors) > 0) {
@@ -134,7 +130,7 @@ function copy_page(string $file, string $toFile, string $withTitle): DomainPaylo
             ['file', 'filename'],
             ['toFile', 'filename'],
             ['withTitle', 'string'],
-        ]
+        ],
     );
 
     $errors = data\validate($data, [
@@ -176,7 +172,7 @@ function copy_page(string $file, string $toFile, string $withTitle): DomainPaylo
         'file' => $data['toFile'],
         'title' => html\get_title($html),
         'created' => filesystem\file_mtime($data['toFile'], WEB_DIR),
-        'content' => $html
+        'content' => $html,
     ]);
 }
 
@@ -186,13 +182,13 @@ function create_page(string $file, string $fromTemplate, string $withTitle): Dom
         [
             'file' => $file,
             'fromTemplate' => $fromTemplate,
-            'withTitle' => $withTitle
+            'withTitle' => $withTitle,
         ],
         [
             ['fromTemplate', 'filename'],
             ['file', 'filename'],
             ['withTitle', 'string'],
-        ]
+        ],
     );
 
     $errors = data\validate($data, [
@@ -231,13 +227,13 @@ function update_page(string $file, string $withContent): DomainPayload
     $data = data\sanitize(
         [
             'file' => $file,
-            'withContent' => $withContent
+            'withContent' => $withContent,
         ],
         [
             ['file', 'string'],
             ['file', 'filename'],
             ['withContent', 'string'],
-        ]
+        ],
     );
 
     $errors = data\validate($data, [
@@ -296,7 +292,7 @@ function create_one(string $dir, string $file, int $modified, ?string $content =
         $file,
         html\get_title($html),
         $modified,
-        $content
+        $content,
     );
 }
 
