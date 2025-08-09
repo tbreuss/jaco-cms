@@ -121,25 +121,19 @@ function call_action(callable $action, ?string $requestJsonSchema, ?string $resp
         return json_response([['detail' => $e->getMessage(), 'title' => 'Type Error']], Status::BAD_REQUEST);
     }
 
-    if (is_4xx($response)) {
+    if (is_4xx($response) || is_5xx($response)) {
         $errors = response\validate($response->body, 'errors.json');
         if (count($errors) > 0) {
             return json_response($errors, Status::INTERNAL_SERVER_ERROR);
         }
-    }
-
-    if (is_5xx($response)) {
-        $errors = response\validate($response->body, 'errors.json');
-        if (count($errors) > 0) {
-            return json_response($errors, Status::INTERNAL_SERVER_ERROR);
-        }
+        return $response;
     }
 
     if (isset($attributes[VALIDATE_RESPONSE_ATTRIBUTE])  || ($responseJsonSchema !== null)) {
         $jsonSchema = $attributes[VALIDATE_RESPONSE_ATTRIBUTE] ?? $responseJsonSchema;
         $errors = response\validate($response->body, $jsonSchema);
         if (count($errors) > 0) {
-            #return json_response($errors, response\INTERNAL_SERVER_ERROR);
+            return json_response($errors, Status::INTERNAL_SERVER_ERROR);
         }
     }
 
