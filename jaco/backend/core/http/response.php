@@ -93,26 +93,26 @@ function validate(array|string|null $data, string $schema): array
     return json\schema\validate_data($data, $schema);
 }
 
-function is_2xx(Response $responseOrStatus): bool
+function is_2xx(Response $response): bool
 {
-    $status = $responseOrStatus->status->value;
-    return $status >= 200 && $status < 300;
+    $status = (string) $response->status->value;
+    return str_starts_with($status, '2');
 }
 
-function is_3xx(Response $responseOrStatus): bool
+function is_3xx(Response $response): bool
 {
-    $status = $responseOrStatus->status->value;
-    return $status >= 300 && $status < 400;
+    $status = (string) $response->status->value;
+    return str_starts_with($status, '3');
 }
 
-function is_4xx(Response $responseOrStatus): bool
+function is_4xx(Response $response): bool
 {
-    $status = $responseOrStatus->status->value;
-    return $status >= 400 && $status < 500;
+    $status = (string) $response->status->value;
+    return str_starts_with($status, '4');
 }
 
-function is_5xx(Response $responseOrStatus): bool
+function is_5xx(Response $response): bool
 {
-    $status = $responseOrStatus->status->value;
-    return $status >= 500 && $status < 600;
+    $status = (string) $response->status->value;
+    return str_starts_with($status, '5');
 }

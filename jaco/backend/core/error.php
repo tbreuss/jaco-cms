@@ -3,7 +3,9 @@
 namespace jaco\core\error;
 
 use jaco\core\http\emitter;
-use jaco\core\http\response;
+use jaco\core\http\Status;
+
+use function jaco\core\http\json_response;
 
 class Exception extends \Exception {}
 
@@ -18,12 +20,15 @@ function exception_handler(\Throwable $t): void
 
     error_log($message);
 
-    emitter\emit(response\INTERNAL_SERVER_ERROR, [
+    $response = json_response([
         [
             'title' => get_error_type($t->getCode()),
             'detail' => $message,
         ],
+        Status::INTERNAL_SERVER_ERROR,
     ]);
+
+    emitter\emit($response);
 }
 
 function error_handler(int $errno, string $errstr, string $errfile, int $errline): bool
@@ -32,12 +37,15 @@ function error_handler(int $errno, string $errstr, string $errfile, int $errline
 
     error_log($message);
 
-    emitter\emit(response\INTERNAL_SERVER_ERROR, [
+    $response = json_response([
         [
             'title' => get_error_type($errno),
             'detail' => $message,
         ],
+        Status::INTERNAL_SERVER_ERROR,
     ]);
+
+    emitter\emit($response, false);
 
     return true;
 }
@@ -52,12 +60,15 @@ function fatal_handler(): void
 
         error_log($message);
 
-        emitter\emit(response\INTERNAL_SERVER_ERROR, [
+        $response = json_response([
             [
                 'title' => get_error_type($error['type']),
                 'detail' => $message,
             ],
+            Status::INTERNAL_SERVER_ERROR,
         ]);
+
+        emitter\emit($response);
     }
 }
 

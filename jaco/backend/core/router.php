@@ -4,7 +4,7 @@ namespace jaco\core\router;
 
 use jaco\core\auth;
 use jaco\core\http\request;
-use jaco\core\http\response;
+use jaco\core\http\Response;
 use jaco\core\http\Status;
 
 use function jaco\core\http\json_response;

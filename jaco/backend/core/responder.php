@@ -6,7 +6,6 @@ use jaco\domain;
 use jaco\domain\Payload;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
-use JetBrains\PhpStorm\NoReturn;
 
 use function jaco\core\http\json_response;
 
@@ -28,7 +27,6 @@ function api_errors(domain\Payload $payload, array $mapping = []): Response
     );
 }
 
-#[NoReturn]
 function cli_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): void
 {
     if ($serviceStatus === Payload::SUCCESS) {

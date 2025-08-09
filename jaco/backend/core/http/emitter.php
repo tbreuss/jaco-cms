@@ -4,10 +4,8 @@ namespace jaco\core\http\emitter;
 
 use jaco\core\http;
 use jaco\core\http\Status;
-use JetBrains\PhpStorm\NoReturn;
 
-#[NoReturn]
-function emit(http\Response $response): void
+function emit(http\Response $response, bool $exit = true): void
 {
     ob_start();
     http_response_code($response->status->value);
@@ -22,7 +20,10 @@ function emit(http\Response $response): void
     }
 
     ob_end_flush();
-    exit(0);
+
+    if ($exit) {
+        exit(0);
+    }
 }
 
 function send_errors(array $errors): string
