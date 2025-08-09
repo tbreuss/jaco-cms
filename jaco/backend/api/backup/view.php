@@ -4,23 +4,25 @@ declare(strict_types=1);
 
 namespace jaco\api\backup\view;
 
-use jaco\domain\backup;
-use jaco\lib\http\response;
-use jaco\lib\responder;
+use jaco\domain\backup\DomainPayload;
+use jaco\lib\http\Response;
+use function jaco\domain\backup\find_backup;
+use function jaco\lib\http\json_response;
+use function jaco\lib\responder\api_errors;
 
-function action(string $file): array
+function action(string $file): Response
 {
-    $payload = backup\find(
+    $payload = find_backup(
         file: $file
     );
 
     return responder($payload);
 }
 
-function responder(backup\DomainPayload $payload): array
+function responder(DomainPayload $payload): Response
 {
     if ($payload->isSuccess) {
-        return response\ok([
+        return json_response([
             'file' => $payload->data['file'],
             'name' => $payload->data['name'],
             'title' => $payload->data['title'],
@@ -31,7 +33,7 @@ function responder(backup\DomainPayload $payload): array
         ]);
     }
 
-    return responder\api_errors($payload, [
+    return api_errors($payload, [
         'file' => 'file',
     ]);
 }

@@ -4,24 +4,26 @@ declare(strict_types=1);
 
 namespace jaco\api\system\phpinfo;
 
-use jaco\domain\system;
-use jaco\lib\http\response;
-use jaco\lib\responder;
+use jaco\domain\system\DomainPayload;
+use jaco\lib\http\Response;
+use function jaco\domain\system\get_phpinfo;
+use function jaco\lib\http\json_response;
+use function jaco\lib\responder\api_errors;
 
-function action(): array
+function action(): Response
 {
-    $payload = system\phpinfo();
+    $payload = get_phpinfo();
 
     return responder($payload);
 }
 
-function responder(system\DomainPayload $payload): array
+function responder(DomainPayload $payload): Response
 {
     if ($payload->isSuccess) {
-        return response\ok([
+        return json_response([
             'content' => $payload->data,
         ]);
     }
 
-    return responder\api_errors($payload);
+    return api_errors($payload);
 }

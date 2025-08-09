@@ -33,7 +33,7 @@ final class Backup
 final class DomainPayload extends \jaco\domain\Payload
 {}
 
-function find_all(string $filteredBy, string $sortedBy): DomainPayload
+function find_backups(string $filteredBy, string $sortedBy): DomainPayload
 {
     $errors = data\validate(
         [
@@ -57,15 +57,15 @@ function find_all(string $filteredBy, string $sortedBy): DomainPayload
 
     $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
     $files = filesystem\find_files(BACKUP_DIR, $allowed);
-    $backups = _create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
+    $backups = create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
     $backups = list\filter($backups, $filteredBy);
-    $sort = _sort_field($sortedBy);
+    $sort = sort_field($sortedBy);
     $output = [list\sort($backups, $sort), $filteredBy, $sort];
 
     return DomainPayload::success($output);
 }
 
-function find(string $file): DomainPayload
+function find_backup(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -103,7 +103,7 @@ function find(string $file): DomainPayload
     );
 }
 
-function restore(string $file): DomainPayload
+function restore_backup(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -129,7 +129,7 @@ function restore(string $file): DomainPayload
     return DomainPayload::success();
 }
 
-function delete(string $file): DomainPayload
+function delete_backup(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -158,7 +158,7 @@ function delete(string $file): DomainPayload
  * @param string[] $pageExtensions
  * @return Backup[]
  */
-function _create_list(array $files, string $dir, array $pageExtensions): array
+function create_list(array $files, string $dir, array $pageExtensions): array
 {
     $backups = [];
     foreach ($files as $file) {
@@ -175,7 +175,7 @@ function _create_list(array $files, string $dir, array $pageExtensions): array
     return $backups;
 }
 
-function _sort_field(string $sort): array
+function sort_field(string $sort): array
 {
     if (!in_array(ltrim($sort, '-'), SORT_PARAMETERS)) {
         return ['created', 'desc'];

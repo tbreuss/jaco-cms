@@ -32,7 +32,7 @@ final class Page
 final class DomainPayload extends \jaco\domain\Payload
 {}
 
-function find_all(string $filteredBy, string $sortedBy): DomainPayload
+function find_pages(string $filteredBy, string $sortedBy): DomainPayload
 {
     $errors = data\validate(
         [
@@ -51,15 +51,15 @@ function find_all(string $filteredBy, string $sortedBy): DomainPayload
     }
 
     $files = filesystem\find_files_rec(WEB_DIR, PAGE_EXTENSIONS, [APP_DIR]);
-    $pages = _create_list($files, WEB_DIR);
+    $pages = create_list($files, WEB_DIR);
     $pages = list\filter($pages, $filteredBy);
-    $sortedBy = _sort_field($sortedBy);
+    $sortedBy = sort_field($sortedBy);
     $output = [list\sort($pages, $sortedBy), $filteredBy, $sortedBy];
 
     return DomainPayload::success($output);
 }
 
-function find(string $file): DomainPayload
+function find_page(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -89,7 +89,7 @@ function find(string $file): DomainPayload
     ]);
 }
 
-function delete(string $file): DomainPayload
+function delete_page(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -122,7 +122,7 @@ function delete(string $file): DomainPayload
     return DomainPayload::success();
 }
 
-function copy(string $file, string $toFile, string $withTitle): DomainPayload
+function copy_page(string $file, string $toFile, string $withTitle): DomainPayload
 {
     $data = data\sanitize(
         [
@@ -180,7 +180,7 @@ function copy(string $file, string $toFile, string $withTitle): DomainPayload
     ]);
 }
 
-function create(string $file, string $fromTemplate, string $withTitle): DomainPayload
+function create_page(string $file, string $fromTemplate, string $withTitle): DomainPayload
 {
     $data = data\sanitize(
         [
@@ -226,7 +226,7 @@ function create(string $file, string $fromTemplate, string $withTitle): DomainPa
     return DomainPayload::success();
 }
 
-function update(string $file, string $withContent): DomainPayload
+function update_page(string $file, string $withContent): DomainPayload
 {
     $data = data\sanitize(
         [
@@ -279,16 +279,16 @@ function update(string $file, string $withContent): DomainPayload
  * @param filesystem\File[] $files
  * @return Page[]
  */
-function _create_list(array $files, string $dir): array
+function create_list(array $files, string $dir): array
 {
     $pages = [];
     foreach ($files as $file) {
-        $pages[] = _create_one($dir, $file->file, $file->modified);
+        $pages[] = create_one($dir, $file->file, $file->modified);
     }
     return $pages;
 }
 
-function _create_one(string $dir, string $file, int $modified, ?string $content = null): Page
+function create_one(string $dir, string $file, int $modified, ?string $content = null): Page
 {
     $html = filesystem\read_file($dir, $file);
 
@@ -303,7 +303,7 @@ function _create_one(string $dir, string $file, int $modified, ?string $content 
 /**
  * @return array{string, string}
  */
-function _sort_field(string $sort): array
+function sort_field(string $sort): array
 {
     if (!in_array(ltrim($sort, '-'), SORT_PARAMETERS)) {
         return ['created', 'desc'];

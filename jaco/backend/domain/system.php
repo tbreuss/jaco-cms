@@ -7,14 +7,13 @@ namespace jaco\domain\system;
 use jaco\lib\auth;
 use jaco\lib\data;
 use jaco\lib\system;
-
 use const jaco\APP_VERSION;
 use const jaco\PHP_ERROR_LOG;
 
 final class DomainPayload extends \jaco\domain\Payload
 {}
 
-function authenticate(string $username, string $withPassword): DomainPayload
+function authenticate_user(string $username, string $withPassword): DomainPayload
 {
     $errors = data\validate(
         [
@@ -42,7 +41,7 @@ function authenticate(string $username, string $withPassword): DomainPayload
     return DomainPayload::success(['token' => $token]);
 }
 
-function environment(): DomainPayload
+function get_environment(): DomainPayload
 {
     return DomainPayload::success([
         system\defined_classes(),
@@ -51,7 +50,7 @@ function environment(): DomainPayload
     ]);
 }
 
-function log(int $size = 100): DomainPayload
+function get_log_entries(int $size = 100): DomainPayload
 {
     if ($size < 1) {
         return DomainPayload::success([]);
@@ -89,7 +88,7 @@ function log(int $size = 100): DomainPayload
     return DomainPayload::success($lines);
 }
 
-function phpinfo(): DomainPayload
+function get_phpinfo(): DomainPayload
 {
     \ob_start();
     \phpinfo();
@@ -105,7 +104,7 @@ function phpinfo(): DomainPayload
     return DomainPayload::success($matches[1]);
 }
 
-function version(): DomainPayload
+function get_version(): DomainPayload
 {
     return DomainPayload::success([
         'name' => 'jaco',

@@ -4,24 +4,23 @@ declare(strict_types=1);
 
 namespace jaco\lib\http\emitter;
 
-use jaco\lib\http\response;
+use jaco\lib\http;
+use jaco\lib\http\Status;
+use JetBrains\PhpStorm\NoReturn;
 
-function emit(int $status, string|array|null $response): void
+#[NoReturn]
+function emit(http\Response $response): void
 {
     ob_start();
-    http_response_code($status);
+    http_response_code($response->status->value);
+
     header_remove('x-powered-by');
-    if (is_string($response)) {
-        echo $response;
-    } elseif (is_array($response)) {
-        header('Content-Type: application/json; charset=utf-8');
-        if (response\is_2xx($status)) {
-            echo send_data($response);
-        } elseif (response\is_4xx($status)) {
-            echo send_errors($response);
-        } elseif (response\is_5xx($status)) {
-            echo send_errors($response);
-        }
+    foreach ($response->headers as $name => $value) {
+        header("$name: $value");
+    }
+
+    if (is_string($response->body)) {
+        echo $response->body;
     }
 
     ob_end_flush();
@@ -48,7 +47,7 @@ function _json_encode(array $data): string
 {
     $json = json_encode($data, JSON_PRESERVE_ZERO_FRACTION);
     if ($json === false) {
-        http_response_code(response\INTERNAL_SERVER_ERROR);
+        http_response_code(Status::INTERNAL_SERVER_ERROR->value);
         return '[{"title":"Server Error","detail":"Could not JSON encode data"}]';
     }
     return $json;

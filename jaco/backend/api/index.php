@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace jaco\api\index;
 
-use jaco\domain\system;
-use jaco\lib\http\response;
+use jaco\domain\system\DomainPayload;
+use jaco\lib\http\Response;
+use function jaco\domain\system\get_version;
+use function jaco\lib\http\json_response;
 
-function action(): array
+function action(): Response
 {
-    $payload = system\version();
+    $payload = get_version();
 
     return responder($payload);
 }
 
-function responder(system\DomainPayload $payload): array
+function responder(DomainPayload $payload): Response
 {
-    return response\ok([
+    return json_response([
         'name' => $payload->data['name'],
         'version' => $payload->data['version'],
     ]);

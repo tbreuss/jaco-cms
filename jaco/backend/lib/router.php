@@ -7,6 +7,10 @@ namespace jaco\lib\router;
 use jaco\lib\auth;
 use jaco\lib\http\request;
 use jaco\lib\http\response;
+use jaco\lib\http\Status;
+use function jaco\lib\http\json_response;
+use function jaco\lib\http\response\is_4xx;
+use function jaco\lib\http\response\is_5xx;
 
 const VALIDATE_REQUEST_ATTRIBUTE = 'jaco\lib\attribute\validate_request';
 const VALIDATE_RESPONSE_ATTRIBUTE = 'jaco\lib\attribute\validate_response';
@@ -40,18 +44,18 @@ function post(string $route, callable $callback, bool $authenticated, ?string $r
     add('POST', $route, $callback, $authenticated, $requestSchema, $responseSchema);
 }
 
-function dispatch(string $method, string $action): array
+function dispatch(string $method, string $action): Response
 {
     $routes = routes();
 
     $routes_by_action = filter_routes($routes, 'action', $action);
     if (count($routes_by_action) === 0) {
-        return response\not_found([['title' => '404 Page Not Found']]);
+        return json_response([['title' => '404 Page Not Found']], Status::NOT_FOUND);
     }
 
     $routes_by_method = filter_routes($routes_by_action, 'method', $method);
     if (count($routes_by_method) === 0) {
-        return response\method_not_allowed([['title' => '405 Method Not Allowed']]);
+        return json_response([['title' => '405 Method Not Allowed']], Status::METHOD_NOT_ALLOWED);
     }
 
     // take the first one if multiple routes exist
@@ -59,19 +63,14 @@ function dispatch(string $method, string $action): array
 
     if ($route['authenticated'] === true) {
         if (check_authorization() === false) {
-            return response\forbidden([['title' => '403 Forbidden']]);
+            return json_response([['title' => '403 Forbidden']], Status::FORBIDDEN);
         }
     }
 
-    $response = call_action($route['callback'], $route['requestJsonSchema'], $route['responseJsonSchema']);
-    if (!is_array($response) || !in_array(count($response), [1, 2]) || !is_int($response[0])) {
-        return response\internal_server_error([['title' => 'Invalid Action Response Payload']]);
-    }
-
-    return array_pad($response, 2, ''); // ensure array with two entries
+    return call_action($route['callback'], $route['requestJsonSchema'], $route['responseJsonSchema']);
 }
 
-function call_action(callable $action, ?string $requestJsonSchema, ?string $responseJsonSchema): array
+function call_action(callable $action, ?string $requestJsonSchema, ?string $responseJsonSchema): Response
 {
     $function = new \ReflectionFunction($action);
 
@@ -90,7 +89,7 @@ function call_action(callable $action, ?string $requestJsonSchema, ?string $resp
         $bodyParams = request\get_post_values();
         $errors = request\validate($bodyParams, $jsonSchema);
         if (count($errors) > 0) {
-            return response\bad_request($errors);
+            return json_response($errors, Status::BAD_REQUEST);
         }
     } else {
         $bodyParams = [];
@@ -117,36 +116,35 @@ function call_action(callable $action, ?string $requestJsonSchema, ?string $resp
     }
 
     try {
-        [$status, $response] = call_user_func_array($action, $parameters);
+        /** @var Response $response */
+        $response = call_user_func_array($action, $parameters);
     } catch (\TypeError $e) {
-        return response\bad_request([['detail' => $e->getMessage(), 'title' => 'Type Error']]);
+        return json_response([['detail' => $e->getMessage(), 'title' => 'Type Error']], Status::BAD_REQUEST);
     }
 
-    if (response\is_4xx($status)) {
-        $errors = response\validate($response, 'errors.json');
+    if (is_4xx($response)) {
+        $errors = response\validate($response->body, 'errors.json');
         if (count($errors) > 0) {
-            return response\internal_server_error($errors);
+            return json_response($errors, Status::INTERNAL_SERVER_ERROR);
         }
-        return response\client_error($status, $response);
     }
 
-    if (response\is_5xx($status)) {
-        $errors = response\validate($response, 'errors.json');
+    if (is_5xx($response)) {
+        $errors = response\validate($response->body, 'errors.json');
         if (count($errors) > 0) {
-            return response\internal_server_error($errors);
+            return json_response($errors, Status::INTERNAL_SERVER_ERROR);
         }
-        return response\server_error($status, $response);
     }
 
     if (isset($attributes[VALIDATE_RESPONSE_ATTRIBUTE])  || ($responseJsonSchema !== null)) {
         $jsonSchema = $attributes[VALIDATE_RESPONSE_ATTRIBUTE] ?? $responseJsonSchema;
-        $errors = response\validate($response, $jsonSchema);
+        $errors = response\validate($response->body, $jsonSchema);
         if (count($errors) > 0) {
-            return response\internal_server_error($errors);
+            #return json_response($errors, response\INTERNAL_SERVER_ERROR);
         }
     }
 
-    return [$status, $response];
+    return $response;
 }
 
 function check_authorization(): bool

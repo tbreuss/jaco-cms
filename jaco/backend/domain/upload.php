@@ -30,7 +30,7 @@ final class Upload
 final class DomainPayload extends \jaco\domain\Payload
 {}
 
-function find_all(string $filteredBy, string $sortedBy): DomainPayload
+function find_uploads(string $filteredBy, string $sortedBy): DomainPayload
 {
     $errors = data\validate(
         [
@@ -53,8 +53,8 @@ function find_all(string $filteredBy, string $sortedBy): DomainPayload
     }
 
     $files = filesystem\find_files_rec(WEB_DIR, UPLOAD_EXTENSIONS, [APP_DIR]);
-    $sort = _sort_field($sortedBy);
-    $uploads = _create_list($files);
+    $sort = sort_field($sortedBy);
+    $uploads = create_list($files);
     $uploads = list\filter($uploads, $filteredBy);
     $uploads = list\sort($uploads, $sort);
     $output = [$uploads, $filteredBy, $sort];
@@ -62,7 +62,7 @@ function find_all(string $filteredBy, string $sortedBy): DomainPayload
     return DomainPayload::success($output);
 }
 
-function delete(string $file): DomainPayload
+function delete_upload(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -99,7 +99,7 @@ function delete(string $file): DomainPayload
  * @param filesystem\File[] $files
  * @return Upload[]
  */
-function _create_list(array $files): array
+function create_list(array $files): array
 {
     $list = [];
     foreach ($files as $file) {
@@ -117,7 +117,7 @@ function _create_list(array $files): array
 /**
  * @return array{string, string}
  */
-function _sort_field(string $sort): array
+function sort_field(string $sort): array
 {
     if (!in_array(ltrim($sort, '-'), SORT_PARAMETERS)) {
         return ['created', 'desc'];

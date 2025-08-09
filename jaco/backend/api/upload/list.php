@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace jaco\api\upload\list;
 
-use jaco\domain\upload;
-use jaco\lib\http\response;
-use jaco\lib\responder;
+use jaco\domain\upload\DomainPayload;
+use jaco\lib\http\Response;
+use function jaco\domain\upload\find_uploads;
+use function jaco\lib\http\json_response;
+use function jaco\lib\responder\api_errors;
 
-function action(string $filter = '', string $sort = '-created'): array
+function action(string $filter = '', string $sort = '-created'): Response
 {
-    $payload = upload\find_all(
+    $payload = find_uploads(
         filteredBy: $filter,
         sortedBy: $sort
     );
@@ -18,18 +20,18 @@ function action(string $filter = '', string $sort = '-created'): array
     return responder($payload);
 }
 
-function responder(upload\DomainPayload $payload): array
+function responder(DomainPayload $payload): Response
 {
     if ($payload->isSuccess) {
         [$items, $filter, $sort] = $payload->data;
-        return response\ok([
+        return json_response([
             'items' => $items,
             'filter' => $filter,
             'sort' => $sort,
         ]);
     }
 
-    return responder\api_errors($payload, [
+    return api_errors($payload, [
         'filteredBy' => 'filter',
         'sortedBy' => 'sort',
     ]);

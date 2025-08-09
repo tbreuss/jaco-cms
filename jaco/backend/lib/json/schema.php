@@ -17,9 +17,9 @@ function validate_data(array|string|null $data, string $schema): array
     $validator->resolver()->registerPrefix(JSON_SCHEMA_URL, dirname(__DIR__, 3) . '/schema/');
 
     if (is_array($data)) {
-        $dataAsObject = json_decode(json_encode($data));
+        $dataAsObject = json_decode(json_encode($data), false);
     } elseif (is_string($data)) {
-        $dataAsObject = json_decode($data);
+        $dataAsObject = json_decode($data, false);
     } else {
         $dataAsObject = $data;
     }
@@ -45,7 +45,7 @@ function validate_data(array|string|null $data, string $schema): array
             'source' => [
                 'pointer' => join('/', $error->data()->path())
             ],
-            'title' => 'Invalid input',
+            'title' => 'Invalid data',
             'detail' => $formatter->formatErrorMessage($error, $customErrorMessage),
         ];
     };

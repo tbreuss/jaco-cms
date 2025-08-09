@@ -9,21 +9,21 @@ use const jaco\DEFAULT_LANGUAGE;
 final class DomainPayload extends \jaco\domain\Payload
 {}
 
-function load_all(string $forLanguage): DomainPayload
+function load_translations(string $forLanguage): DomainPayload
 {
-    $translations = _load($forLanguage);
+    $translations = load($forLanguage);
 
     return DomainPayload::success($translations);
 }
 
-function load_one(string $forLanguage, string $withKey): DomainPayload
+function load_translation(string $forLanguage, string $withKey): DomainPayload
 {
-    $translations = _load($forLanguage);
+    $translations = load($forLanguage);
 
     return DomainPayload::success($translations[$withKey] ?? $withKey);
 }
 
-function _load(string $language): array
+function load(string $language): array
 {
     static $translations = [];
 
@@ -39,5 +39,5 @@ function _load(string $language): array
         return $translations[$language];
     }
 
-    return _load(DEFAULT_LANGUAGE);
+    return load(DEFAULT_LANGUAGE);
 }

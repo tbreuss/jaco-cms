@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace jaco\api\login;
 
-use jaco\domain\system;
-use jaco\lib\http\response;
-use jaco\lib\responder;
+use jaco\domain\system\DomainPayload;
+use jaco\lib\http\Response;
+use function jaco\domain\system\authenticate_user;
+use function jaco\lib\http\json_response;
+use function jaco\lib\responder\api_errors;
 
-function action(array $bodyParams): array
+function action(array $bodyParams): Response
 {
-    $payload = system\authenticate(
+    $payload = authenticate_user(
         username: $bodyParams['username'],
         withPassword: $bodyParams['password'],
     );
@@ -18,15 +20,15 @@ function action(array $bodyParams): array
     return responder($payload);
 }
 
-function responder(system\DomainPayload $payload): array
+function responder(DomainPayload $payload): Response
 {
     if ($payload->isSuccess) {
-        return response\ok([
+        return json_response([
             'token' => $payload->data['token'],
         ]);
     }
 
-    return responder\api_errors($payload, [
+    return api_errors($payload, [
         'username' => 'username',
         'withPassword' => 'password',
     ]);

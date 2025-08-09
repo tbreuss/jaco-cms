@@ -2,57 +2,92 @@
 
 declare(strict_types=1);
 
+namespace jaco\lib\http;
+
+enum Status: int
+{
+    case OK = 200;
+    case CREATED = 201;
+    case BAD_REQUEST = 400;
+    case FORBIDDEN = 403;
+    case NOT_FOUND = 404;
+    case METHOD_NOT_ALLOWED = 405;
+    case UNPROCESSABLE_ENTITY = 422;
+    case INTERNAL_SERVER_ERROR = 500;
+}
+
+final class Response
+{
+    public function __construct(
+        public Status $status,
+        /** @var array<string, string> */
+        public array $headers = [],
+        public ?string $body = null,
+    ) {}
+}
+
+function html_response(?string $body = null, Status $status = Status::OK, array $headers = []): Response
+{
+    return new Response(
+        status: $status,
+        headers: array_merge(['Content-Type' => 'text/html; charset=utf-8'], $headers),
+        body: $body,
+    );
+}
+
+function json_response(mixed $data = null, Status $status = Status::OK, array $headers = []): Response
+{
+    return new Response(
+        status: $status,
+        headers: array_merge(['Content-Type' => 'application/json; charset=utf-8'], $headers),
+        body: json_encode($data),
+    );
+}
+
 namespace jaco\lib\http\response;
 
+use jaco\lib\http\Response;
+use jaco\lib\http\Status;
 use jaco\lib\json;
-
-const OK = 200;
-const CREATED = 201;
-const BAD_REQUEST = 400;
-const FORBIDDEN = 403;
-const NOT_FOUND = 404;
-const METHOD_NOT_ALLOWED = 405;
-const UNPROCESSABLE_ENTITY = 422;
-const INTERNAL_SERVER_ERROR = 500;
 
 function ok(mixed $data = null): array
 {
-    return [OK, $data];
+    return [Status::OK, $data];
 }
 
 function created(mixed $data = null): array
 {
-    return [CREATED, $data];
+    return [Status::CREATED, $data];
 }
 
 function bad_request(mixed $data): array
 {
-    return [BAD_REQUEST, $data];
+    return [Status::BAD_REQUEST, $data];
 }
 
 function forbidden(mixed $data): array
 {
-    return [FORBIDDEN, $data];
+    return [Status::FORBIDDEN, $data];
 }
 
 function not_found(mixed $data): array
 {
-    return [NOT_FOUND, $data];
+    return [Status::NOT_FOUND, $data];
 }
 
 function method_not_allowed(mixed $data): array
 {
-    return [METHOD_NOT_ALLOWED, $data];
+    return [Status::METHOD_NOT_ALLOWED, $data];
 }
 
 function unprocessable_entity(array $data): array
 {
-    return [UNPROCESSABLE_ENTITY, $data];
+    return [Status::UNPROCESSABLE_ENTITY, $data];
 }
 
 function internal_server_error(array $data): array
 {
-    return [INTERNAL_SERVER_ERROR, $data];
+    return [Status::INTERNAL_SERVER_ERROR, $data];
 }
 
 function validate(array|string|null $data, string $schema): array
@@ -60,38 +95,26 @@ function validate(array|string|null $data, string $schema): array
     return json\schema\validate_data($data, $schema);
 }
 
-function client_error(int $status, ?array $data = null): array
+function is_2xx(Response $responseOrStatus): bool
 {
-    if (!is_4xx($status)) {
-        return internal_server_error($data);
-    }
-    return [$status, $data];
-}
-
-function server_error(int $status, ?array $data = null): array
-{
-    if (!is_5xx($status)) {
-        return internal_server_error($data);
-    }
-    return [$status, $data];
-}
-
-function is_2xx(int $status): bool
-{
+    $status = $responseOrStatus->status->value;
     return $status >= 200 && $status < 300;
 }
 
-function is_3xx(int $status): bool
+function is_3xx(Response $responseOrStatus): bool
 {
+    $status = $responseOrStatus->status->value;
     return $status >= 300 && $status < 400;
 }
 
-function is_4xx(int $status): bool
+function is_4xx(Response $responseOrStatus): bool
 {
+    $status = $responseOrStatus->status->value;
     return $status >= 400 && $status < 500;
 }
 
-function is_5xx(int $status): bool
+function is_5xx(Response $responseOrStatus): bool
 {
+    $status = $responseOrStatus->status->value;
     return $status >= 500 && $status < 600;
 }
