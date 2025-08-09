@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace jaco\api\system;
 
 use jaco\domain\system\DomainPayload;
-use jaco\lib\http\Response;
+use jaco\core\http\Response;
 use function jaco\domain\system\get_environment;
-use function jaco\lib\http\json_response;
+use function jaco\core\http\json_response;
 
 function action(): Response
 {

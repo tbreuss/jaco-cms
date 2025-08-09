@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\lib\list;
+namespace jaco\core\list;
 
 function filter(array $list, string $filter): array
 {

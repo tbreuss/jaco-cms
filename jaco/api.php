@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 require 'vendor/autoload.php';
 
-use jaco\lib\http\emitter;
-use jaco\lib\router;
+use jaco\core\http\emitter;
+use jaco\core\router;
 
-set_error_handler('jaco\lib\error\error_handler');
-set_exception_handler('jaco\lib\error\exception_handler');
-register_shutdown_function('jaco\lib\error\fatal_handler');
+set_error_handler('jaco\core\error\error_handler');
+set_exception_handler('jaco\core\error\exception_handler');
+register_shutdown_function('jaco\core\error\fatal_handler');
 
 require('constants.php');
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace jaco\lib\html;
+namespace jaco\core\html;
 
-use jaco\lib\filesystem;
+use jaco\core\filesystem;
 
 use const jaco\UPLOAD_DIR;
 use const jaco\UPLOAD_URL;

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace jaco\lib\http\emitter;
+namespace jaco\core\http\emitter;
 
-use jaco\lib\http;
-use jaco\lib\http\Status;
+use jaco\core\http;
+use jaco\core\http\Status;
 use JetBrains\PhpStorm\NoReturn;
 
 #[NoReturn]

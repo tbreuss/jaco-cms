@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace jaco\lib\responder;
+namespace jaco\core\responder;
 
 use jaco\domain;
 use jaco\domain\Payload;
-use jaco\lib\http\Response;
-use jaco\lib\http\Status;
+use jaco\core\http\Response;
+use jaco\core\http\Status;
 use JetBrains\PhpStorm\NoReturn;
-use function jaco\lib\http\json_response;
+use function jaco\core\http\json_response;
 
 function api_errors(domain\Payload $payload, array $mapping = []): Response
 {

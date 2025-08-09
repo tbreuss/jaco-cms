@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace jaco\domain;
 
-use jaco\lib\json;
+use jaco\core\json;
 
 class Payload
 {

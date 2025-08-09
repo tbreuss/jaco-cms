@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace jaco\lib\http\request;
+namespace jaco\core\http\request;
 
-use jaco\lib\json;
+use jaco\core\json;
 
 function get_post_values(): array
 {

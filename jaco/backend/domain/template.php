@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace jaco\domain\template;
 
-use jaco\lib\filesystem;
-use jaco\lib\html;
+use jaco\core\filesystem;
+use jaco\core\html;
 
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;

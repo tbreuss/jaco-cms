@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\lib\http;
+namespace jaco\core\http;
 
 enum Status: int
 {
@@ -44,11 +44,11 @@ function json_response(mixed $data = null, Status $status = Status::OK, array $h
     );
 }
 
-namespace jaco\lib\http\response;
+namespace jaco\core\http\response;
 
-use jaco\lib\http\Response;
-use jaco\lib\http\Status;
-use jaco\lib\json;
+use jaco\core\http\Response;
+use jaco\core\http\Status;
+use jaco\core\json;
 
 function ok(mixed $data = null): array
 {

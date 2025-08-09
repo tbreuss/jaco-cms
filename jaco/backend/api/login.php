@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace jaco\api\login;
 
 use jaco\domain\system\DomainPayload;
-use jaco\lib\http\Response;
+use jaco\core\http\Response;
 use function jaco\domain\system\authenticate_user;
-use function jaco\lib\http\json_response;
-use function jaco\lib\responder\api_errors;
+use function jaco\core\http\json_response;
+use function jaco\core\responder\api_errors;
 
 function action(array $bodyParams): Response
 {

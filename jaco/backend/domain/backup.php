@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\domain\backup;
 
-use jaco\lib\data;
-use jaco\lib\filesystem;
-use jaco\lib\html;
-use jaco\lib\list;
+use jaco\core\data;
+use jaco\core\filesystem;
+use jaco\core\html;
+use jaco\core\list;
 
 use const jaco\BACKUP_DIR;
 use const jaco\PAGE_EXTENSIONS;

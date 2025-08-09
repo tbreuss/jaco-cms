@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace jaco\api\page\create;
 
 use jaco\domain\page\DomainPayload;
-use jaco\lib\http\Response;
-use jaco\lib\http\Status;
+use jaco\core\http\Response;
+use jaco\core\http\Status;
 use function jaco\domain\page\create_page;
-use function jaco\lib\http\json_response;
-use function jaco\lib\responder\api_errors;
+use function jaco\core\http\json_response;
+use function jaco\core\responder\api_errors;
 
 function action(array $bodyParams): Response
 {

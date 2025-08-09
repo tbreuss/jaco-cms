@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace jaco\lib\json\schema;
+namespace jaco\core\json\schema;
 
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Errors\ValidationError;

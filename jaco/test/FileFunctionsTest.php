@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace jaco\tests;
 
 use PHPUnit\Framework\TestCase;
-use jaco\lib\filesystem;
+use jaco\core\filesystem;
 
 use const jaco\WEB_DIR;
 

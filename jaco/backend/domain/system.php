@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace jaco\domain\system;
 
-use jaco\lib\auth;
-use jaco\lib\data;
-use jaco\lib\system;
+use jaco\core\auth;
+use jaco\core\data;
+use jaco\core\system;
 use const jaco\APP_VERSION;
 use const jaco\PHP_ERROR_LOG;
 

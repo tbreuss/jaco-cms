@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace jaco\lib\filesystem;
+namespace jaco\core\filesystem;
 
-use jaco\lib\strings;
+use jaco\core\strings;
 
 use const jaco\DIRECTORY_PERMISSIONS;
 use const jaco\PAGE_EXTENSIONS;

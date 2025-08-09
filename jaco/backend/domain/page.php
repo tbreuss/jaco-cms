@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace jaco\domain\page;
 
-use jaco\lib\data;
-use jaco\lib\filesystem;
-use jaco\lib\html;
-use jaco\lib\list;
+use jaco\core\data;
+use jaco\core\filesystem;
+use jaco\core\html;
+use jaco\core\list;
 
 use const jaco\APP_DIR;
 use const jaco\APP_DIR_NAME;

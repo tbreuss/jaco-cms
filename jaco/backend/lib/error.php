@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace jaco\lib\error;
+namespace jaco\core\error;
 
-use jaco\lib\http\emitter;
-use jaco\lib\http\response;
+use jaco\core\http\emitter;
+use jaco\core\http\response;
 
 class Exception extends \Exception
 {
