@@ -51,3 +51,7 @@ Debug website using Xdebug
 PHP CS Fixer
 
     docker run --rm -v $(pwd)/jaco:/code ghcr.io/php-cs-fixer/php-cs-fixer:${FIXER_VERSION:-3-php8.1} fix
+
+PHPStan
+
+    docker run --rm -v ./jaco:/app ghcr.io/phpstan/phpstan analyse
