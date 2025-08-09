@@ -14,8 +14,8 @@ class Payload
     public readonly bool $isSuccess;
 
     final public function __construct(
-        readonly public string $status,
-        readonly public mixed $data = null,
+        public readonly string $status,
+        public readonly mixed $data = null,
     ) {
         $this->isError = $this->status === self::ERROR;
         $this->isInvalid = $this->status === self::INVALID;
