@@ -8,11 +8,8 @@ use jaco\core\http\Response;
 use jaco\core\http\Status;
 
 use function jaco\core\http\json_response;
-use function jaco\core\http\response\is_4xx;
-use function jaco\core\http\response\is_5xx;
-
-const VALIDATE_REQUEST_ATTRIBUTE = 'jaco\core\attribute\validate_request';
-const VALIDATE_RESPONSE_ATTRIBUTE = 'jaco\core\attribute\validate_response';
+use function jaco\core\http\response\is_client_error;
+use function jaco\core\http\response\is_server_error;
 
 function &routes(): array
 {
@@ -73,20 +70,10 @@ function call_action(callable $action, ?string $requestJsonSchema, ?string $resp
 {
     $function = new \ReflectionFunction($action);
 
-    $attributes = [];
-    foreach ($function->getAttributes() as $attribute) {
-        $attributeName = $attribute->getName();
-        $attributes[$attributeName] = match ($attributeName) {
-            VALIDATE_REQUEST_ATTRIBUTE, VALIDATE_RESPONSE_ATTRIBUTE => $attribute->getArguments()[0] ?? null,
-            default => null,
-        };
-    }
-
     // request body params
-    if (isset($attributes[VALIDATE_REQUEST_ATTRIBUTE]) || ($requestJsonSchema !== null)) {
-        $jsonSchema = $attributes[VALIDATE_REQUEST_ATTRIBUTE] ?? $requestJsonSchema;
+    if ($requestJsonSchema !== null) {
         $bodyParams = request\get_post_values();
-        $errors = request\validate($bodyParams, $jsonSchema);
+        $errors = request\validate($bodyParams, $requestJsonSchema);
         if (count($errors) > 0) {
             return json_response($errors, Status::BAD_REQUEST);
         }
@@ -121,7 +108,7 @@ function call_action(callable $action, ?string $requestJsonSchema, ?string $resp
         return json_response([['detail' => $e->getMessage(), 'title' => 'Type Error']], Status::BAD_REQUEST);
     }
 
-    if (is_4xx($response) || is_5xx($response)) {
+    if (is_client_error($response) || is_server_error($response)) {
         $errors = response\validate($response->body, 'errors.json');
         if (count($errors) > 0) {
             return json_response($errors, Status::INTERNAL_SERVER_ERROR);
@@ -129,9 +116,8 @@ function call_action(callable $action, ?string $requestJsonSchema, ?string $resp
         return $response;
     }
 
-    if (isset($attributes[VALIDATE_RESPONSE_ATTRIBUTE])  || ($responseJsonSchema !== null)) {
-        $jsonSchema = $attributes[VALIDATE_RESPONSE_ATTRIBUTE] ?? $responseJsonSchema;
-        $errors = response\validate($response->body, $jsonSchema);
+    if ($responseJsonSchema !== null) {
+        $errors = response\validate($response->body, $responseJsonSchema);
         if (count($errors) > 0) {
             return json_response($errors, Status::INTERNAL_SERVER_ERROR);
         }

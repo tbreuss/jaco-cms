@@ -45,73 +45,32 @@ function json_response(mixed $data = null, Status $status = Status::OK, array $h
 namespace jaco\core\http\response;
 
 use jaco\core\http\Response;
-use jaco\core\http\Status;
 use jaco\core\json;
-
-function ok(mixed $data = null): array
-{
-    return [Status::OK, $data];
-}
-
-function created(mixed $data = null): array
-{
-    return [Status::CREATED, $data];
-}
-
-function bad_request(mixed $data): array
-{
-    return [Status::BAD_REQUEST, $data];
-}
-
-function forbidden(mixed $data): array
-{
-    return [Status::FORBIDDEN, $data];
-}
-
-function not_found(mixed $data): array
-{
-    return [Status::NOT_FOUND, $data];
-}
-
-function method_not_allowed(mixed $data): array
-{
-    return [Status::METHOD_NOT_ALLOWED, $data];
-}
-
-function unprocessable_entity(array $data): array
-{
-    return [Status::UNPROCESSABLE_ENTITY, $data];
-}
-
-function internal_server_error(array $data): array
-{
-    return [Status::INTERNAL_SERVER_ERROR, $data];
-}
 
 function validate(array|string|null $data, string $schema): array
 {
     return json\schema\validate_data($data, $schema);
 }
 
-function is_2xx(Response $response): bool
+function is_successful(Response $response): bool
 {
     $status = (string) $response->status->value;
     return str_starts_with($status, '2');
 }
 
-function is_3xx(Response $response): bool
+function is_redirection(Response $response): bool
 {
     $status = (string) $response->status->value;
     return str_starts_with($status, '3');
 }
 
-function is_4xx(Response $response): bool
+function is_client_error(Response $response): bool
 {
     $status = (string) $response->status->value;
     return str_starts_with($status, '4');
 }
 
-function is_5xx(Response $response): bool
+function is_server_error(Response $response): bool
 {
     $status = (string) $response->status->value;
     return str_starts_with($status, '5');
