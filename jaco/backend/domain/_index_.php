@@ -37,19 +37,3 @@ class Payload
         return new static(self::SUCCESS, $data);
     }
 }
-
-/**
- * @deprecated
- */
-function validate_input(array $input, string $schema): array
-{
-    return json\schema\validate_service($input, $schema);
-}
-
-/**
- * @deprecated
- */
-function validate_output(array $output, string $schema): array
-{
-    return json\schema\validate_service($output, $schema);
-}

@@ -50,32 +50,3 @@ function validate_data(array|string|null $data, string $schema): array
 
     return array_values($formatter->format($error, false, $custom));
 }
-
-function validate_service(array $data, string $schema): array
-{
-    $validator = new Validator();
-    $validator->setMaxErrors(20);
-    $validator->resolver()->registerPrefix(JSON_SCHEMA_URL, dirname(__DIR__, 2) . '/schema/');
-
-    $dataAsObject = json_decode(json_encode($data));
-
-    $result = $validator->validate($dataAsObject, JSON_SCHEMA_URL . $schema);
-
-    if ($result->isValid()) {
-        return [];
-    }
-
-    $formatter = new ErrorFormatter();
-
-    $errors = $formatter->format($result->error());
-
-    $return = [];
-
-    foreach ($errors as $key => $values) {
-        foreach ($values as $value) {
-            $return[] = [ltrim($key, '/'), $value];
-        }
-    }
-
-    return $return;
-}

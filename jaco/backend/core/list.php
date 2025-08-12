@@ -2,7 +2,7 @@
 
 namespace jaco\core\list;
 
-function filter(array $list, string $filter): array
+function filter_list(array $list, string $filter): array
 {
     if (\strlen($filter) === 0) {
         return $list;
@@ -19,7 +19,7 @@ function filter(array $list, string $filter): array
     });
 }
 
-function sort(array $list, array $sort): array
+function sort_list(array $list, array $sort): array
 {
     [$sortField, $sortDir] = $sort;
     usort($list, function ($a, $b) use ($sortDir, $sortField) {

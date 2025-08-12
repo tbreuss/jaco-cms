@@ -48,9 +48,9 @@ function find_pages(string $filteredBy, string $sortedBy): DomainPayload
 
     $files = filesystem\find_files_rec(WEB_DIR, PAGE_EXTENSIONS, [APP_DIR]);
     $pages = create_list($files, WEB_DIR);
-    $pages = list\filter($pages, $filteredBy);
+    $pages = list\filter_list($pages, $filteredBy);
     $sortedBy = sort_field($sortedBy);
-    $output = [list\sort($pages, $sortedBy), $filteredBy, $sortedBy];
+    $output = [list\sort_list($pages, $sortedBy), $filteredBy, $sortedBy];
 
     return DomainPayload::success($output);
 }
