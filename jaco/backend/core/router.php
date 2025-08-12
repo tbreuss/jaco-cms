@@ -40,16 +40,20 @@ function post(string $route, callable $callback, bool $authenticated, ?string $r
     add('POST', $route, $callback, $authenticated, $requestSchema, $responseSchema);
 }
 
-function dispatch(string $method, string $action): Response
+function dispatch(Request $request): Response
 {
+    $actionQuery = $request->query['action'] ?? '';
+    $requestMethod = $request->server['REQUEST_METHOD'] ?? '';
+    $authorizationHeader = $request->server['HTTP_AUTHORIZATION'] ?? null;
+
     $routes = routes();
 
-    $routes_by_action = filter_routes($routes, 'action', $action);
+    $routes_by_action = filter_routes($routes, 'action', $actionQuery);
     if (count($routes_by_action) === 0) {
         return json_response([['title' => '404 Page Not Found']], Status::NOT_FOUND);
     }
 
-    $routes_by_method = filter_routes($routes_by_action, 'method', $method);
+    $routes_by_method = filter_routes($routes_by_action, 'method', $requestMethod);
     if (count($routes_by_method) === 0) {
         return json_response([['title' => '405 Method Not Allowed']], Status::METHOD_NOT_ALLOWED);
     }
@@ -58,7 +62,7 @@ function dispatch(string $method, string $action): Response
     $route = reset($routes_by_method);
 
     if ($route['authenticated'] === true) {
-        if (check_authorization() === false) {
+        if (check_authorization($authorizationHeader) === false) {
             return json_response([['title' => '403 Forbidden']], Status::FORBIDDEN);
         }
     }
@@ -126,16 +130,20 @@ function call_action(callable $action, ?string $requestJsonSchema, ?string $resp
     return $response;
 }
 
-function check_authorization(): bool
+function check_authorization(?string $authorizationHeader): bool
 {
-    $header = request\get_header_value('Authorization');
-    if (is_null($header)) {
+    if (is_null($authorizationHeader)) {
         return false;
     }
-    if (!str_starts_with($header, 'Bearer')) {
+
+    $bearer = 'Bearer';
+
+    if (!str_starts_with($authorizationHeader, $bearer)) {
         return false;
     }
-    $token = trim(substr($header, 7));
+
+    $token = trim(substr($authorizationHeader, strlen($bearer)));
+
     return auth\is_authenticated($token);
 }
 
@@ -145,5 +153,6 @@ function filter_routes(array $routes, string $column, string $search): array
     if (count($matched) === 0) {
         return [];
     }
+
     return array_values(array_intersect_key($routes, array_flip($matched)));
 }

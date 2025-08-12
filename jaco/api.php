@@ -3,6 +3,7 @@
 require 'vendor/autoload.php';
 
 use jaco\core\http\emitter;
+use jaco\core\http\Request;
 use jaco\core\router;
 
 set_error_handler('jaco\core\error\error_handler');
@@ -168,9 +169,8 @@ router\get(
     authenticated: true
 );*/
 
-$response = router\dispatch(
-    $_SERVER['REQUEST_METHOD'] ?? '',
-    $_GET['action'] ?? 'index',
-);
+$request = Request::fromGlobals();
+
+$response = router\dispatch($request);
 
 emitter\emit($response);
