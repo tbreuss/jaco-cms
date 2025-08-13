@@ -1,21 +1,19 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\cli\version;
 
-use jaco\domain;
+use jaco\domain\system\DomainPayload;
+
+use function jaco\domain\system\get_version;
 
 function command(): void
 {
-    $payload = domain\system\version();
+    $payload = get_version();
 
     responder($payload);
 }
 
-function responder(array $payload): void
+function responder(DomainPayload $payload): void
 {
-    [, $data] = $payload;
-
-    fwrite(STDOUT, $data['name'] . ' ' . $data['version'] . PHP_EOL);
+    fwrite(STDOUT, $payload->data['name'] . ' ' . $payload->data['version'] . PHP_EOL);
 }

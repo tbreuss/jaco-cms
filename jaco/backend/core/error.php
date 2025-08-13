@@ -1,23 +1,17 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+namespace jaco\core\error;
 
-namespace jaco\error;
+use jaco\core\http;
+use jaco\core\http\Status;
 
-use jaco\http\emitter;
-use jaco\http\response;
+use function jaco\core\http\json_response;
 
-class Exception extends \Exception
-{
-}
+class Exception extends \Exception {}
 
-class ActionNotFound extends Exception
-{
-}
+class ActionNotFound extends Exception {}
 
-class HttpUnauthorizedException extends Exception
-{
-}
+class HttpUnauthorizedException extends Exception {}
 
 // errors see https://jsonapi.org/format/#error-objects
 function exception_handler(\Throwable $t): void
@@ -26,12 +20,15 @@ function exception_handler(\Throwable $t): void
 
     error_log($message);
 
-    emitter\emit(response\INTERNAL_SERVER_ERROR, [
+    $response = json_response([
         [
             'title' => get_error_type($t->getCode()),
-            'detail' => $message
-        ]
+            'detail' => $message,
+        ],
+        Status::INTERNAL_SERVER_ERROR,
     ]);
+
+    http\emit($response);
 }
 
 function error_handler(int $errno, string $errstr, string $errfile, int $errline): bool
@@ -40,12 +37,15 @@ function error_handler(int $errno, string $errstr, string $errfile, int $errline
 
     error_log($message);
 
-    emitter\emit(response\INTERNAL_SERVER_ERROR, [
+    $response = json_response([
         [
             'title' => get_error_type($errno),
-            'detail' => $message
-        ]
+            'detail' => $message,
+        ],
+        Status::INTERNAL_SERVER_ERROR,
     ]);
+
+    http\emit($response, false);
 
     return true;
 }
@@ -60,12 +60,15 @@ function fatal_handler(): void
 
         error_log($message);
 
-        emitter\emit(response\INTERNAL_SERVER_ERROR, [
+        $response = json_response([
             [
                 'title' => get_error_type($error['type']),
-                'detail' => $message
-            ]
+                'detail' => $message,
+            ],
+            Status::INTERNAL_SERVER_ERROR,
         ]);
+
+        http\emit($response);
     }
 }
 

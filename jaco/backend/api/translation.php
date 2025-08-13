@@ -1,29 +1,29 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\translation;
 
-use jaco\api\responder;
-use jaco\domain;
-use jaco\http\response;
+use jaco\core\http\Request;
+use jaco\core\http\Response;
+use jaco\domain\translation\DomainPayload;
 
-function action(string $language): array
+use function jaco\core\http\json_response;
+use function jaco\core\responder\api_errors;
+use function jaco\domain\translation\load_translations;
+
+function action(Request $request): Response
 {
-    $payload = domain\translation\load_all(
-        forLanguage: $language
+    $payload = load_translations(
+        forLanguage: $request->query->strVal('language', 'en'),
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(DomainPayload $payload): Response
 {
-    [$status, $data] = $payload;
-
-    if ($status === domain\SUCCESS) {
-        return response\ok($data);
+    if ($payload->isSuccess) {
+        return json_response($payload->data);
     }
 
-    return responder\errors($payload);
+    return api_errors($payload);
 }

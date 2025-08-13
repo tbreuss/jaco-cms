@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+namespace jaco\core\data;
 
-namespace jaco\data;
+use jaco\core\data\validate\Result;
 
 function sanitize(array $data, array $filters): array
 {
@@ -10,7 +10,7 @@ function sanitize(array $data, array $filters): array
     foreach ($filters as $rule) {
         $name = $rule[0];
         $value = $data[$name] ?? null;
-        $callable = 'jaco\\data\\sanitize\\' . $rule[1];
+        $callable = 'jaco\\core\\data\\sanitize\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         $filteredValue = call_user_func_array($callable, $options);
@@ -47,16 +47,17 @@ function validate(array $data, array $rules): array
             continue;
         }
         $value = $data[$name] ?? null;
-        $callable = 'jaco\\data\\validate\\' . $rule[1];
+        $callable = 'jaco\\core\\data\\validate\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
-        [$status, $message] = call_user_func_array($callable, $options);
-        if ($status === true) {
+        /** @var Result $result */
+        $result = call_user_func_array($callable, $options);
+        if ($result->isValid) {
             continue;
         }
         $errors[] = [
             $name,
-            str_replace('{value}', (string)($value ?: 'Value'), $message)
+            str_replace('{value}', (string) ($value ?: 'Value'), $result->message),
         ];
         $failed[] = $name;
     }

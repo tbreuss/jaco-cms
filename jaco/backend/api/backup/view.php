@@ -1,39 +1,39 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\backup\view;
 
-use jaco\api\responder;
-use jaco\domain;
-use jaco\http\response;
+use jaco\core\http\Request;
+use jaco\core\http\Response;
+use jaco\domain\backup\DomainPayload;
 
-function action(string $file): array
+use function jaco\core\http\json_response;
+use function jaco\core\responder\api_errors;
+use function jaco\domain\backup\find_backup;
+
+function action(Request $request): Response
 {
-    $payload = domain\backup\find(
-        file: $file
+    $payload = find_backup(
+        file: $request->query->strVal('file'),
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(DomainPayload $payload): Response
 {
-    [$status, $data] = $payload;
-
-    if ($status === domain\SUCCESS) {
-        return response\ok([
-            'file' => $data['file'],
-            'name' => $data['name'],
-            'title' => $data['title'],
-            'created' => $data['created'],
-            'backedUp' => $data['backedUp'],
-            'content' => $data['content'],
-            'type' => $data['type'],
+    if ($payload->isSuccess) {
+        return json_response([
+            'file' => $payload->data['file'],
+            'name' => $payload->data['name'],
+            'title' => $payload->data['title'],
+            'created' => $payload->data['created'],
+            'backedUp' => $payload->data['backedUp'],
+            'content' => $payload->data['content'],
+            'type' => $payload->data['type'],
         ]);
     }
 
-    return responder\errors($payload, [
+    return api_errors($payload, [
         'file' => 'file',
     ]);
 }

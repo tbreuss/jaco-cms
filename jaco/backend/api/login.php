@@ -1,34 +1,34 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\login;
 
-use jaco\api\responder;
-use jaco\domain;
-use jaco\http\response;
+use jaco\core\http\Request;
+use jaco\core\http\Response;
+use jaco\domain\system\DomainPayload;
 
-function action(array $bodyParams): array
+use function jaco\core\http\json_response;
+use function jaco\core\responder\api_errors;
+use function jaco\domain\system\authenticate_user;
+
+function action(Request $request): Response
 {
-    $payload = domain\system\authenticate(
-        username: $bodyParams['username'],
-        withPassword: $bodyParams['password'],
+    $payload = authenticate_user(
+        username: $request->post->strVal('username'),
+        withPassword: $request->post->strVal('password'),
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(DomainPayload $payload): Response
 {
-    [$status, $data] = $payload;
-
-    if ($status === domain\SUCCESS) {
-        return response\ok([
-            'token' => $data['token'],
+    if ($payload->isSuccess) {
+        return json_response([
+            'token' => $payload->data['token'],
         ]);
     }
 
-    return responder\errors($payload, [
+    return api_errors($payload, [
         'username' => 'username',
         'withPassword' => 'password',
     ]);

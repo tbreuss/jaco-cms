@@ -1,21 +1,17 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\domain\system;
 
-use jaco\auth;
-use jaco\data;
-use jaco\domain;
-use jaco\system;
+use jaco\core\auth;
+use jaco\core\data;
+use jaco\core\system;
 
 use const jaco\APP_VERSION;
 use const jaco\PHP_ERROR_LOG;
 
-/**
- * @return array{string, array}
- */
-function authenticate(string $username, string $withPassword): array
+final class DomainPayload extends \jaco\domain\Payload {}
+
+function authenticate_user(string $username, string $withPassword): DomainPayload
 {
     $errors = data\validate(
         [
@@ -27,41 +23,35 @@ function authenticate(string $username, string $withPassword): array
             ['username', 'string'],
             ['withPassword', 'required'],
             ['withPassword', 'string'],
-        ]
+        ],
     );
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $token = auth\authenticate($username, $withPassword);
 
     if ($token === null) {
-        return domain\invalid([['', 'Authentication failed.']]);
+        return DomainPayload::invalid([['', 'Authentication failed.']]);
     }
 
-    return domain\success(['token' => $token]);
+    return DomainPayload::success(['token' => $token]);
 }
 
-/**
- * @return array{string, array}
- */
-function environment(): array
+function get_environment(): DomainPayload
 {
-    return domain\success([
+    return DomainPayload::success([
         system\defined_classes(),
         system\defined_constants(),
         system\defined_functions(),
     ]);
 }
 
-/**
- * @return array{string, array}
- */
-function log(int $size = 100): array
+function get_log_entries(int $size = 100): DomainPayload
 {
     if ($size < 1) {
-        return domain\success([]);
+        return DomainPayload::success([]);
     }
 
     $lines = [];
@@ -93,13 +83,10 @@ function log(int $size = 100): array
         \fclose($fp);
     }
 
-    return domain\success($lines);
+    return DomainPayload::success($lines);
 }
 
-/**
- * @return array{string, array}
- */
-function phpinfo(): array
+function get_phpinfo(): DomainPayload
 {
     \ob_start();
     \phpinfo();
@@ -109,19 +96,16 @@ function phpinfo(): array
     \preg_match("/<body[^>]*>(.*?)<\/body>/is", $data, $matches);
 
     if (!isset($matches[1])) {
-        return domain\error([['', 'Could not parse phpinfo output.']]);
+        return DomainPayload::error([['', 'Could not parse phpinfo output.']]);
     }
 
-    return domain\success($matches[1]);
+    return DomainPayload::success($matches[1]);
 }
 
-/**
- * @return array{string, array}
- */
-function version(): array
+function get_version(): DomainPayload
 {
-    return domain\success([
+    return DomainPayload::success([
         'name' => 'jaco',
-        'version' => APP_VERSION
+        'version' => APP_VERSION,
     ]);
 }

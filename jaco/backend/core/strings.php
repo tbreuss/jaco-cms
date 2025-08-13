@@ -1,8 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
-
-namespace jaco\strings;
+namespace jaco\core\strings;
 
 function random(int $length = 6): string
 {

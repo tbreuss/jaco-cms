@@ -1,15 +1,15 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\cli\auth\token;
 
-use jaco\cli\responder;
-use jaco\domain;
+use jaco\domain\system\DomainPayload;
+
+use function jaco\core\responder\cli_errors;
+use function jaco\domain\system\authenticate_user;
 
 function command(string $user, string $pass): void
 {
-    $payload = domain\system\authenticate(
+    $payload = authenticate_user(
         username: $user,
         withPassword: $pass,
     );
@@ -17,17 +17,15 @@ function command(string $user, string $pass): void
     responder($payload, $user);
 }
 
-function responder(array $payload, string $user): void
+function responder(DomainPayload $payload, string $user): void
 {
-    [$status, $data] = $payload;
-
-    if ($status === domain\SUCCESS) {
+    if ($payload->isSuccess) {
         fwrite(STDOUT, sprintf('The token for user "%s" is:', $user) . PHP_EOL);
-        fwrite(STDOUT, $data['token'] . PHP_EOL);
+        fwrite(STDOUT, $payload->data['token'] . PHP_EOL);
         exit(0);
     }
 
-    responder\errors($status, $data, [
+    cli_errors($payload->status, $payload->data, [
         'username' => 'user',
         'withPassword' => 'pass',
     ]);

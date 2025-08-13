@@ -1,25 +1,25 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\system;
 
-use jaco\domain;
-use jaco\http\response;
+use jaco\core\http\Response;
+use jaco\domain\system\DomainPayload;
 
-function action(): array
+use function jaco\core\http\json_response;
+use function jaco\domain\system\get_environment;
+
+function action(): Response
 {
-    $payload = domain\system\environment();
+    $payload = get_environment();
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(DomainPayload $payload): Response
 {
-    [, $data] = $payload;
-    [$classes, $constants, $functions] = $data;
+    [$classes, $constants, $functions] = $payload->data;
 
-    return response\ok([
+    return json_response([
         'classes' => $classes,
         'constants' => $constants,
         'functions' => $functions,

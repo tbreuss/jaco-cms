@@ -1,25 +1,23 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\cli\system\log;
 
-use jaco\domain;
+use jaco\domain\system\DomainPayload;
+
+use function jaco\domain\system\get_log_entries;
 
 function command(int $size): void
 {
-    $payload = domain\system\log(
-        size: $size
+    $payload = get_log_entries(
+        size: $size,
     );
 
     responder($payload);
 }
 
-function responder(array $payload): void
+function responder(DomainPayload $payload): void
 {
-    [, $data] = $payload;
-
-    array_walk($data, function(string $line) {
+    foreach ($payload->data as $line) {
         echo $line . PHP_EOL;
-    });
+    }
 }

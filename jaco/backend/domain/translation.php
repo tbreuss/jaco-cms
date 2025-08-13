@@ -1,34 +1,26 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\domain\translation;
 
-use jaco\domain;
-
 use const jaco\DEFAULT_LANGUAGE;
 
-/**
- * @return array{string, array}
- */
-function load_all(string $forLanguage): array
-{
-    $translations = _load($forLanguage);
+final class DomainPayload extends \jaco\domain\Payload {}
 
-    return domain\success($translations);
+function load_translations(string $forLanguage): DomainPayload
+{
+    $translations = load($forLanguage);
+
+    return DomainPayload::success($translations);
 }
 
-/**
- * @return array{string, array}
- */
-function load_one(string $forLanguage, string $withKey): array
+function load_translation(string $forLanguage, string $withKey): DomainPayload
 {
-    $translations = _load($forLanguage);
+    $translations = load($forLanguage);
 
-    return domain\success($translations[$withKey] ?? $withKey);
+    return DomainPayload::success($translations[$withKey] ?? $withKey);
 }
 
-function _load(string $language): array
+function load(string $language): array
 {
     static $translations = [];
 
@@ -44,5 +36,5 @@ function _load(string $language): array
         return $translations[$language];
     }
 
-    return _load(DEFAULT_LANGUAGE);
+    return load(DEFAULT_LANGUAGE);
 }

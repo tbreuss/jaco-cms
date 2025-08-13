@@ -1,37 +1,37 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\page\list;
 
-use jaco\api\responder;
-use jaco\domain;
-use jaco\http\response;
+use jaco\core\http\Request;
+use jaco\core\http\Response;
+use jaco\domain\page\DomainPayload;
 
-function action(string $filter = '', string $sort = '-created'): array
+use function jaco\core\http\json_response;
+use function jaco\core\responder\api_errors;
+use function jaco\domain\page\find_pages;
+
+function action(Request $request): Response
 {
-    $payload = domain\page\find_all(
-        filteredBy: $filter,
-        sortedBy: $sort
+    $payload = find_pages(
+        filteredBy: $request->query->strVal('filter'),
+        sortedBy: $request->query->strVal('sort', '-created'),
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(DomainPayload $payload): Response
 {
-    [$status, $data] = $payload;
-
-    if ($status === domain\SUCCESS) {
-        [$items, $filter, $sort] = $data;
-        return response\ok([
+    if ($payload->isSuccess) {
+        [$items, $filter, $sort] = $payload->data;
+        return json_response([
             'items' => $items,
             'filter' => $filter,
             'sort' => $sort,
         ]);
     }
 
-    return responder\errors($payload, [
+    return api_errors($payload, [
         'filteredBy' => 'filter',
         'sortedBy' => 'sort',
     ]);

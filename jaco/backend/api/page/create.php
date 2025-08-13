@@ -1,33 +1,34 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\page\create;
 
-use jaco\api\responder;
-use jaco\domain;
-use jaco\http\response;
+use jaco\core\http\Request;
+use jaco\core\http\Response;
+use jaco\core\http\Status;
+use jaco\domain\page\DomainPayload;
 
-function action(array $bodyParams): array
+use function jaco\core\http\json_response;
+use function jaco\core\responder\api_errors;
+use function jaco\domain\page\create_page;
+
+function action(Request $request): Response
 {
-    $payload = domain\page\create(
-        file: $bodyParams['fileName'],
-        fromTemplate: $bodyParams['pageTemplate'],
-        withTitle: $bodyParams['pageTitle']
+    $payload = create_page(
+        file: $request->post->strVal('fileName'),
+        fromTemplate: $request->post->strVal('pageTemplate'),
+        withTitle: $request->post->strVal('pageTitle'),
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(DomainPayload $payload): Response
 {
-    [$status] = $payload;
-
-    if ($status === domain\SUCCESS) {
-        return response\created();
+    if ($payload->isSuccess) {
+        return json_response(status: Status::CREATED);
     }
 
-    return responder\errors($payload, [
+    return api_errors($payload, [
         'file' => 'fileName',
         'fromTemplate' => 'pageTemplate',
         'withTitle' => 'pageTitle',

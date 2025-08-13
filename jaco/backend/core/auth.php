@@ -1,8 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
-
-namespace jaco\auth;
+namespace jaco\core\auth;
 
 const AUDIENCE = 'ch.tebe.jaco';
 const ISSUER = 'ch.tebe.jaco';

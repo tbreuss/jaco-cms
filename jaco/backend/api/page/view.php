@@ -1,36 +1,36 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\page\view;
 
-use jaco\api\responder;
-use jaco\domain;
-use jaco\http\response;
+use jaco\core\http\Request;
+use jaco\core\http\Response;
+use jaco\domain\page\DomainPayload;
 
-function action(string $file): array
+use function jaco\core\http\json_response;
+use function jaco\core\responder\api_errors;
+use function jaco\domain\page\find_page;
+
+function action(Request $request): Response
 {
-    $payload = domain\page\find(
-        file: $file
+    $payload = find_page(
+        file: $request->query->strVal('file'),
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(DomainPayload $payload): Response
 {
-    [$status, $data] = $payload;
-
-    if ($status === domain\SUCCESS) {
-        return response\ok([
-            'file' => $data['file'],
-            'title' => $data['title'],
-            'created' => $data['created'],
-            'content' => $data['content'],
+    if ($payload->isSuccess) {
+        return json_response([
+            'file' => $payload->data['file'],
+            'title' => $payload->data['title'],
+            'created' => $payload->data['created'],
+            'content' => $payload->data['content'],
         ]);
     }
 
-    return responder\errors($payload, [
+    return api_errors($payload, [
         'file' => 'file',
     ]);
 }

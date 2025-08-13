@@ -1,8 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
-
-namespace jaco\json\schema;
+namespace jaco\core\json\schema;
 
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Errors\ValidationError;
@@ -14,12 +12,12 @@ function validate_data(array|string|null $data, string $schema): array
 {
     $validator = new Validator();
     $validator->setMaxErrors(20);
-    $validator->resolver()->registerPrefix(JSON_SCHEMA_URL, dirname(__DIR__, 2) . '/schema/');
+    $validator->resolver()->registerPrefix(JSON_SCHEMA_URL, dirname(__DIR__, 3) . '/schema/');
 
     if (is_array($data)) {
-        $dataAsObject = json_decode(json_encode($data));
+        $dataAsObject = json_decode(json_encode($data), false);
     } elseif (is_string($data)) {
-        $dataAsObject = json_decode($data);
+        $dataAsObject = json_decode($data, false);
     } else {
         $dataAsObject = $data;
     }
@@ -43,41 +41,12 @@ function validate_data(array|string|null $data, string $schema): array
         }
         return [
             'source' => [
-                'pointer' => join('/', $error->data()->path())
+                'pointer' => join('/', $error->data()->path()),
             ],
-            'title' => 'Invalid input',
+            'title' => 'Invalid data',
             'detail' => $formatter->formatErrorMessage($error, $customErrorMessage),
         ];
     };
 
     return array_values($formatter->format($error, false, $custom));
-}
-
-function validate_service(array $data, string $schema): array
-{
-    $validator = new Validator();
-    $validator->setMaxErrors(20);
-    $validator->resolver()->registerPrefix(JSON_SCHEMA_URL, dirname(__DIR__, 2) . '/schema/');
-
-    $dataAsObject = json_decode(json_encode($data));
-
-    $result = $validator->validate($dataAsObject, JSON_SCHEMA_URL . $schema);
-
-    if ($result->isValid()) {
-        return [];
-    }
-
-    $formatter = new ErrorFormatter();
-
-    $errors = $formatter->format($result->error());
-
-    $return = [];
-
-    foreach ($errors as $key => $values) {
-        foreach ($values as $value) {
-            $return[] = [ltrim($key, '/'), $value];
-        }
-    }
-
-    return $return;
 }

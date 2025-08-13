@@ -1,24 +1,23 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\system\log;
 
-use jaco\domain;
-use jaco\http\response;
+use jaco\core\http\Response;
+use jaco\domain\system\DomainPayload;
 
-function action(): array
+use function jaco\core\http\json_response;
+use function jaco\domain\system\get_log_entries;
+
+function action(): Response
 {
-    $payload = domain\system\log(
-        size: 1000
+    $payload = get_log_entries(
+        size: 1000,
     );
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(DomainPayload $payload): Response
 {
-    [, $data] = $payload;
-
-    return response\ok($data);
+    return json_response($payload->data);
 }

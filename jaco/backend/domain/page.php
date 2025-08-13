@@ -1,16 +1,11 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\domain\page;
 
-use jaco\data;
-use jaco\domain;
-use jaco\filesystem;
-use jaco\html;
-use jaco\list;
-use jaco\struct\file;
-use jaco\struct\page;
+use jaco\core\data;
+use jaco\core\filesystem;
+use jaco\core\html;
+use jaco\core\list;
 
 use const jaco\APP_DIR;
 use const jaco\APP_DIR_NAME;
@@ -21,10 +16,19 @@ use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['created', 'file', 'title'];
 
-/**
- * @return array{string, array}
- */
-function find_all(string $filteredBy, string $sortedBy): array
+final class Page
+{
+    public function __construct(
+        public string $file,
+        public string $title,
+        public int $created,
+        public ?string $content,
+    ) {}
+}
+
+final class DomainPayload extends \jaco\domain\Payload {}
+
+function find_pages(string $filteredBy, string $sortedBy): DomainPayload
 {
     $errors = data\validate(
         [
@@ -35,26 +39,23 @@ function find_all(string $filteredBy, string $sortedBy): array
             ['filteredBy', 'string'],
             ['sortedBy', 'string'],
             ['sortedBy', 'sort_parameter', 'fields' => SORT_PARAMETERS],
-        ]
+        ],
     );
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $files = filesystem\find_files_rec(WEB_DIR, PAGE_EXTENSIONS, [APP_DIR]);
-    $pages = _create_list($files, WEB_DIR);
-    $pages = list\filter($pages, $filteredBy);
-    $sortedBy = _sort_field($sortedBy);
-    $output = [list\sort($pages, $sortedBy), $filteredBy, $sortedBy];
+    $pages = create_list($files, WEB_DIR);
+    $pages = list\filter_list($pages, $filteredBy);
+    $sortedBy = sort_field($sortedBy);
+    $output = [list\sort_list($pages, $sortedBy), $filteredBy, $sortedBy];
 
-    return domain\success($output);
+    return DomainPayload::success($output);
 }
 
-/**
- * @return array{string, array}
- */
-function find(string $file): array
+function find_page(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -67,27 +68,24 @@ function find(string $file): array
     ]);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $html = filesystem\read_file(WEB_DIR, $file);
 
     if ($html === null) {
-        return domain\error([['file', 'Could not read file.']]);
+        return DomainPayload::error([['file', 'Could not read file.']]);
     }
 
-    return domain\success([
+    return DomainPayload::success([
         'file' => $file,
         'title' => html\get_title($html),
         'created' => filesystem\file_mtime($file, WEB_DIR),
-        'content' => $html
+        'content' => $html,
     ]);
 }
 
-/**
- * @return array{string, array}
- */
-function delete(string $file): array
+function delete_page(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -98,32 +96,29 @@ function delete(string $file): array
         ['file_exists', 'dir' => WEB_DIR],
         ['file_writeable'],
         ['html_file_name'],
-        ['html_file_extension']
+        ['html_file_extension'],
     ]);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
 
     if (!$status) {
-        return domain\error([['file', 'Could not backup file.']]);
+        return DomainPayload::error([['file', 'Could not backup file.']]);
     }
 
     $status = filesystem\delete_file(WEB_DIR, $file);
 
     if (!$status) {
-        return domain\error([['file', 'Could not delete file.']]);
+        return DomainPayload::error([['file', 'Could not delete file.']]);
     }
 
-    return domain\success(null);
+    return DomainPayload::success();
 }
 
-/**
- * @return array{string, array}
- */
-function copy(string $file, string $toFile, string $withTitle): array
+function copy_page(string $file, string $toFile, string $withTitle): DomainPayload
 {
     $data = data\sanitize(
         [
@@ -135,7 +130,7 @@ function copy(string $file, string $toFile, string $withTitle): array
             ['file', 'filename'],
             ['toFile', 'filename'],
             ['withTitle', 'string'],
-        ]
+        ],
     );
 
     $errors = data\validate($data, [
@@ -150,13 +145,13 @@ function copy(string $file, string $toFile, string $withTitle): array
     ]);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $html = filesystem\read_file(WEB_DIR, $data['file']);
 
     if ($html === null) {
-        return domain\error([['file', 'Could not read file content.']]);
+        return DomainPayload::error([['file', 'Could not read file content.']]);
     }
 
     $html = html\set_title($html, $data['withTitle']);
@@ -164,39 +159,36 @@ function copy(string $file, string $toFile, string $withTitle): array
     $status = filesystem\write_file(WEB_DIR, $data['toFile'], $html);
 
     if ($status === false) {
-        return domain\error([['toFile', 'Could not write file content.']]);
+        return DomainPayload::error([['toFile', 'Could not write file content.']]);
     }
 
     $html = filesystem\read_file(WEB_DIR, $data['toFile']);
 
     if ($html === null) {
-        return domain\error([['toFile', 'Could not read new page.']]);
+        return DomainPayload::error([['toFile', 'Could not read new page.']]);
     }
 
-    return domain\success([
+    return DomainPayload::success([
         'file' => $data['toFile'],
         'title' => html\get_title($html),
         'created' => filesystem\file_mtime($data['toFile'], WEB_DIR),
-        'content' => $html
+        'content' => $html,
     ]);
 }
 
-/**
- * @return array{string, array}
- */
-function create(string $file, string $fromTemplate, string $withTitle): array
+function create_page(string $file, string $fromTemplate, string $withTitle): DomainPayload
 {
     $data = data\sanitize(
         [
             'file' => $file,
             'fromTemplate' => $fromTemplate,
-            'withTitle' => $withTitle
+            'withTitle' => $withTitle,
         ],
         [
             ['fromTemplate', 'filename'],
             ['file', 'filename'],
             ['withTitle', 'string'],
-        ]
+        ],
     );
 
     $errors = data\validate($data, [
@@ -210,13 +202,13 @@ function create(string $file, string $fromTemplate, string $withTitle): array
     ]);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $html = filesystem\read_file(TEMPLATE_PAGE_DIR, $data['fromTemplate']);
 
     if ($html === null) {
-        return domain\error([['fromTemplate', 'Could not read file.']]);
+        return DomainPayload::error([['fromTemplate', 'Could not read file.']]);
     }
 
     $html = html\set_title($html, $data['withTitle']);
@@ -224,27 +216,24 @@ function create(string $file, string $fromTemplate, string $withTitle): array
     $status = filesystem\write_file(WEB_DIR, $data['file'], $html);
 
     if (!$status) {
-        return domain\error([['file', 'Could not write file.']]);
+        return DomainPayload::error([['file', 'Could not write file.']]);
     }
 
-    return domain\success(null);
+    return DomainPayload::success();
 }
 
-/**
- * @return array{string, array}
- */
-function update(string $file, string $withContent): array
+function update_page(string $file, string $withContent): DomainPayload
 {
     $data = data\sanitize(
         [
             'file' => $file,
-            'withContent' => $withContent
+            'withContent' => $withContent,
         ],
         [
             ['file', 'string'],
             ['file', 'filename'],
             ['withContent', 'string'],
-        ]
+        ],
     );
 
     $errors = data\validate($data, [
@@ -256,7 +245,7 @@ function update(string $file, string $withContent): array
     ]);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['withContent']);
@@ -264,53 +253,53 @@ function update(string $file, string $withContent): array
     if ($status) {
         $data['withContent'] = $htmlOrErrors;
     } else {
-        return domain\error([['withContent', \reset($htmlOrErrors)]]);
+        return DomainPayload::error([['withContent', \reset($htmlOrErrors)]]);
     }
 
     $status = filesystem\backup_file(WEB_DIR, $data['file'], BACKUP_DIR);
 
     if (!$status) {
-        return domain\error([['file', 'Could not backup file.']]);
+        return DomainPayload::error([['file', 'Could not backup file.']]);
     }
 
     $status = filesystem\write_file(WEB_DIR, $data['file'], $data['withContent']);
 
     if (!$status) {
-        return domain\error([['file', 'Could not write content to file.']]);
+        return DomainPayload::error([['file', 'Could not write content to file.']]);
     }
 
-    return domain\success(null);
+    return DomainPayload::success();
 }
 
 /**
- * @param file[] $files
- * @return page[]
+ * @param filesystem\File[] $files
+ * @return Page[]
  */
-function _create_list(array $files, string $dir): array
+function create_list(array $files, string $dir): array
 {
     $pages = [];
     foreach ($files as $file) {
-        $pages[] = _create_one($dir, $file->file, $file->modified);
+        $pages[] = create_one($dir, $file->file, $file->modified);
     }
     return $pages;
 }
 
-function _create_one(string $dir, string $file, int $modified, ?string $content = null): page
+function create_one(string $dir, string $file, int $modified, ?string $content = null): Page
 {
     $html = filesystem\read_file($dir, $file);
 
-    return new page(
+    return new Page(
         $file,
         html\get_title($html),
         $modified,
-        $content
+        $content,
     );
 }
 
 /**
  * @return array{string, string}
  */
-function _sort_field(string $sort): array
+function sort_field(string $sort): array
 {
     if (!in_array(ltrim($sort, '-'), SORT_PARAMETERS)) {
         return ['created', 'desc'];

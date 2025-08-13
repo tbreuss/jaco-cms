@@ -1,14 +1,22 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+namespace jaco\core\filesystem;
 
-namespace jaco\filesystem;
-
-use jaco\strings;
-use jaco\struct;
+use jaco\core\strings;
 
 use const jaco\DIRECTORY_PERMISSIONS;
 use const jaco\PAGE_EXTENSIONS;
+
+final class File
+{
+    public function __construct(
+        public string $file,
+        public string $extension,
+        public int $modified,
+        public int $size,
+        public ?string $content = null,
+    ) {}
+}
 
 function dir_exists(string $root, string $dir = ''): bool
 {
@@ -126,8 +134,8 @@ function backup_file(string $dir, string $file, string $bakDir): bool
             '%s_%s_%s',
             \date('Ymd_His', $modTime),
             strings\random(4),
-            \str_replace('/', '|', $file)
-        )
+            \str_replace('/', '|', $file),
+        ),
     );
     return \copy($srcPath, $dstPath); // triggers an error
 }
@@ -253,7 +261,7 @@ function validate_extension(string $dir, string $file, array $allowed = PAGE_EXT
 
 /**
  * @param string[] $allowedExtensions
- * @return struct\file[]
+ * @return File[]
  */
 function find_files(string $inDir, array $allowedExtensions, bool $withContent = false): array
 {
@@ -263,14 +271,14 @@ function find_files(string $inDir, array $allowedExtensions, bool $withContent =
 /**
  * @param string[] $extensions
  * @param string[] $excludedDirectories
- * @return struct\file[]
+ * @return File[]
  */
 function find_files_rec(
     string $dir,
     array $extensions,
     array $excludedDirectories = [],
     int $maxDepth = -1,
-    bool $withContent = false
+    bool $withContent = false,
 ): array {
     $excludedFiles = ['.git', '.idea', '.DS_Store', '.vscode', '.gitignore'];
 
@@ -292,8 +300,8 @@ function find_files_rec(
     $rii = new \RecursiveIteratorIterator(
         new \RecursiveCallbackFilterIterator(
             new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
-            $onFileAcceptHandler
-        )
+            $onFileAcceptHandler,
+        ),
     );
 
     $rii->setMaxDepth($maxDepth);
@@ -306,12 +314,12 @@ function find_files_rec(
         }
         $pathname = $file->getPathname();
         $relfile = \substr($pathname, \strlen($dir));
-        $files[] = new struct\file(
+        $files[] = new File(
             \ltrim($relfile, '\\/'),
             $file->getExtension(),
             $file->getMTime(),
             $file->getSize(),
-            $withContent ? read_file($dir, $relfile) : null
+            $withContent ? read_file($dir, $relfile) : null,
         );
     }
 
@@ -338,7 +346,10 @@ function _rrmdir(string $dir): void
 function filter_filename(string $file): string
 {
     $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $file);
-    $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
+    $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), function ($value) {
+        return strlen($value) > 0;
+    });
+
     $absolutes = [];
     foreach ($parts as $part) {
         $part = trim($part, '.');
@@ -347,12 +358,12 @@ function filter_filename(string $file): string
         }
         $absolutes[] = $part;
     }
+
     return implode(DIRECTORY_SEPARATOR, $absolutes);
 }
 
 function file_in_dir(string $file, string $dir): bool
 {
     $parts = explode(DIRECTORY_SEPARATOR, $file);
-    $first = $parts[0] ?? '';
-    return $first === $dir;
+    return $parts[0] === $dir;
 }

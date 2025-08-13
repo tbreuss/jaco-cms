@@ -1,54 +1,46 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\domain\template;
 
-use jaco\data;
-use jaco\domain;
-use jaco\filesystem;
-use jaco\html;
-use jaco\struct\file;
+use jaco\core\filesystem;
+use jaco\core\html;
 
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\TEMPLATE_PAGE_DIR;
 
-/**
- * @return array{string, array}
- */
-function page_templates(array $input): array
+final class DomainPayload extends \jaco\domain\Payload {}
+
+final class Template
 {
-    $data = data\sanitize($input, []);
+    public function __construct(
+        public string $file,
+        public string $title,
+        public int $created,
+    ) {}
+}
 
-    $errors = data\validate($data, []);
-
-    if (count($errors) > 0) {
-        return domain\invalid($errors);
-    }
-
+function find_page_templates(): DomainPayload
+{
     if (!filesystem\dir_exists(TEMPLATE_PAGE_DIR)) {
-        return domain\error([['', 'Dir does not exist.']]);
+        return DomainPayload::error([['', 'Dir does not exist.']]);
     }
 
     $files = filesystem\find_files(
         inDir: TEMPLATE_PAGE_DIR,
         allowedExtensions: PAGE_EXTENSIONS,
-        withContent: true
+        withContent: true,
     );
 
-    return domain\success(
-        array_map(fn(file $file): array => [
-            'file' => $file->file,
-            'title' => html\get_title($file->content),
-            'created' => $file->modified
-        ], $files)
+    return DomainPayload::success(
+        array_map(fn(filesystem\File $file): Template => new Template(
+            file: $file->file,
+            title: html\get_title($file->content),
+            created: $file->modified,
+        ), $files),
     );
 }
 
-/**
- * @return array{string, array}
- */
-function content_templates(): array
+function find_content_templates(): DomainPayload
 {
-    return domain\error([['', 'TODO: implement this.']]); // TODO
+    return DomainPayload::error([['', 'TODO: implement this.']]); // TODO
 }

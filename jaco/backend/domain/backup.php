@@ -1,16 +1,11 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\domain\backup;
 
-use jaco\data;
-use jaco\domain;
-use jaco\filesystem;
-use jaco\html;
-use jaco\list;
-use jaco\struct\backup;
-use jaco\struct\file;
+use jaco\core\data;
+use jaco\core\filesystem;
+use jaco\core\html;
+use jaco\core\list;
 
 use const jaco\BACKUP_DIR;
 use const jaco\PAGE_EXTENSIONS;
@@ -19,45 +14,54 @@ use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['backedUp', 'created', 'name', 'title', 'type'];
 
-/**
- * @return array{string, array}
- */
-function find_all(string $filteredBy, string $sortedBy): array
+final class Backup
+{
+    public function __construct(
+        public string $file,
+        public string $name,
+        public string $title,
+        public int $created,
+        public int $backedUp,
+        public string $type,
+        public string $content = '',
+    ) {}
+}
+
+final class DomainPayload extends \jaco\domain\Payload {}
+
+function find_backups(string $filteredBy, string $sortedBy): DomainPayload
 {
     $errors = data\validate(
         [
             'filteredBy' => $filteredBy,
-            'sortedBy' => $sortedBy
+            'sortedBy' => $sortedBy,
         ],
         [
             ['filteredBy', 'string'],
             ['sortedBy', 'string'],
             ['sortedBy', 'sort_parameter', 'fields' => SORT_PARAMETERS],
-        ]
+        ],
     );
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     if (!filesystem\dir_exists(BACKUP_DIR)) {
-        return domain\error([['', 'Dir does not exist.']]);
+        return DomainPayload::error([['', 'Dir does not exist.']]);
     }
 
     $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
     $files = filesystem\find_files(BACKUP_DIR, $allowed);
-    $backups = _create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
-    $backups = list\filter($backups, $filteredBy);
-    $sort = _sort_field($sortedBy);
-    $output = [list\sort($backups, $sort), $filteredBy, $sort];
+    $backups = create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
+    $backups = list\filter_list($backups, $filteredBy);
+    $sort = sort_field($sortedBy);
+    $output = [list\sort_list($backups, $sort), $filteredBy, $sort];
 
-    return domain\success($output);
+    return DomainPayload::success($output);
 }
 
-/**
- * @return array{string, array}
- */
-function find(string $file): array
+function find_backup(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -71,34 +75,31 @@ function find(string $file): array
     ]);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $content = filesystem\read_file(BACKUP_DIR, $file);
 
     if ($content === null) {
-        return domain\error([['file', 'Could not read file.']]);
+        return DomainPayload::error([['file', 'Could not read file.']]);
     }
 
     $extension = \pathinfo($file, PATHINFO_EXTENSION);
     $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
-    return domain\success(
-        (array)new backup(
+    return DomainPayload::success(
+        (array) new Backup(
             $file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
             html\get_title($content),
             filesystem\restore_timestamp_from_file_name($file),
             filesystem\file_mtime($file, BACKUP_DIR),
             $type,
-            $type === 'page' ? $content : base64_encode($content)
-        )
+            $type === 'page' ? $content : base64_encode($content),
+        ),
     );
 }
 
-/**
- * @return array{string, array}
- */
-function restore(string $file): array
+function restore_backup(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -112,22 +113,19 @@ function restore(string $file): array
     ]);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $status = filesystem\restore_file(BACKUP_DIR, $file, WEB_DIR);
 
     if (!$status) {
-        return domain\error([['file', 'Could not restore file.']]);
+        return DomainPayload::error([['file', 'Could not restore file.']]);
     }
 
-    return domain\success(null);
+    return DomainPayload::success();
 }
 
-/**
- * @return array{string, array}
- */
-function delete(string $file): array
+function delete_backup(string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -139,41 +137,41 @@ function delete(string $file): array
     ]);
 
     if (count($errors) > 0) {
-        return domain\invalid($errors);
+        return DomainPayload::invalid($errors);
     }
 
     $status = filesystem\delete_file(BACKUP_DIR, $file);
 
     if (!$status) {
-        return domain\error([['file', 'Could not delete file.']]);
+        return DomainPayload::error([['file', 'Could not delete file.']]);
     }
 
-    return domain\success(null);
+    return DomainPayload::success();
 }
 
 /**
- * @param file[] $files
+ * @param filesystem\File[] $files
  * @param string[] $pageExtensions
- * @return backup[]
+ * @return Backup[]
  */
-function _create_list(array $files, string $dir, array $pageExtensions): array
+function create_list(array $files, string $dir, array $pageExtensions): array
 {
     $backups = [];
     foreach ($files as $file) {
         $content = filesystem\read_file($dir, $file->file);
-        $backups[] = new backup(
+        $backups[] = new Backup(
             $file->file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file->file, 21)),
             html\get_title($content),
             filesystem\restore_timestamp_from_file_name($file->file),
             $file->modified,
-            in_array($file->extension, $pageExtensions) ? 'page' : 'upload'
+            in_array($file->extension, $pageExtensions) ? 'page' : 'upload',
         );
     }
     return $backups;
 }
 
-function _sort_field(string $sort): array
+function sort_field(string $sort): array
 {
     if (!in_array(ltrim($sort, '-'), SORT_PARAMETERS)) {
         return ['created', 'desc'];

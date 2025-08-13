@@ -1,8 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
-
-namespace jaco\system;
+namespace jaco\core\system;
 
 use const jaco\WEB_DIR;
 
@@ -12,7 +10,7 @@ function defined_classes(): array
 {
     $classes = array_filter(
         get_declared_classes(),
-        fn($class) => str_starts_with($class, 'jaco\\')
+        fn($class) => str_starts_with($class, 'jaco\\'),
     );
     sort($classes);
 
@@ -44,7 +42,7 @@ function defined_functions(): array
 {
     $functions = array_filter(
         get_defined_functions()['user'],
-        fn($class) => str_starts_with($class, 'jaco\\')
+        fn($class) => str_starts_with($class, 'jaco\\'),
     );
     sort($functions);
 

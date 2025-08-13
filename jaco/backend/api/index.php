@@ -1,25 +1,24 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\index;
 
-use jaco\domain;
-use jaco\http\response;
+use jaco\core\http\Response;
+use jaco\domain\system\DomainPayload;
 
-function action(): array
+use function jaco\core\http\json_response;
+use function jaco\domain\system\get_version;
+
+function action(): Response
 {
-    $payload = domain\system\version();
+    $payload = get_version();
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(DomainPayload $payload): Response
 {
-    [, $data] = $payload;
-
-    return response\ok([
-        'name' => $data['name'],
-        'version' => $data['version'],
+    return json_response([
+        'name' => $payload->data['name'],
+        'version' => $payload->data['version'],
     ]);
 }

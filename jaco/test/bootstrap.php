@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 define('jaco\APP_VERSION', '0.1.0');
 define('jaco\APP_DIR', __DIR__ . '/asset/jaco');

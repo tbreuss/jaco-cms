@@ -1,33 +1,33 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace jaco\api\template\pages;
 
-use jaco\api\responder;
-use jaco\domain;
-use jaco\http\response;
+use jaco\core\http\Response;
+use jaco\domain\template\DomainPayload;
+use jaco\domain\template\Template;
 
-function action(): array
+use function jaco\core\http\json_response;
+use function jaco\core\responder\api_errors;
+use function jaco\domain\template\find_page_templates;
+
+function action(): Response
 {
-    $payload = domain\template\page_templates([]);
+    $payload = find_page_templates();
 
     return responder($payload);
 }
 
-function responder(array $payload): array
+function responder(DomainPayload $payload): Response
 {
-    [$status, $data] = $payload;
-
-    if ($status === domain\SUCCESS) {
-        return response\ok(
-            array_map(fn(array $item): array => [
-                'file' => $item['file'],
-                'title' => $item['title'],
-                'created' => $item['created'],
-            ], $data)
+    if ($payload->isSuccess) {
+        return json_response(
+            array_map(fn(Template $item): array => [
+                'file' => $item->file,
+                'title' => $item->title,
+                'created' => $item->created,
+            ], $payload->data),
         );
     }
 
-    return responder\errors($payload);
+    return api_errors($payload);
 }

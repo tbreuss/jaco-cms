@@ -1,11 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+namespace jaco\core\html;
 
-namespace jaco\html;
-
-use DOMElement;
-use jaco\filesystem;
+use jaco\core\filesystem;
 
 use const jaco\UPLOAD_DIR;
 use const jaco\UPLOAD_URL;
@@ -59,7 +56,7 @@ function handle_embedded_data_url_images(string $html): array
     $errors = [];
 
     foreach ($images as $el) {
-        /** @var DOMElement $el */
+        /** @var \DOMElement $el */
 
         $hasImgAttr = false;
         foreach ($imgAttrs as $imgAttr) {

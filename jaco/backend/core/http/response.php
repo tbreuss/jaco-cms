@@ -1,0 +1,75 @@
+<?php declare(strict_types=1);
+
+namespace jaco\core\http;
+
+use jaco\core\json;
+
+enum Status: int
+{
+    case OK = 200;
+    case CREATED = 201;
+    case BAD_REQUEST = 400;
+    case FORBIDDEN = 403;
+    case NOT_FOUND = 404;
+    case METHOD_NOT_ALLOWED = 405;
+    case UNPROCESSABLE_ENTITY = 422;
+    case INTERNAL_SERVER_ERROR = 500;
+}
+
+final class Response
+{
+    public function __construct(
+        public Status $status,
+        /** @var array<string, string> */
+        public array $headers = [],
+        public ?string $body = null,
+    ) {}
+
+
+    public function isSuccessful(): bool
+    {
+        $status = (string) $this->status->value;
+        return str_starts_with($status, '2');
+    }
+
+    public function isRedirection(): bool
+    {
+        $status = (string) $this->status->value;
+        return str_starts_with($status, '3');
+    }
+
+    public function isClientError(): bool
+    {
+        $status = (string) $this->status->value;
+        return str_starts_with($status, '4');
+    }
+
+    public function isServerError(): bool
+    {
+        $status = (string) $this->status->value;
+        return str_starts_with($status, '5');
+    }
+}
+
+function html_response(?string $body = null, Status $status = Status::OK, array $headers = []): Response
+{
+    return new Response(
+        status: $status,
+        headers: array_merge(['Content-Type' => 'text/html; charset=utf-8'], $headers),
+        body: $body,
+    );
+}
+
+function json_response(mixed $data = null, Status $status = Status::OK, array $headers = []): Response
+{
+    return new Response(
+        status: $status,
+        headers: array_merge(['Content-Type' => 'application/json; charset=utf-8'], $headers),
+        body: json_encode($data),
+    );
+}
+
+function validate_response(array|string|null $data, string $schema): array
+{
+    return json\schema\validate_data($data, $schema);
+}

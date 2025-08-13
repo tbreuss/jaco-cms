@@ -1,15 +1,13 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
-
-namespace jaco\data\sanitize;
+namespace jaco\core\data\sanitize;
 
 function integer(mixed $value): int
 {
     if (!is_scalar($value)) {
         return 0;
     }
-    return (int)$value;
+    return (int) $value;
 }
 
 function float(mixed $value): float
@@ -17,7 +15,7 @@ function float(mixed $value): float
     if (!is_scalar($value)) {
         return 0.0;
     }
-    return (float)$value;
+    return (float) $value;
 }
 
 function string(mixed $value): string
@@ -25,7 +23,7 @@ function string(mixed $value): string
     if (!is_scalar($value)) {
         return '';
     }
-    return (string)$value;
+    return (string) $value;
 }
 
 function html_specialchars(mixed $value): string
@@ -43,7 +41,10 @@ function filename(mixed $value): string
     }
 
     $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $value);
-    $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
+    $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), function ($value) {
+        return strlen($value) > 0;
+    });
+
     $absolutes = [];
     foreach ($parts as $part) {
         $part = trim($part, '.');
@@ -52,6 +53,7 @@ function filename(mixed $value): string
         }
         $absolutes[] = $part;
     }
+
     return implode(DIRECTORY_SEPARATOR, $absolutes);
 }
 
