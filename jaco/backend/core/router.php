@@ -42,9 +42,9 @@ function post(string $route, callable $callback, bool $authenticated, ?string $r
 
 function dispatch(Request $request): Response
 {
-    $actionQuery = $request->query['action'] ?? '';
-    $requestMethod = $request->server['REQUEST_METHOD'] ?? '';
-    $authorizationHeader = $request->server['HTTP_AUTHORIZATION'] ?? null;
+    $actionQuery = (string) $request->query->val('action', '');
+    $requestMethod = (string) $request->server->val('REQUEST_METHOD', '');
+    $authorizationHeader = (string) $request->server->val('HTTP_AUTHORIZATION', '');
 
     $routes = routes();
 
@@ -67,41 +67,28 @@ function dispatch(Request $request): Response
         }
     }
 
-    return call_action($route['callback'], $route['requestJsonSchema'], $route['responseJsonSchema']);
+    return call_action($route['callback'], $request, $route['requestJsonSchema'], $route['responseJsonSchema']);
 }
 
-function call_action(callable $action, ?string $requestJsonSchema, ?string $responseJsonSchema): Response
+function call_action(callable $action, Request $request, ?string $requestJsonSchema, ?string $responseJsonSchema): Response
 {
     $function = new \ReflectionFunction($action);
 
     // request body params
     if ($requestJsonSchema !== null) {
-        $bodyParams = request\get_post_values();
-        $errors = request\validate($bodyParams, $requestJsonSchema);
+        $errors = request\validate($request->post->values, $requestJsonSchema);
         if (count($errors) > 0) {
             return json_response($errors, Status::BAD_REQUEST);
         }
-    } else {
-        $bodyParams = [];
     }
 
     $parameters = [];
+
     foreach ($function->getParameters() as $parameter) {
         $name = $parameter->getName();
         $type = $parameter->getType()->getName(); // @phpstan-ignore-line
-
-        if ($parameter->isOptional()) {
-            $default = $parameter->getDefaultValue();
-            $parameters[$name] = $default;
-        }
-
-        if (in_array($name, ['bodyParams', 'apiInput']) && ($type === 'array')) {
-            $parameters[$name] = $bodyParams;
-        } else {
-            $value = filter_input(INPUT_GET, $name, FILTER_UNSAFE_RAW);
-            if ($value) {
-                $parameters[$name] = $value;
-            }
+        if ($type === 'jaco\core\http\Request') {
+            $parameters[$name] = $request;
         }
     }
 
@@ -130,9 +117,9 @@ function call_action(callable $action, ?string $requestJsonSchema, ?string $resp
     return $response;
 }
 
-function check_authorization(?string $authorizationHeader): bool
+function check_authorization(string $authorizationHeader): bool
 {
-    if (is_null($authorizationHeader)) {
+    if ($authorizationHeader === '') {
         return false;
     }
 

@@ -2,11 +2,11 @@
 
 namespace jaco\api\system\log;
 
-use jaco\domain\system\DomainPayload;
 use jaco\core\http\Response;
+use jaco\domain\system\DomainPayload;
 
-use function jaco\domain\system\get_log_entries;
 use function jaco\core\http\json_response;
+use function jaco\domain\system\get_log_entries;
 
 function action(): Response
 {

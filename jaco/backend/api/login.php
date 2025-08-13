@@ -2,18 +2,19 @@
 
 namespace jaco\api\login;
 
-use jaco\domain\system\DomainPayload;
+use jaco\core\http\Request;
 use jaco\core\http\Response;
+use jaco\domain\system\DomainPayload;
 
-use function jaco\domain\system\authenticate_user;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
+use function jaco\domain\system\authenticate_user;
 
-function action(array $bodyParams): Response
+function action(Request $request): Response
 {
     $payload = authenticate_user(
-        username: $bodyParams['username'],
-        withPassword: $bodyParams['password'],
+        username: $request->post->strVal('username'),
+        withPassword: $request->post->strVal('password'),
     );
 
     return responder($payload);

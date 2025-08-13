@@ -2,17 +2,18 @@
 
 namespace jaco\api\page\delete;
 
-use jaco\domain\page\DomainPayload;
+use jaco\core\http\Request;
 use jaco\core\http\Response;
+use jaco\domain\page\DomainPayload;
 
-use function jaco\domain\page\delete_page;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
+use function jaco\domain\page\delete_page;
 
-function action(array $bodyParams): Response
+function action(Request $request): Response
 {
     $payload = delete_page(
-        file: $bodyParams['fileName'],
+        file: $request->post->strVal('fileName'),
     );
 
     return responder($payload);

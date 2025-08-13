@@ -4,8 +4,8 @@ namespace jaco\cli\auth\token;
 
 use jaco\domain\system\DomainPayload;
 
-use function jaco\domain\system\authenticate_user;
 use function jaco\core\responder\cli_errors;
+use function jaco\domain\system\authenticate_user;
 
 function command(string $user, string $pass): void
 {

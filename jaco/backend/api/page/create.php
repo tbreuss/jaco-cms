@@ -2,20 +2,21 @@
 
 namespace jaco\api\page\create;
 
-use jaco\domain\page\DomainPayload;
+use jaco\core\http\Request;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
+use jaco\domain\page\DomainPayload;
 
-use function jaco\domain\page\create_page;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
+use function jaco\domain\page\create_page;
 
-function action(array $bodyParams): Response
+function action(Request $request): Response
 {
     $payload = create_page(
-        file: $bodyParams['fileName'],
-        fromTemplate: $bodyParams['pageTemplate'],
-        withTitle: $bodyParams['pageTitle'],
+        file: $request->post->strVal('fileName'),
+        fromTemplate: $request->post->strVal('pageTemplate'),
+        withTitle: $request->post->strVal('pageTitle'),
     );
 
     return responder($payload);

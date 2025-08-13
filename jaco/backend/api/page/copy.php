@@ -2,20 +2,21 @@
 
 namespace jaco\api\page\copy;
 
-use jaco\domain\page\DomainPayload;
+use jaco\core\http\Request;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
+use jaco\domain\page\DomainPayload;
 
-use function jaco\domain\page\copy_page;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
+use function jaco\domain\page\copy_page;
 
-function action(array $bodyParams): Response
+function action(Request $request): Response
 {
     $payload = copy_page(
-        file: $bodyParams['srcFileName'],
-        toFile: $bodyParams['dstFileName'],
-        withTitle: $bodyParams['dstPageTitle'],
+        file: $request->post->strVal('srcFileName'),
+        toFile: $request->post->strVal('dstFileName'),
+        withTitle: $request->post->strVal('dstPageTitle'),
     );
 
     return responder($payload);

@@ -2,17 +2,18 @@
 
 namespace jaco\api\page\view;
 
-use jaco\domain\page\DomainPayload;
+use jaco\core\http\Request;
 use jaco\core\http\Response;
+use jaco\domain\page\DomainPayload;
 
-use function jaco\domain\page\find_page;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
+use function jaco\domain\page\find_page;
 
-function action(string $file): Response
+function action(Request $request): Response
 {
     $payload = find_page(
-        file: $file,
+        file: $request->query->strVal('file'),
     );
 
     return responder($payload);

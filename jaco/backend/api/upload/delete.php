@@ -2,17 +2,18 @@
 
 namespace jaco\api\upload\delete;
 
-use jaco\domain\upload\DomainPayload;
+use jaco\core\http\Request;
 use jaco\core\http\Response;
+use jaco\domain\upload\DomainPayload;
 
-use function jaco\domain\upload\delete_upload;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
+use function jaco\domain\upload\delete_upload;
 
-function action(array $bodyParams): Response
+function action(Request $request): Response
 {
     $payload = delete_upload(
-        file: $bodyParams['fileName'],
+        file: $request->post->val('fileName'),
     );
 
     return responder($payload);

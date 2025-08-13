@@ -2,13 +2,35 @@
 
 namespace jaco\core\http;
 
+final class Map
+{
+    public function __construct(
+        public readonly array $values,
+    ) {}
+
+    public function val(string $key, mixed $default = null): mixed
+    {
+        return $this->values[$key] ?? $default;
+    }
+
+    public function intVal(string $key, int $default = 0): int
+    {
+        return (int) $this->values[$key] ?? $default;
+    }
+
+    public function strVal(string $key, string $default = ''): string
+    {
+        return (string) $this->values[$key] ?? $default;
+    }
+}
+
 final class Request
 {
     public function __construct(
-        public array $query, // $_GET,
-        public array $post, // php://input
-        public array $server, // $_SERVER
-        public array $headers, //
+        public readonly Map $query,    // $_GET,
+        public readonly Map $post,     // php://input
+        public readonly Map $server,   // $_SERVER
+        public readonly Map $headers,  //
     ) {}
 
     public static function fromGlobals(): self
@@ -27,10 +49,10 @@ final class Request
         }
 
         return new Request(
-            query: $_GET,
-            post: get_post_values(),
-            server: $_SERVER,
-            headers: apache_request_headers(),
+            query: new Map($_GET),
+            post: new Map(get_post_values()),
+            server: new Map($_SERVER),
+            headers: new Map(apache_request_headers()),
         );
     }
 }

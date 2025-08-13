@@ -2,19 +2,20 @@
 
 namespace jaco\api\page\update;
 
-use jaco\domain\page\DomainPayload;
+use jaco\core\http\Request;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
+use jaco\domain\page\DomainPayload;
 
-use function jaco\domain\page\update_page;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
+use function jaco\domain\page\update_page;
 
-function action(array $bodyParams): Response
+function action(Request $request): Response
 {
     $payload = update_page(
-        file: $bodyParams['fileName'],
-        withContent: $bodyParams['html'],
+        file: $request->post->strVal('fileName'),
+        withContent: $request->post->strVal('html'),
     );
 
     return responder($payload);

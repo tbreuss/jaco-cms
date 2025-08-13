@@ -2,10 +2,10 @@
 
 namespace jaco\core\responder;
 
-use jaco\domain;
-use jaco\domain\Payload;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
+use jaco\domain;
+use jaco\domain\Payload;
 
 use function jaco\core\http\json_response;
 

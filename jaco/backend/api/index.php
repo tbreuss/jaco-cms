@@ -2,11 +2,11 @@
 
 namespace jaco\api\index;
 
-use jaco\domain\system\DomainPayload;
 use jaco\core\http\Response;
+use jaco\domain\system\DomainPayload;
 
-use function jaco\domain\system\get_version;
 use function jaco\core\http\json_response;
+use function jaco\domain\system\get_version;
 
 function action(): Response
 {

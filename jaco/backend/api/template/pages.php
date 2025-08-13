@@ -2,13 +2,13 @@
 
 namespace jaco\api\template\pages;
 
+use jaco\core\http\Response;
 use jaco\domain\template\DomainPayload;
 use jaco\domain\template\Template;
-use jaco\core\http\Response;
 
-use function jaco\domain\template\find_page_templates;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
+use function jaco\domain\template\find_page_templates;
 
 function action(): Response
 {

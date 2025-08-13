@@ -2,17 +2,18 @@
 
 namespace jaco\api\translation;
 
-use jaco\domain\translation\DomainPayload;
+use jaco\core\http\Request;
 use jaco\core\http\Response;
+use jaco\domain\translation\DomainPayload;
 
-use function jaco\domain\translation\load_translations;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
+use function jaco\domain\translation\load_translations;
 
-function action(string $language): Response
+function action(Request $request): Response
 {
     $payload = load_translations(
-        forLanguage: $language,
+        forLanguage: $request->query->strVal('language', 'en'),
     );
 
     return responder($payload);
