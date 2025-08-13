@@ -41,7 +41,10 @@ function filename(mixed $value): string
     }
 
     $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $value);
-    $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
+    $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), function ($value) {
+        return strlen($value) > 0;
+    });
+
     $absolutes = [];
     foreach ($parts as $part) {
         $part = trim($part, '.');
@@ -50,6 +53,7 @@ function filename(mixed $value): string
         }
         $absolutes[] = $part;
     }
+
     return implode(DIRECTORY_SEPARATOR, $absolutes);
 }
 

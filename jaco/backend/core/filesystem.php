@@ -346,7 +346,10 @@ function _rrmdir(string $dir): void
 function filter_filename(string $file): string
 {
     $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $file);
-    $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
+    $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), function ($value) {
+        return strlen($value) > 0;
+    });
+
     $absolutes = [];
     foreach ($parts as $part) {
         $part = trim($part, '.');
@@ -355,12 +358,12 @@ function filter_filename(string $file): string
         }
         $absolutes[] = $part;
     }
+
     return implode(DIRECTORY_SEPARATOR, $absolutes);
 }
 
 function file_in_dir(string $file, string $dir): bool
 {
     $parts = explode(DIRECTORY_SEPARATOR, $file);
-    $first = $parts[0] ?? '';
-    return $first === $dir;
+    return $parts[0] === $dir;
 }

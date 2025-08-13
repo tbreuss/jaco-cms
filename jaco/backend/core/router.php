@@ -3,13 +3,13 @@
 namespace jaco\core\router;
 
 use jaco\core\auth;
-use jaco\core\http\request;
+use jaco\core\http\Request;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
 
 use function jaco\core\http\json_response;
-use function jaco\core\http\response\is_client_error;
-use function jaco\core\http\response\is_server_error;
+use function jaco\core\http\validate_request;
+use function jaco\core\http\validate_response;
 
 function &routes(): array
 {
@@ -76,7 +76,7 @@ function call_action(callable $action, Request $request, ?string $requestJsonSch
 
     // request body params
     if ($requestJsonSchema !== null) {
-        $errors = request\validate($request->post->values, $requestJsonSchema);
+        $errors = validate_request($request->post->values, $requestJsonSchema);
         if (count($errors) > 0) {
             return json_response($errors, Status::BAD_REQUEST);
         }
@@ -99,8 +99,8 @@ function call_action(callable $action, Request $request, ?string $requestJsonSch
         return json_response([['detail' => $e->getMessage(), 'title' => 'Type Error']], Status::BAD_REQUEST);
     }
 
-    if (is_client_error($response) || is_server_error($response)) {
-        $errors = response\validate($response->body, 'errors.json');
+    if ($response->isClientError() || $response->isServerError()) {
+        $errors = validate_response($response->body, 'errors.json');
         if (count($errors) > 0) {
             return json_response($errors, Status::INTERNAL_SERVER_ERROR);
         }
@@ -108,7 +108,7 @@ function call_action(callable $action, Request $request, ?string $requestJsonSch
     }
 
     if ($responseJsonSchema !== null) {
-        $errors = response\validate($response->body, $responseJsonSchema);
+        $errors = validate_response($response->body, $responseJsonSchema);
         if (count($errors) > 0) {
             return json_response($errors, Status::INTERNAL_SERVER_ERROR);
         }

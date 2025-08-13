@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace jaco\core\http\emitter;
+namespace jaco\core\http;
 
 use jaco\core\http;
 

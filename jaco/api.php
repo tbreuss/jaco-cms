@@ -2,7 +2,7 @@
 
 require 'vendor/autoload.php';
 
-use jaco\core\http\emitter;
+use jaco\core\http;
 use jaco\core\http\Request;
 use jaco\core\router;
 
@@ -173,4 +173,4 @@ $request = Request::fromGlobals();
 
 $response = router\dispatch($request);
 
-emitter\emit($response);
+http\emit($response);

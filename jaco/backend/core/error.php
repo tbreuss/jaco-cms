@@ -2,7 +2,7 @@
 
 namespace jaco\core\error;
 
-use jaco\core\http\emitter;
+use jaco\core\http;
 use jaco\core\http\Status;
 
 use function jaco\core\http\json_response;
@@ -28,7 +28,7 @@ function exception_handler(\Throwable $t): void
         Status::INTERNAL_SERVER_ERROR,
     ]);
 
-    emitter\emit($response);
+    http\emit($response);
 }
 
 function error_handler(int $errno, string $errstr, string $errfile, int $errline): bool
@@ -45,7 +45,7 @@ function error_handler(int $errno, string $errstr, string $errfile, int $errline
         Status::INTERNAL_SERVER_ERROR,
     ]);
 
-    emitter\emit($response, false);
+    http\emit($response, false);
 
     return true;
 }
@@ -68,7 +68,7 @@ function fatal_handler(): void
             Status::INTERNAL_SERVER_ERROR,
         ]);
 
-        emitter\emit($response);
+        http\emit($response);
     }
 }
 

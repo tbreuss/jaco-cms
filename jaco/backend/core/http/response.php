@@ -2,6 +2,8 @@
 
 namespace jaco\core\http;
 
+use jaco\core\json;
+
 enum Status: int
 {
     case OK = 200;
@@ -22,6 +24,31 @@ final class Response
         public array $headers = [],
         public ?string $body = null,
     ) {}
+
+
+    public function isSuccessful(): bool
+    {
+        $status = (string) $this->status->value;
+        return str_starts_with($status, '2');
+    }
+
+    public function isRedirection(): bool
+    {
+        $status = (string) $this->status->value;
+        return str_starts_with($status, '3');
+    }
+
+    public function isClientError(): bool
+    {
+        $status = (string) $this->status->value;
+        return str_starts_with($status, '4');
+    }
+
+    public function isServerError(): bool
+    {
+        $status = (string) $this->status->value;
+        return str_starts_with($status, '5');
+    }
 }
 
 function html_response(?string $body = null, Status $status = Status::OK, array $headers = []): Response
@@ -42,36 +69,7 @@ function json_response(mixed $data = null, Status $status = Status::OK, array $h
     );
 }
 
-namespace jaco\core\http\response;
-
-use jaco\core\http\Response;
-use jaco\core\json;
-
-function validate(array|string|null $data, string $schema): array
+function validate_response(array|string|null $data, string $schema): array
 {
     return json\schema\validate_data($data, $schema);
-}
-
-function is_successful(Response $response): bool
-{
-    $status = (string) $response->status->value;
-    return str_starts_with($status, '2');
-}
-
-function is_redirection(Response $response): bool
-{
-    $status = (string) $response->status->value;
-    return str_starts_with($status, '3');
-}
-
-function is_client_error(Response $response): bool
-{
-    $status = (string) $response->status->value;
-    return str_starts_with($status, '4');
-}
-
-function is_server_error(Response $response): bool
-{
-    $status = (string) $response->status->value;
-    return str_starts_with($status, '5');
 }
