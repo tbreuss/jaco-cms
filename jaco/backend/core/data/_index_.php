@@ -2,6 +2,8 @@
 
 namespace jaco\core\data;
 
+use jaco\core\data\validate\Result;
+
 function sanitize(array $data, array $filters): array
 {
     $filtered = [];
@@ -48,7 +50,7 @@ function validate(array $data, array $rules): array
         $callable = 'jaco\\core\\data\\validate\\' . $rule[1];
         $options = array_slice($rule, 2);
         $options['value'] = $value;
-        /** @var data\validate\Result $result */
+        /** @var Result $result */
         $result = call_user_func_array($callable, $options);
         if ($result->isValid) {
             continue;
