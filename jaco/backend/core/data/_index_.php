@@ -37,6 +37,9 @@ function sanitize_one(string|float|int|bool|null $var, array $filters): string|f
     return $filtered[$name] ?? null;
 }
 
+/**
+ * @return string[][]
+ */
 function validate(array $data, array $rules): array
 {
     $errors = [];
@@ -64,6 +67,9 @@ function validate(array $data, array $rules): array
     return $errors;
 }
 
+/**
+ * @return string[][]
+ */
 function validate_one(string|float|int|bool|null $var, string $name, array $rules): array
 {
     $data = [$name => $var];

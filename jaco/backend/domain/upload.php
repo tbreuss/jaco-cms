@@ -49,6 +49,7 @@ function find_uploads(string $filteredBy, string $sortedBy): DomainPayload
     }
 
     $files = filesystem\find_files_rec(WEB_DIR, UPLOAD_EXTENSIONS, [APP_DIR]);
+
     $sort = sort_field($sortedBy);
     $uploads = create_list($files);
     $uploads = list\filter_list($uploads, $filteredBy);

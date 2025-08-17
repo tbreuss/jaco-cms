@@ -51,8 +51,8 @@ function find_backups(string $filteredBy, string $sortedBy): DomainPayload
         return DomainPayload::error([['', 'Dir does not exist.']]);
     }
 
-    $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
-    $files = filesystem\find_files(BACKUP_DIR, $allowed);
+    $files = filesystem\find_files(BACKUP_DIR, array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS));
+
     $sort = sort_field($sortedBy);
     $backups = create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
     $backups = list\filter_list($backups, $filteredBy);
