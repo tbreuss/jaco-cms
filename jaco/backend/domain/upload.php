@@ -53,9 +53,12 @@ function find_uploads(string $filteredBy, string $sortedBy): DomainPayload
     $uploads = create_list($files);
     $uploads = list\filter_list($uploads, $filteredBy);
     $uploads = list\sort_list($uploads, $sort);
-    $output = [$uploads, $filteredBy, $sort];
 
-    return DomainPayload::success($output);
+    return DomainPayload::success([
+        'items' => $uploads,
+        'filter' => $filteredBy,
+        'sort' => $sort,
+    ]);
 }
 
 function delete_upload(string $file): DomainPayload

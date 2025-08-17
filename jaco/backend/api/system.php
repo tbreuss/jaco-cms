@@ -17,11 +17,9 @@ function action(): Response
 
 function responder(DomainPayload $payload): Response
 {
-    [$classes, $constants, $functions] = $payload->data;
-
     return json_response([
-        'classes' => $classes,
-        'constants' => $constants,
-        'functions' => $functions,
+        'classes' => $payload->data['classes'],
+        'constants' => $payload->data['constants'],
+        'functions' => $payload->data['functions'],
     ]);
 }

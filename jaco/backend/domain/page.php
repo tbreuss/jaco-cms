@@ -47,12 +47,16 @@ function find_pages(string $filteredBy, string $sortedBy): DomainPayload
     }
 
     $files = filesystem\find_files_rec(WEB_DIR, PAGE_EXTENSIONS, [APP_DIR]);
+    $sorted = sort_field($sortedBy);
     $pages = create_list($files, WEB_DIR);
     $pages = list\filter_list($pages, $filteredBy);
-    $sortedBy = sort_field($sortedBy);
-    $output = [list\sort_list($pages, $sortedBy), $filteredBy, $sortedBy];
+    $pages = list\sort_list($pages, $sorted);
 
-    return DomainPayload::success($output);
+    return DomainPayload::success([
+        'items' => $pages,
+        'filter' => $filteredBy,
+        'sort' => $sorted,
+    ]);
 }
 
 function find_page(string $file): DomainPayload

@@ -53,12 +53,16 @@ function find_backups(string $filteredBy, string $sortedBy): DomainPayload
 
     $allowed = array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS);
     $files = filesystem\find_files(BACKUP_DIR, $allowed);
+    $sort = sort_field($sortedBy);
     $backups = create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
     $backups = list\filter_list($backups, $filteredBy);
-    $sort = sort_field($sortedBy);
-    $output = [list\sort_list($backups, $sort), $filteredBy, $sort];
+    $backups = list\sort_list($backups, $sort);
 
-    return DomainPayload::success($output);
+    return DomainPayload::success([
+        'items' => $backups,
+        'filter' => $filteredBy,
+        'sort' => $sort,
+    ]);
 }
 
 function find_backup(string $file): DomainPayload

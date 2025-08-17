@@ -9,6 +9,9 @@ use jaco\domain\Payload;
 
 use function jaco\core\http\json_response;
 
+/**
+ * @param array<string, string> $mapping mapping of domain input variables to query parameters
+ */
 function api_errors(domain\Payload $payload, array $mapping = []): Response
 {
     if ($payload->isInvalid) {

@@ -21,10 +21,10 @@ function responder(DomainPayload $payload): Response
 {
     if ($payload->isSuccess) {
         return json_response(
-            array_map(fn(Template $item): array => [
-                'file' => $item->file,
-                'title' => $item->title,
-                'created' => $item->created,
+            array_map(fn(Template $template): array => [
+                'file' => $template->file,
+                'title' => $template->title,
+                'created' => $template->created,
             ], $payload->data),
         );
     }

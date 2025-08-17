@@ -23,11 +23,10 @@ function action(Request $request): Response
 function responder(DomainPayload $payload): Response
 {
     if ($payload->isSuccess) {
-        [$items, $filter, $sort] = $payload->data;
         return json_response([
-            'items' => $items,
-            'filter' => $filter,
-            'sort' => $sort,
+            'items' => $payload->data['items'],
+            'filter' => $payload->data['filter'],
+            'sort' => $payload->data['sort'],
         ]);
     }
 

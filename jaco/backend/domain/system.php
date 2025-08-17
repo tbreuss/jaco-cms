@@ -42,9 +42,9 @@ function authenticate_user(string $username, string $withPassword): DomainPayloa
 function get_environment(): DomainPayload
 {
     return DomainPayload::success([
-        system\defined_classes(),
-        system\defined_constants(),
-        system\defined_functions(),
+        'classes' => system\defined_classes(),
+        'constants' => system\defined_constants(),
+        'functions' => system\defined_functions(),
     ]);
 }
 
