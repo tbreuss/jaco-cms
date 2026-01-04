@@ -1,13 +1,5 @@
 # Jaco CMS
 
-## Links
-
-Article about testdox format
-- <https://golangexample.com/turns-go-test-names-into-readable-sentences-in-testdox-format/>
-
-Inspiration
-- <http://www.coast-cms.de>
-
 ## Development Environment
 
 ### Clone project
@@ -55,3 +47,11 @@ PHP CS Fixer
 PHPStan
 
     docker run --rm -v ./jaco:/app ghcr.io/phpstan/phpstan analyse
+
+## Links
+
+Article about testdox format
+- <https://golangexample.com/turns-go-test-names-into-readable-sentences-in-testdox-format/>
+
+Inspiration
+- <http://www.coast-cms.de>
