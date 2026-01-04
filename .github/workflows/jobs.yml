@@ -39,10 +39,10 @@ jobs:
             - name: Deploy code to server with scp
               uses: appleboy/scp-action@master
               with:
-                  host: ${{ secrets.SSH_HOST }}
+                  host: ${{ vars.SSH_HOST }}
                   username: ${{ secrets.SSH_USERNAME }}
                   password: ${{ secrets.SSH_PASSWORD }}
                   port: 22
-                  target: ${{ secrets.SSH_TARGET }}
+                  target: ${{ vars.SSH_TARGET }}
                   rm: true
                   strip_components: 1
