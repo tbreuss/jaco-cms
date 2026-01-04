@@ -3,6 +3,7 @@ parameters:
         - vendor/autoload.php
         - constants.php
     ignoreErrors:
+        - '#Path in require\(\) "settings.php" is not a file or it does not exist.#'
         - '#with no value type specified in iterable type array.#'
         - '#return type has no value type specified in iterable type array.#'
     level: 6
@@ -13,3 +14,4 @@ parameters:
         - cli.php
         - constants.php
         - settings.dist.php
+    reportUnmatchedIgnoredErrors: false
