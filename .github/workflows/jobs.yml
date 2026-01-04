@@ -36,6 +36,11 @@ jobs:
             - name: Install PHP dependencies
               run: composer install --working-dir jaco --no-dev --prefer-dist --no-progress --no-suggest --optimize-autoloader
 
+            - name: Cleanup directory
+              run: |
+                  rm -rf .git .github jaco/test
+                  rm .editorconfig .gitignore Dockerfile jaco/.php-cs-fixer.php
+
             - name: Deploy code to ${{ vars.SSH_TARGET }} on server ${{ vars.SSH_HOST }} with scp
               uses: appleboy/scp-action@master
               with:
