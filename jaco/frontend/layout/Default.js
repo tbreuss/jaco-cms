@@ -37,19 +37,19 @@ export const DefaultLayout = {
                 m('button.dropbtn', t('Quick Action')),
                 m('.dropdown-content',
                   m(m.route.Link, {
+                    href: '/page-goto',
+                    onclick: (e) => {
+                      e.redraw = false
+                      closeDropdown()
+                    }
+                  }, t('Go to page')),
+                  m(m.route.Link, {
                     href: '/page-edit',
                     onclick: (e) => {
                       e.redraw = false
                       closeDropdown()
                     }
                   }, t('Edit page')),
-                  m(m.route.Link, {
-                    href: '/page-copy',
-                    onclick: (e) => {
-                      e.redraw = false
-                      closeDropdown()
-                    }
-                  }, t('Copy page')),
                   m(m.route.Link, {
                     href: '/page-add',
                     onclick: (e) => {
@@ -58,19 +58,19 @@ export const DefaultLayout = {
                     }
                   }, t('Add page')),
                   m(m.route.Link, {
+                    href: '/page-copy',
+                    onclick: (e) => {
+                      e.redraw = false
+                      closeDropdown()
+                    }
+                  }, t('Copy page')),
+                  m(m.route.Link, {
                     href: '/page-delete',
                     onclick: (e) => {
                       e.redraw = false
                       closeDropdown()
                     }
                   }, t('Delete page')),
-                  m(m.route.Link, {
-                    href: '/page-goto',
-                    onclick: (e) => {
-                      e.redraw = false
-                      closeDropdown()
-                    }
-                  }, t('Go to page')),
                 )
               ),
               m(m.route.Link, {href: '/pages'}, t('Pages')),
