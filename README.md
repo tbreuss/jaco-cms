@@ -38,7 +38,7 @@ Debug website using Xdebug
 
     docker run --rm -e XDEBUG_CONFIG="client_host=172.17.0.1" -e XDEBUG_MODE=debug -e XDEBUG_SESSION_START=true -v .:/app -p 8888:8888 jaco php -S 0.0.0.0:8888 -t /app
 
-### Static Code Analyses
+### Static Code Analyses & Unit Tests
 
 PHP CS Fixer
 
@@ -46,7 +46,11 @@ PHP CS Fixer
 
 PHPStan
 
-    docker run --rm -v ./jaco:/app ghcr.io/phpstan/phpstan analyse
+    docker run --rm -v $(pwd)/jaco:/app ghcr.io/phpstan/phpstan analyse
+
+PHPUnit
+
+    docker run --rm -v $(pwd)/jaco:/app jitesoft/phpunit
 
 ## Links
 
