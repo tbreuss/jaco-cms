@@ -1,0 +1,20 @@
+name: CI/CD
+on: [push]
+jobs:
+    run:
+        runs-on: ${{ matrix.operating-system }}
+        strategy:
+            matrix:
+                operating-system: [ubuntu-latest]
+                php-versions: ['8.2', '8.3', '8.4', '8.5', '8.6']
+        name: PHP ${{ matrix.php-versions }} smoke test on ${{ matrix.operating-system }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+            - name: Install PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ matrix.php-versions }}
+                  extensions: json
+            - name: Install dependencies
+              run: composer install
