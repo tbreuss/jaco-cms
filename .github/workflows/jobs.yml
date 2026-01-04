@@ -20,6 +20,8 @@ jobs:
               run: composer install -d jaco
             - name: Run PHP CS Fixer
               run: docker run --rm -v $(pwd)/jaco:/code ghcr.io/php-cs-fixer/php-cs-fixer:${FIXER_VERSION:-3-php${{ matrix.php-versions }}} fix
+            - name: Run PHPStan
+              run: docker run --rm -v ./jaco:/app ghcr.io/phpstan/phpstan analyse
     publish:
         name: Publish Website
         runs-on: ubuntu-latest
