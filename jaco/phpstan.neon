@@ -13,4 +13,3 @@ parameters:
         - cli.php
         - constants.php
         - settings.dist.php
-        - settings.php
