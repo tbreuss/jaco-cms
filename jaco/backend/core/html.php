@@ -86,7 +86,7 @@ function handle_embedded_data_url_images(string $html): array
             $errors[] = 'Could not write file' . $imgFile;
         }
 
-        $el->setAttribute('src', filesystem\join(UPLOAD_URL, $newFile));
+        $el->setAttribute('src', filesystem\combine(UPLOAD_URL, $newFile));
         $el->removeAttribute($imgFileAttr);
         $handled++;
     }

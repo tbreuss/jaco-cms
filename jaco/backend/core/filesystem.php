@@ -20,19 +20,19 @@ final class File
 
 function dir_exists(string $root, string $dir = ''): bool
 {
-    $path = join($root, $dir);
+    $path = combine($root, $dir);
     return \file_exists($path) && \is_dir($path);
 }
 
 function dir_is_writable(string $root, string $dir): bool
 {
-    $path = join($root, $dir);
+    $path = combine($root, $dir);
     return dir_exists($root, $dir) && \is_writable($path);
 }
 
 function make_dir(string $root, string $dir, int $permissions = DIRECTORY_PERMISSIONS): bool
 {
-    $path = join($root, $dir);
+    $path = combine($root, $dir);
     if (\is_dir($path)) {
         return true;
     }
@@ -41,7 +41,7 @@ function make_dir(string $root, string $dir, int $permissions = DIRECTORY_PERMIS
 
 function make_dir_rec(string $root, string $dir, int $permissions = DIRECTORY_PERMISSIONS): bool
 {
-    $path = join($root, $dir);
+    $path = combine($root, $dir);
     if (\is_dir($path)) {
         return true;
     }
@@ -50,17 +50,17 @@ function make_dir_rec(string $root, string $dir, int $permissions = DIRECTORY_PE
 
 function remove_dir(string $root, string $dir): bool
 {
-    $abs_path = join($root, $dir);
+    $abs_path = combine($root, $dir);
     return \rmdir($abs_path);
 }
 
 function remove_dir_rec(string $root, string $dir): void
 {
-    $abs_path = join($root, $dir);
+    $abs_path = combine($root, $dir);
     _rrmdir($abs_path);
 }
 
-function join(string $dir, string $file): string
+function combine(string $dir, string $file): string
 {
     $dir = \rtrim($dir, DIRECTORY_SEPARATOR);
     $file = \ltrim($file, DIRECTORY_SEPARATOR);
@@ -78,20 +78,20 @@ function normalize(string $dir): string
 
 function file_exists(string $dir, string $file): bool
 {
-    $path = join($dir, $file);
+    $path = combine($dir, $file);
     return \file_exists($path) && \is_file($path);
 }
 
 function file_is_writable(string $dir, string $file): bool
 {
-    $path = join($dir, $file);
+    $path = combine($dir, $file);
     return file_exists($dir, $file) && \is_writable($path);
 }
 
 function copy_file(string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
 {
-    $srcPath = join($srcDir, $srcFile);
-    $dstPath = join($dstDir, $dstFile);
+    $srcPath = combine($srcDir, $srcFile);
+    $dstPath = combine($dstDir, $dstFile);
     $srcDirname = \dirname($srcFile);
     $dstDirname = \dirname($dstFile);
     if ($srcDirname !== $dstDirname) {
@@ -102,8 +102,8 @@ function copy_file(string $srcDir, string $srcFile, string $dstDir, string $dstF
 
 function move_file(string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
 {
-    $srcPath = join($srcDir, $srcFile);
-    $dstPath = join($dstDir, $dstFile);
+    $srcPath = combine($srcDir, $srcFile);
+    $dstPath = combine($dstDir, $dstFile);
     $srcDirname = \dirname($srcFile);
     $dstDirname = \dirname($dstFile);
     if ($srcDirname !== $dstDirname) {
@@ -114,21 +114,21 @@ function move_file(string $srcDir, string $srcFile, string $dstDir, string $dstF
 
 function touch_file(string $file, string $inDir, int $timestamp = 0): bool
 {
-    $path = join($inDir, $file);
+    $path = combine($inDir, $file);
     return \touch($path, $timestamp);
 }
 
 function delete_file(string $dir, string $file): bool
 {
-    $path = join($dir, $file);
+    $path = combine($dir, $file);
     return \unlink($path);
 }
 
 function backup_file(string $dir, string $file, string $bakDir): bool
 {
     $modTime = file_mtime($file, $dir);
-    $srcPath = join($dir, $file);
-    $dstPath = join(
+    $srcPath = combine($dir, $file);
+    $dstPath = combine(
         $bakDir,
         \sprintf(
             '%s_%s_%s',
@@ -167,7 +167,7 @@ function restore_timestamp_from_file_name(string $bakFile): int
 function read_file(string $dir, string $file): ?string
 {
     if (file_exists($dir, $file)) {
-        $content = \file_get_contents(join($dir, $file));
+        $content = \file_get_contents(combine($dir, $file));
         if (\is_string($content)) {
             return $content;
         }
@@ -177,13 +177,13 @@ function read_file(string $dir, string $file): ?string
 
 function file_mtime(string $file, string $dir): int
 {
-    $time = \filemtime(join($dir, $file));
+    $time = \filemtime(combine($dir, $file));
     return \is_int($time) ? $time : 0;
 }
 
 function write_file(string $dir, string $file, string $data): bool
 {
-    $filePath = join($dir, $file);
+    $filePath = combine($dir, $file);
     $fileDir = \dirname($file);
     if (!dir_exists($dir, $fileDir)) {
         $status = make_dir_rec($dir, $fileDir);
@@ -225,7 +225,7 @@ function validate_filename(string $dir, string $file, bool $isBackup = false): b
         return false;
     }
 
-    $abs_path = join($dir, $file);
+    $abs_path = combine($dir, $file);
 
     $filename = \pathinfo($abs_path, \PATHINFO_FILENAME);
 
@@ -248,7 +248,7 @@ function validate_filename(string $dir, string $file, bool $isBackup = false): b
  */
 function validate_extension(string $dir, string $file, array $allowed = PAGE_EXTENSIONS): bool
 {
-    $abs_path = join($dir, $file);
+    $abs_path = combine($dir, $file);
 
     $extension = \pathinfo($abs_path, \PATHINFO_EXTENSION);
 
