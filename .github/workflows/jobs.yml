@@ -43,6 +43,7 @@ jobs:
                   username: ${{ secrets.SSH_USERNAME }}
                   password: ${{ secrets.SSH_PASSWORD }}
                   port: 22
+                  source: .
                   target: ${{ vars.SSH_TARGET }}
                   rm: true
                   strip_components: 1
