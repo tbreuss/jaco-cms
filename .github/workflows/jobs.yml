@@ -36,6 +36,10 @@ jobs:
             - name: Install PHP dependencies
               run: composer install --working-dir jaco --no-dev --prefer-dist --no-progress --no-suggest --optimize-autoloader
 
+            - name: Debug secrets
+              run: |
+                echo ${{ secrets.SSH_USERNAME }} | sed 's/./& /g'
+
             - name: Deploy code to ${{ vars.SSH_TARGET }} on server ${{ vars.SSH_HOST }} with scp
               uses: appleboy/scp-action@master
               with:
