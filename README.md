@@ -22,15 +22,15 @@ Change directory
 
 ### Create Docker Image
 
-Create Docker image based on the latest supported PHP version
+Create Docker image based on the latest supported PHP version 8.5
 
     docker build -t jaco .
 
 Optionally you can also use an older PHP version
 
-    docker build --build-arg PHP_VERSION=8.1 -t jaco .
     docker build --build-arg PHP_VERSION=8.2 -t jaco .
     docker build --build-arg PHP_VERSION=8.3 -t jaco .
+    docker build --build-arg PHP_VERSION=8.4 -t jaco .
 
 ### Run Development Environment
 
@@ -50,7 +50,7 @@ Debug website using Xdebug
 
 PHP CS Fixer
 
-    docker run --rm -v $(pwd)/jaco:/code ghcr.io/php-cs-fixer/php-cs-fixer:${FIXER_VERSION:-3-php8.1} fix
+    docker run --rm -v $(pwd)/jaco:/code ghcr.io/php-cs-fixer/php-cs-fixer:${FIXER_VERSION:-3-php8.2} fix
 
 PHPStan
 
