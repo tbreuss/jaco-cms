@@ -69,15 +69,6 @@ function combine(string $dir, string $file): string
     return $dir . DIRECTORY_SEPARATOR . $file;
 }
 
-function normalize(string $dir): string
-{
-    $normalized = \realpath($dir);
-    if ($normalized === false) {
-        \trigger_error('Path ' . $dir . ' is not valid', E_USER_ERROR);
-    }
-    return $normalized;
-}
-
 function file_exists(string $dir, string $file): bool
 {
     $path = combine($dir, $file);
