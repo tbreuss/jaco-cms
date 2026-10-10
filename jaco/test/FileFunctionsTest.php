@@ -52,6 +52,10 @@ final class FileFunctionsTest extends TestCase
         touch(WEB_DIR . '/test/is_writeable/a.html');
         filesystem\make_dir_rec(WEB_DIR, 'test/not_writeable', 0644);
         $this->assertFalse(filesystem\file_is_writable(WEB_DIR, 'test/foo/writeable.html'));
+
+        // the not_writeable dir is not traversable, restore permissions and remove it
+        chmod(WEB_DIR . '/test/not_writeable', 0755);
+        filesystem\remove_dir(WEB_DIR, 'test/not_writeable');
     }
 
     public function testDirectoryCanBeCreated(): void

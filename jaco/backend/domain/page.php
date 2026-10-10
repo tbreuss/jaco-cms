@@ -256,7 +256,7 @@ function update_page(string $file, string $withContent): DomainPayload
     [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['withContent']);
 
     if ($status) {
-        $data['withContent'] = $htmlOrErrors;
+        $data['withContent'] = html\sanitize_html($htmlOrErrors);
     } else {
         return DomainPayload::error([['withContent', \reset($htmlOrErrors)]]);
     }

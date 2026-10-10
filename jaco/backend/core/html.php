@@ -38,6 +38,130 @@ function set_title(string $html, string $title): string
     return $replaced;
 }
 
+const ALLOWED_TAGS = [
+    'a', 'abbr', 'b', 'blockquote', 'br', 'caption', 'cite', 'code', 'col', 'colgroup',
+    'dd', 'del', 'details', 'div', 'dl', 'dt', 'em', 'figcaption', 'figure', 'h1', 'h2',
+    'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'ins', 'kbd', 'li', 'mark', 'ol', 'p',
+    'pre', 'q', 's', 'samp', 'small', 'span', 'strong', 'sub', 'summary', 'sup',
+    'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'time', 'tr', 'u', 'ul', 'var',
+];
+
+const REMOVE_TAGS = [
+    'applet', 'base', 'embed', 'iframe', 'link', 'math', 'meta', 'noscript', 'object',
+    'script', 'style', 'svg', 'template',
+];
+
+const ALLOWED_ATTRIBUTES = [
+    '*' => ['class', 'id', 'data-jaco-editable-image', 'data-jaco-editable-image-extended'],
+    'a' => ['href', 'rel', 'target', 'title'],
+    'img' => ['alt', 'height', 'src', 'title', 'width'],
+    'td' => ['colspan', 'rowspan'],
+    'th' => ['colspan', 'rowspan'],
+];
+
+function sanitize_html(string $html): string
+{
+    \libxml_use_internal_errors(true);
+
+    $dom = new \DOMDocument();
+
+    if (!$dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">' . $html)) {
+        \libxml_clear_errors();
+        return '';
+    }
+
+    $body = $dom->getElementsByTagName('body')->item(0);
+
+    if ($body !== null) {
+        sanitize_node($body);
+    }
+
+    \libxml_clear_errors();
+
+    if ($body === null) {
+        return '';
+    }
+
+    $html = '';
+    foreach ($body->childNodes as $child) {
+        $html .= $dom->saveHTML($child);
+    }
+
+    return $html;
+}
+
+function sanitize_node(\DOMElement $el): void
+{
+    $tag = \strtolower($el->nodeName);
+
+    $remove = [];
+    foreach ($el->attributes as $attr) {
+        if (!allowed_attribute($tag, \strtolower($attr->nodeName), $attr->nodeValue)) {
+            $remove[] = $attr->nodeName;
+        }
+    }
+    foreach ($remove as $name) {
+        $el->removeAttribute($name);
+    }
+
+    $children = \iterator_to_array($el->childNodes);
+    foreach ($children as $child) {
+        if (!$child instanceof \DOMElement) {
+            continue;
+        }
+
+        $childTag = \strtolower($child->nodeName);
+
+        if (\in_array($childTag, REMOVE_TAGS, true)) {
+            $el->removeChild($child);
+            continue;
+        }
+
+        sanitize_node($child);
+
+        if (!\in_array($childTag, ALLOWED_TAGS, true)) {
+            // unwrap the element, keep its sanitized children
+            while ($child->firstChild !== null) {
+                $el->insertBefore($child->firstChild, $child);
+            }
+            $el->removeChild($child);
+        }
+    }
+}
+
+function allowed_attribute(string $tag, string $name, string $value): bool
+{
+    $allowed = \array_merge(ALLOWED_ATTRIBUTES['*'], ALLOWED_ATTRIBUTES[$tag] ?? []);
+
+    if (!\in_array($name, $allowed, true)) {
+        return false;
+    }
+
+    if ($name !== 'href' && $name !== 'src') {
+        return true;
+    }
+
+    // browsers strip tabs and new lines from urls, so they cannot separate a scheme
+    $value = \str_replace(["\t", "\n", "\r", "\0"], '', \trim($value));
+
+    // relative urls are fine
+    if (!\preg_match('/^[a-z][a-z0-9+.-]*:/i', $value)) {
+        return true;
+    }
+
+    $lower = \strtolower($value);
+
+    if (\str_starts_with($lower, 'javascript:') || \str_starts_with($lower, 'vbscript:')) {
+        return false;
+    }
+
+    if ($tag === 'img' && $name === 'src' && \str_starts_with($lower, 'data:image/')) {
+        return true;
+    }
+
+    return \preg_match('/^(https?|mailto|tel):/i', $value) === 1;
+}
+
 function handle_embedded_data_url_images(string $html): array
 {
     \libxml_use_internal_errors(true);
