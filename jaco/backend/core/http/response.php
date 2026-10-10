@@ -65,8 +65,18 @@ function json_response(mixed $data = null, Status $status = Status::OK, array $h
     return new Response(
         status: $status,
         headers: array_merge(['Content-Type' => 'application/json; charset=utf-8'], $headers),
-        body: json_encode($data),
+        body: encode_json($data),
     );
+}
+
+function encode_json(mixed $data): string
+{
+    try {
+        return \json_encode($data, \JSON_THROW_ON_ERROR);
+    } catch (\JsonException) {
+        // e.g. data contains invalid UTF-8 sequences
+        return '[{"title": "Internal Server Error", "detail": "Could not encode data as JSON."}]';
+    }
 }
 
 function validate_response(array|string|null $data, string $schema): array
