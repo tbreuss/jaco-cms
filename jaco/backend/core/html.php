@@ -2,9 +2,11 @@
 
 namespace jaco\core\html;
 
+use jaco\core\data;
 use jaco\core\filesystem;
 
 use const jaco\UPLOAD_DIR;
+use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\UPLOAD_URL;
 
 function get_title(string $html): string
@@ -77,13 +79,30 @@ function handle_embedded_data_url_images(string $html): array
             continue;
         }
 
+        // sanitize the file name to prevent path traversal
+        $imgFile = data\sanitize\filename($imgFile);
+
+        // only plain file names with an allowed extension may be written
+        if (\str_contains($imgFile, DIRECTORY_SEPARATOR)
+            || !filesystem\validate_filename(UPLOAD_DIR, $imgFile)
+            || !filesystem\validate_extension(UPLOAD_DIR, $imgFile, UPLOAD_EXTENSIONS)) {
+            $errors[] = 'Invalid file name or extension: ' . $imgFile;
+            continue;
+        }
+
         $encodedData = \str_replace(' ', '+', \substr($imgSrc, $pos + 1));
-        $decodedData = \base64_decode($encodedData);
+        $decodedData = \base64_decode($encodedData, true);
+
+        if ($decodedData === false) {
+            $errors[] = 'Could not decode image data: ' . $imgFile;
+            continue;
+        }
 
         [$status, $newFile] = filesystem\write_file_without_overwrite(UPLOAD_DIR, $imgFile, $decodedData);
 
         if ($status === false) {
-            $errors[] = 'Could not write file' . $imgFile;
+            $errors[] = 'Could not write file: ' . $imgFile;
+            continue;
         }
 
         $el->setAttribute('src', filesystem\combine(UPLOAD_URL, $newFile));
