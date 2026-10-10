@@ -30,16 +30,14 @@ function exception_handler(\Throwable $t): void
 
 function error_handler(int $errno, string $errstr, string $errfile, int $errline): bool
 {
-    $message = format_error($errstr, $errfile, $errline);
+    // skip errors that are suppressed with @ or not enabled in error_reporting
+    if (!(error_reporting() & $errno)) {
+        return false;
+    }
 
-    error_log($message);
-
-    $response = json_response([
-        'title' => get_error_type($errno),
-        'detail' => $message,
-    ], Status::INTERNAL_SERVER_ERROR);
-
-    http\emit($response, false);
+    // log the error only, the response is emitted by the
+    // exception handler or the fatal handler
+    error_log(format_error($errstr, $errfile, $errline));
 
     return true;
 }
@@ -47,20 +45,31 @@ function error_handler(int $errno, string $errstr, string $errfile, int $errline
 function fatal_handler(): void
 {
     $error = error_get_last();
-    if ($error !== null) {
-        ob_clean();
-
-        $message = format_error($error['message'], $error['file'], $error['line']);
-
-        error_log($message);
-
-        $response = json_response([
-            'title' => get_error_type($error['type']),
-            'detail' => $message,
-        ], Status::INTERNAL_SERVER_ERROR);
-
-        http\emit($response);
+    if ($error === null) {
+        return;
     }
+
+    // only handle fatal errors, warnings and notices
+    // are logged by the error handler
+    $fatalErrors = E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR | E_PARSE;
+    if (($error['type'] & $fatalErrors) === 0) {
+        return;
+    }
+
+    if (ob_get_level() > 0) {
+        ob_clean();
+    }
+
+    $message = format_error($error['message'], $error['file'], $error['line']);
+
+    error_log($message);
+
+    $response = json_response([
+        'title' => get_error_type($error['type']),
+        'detail' => $message,
+    ], Status::INTERNAL_SERVER_ERROR);
+
+    http\emit($response);
 }
 
 function get_error_type(int $number): string
