@@ -15,14 +15,14 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | --- | --- |
 | Page | An `.htm`/`.html` file below `WEB_DIR` (the web root), excluding `jaco/`. The file is the data store – there is no database. |
 | Editable marker | A `data-jaco-*` attribute in page HTML. Five variants: `data-jaco-editable` (block, rich text), `data-jaco-editable-line` (single line, block tags stripped), `data-jaco-editable-image` (image swap, size from `width`/`height`), `data-jaco-editable-image-extended` (swap plus alt text and fit/fill), `data-jaco-editable-link` (`href` and `target`). |
-| Inline edit | Editing a page in the iframe that shows the live site (route `/page-edit`, `jaco/frontend/editor.js` injected into the iframe). |
+| Inline edit | Editing a page in the iframe that shows the live site (route `/page-edit`, `jaco/frontend/editor.js` injected into the iframe, saved through `page/update-body`). |
 | Upload | A file in `upload/`. Allowed extensions: `png`, `gif`, `jpg`, `jpeg`, `svg`, `pdf`. |
 | Backup | A copy in `jaco/_backup`, taken before a page or upload is overwritten or deleted. Name: `<YYYYMMDD>_<HHMMSS>_<4 chars>_<file>`, where `/` in the file path becomes `|`. |
 | Template | A file in `jaco/_template/page`, used when a page is created. `jaco/_template/content` (fragments) is a stub in `jaco/backend/domain/template.php`. |
 | Domain payload | Return value of a `jaco\domain\*` function: `success`, `invalid` (HTTP 422 with an error list) or `error` (HTTP 500). |
 | API action | A route registered in `jaco/routes.php` (`action=page/update`). |
 | Session token | JWT signed with HS256, issued by `POST action=login`, sent as `Authorization: Bearer <token>`. |
-| API vs. domain names | The API and its schemas speak `fileName` + `html`; the domain functions speak `file` + `withContent`. |
+| API vs. domain names | The page manager speaks `fileName` + `html`, the inline editor `fileName` + `body`; the domain functions speak `file` + `withContent` and `file` + `withBody`. |
 
 ## Constraints that are easy to break
 
@@ -30,15 +30,16 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   `visibility:hidden` until the window `load` event, and hidden elements cannot take the
   focus. `jaco/frontend/component/Input.js` focuses immediately *and* again on `load` if
   the first attempt did not take effect.
-- **Nothing is touched without a backup.** `page/update`, `page/delete` and
-  `upload/delete` write a copy into `jaco/_backup` before they modify a file
-  (`jaco/backend/domain/page.php`, `jaco/backend/domain/upload.php`).
-- **The app directory is out of reach.** Page create, update, delete, copy (source *and*
-  target) and view all reject paths whose first segment is `jaco/` (the `file_in_dir`
-  guard), and the page, upload and backup lists never show files from `jaco/`.
+- **Nothing is touched without a backup.** `page/update`, `page/update-body`,
+  `page/delete` and `upload/delete` write a copy into `jaco/_backup` before they modify a
+  file (`jaco/backend/domain/page.php`, `jaco/backend/domain/upload.php`).
+- **The app directory is out of reach.** Page create, update, update body, delete, copy
+  (source *and* target) and view all reject paths whose first segment is `jaco/` (the
+  `file_in_dir` guard), and the page, upload and backup lists never show files from `jaco/`.
 - **The JSON schemas are the API contract.** `jaco/schema/**` defines what a request must
   contain and what a response may contain; `jaco/backend/core/router.php` validates both.
-- **Embedded images are extracted, not stored.** `page/update` writes an image file only
+- **Embedded images are extracted, not stored.** `page/update` and `page/update-body`
+  write an image file only
   when the `<img>` carries a marker attribute, a `src` and `data-jaco-editable-image-file`
   (`jaco/backend/core/html.php`). Afterwards that attribute is gone and `src` points to
   `upload/<file>`. The parser clears the global libxml error buffer first, because the
@@ -79,7 +80,7 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | --- | --- |
 | Auth tokens: issue and validation | `jaco/test/AuthTest.php` |
 | Route table: public/private, methods | `jaco/test/ApiRoutesTest.php` |
-| Pages: list, view, copy, create, update, delete | `jaco/test/ApiPage*Test.php` |
+| Pages: list, view, copy, create, update (document and body), delete | `jaco/test/ApiPage*Test.php` |
 | Backups: list, view, restore, delete | `jaco/test/ApiBackup*Test.php` |
 | Uploads: list, delete | `jaco/test/ApiUpload*Test.php` |
 | Page templates, translations | `jaco/test/ApiTemplatePagesTest.php`, `jaco/test/ApiTranslationsTest.php` |
