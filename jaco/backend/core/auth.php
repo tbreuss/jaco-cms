@@ -33,13 +33,15 @@ function is_authenticated(string $token): bool
     } catch (\Exception) {
         return false;
     }
-    if (($payload->iss !== ISSUER) || ($payload->aud !== AUDIENCE)) {
+
+    // read optional claims safely to avoid warnings for missing properties
+    if (($payload->iss ?? null) !== ISSUER || ($payload->aud ?? null) !== AUDIENCE) {
         return false;
     }
-    if ($payload->user !== USERNAME) {
+    if (($payload->user ?? null) !== USERNAME) {
         return false;
     }
-    if ($payload->admin === false) {
+    if (($payload->admin ?? null) !== true) {
         return false;
     }
 
