@@ -53,7 +53,15 @@ const REMOVE_TAGS = [
 ];
 
 const ALLOWED_ATTRIBUTES = [
-    '*' => ['class', 'id', 'data-jaco-editable-image', 'data-jaco-editable-image-extended'],
+    '*' => [
+        'class',
+        'id',
+        'data-jaco-editable',
+        'data-jaco-editable-line',
+        'data-jaco-editable-link',
+        'data-jaco-editable-image',
+        'data-jaco-editable-image-extended',
+    ],
     'a' => ['href', 'rel', 'target', 'title'],
     'img' => ['alt', 'height', 'src', 'title', 'width'],
     'td' => ['colspan', 'rowspan'],
@@ -89,6 +97,29 @@ function sanitize_html(string $html): string
     }
 
     return $html;
+}
+
+/**
+ * Replace the body of a document with the given body, keeping doctype and head untouched.
+ * A fragment without a body tag is returned as the body, which keeps pages that are
+ * stored without a surrounding document working.
+ */
+function replace_body(string $document, string $body): string
+{
+    $count = 0;
+    $replaced = \preg_replace_callback(
+        '#(<body\b[^>]*>).*?</body>#is',
+        fn(array $matches): string => $matches[1] . $body . '</body>',
+        $document,
+        1,
+        $count,
+    );
+
+    if (($replaced === null) || ($count === 0)) {
+        return $body;
+    }
+
+    return $replaced;
 }
 
 function sanitize_node(\DOMElement $el): void

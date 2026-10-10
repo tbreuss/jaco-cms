@@ -11,8 +11,8 @@ use const jaco\UPLOAD_DIR;
 use const jaco\WEB_DIR;
 
 /**
- * Integration tests for the page/update API: they run through the real route table,
- * the authentication check, the JSON schema validation and the domain functions.
+ * Integration tests for the page/update API - the path the page manager uses. It owns the
+ * whole document: doctype and head are stored as sent, only the body is sanitized.
  *
  * @testdox Page update API (page/update)
  */
@@ -32,11 +32,11 @@ final class ApiPageUpdateTest extends ApiTestCase
         $this->watchDir(WEB_DIR);
         $this->watchDir(BACKUP_DIR);
         $this->watchDir(UPLOAD_DIR);
-        @unlink(dirname(WEB_DIR) . '/api-update-outside.html');
 
         $this->originalContent = "<!DOCTYPE html>\n<html lang=\"en\"><head><title>Update test</title></head>"
             . "<body><p>before</p></body></html>\n";
         file_put_contents(WEB_DIR . '/' . self::PAGE, $this->originalContent);
+        @unlink(dirname(WEB_DIR) . '/api-update-outside.html');
     }
 
     protected function tearDown(): void
@@ -44,6 +44,33 @@ final class ApiPageUpdateTest extends ApiTestCase
         @unlink(dirname(WEB_DIR) . '/api-update-outside.html');
 
         parent::tearDown();
+    }
+
+    public function testDocumentIsStoredAsSentButTheBodyIsSanitized(): void
+    {
+        $document = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
+            . '<title>Client title</title><link rel="stylesheet" href="/style.css">'
+            . '<script src="/head.js"></script></head>'
+            . '<body><h1>Body</h1><script src="/body.js"></script>'
+            . '<p onclick="steal()">text</p></body></html>';
+
+        $response = $this->api('page/update', ['fileName' => self::PAGE, 'html' => $document]);
+
+        $this->assertSame(Status::CREATED, $response->status);
+
+        $content = (string) file_get_contents(WEB_DIR . '/' . self::PAGE);
+
+        // the page manager owns doctype and head, they end up in the file as sent
+        $this->assertStringContainsString('<!DOCTYPE html>', $content);
+        $this->assertStringContainsString('<title>Client title</title>', $content);
+        $this->assertStringContainsString('<meta charset="utf-8">', $content);
+        $this->assertStringContainsString('href="/style.css"', $content);
+        $this->assertStringContainsString('<script src="/head.js"></script>', $content);
+
+        // the body is content and is sanitized
+        $this->assertStringContainsString('<h1>Body</h1>', $content);
+        $this->assertStringNotContainsString('/body.js', $content);
+        $this->assertStringNotContainsString('onclick', $content);
     }
 
     public function testPageIsWrittenBackedUpAndEmbeddedImageIsExtracted(): void
@@ -71,6 +98,21 @@ final class ApiPageUpdateTest extends ApiTestCase
             base64_decode(self::PNG_BASE64, true),
             file_get_contents(UPLOAD_DIR . '/' . $newUploads[0]),
         );
+    }
+
+    public function testEditableMarkersSurviveASave(): void
+    {
+        $response = $this->api('page/update', [
+            'fileName' => self::PAGE,
+            'html' => '<body><div data-jaco-editable><h1>Block</h1></div>'
+                . '<p data-jaco-editable-line>Zeile</p></body>',
+        ]);
+
+        $this->assertSame(Status::CREATED, $response->status);
+
+        $content = (string) file_get_contents(WEB_DIR . '/' . self::PAGE);
+        $this->assertStringContainsString('data-jaco-editable>', $content);
+        $this->assertStringContainsString('data-jaco-editable-line>', $content);
     }
 
     public function testPageIsNotTouchedWhenTheRequestHasNoToken(): void

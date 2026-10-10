@@ -44,6 +44,17 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   `upload/<file>`. The parser clears the global libxml error buffer first, because the
   check at the end reads all of it – a leftover error from earlier parsing would turn a
   valid save into a failure.
+- **Two save paths with different owners.** `page/update` is the page manager: the whole
+  document is stored as sent – doctype, `<head>`, `<meta>`, `<base>`, `<link>` and
+  `<script>` included – and only the body is sanitized. `page/update-body` is the inline
+  editor: it sends content, never a document, so the stored document keeps its doctype and
+  head. A page that is stored as a fragment stays a fragment. Trust boundary: whoever holds
+  a valid token has the page manager, which is file access.
+- **The editable markers are allowlisted.** `data-jaco-editable`, `-line`, `-link`, `-image`
+  and `-image-extended` must stay in `ALLOWED_ATTRIBUTES`: dropping one silently makes the
+  page uneditable in place, because the editor finds its blocks through these attributes.
+  `<script>` is removed from the body, so a script include belongs in the `<head>`, which
+  the page manager owns.
 - **Lists do not ship content.** `page/list` and `upload/list` return `content: null`,
   `backup/list` returns an empty string. Only `page/view` and `backup/view` return the
   body – for an upload inside a backup as base64.

@@ -53,26 +53,16 @@ export const iframe = {
     contentWindow.removeRichTextEditor()
     contentWindow.removeTempImageElements()
 
-    const doctype = contentWindow.document.doctype
-    let outerHtml = contentWindow.document.documentElement.outerHTML
-
-    let html = '<!DOCTYPE html>' // take html5 doctype as default
-    if (doctype) {
-      html = '<!DOCTYPE '
-        + doctype.name
-        + (doctype.publicId ? ' PUBLIC "' + doctype.publicId + '"' : '')
-        + (!doctype.publicId && doctype.systemId ? ' SYSTEM' : '')
-        + (doctype.systemId ? ' "' + doctype.systemId + '"' : '')
-        + '>'
-    }
+    // the inline editor owns the content of the page, not the document around it
+    let bodyHtml = contentWindow.document.body.innerHTML
 
     // use empty data attributes only (and remove the empty string part)
     const dataAttrs = ['data-jaco-editable-image', 'data-jaco-editable-line', 'data-jaco-editable']
     dataAttrs.forEach((attr) => {
-      outerHtml = outerHtml.replaceAll(attr + '=""', attr)
+      bodyHtml = bodyHtml.replaceAll(attr + '=""', attr)
     })
 
-    return html + '\r\n' + outerHtml
+    return bodyHtml
   },
   removeLeadingSlash: (str) => {
     return str.replace(/^\/+/, '')

@@ -9,11 +9,11 @@ import {app} from '../lib/app.js'
 
 const save = (e) => {
   e.redraw = false
-  api.post('action=page/update', {
+  api.post('action=page/update-body', {
     background: true, // no redraw
     body: {
       fileName: iframe.fileName(),
-      html: iframe.getHTML()
+      body: iframe.getHTML()
     },
     withCredentials: false
   })

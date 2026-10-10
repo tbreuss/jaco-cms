@@ -260,7 +260,9 @@ function update_page(string $file, string $withContent): DomainPayload
     [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['withContent']);
 
     if ($status) {
-        $data['withContent'] = html\sanitize_html($htmlOrErrors);
+        // the page manager owns the document: doctype and head stay as sent,
+        // only the body is treated as content and sanitized
+        $data['withContent'] = html\replace_body($data['withContent'], html\sanitize_html($htmlOrErrors));
     } else {
         return DomainPayload::error([['withContent', \reset($htmlOrErrors)]]);
     }
@@ -272,6 +274,62 @@ function update_page(string $file, string $withContent): DomainPayload
     }
 
     $status = filesystem\write_file(WEB_DIR, $data['file'], $data['withContent']);
+
+    if (!$status) {
+        return DomainPayload::error([['file', 'Could not write content to file.']]);
+    }
+
+    return DomainPayload::success();
+}
+
+/**
+ * Update only the body of a page. The inline editor sends content, never a document,
+ * so the document around it - doctype and head - stays untouched.
+ */
+function update_page_body(string $file, string $withBody): DomainPayload
+{
+    $data = data\sanitize(
+        [
+            'file' => $file,
+            'withBody' => $withBody,
+        ],
+        [
+            ['file', 'string'],
+            ['file', 'filename'],
+            ['withBody', 'string'],
+        ],
+    );
+
+    $errors = data\validate($data, [
+        ['file', 'required'],
+        ['file', 'file_exists'],
+        ['file', 'html_file_name'],
+        ['file', 'html_file_extension'],
+        ['file', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
+        ['withBody', 'required'],
+    ]);
+
+    if (count($errors) > 0) {
+        return DomainPayload::invalid($errors);
+    }
+
+    [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['withBody']);
+
+    if (!$status) {
+        return DomainPayload::error([['withBody', \reset($htmlOrErrors)]]);
+    }
+
+    // the client owns the content, the stored document keeps doctype and head
+    $document = filesystem\read_file(WEB_DIR, $data['file']) ?? '';
+    $data['withBody'] = html\replace_body($document, html\sanitize_html($htmlOrErrors));
+
+    $status = filesystem\backup_file(WEB_DIR, $data['file'], BACKUP_DIR);
+
+    if (!$status) {
+        return DomainPayload::error([['file', 'Could not backup file.']]);
+    }
+
+    $status = filesystem\write_file(WEB_DIR, $data['file'], $data['withBody']);
 
     if (!$status) {
         return DomainPayload::error([['file', 'Could not write content to file.']]);
