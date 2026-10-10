@@ -14,7 +14,11 @@ use const jaco\USERNAME;
 
 function authenticate(string $username, string $password): ?string
 {
-    if ($username !== USERNAME || $password !== PASSWORD) {
+    // compare both values in constant time to prevent timing attacks
+    $isUsernameValid = \hash_equals(USERNAME, $username);
+    $isPasswordValid = \hash_equals(PASSWORD, $password);
+
+    if (!$isUsernameValid || !$isPasswordValid) {
         return null;
     }
 
