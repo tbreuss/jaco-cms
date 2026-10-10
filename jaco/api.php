@@ -148,6 +148,20 @@ router\get(
     responseSchema: 'template/response.json',
 );
 
+router\get(
+    route: 'template/content',
+    callback: jaco\api\template\content\action(...),
+    authenticated: true,
+    responseSchema: 'template/response.json',
+);
+
+router\get(
+    route: 'template/content/view',
+    callback: jaco\api\template\content\view\action(...),
+    authenticated: true,
+    responseSchema: 'template/content/response.json',
+);
+
 router\post(
     route: 'upload/delete',
     callback: jaco\api\upload\delete\action(...),

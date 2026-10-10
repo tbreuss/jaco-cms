@@ -106,6 +106,25 @@ window.disableRichTextEditor = () => {
   })
 }
 
+window.insertContentTemplate = (html) => {
+  const quill = window.activeQuill
+  if (quill) {
+    const range = quill.getSelection()
+    const index = range ? range.index : quill.getLength()
+    quill.clipboard.dangerouslyPasteHTML(index, html)
+    return true
+  }
+
+  // no active editor, append to the first editable container
+  const editable = document.querySelector('[data-jaco-editable]')
+  if (editable) {
+    editable.insertAdjacentHTML('beforeend', html)
+    return true
+  }
+
+  return false
+}
+
 window.addClickHandler = () => {
   document.addEventListener('click', (event) => {
     if (event.target.closest('.ql-container, .ql-toolbar, [data-jaco-is-editing], #editableImageExtended, #editableLink')) {
@@ -135,7 +154,7 @@ window.addClickHandler = () => {
         },
         theme: 'snow'
       }
-      new Quill(editable, editorOptions)
+      window.activeQuill = new Quill(editable, editorOptions)
       handlePosition(editable)
       return
     }
@@ -154,7 +173,7 @@ window.addClickHandler = () => {
         },
         theme: 'snow'
       }
-      new Quill(editableLine, {
+      window.activeQuill = new Quill(editableLine, {
         modules: {
           toolbar: toolbarLineOptions,
           keyboard: {

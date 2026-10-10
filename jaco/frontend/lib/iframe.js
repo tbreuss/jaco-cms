@@ -45,6 +45,13 @@ export const iframe = {
   reload: () => {
     iframe.contentWindow().location.reload()
   },
+  insertContentTemplate: (html) => {
+    const contentWindow = iframe.contentWindow()
+    if (typeof contentWindow.insertContentTemplate === 'function') {
+      return contentWindow.insertContentTemplate(html)
+    }
+    return false
+  },
   getHTML: () => {
     const contentWindow = iframe.contentWindow()
     contentWindow.removeRichTextEditorElements()
