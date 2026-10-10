@@ -6,6 +6,7 @@ use jaco\core\http\Response;
 use jaco\domain\system\DomainPayload;
 
 use function jaco\core\http\json_response;
+use function jaco\core\responder\api_errors;
 use function jaco\domain\system\get_environment;
 
 function action(): Response
@@ -17,9 +18,13 @@ function action(): Response
 
 function responder(DomainPayload $payload): Response
 {
-    return json_response([
-        'classes' => $payload->data['classes'],
-        'constants' => $payload->data['constants'],
-        'functions' => $payload->data['functions'],
-    ]);
+    if ($payload->isSuccess) {
+        return json_response([
+            'classes' => $payload->data['classes'],
+            'constants' => $payload->data['constants'],
+            'functions' => $payload->data['functions'],
+        ]);
+    }
+
+    return api_errors($payload);
 }

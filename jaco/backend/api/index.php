@@ -6,6 +6,7 @@ use jaco\core\http\Response;
 use jaco\domain\system\DomainPayload;
 
 use function jaco\core\http\json_response;
+use function jaco\core\responder\api_errors;
 use function jaco\domain\system\get_version;
 
 function action(): Response
@@ -17,8 +18,12 @@ function action(): Response
 
 function responder(DomainPayload $payload): Response
 {
-    return json_response([
-        'name' => $payload->data['name'],
-        'version' => $payload->data['version'],
-    ]);
+    if ($payload->isSuccess) {
+        return json_response([
+            'name' => $payload->data['name'],
+            'version' => $payload->data['version'],
+        ]);
+    }
+
+    return api_errors($payload);
 }
