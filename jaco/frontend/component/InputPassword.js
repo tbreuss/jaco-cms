@@ -8,9 +8,9 @@ export const InputPassword = {
         label && m(Label, {id}, label),
         m(Input, {type: 'password', id, value, placeholder, oninput})
       )
-      : (
+      : [
         label && m(Label, {id}, label),
           m(Input, {type: 'password', id, value, placeholder, oninput})
-      )
+      ]
   )
 }

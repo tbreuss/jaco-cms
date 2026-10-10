@@ -89,6 +89,7 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | HTML: sanitizing (XSS), titles, embedded images | `jaco/test/HtmlFunctionsTest.php`, `jaco/test/HtmlTitleTest.php`, `jaco/test/EmbeddedImagesTest.php` |
 | Filesystem: naming, extensions, paths, timestamps | `jaco/test/FileFunctionsTest.php`, `jaco/test/FileSystemNamingTest.php` |
 | Schema validation, error responses and field mapping | `jaco/test/SchemaValidationTest.php`, `jaco/test/ResponderMappingTest.php` |
+| Frontend components, page editor model, login form | `jaco/test/js/tests.js` |
 
 Run them from the repository root:
 
@@ -96,6 +97,14 @@ Run them from the repository root:
 
 Options for the PHPUnit binary have to be passed explicitly, because the image entrypoint
 is PHP: `docker run --rm -v $(pwd)/jaco:/app jitesoft/phpunit phpunit --filter AuthTest`.
+
+The frontend tests are QUnit tests that run in a real browser; they need node ≥ 22 and a
+local Chrome and drive the page through the devtools protocol, so no npm packages are
+involved. Open `jaco/test/js/index.html` in a browser while developing, or run them
+headless:
+
+    php -S 127.0.0.1:8899 -t . &
+    node jaco/test/js/runner.mjs
 
 Not tested on purpose: the diagnostics endpoints (`system`, `system/log`,
 `system/php-info`, all environment dependent) and the global `error_handler`,

@@ -24,6 +24,14 @@ jobs:
               run: docker run --rm -v ./jaco:/app ghcr.io/phpstan/phpstan:2.3.1 analyse
             - name: Run PHPUnit
               run: docker run --rm -v $(pwd)/jaco:/app jitesoft/phpunit
+            - name: Set up Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+            - name: Run QUnit tests
+              run: |
+                  php -S 127.0.0.1:8899 -t . > /tmp/jaco-server.log 2>&1 &
+                  node jaco/test/js/runner.mjs
     publish:
         name: Publish Website
         runs-on: ubuntu-latest

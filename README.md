@@ -52,6 +52,11 @@ PHPUnit
 
     docker run --rm -v $(pwd)/jaco:/app jitesoft/phpunit
 
+QUnit (frontend, runs in headless Chrome, needs node >= 22)
+
+    php -S 127.0.0.1:8899 -t . &
+    node jaco/test/js/runner.mjs
+
 ## Links
 
 Article about testdox format

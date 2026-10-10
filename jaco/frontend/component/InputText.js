@@ -8,9 +8,9 @@ export const InputText = {
         label && m(Label, {id}, label),
         m(Input, {type: 'text', autofocus, disabled, id, value, placeholder, oninput})
       )
-      : (
+      : [
         label && m(Label, {id}, label),
-          m(Input, {type: 'text', autofocus, disabled, id, value, placeholder, oninput})
-      )
+        m(Input, {type: 'text', autofocus, disabled, id, value, placeholder, oninput})
+      ]
   )
 }

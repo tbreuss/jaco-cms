@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- the app lives under /jaco/, so relative urls (api.php) resolve like in the app -->
+  <base href="/jaco/">
+  <meta charset="utf-8">
+  <title>Jaco – JS tests</title>
+  <link rel="stylesheet" href="/jaco/frontend/asset/qunit.css">
+  <script src="/jaco/frontend/asset/qunit.js"></script>
+  <script src="/jaco/frontend/asset/mithril.min.js"></script>
+  <script>
+    // the runner reads this through the devtools protocol
+    window.__qunitFailures = []
+    window.__qunitCounts = {total: 0, passed: 0, failed: 0, skipped: 0}
+
+    QUnit.on('testEnd', (test) => {
+      const counts = window.__qunitCounts
+      counts.total++
+      if (test.status === 'failed') {
+        counts.failed++
+        const messages = (test.errors || []).map((error) => error.message || String(error))
+        window.__qunitFailures.push((test.fullName || test.name) + ': ' + messages.join(' | '))
+      } else if (test.status === 'skipped') {
+        counts.skipped++
+      } else {
+        counts.passed++
+      }
+    })
+
+    QUnit.on('runEnd', (run) => {
+      window.__qunitResult = {
+        status: run.status,
+        counts: window.__qunitCounts,
+        failures: window.__qunitFailures
+      }
+    })
+  </script>
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script type="module" src="/jaco/test/js/tests.js"></script>
+</body>
+</html>
