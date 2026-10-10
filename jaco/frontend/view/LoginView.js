@@ -14,9 +14,7 @@ const state = {
   errors: [],
 }
 
-const onLoginButtonClicked = (e) => {
-  e.redraw = false
-
+const login = () => {
   const credentials = {
     username: state.username,
     password: state.password
@@ -39,6 +37,13 @@ const onLoginButtonClicked = (e) => {
     })
 }
 
+const onLoginSubmitted = (e) => {
+  e.preventDefault() // no page reload, the request is sent by the api service
+  e.redraw = false
+
+  login()
+}
+
 export const LoginView = {
   oninit: () => {
     state.username = ''
@@ -49,31 +54,35 @@ export const LoginView = {
       title: t('Login'),
       cssClass: 'modal-sm-login'
     },
-    m(InputText, {
-      id: 'username',
-      wrap: 'div.row',
-      label: t('Username'),
-      value: state.username,
-      placeholder: t('Username'),
-      oninput: (value) => {
-        state.username = value
-        state.errors = []
-      }
-    }),
-    m(InputPassword, {
-      id: 'password',
-      wrap: 'div.row',
-      label: t('Password'),
-      value: state.password,
-      placeholder: t('Password'),
-      oninput: (value) => {
-        state.password = value
-        state.errors = []
-      }
-    }),
-    m(ButtonGroup, {wrap: 'div.row.text-right'},
-      m(ButtonPrimary, {onclick: onLoginButtonClicked}, t('Login'))
-    ),
-    m(FormErrors, {errors: state.errors})
+    // the form submits on RETURN, its submit button triggers the same handler
+    m('form', {onsubmit: onLoginSubmitted},
+      m(InputText, {
+        id: 'username',
+        autofocus: true,
+        wrap: 'div.row',
+        label: t('Username'),
+        value: state.username,
+        placeholder: t('Username'),
+        oninput: (value) => {
+          state.username = value
+          state.errors = []
+        }
+      }),
+      m(InputPassword, {
+        id: 'password',
+        wrap: 'div.row',
+        label: t('Password'),
+        value: state.password,
+        placeholder: t('Password'),
+        oninput: (value) => {
+          state.password = value
+          state.errors = []
+        }
+      }),
+      m(ButtonGroup, {wrap: 'div.row.text-right'},
+        m(ButtonPrimary, {}, t('Login'))
+      ),
+      m(FormErrors, {errors: state.errors})
+    )
   )
 }
