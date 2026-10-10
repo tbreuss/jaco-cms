@@ -7,9 +7,6 @@
         },
         "html": {
             "type": "string"
-        },
-        "pageTitle": {
-            "type": "string"
         }
     },
     "required": [

@@ -16,7 +16,6 @@ function action(Request $request): Response
     $payload = update_page(
         file: $request->post->strVal('fileName'),
         withContent: $request->post->strVal('html'),
-        withTitle: $request->post->strVal('pageTitle'),
     );
 
     return responder($payload);
@@ -31,6 +30,5 @@ function responder(DomainPayload $payload): Response
     return api_errors($payload, [
         'file' => 'fileName',
         'withContent' => 'html',
-        'withTitle' => 'pageTitle',
     ]);
 }

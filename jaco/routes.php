@@ -97,6 +97,14 @@ router\post(
     responseSchema: 'null.json',
 );
 
+router\post(
+    route: 'page/update-body',
+    callback: jaco\api\page\update_body\action(...),
+    authenticated: true,
+    requestSchema: 'page/update-body/request.json',
+    responseSchema: 'null.json',
+);
+
 router\get(
     route: 'page/view',
     callback: jaco\api\page\view\action(...),
