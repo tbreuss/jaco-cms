@@ -46,7 +46,7 @@ PHP CS Fixer
 
 PHPStan
 
-    docker run --rm -v $(pwd)/jaco:/app ghcr.io/phpstan/phpstan analyse
+    docker run --rm -v $(pwd)/jaco:/app ghcr.io/phpstan/phpstan:2.3.1 analyse
 
 PHPUnit
 
