@@ -22,7 +22,8 @@ function action(Request $request): Response
 function responder(DomainPayload $payload): Response
 {
     if ($payload->isSuccess) {
-        return json_response($payload->data);
+        // translations are a map, encode an empty list as an empty object
+        return json_response((object) $payload->data);
     }
 
     return api_errors($payload);

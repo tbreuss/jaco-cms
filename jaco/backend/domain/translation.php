@@ -32,9 +32,14 @@ function load(string $language): array
     $path = str_replace('{language}', $language, $template);
 
     if (is_file($path)) {
-        $translations[$language] = json_decode(file_get_contents($path), true);
-        return $translations[$language];
+        $decoded = json_decode(file_get_contents($path), true);
+        $translations[$language] = is_array($decoded) ? $decoded : [];
+    } elseif ($language === DEFAULT_LANGUAGE) {
+        // the default language file is missing, return empty translations
+        $translations[$language] = [];
+    } else {
+        $translations[$language] = load(DEFAULT_LANGUAGE);
     }
 
-    return load(DEFAULT_LANGUAGE);
+    return $translations[$language];
 }
