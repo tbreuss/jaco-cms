@@ -7,6 +7,8 @@ use jaco\core\strings;
 use const jaco\DIRECTORY_PERMISSIONS;
 use const jaco\PAGE_EXTENSIONS;
 
+const BACKUP_NAME_PREFIX_LENGTH = 21; // {Ymd_His}_{random 4}_ prefix of backup file names
+
 final class File
 {
     public function __construct(
@@ -142,7 +144,7 @@ function backup_file(string $dir, string $file, string $bakDir): bool
 
 function restore_file(string $bakDir, string $bakFile, string $dstDir): bool
 {
-    $dstFile = \str_replace('|', '/', \substr($bakFile, 21));
+    $dstFile = \str_replace('|', '/', \substr($bakFile, BACKUP_NAME_PREFIX_LENGTH));
 
     // rename replaces an existing target file atomically,
     // so the current file is kept if the backup cannot be moved

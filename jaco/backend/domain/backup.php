@@ -93,7 +93,7 @@ function find_backup(string $file): DomainPayload
     return DomainPayload::success(
         (array) new Backup(
             $file,
-            str_replace('|', DIRECTORY_SEPARATOR, substr($file, 21)),
+            str_replace('|', DIRECTORY_SEPARATOR, substr($file, filesystem\BACKUP_NAME_PREFIX_LENGTH)),
             html\get_title($content),
             filesystem\restore_timestamp_from_file_name($file),
             filesystem\file_mtime($file, BACKUP_DIR),
@@ -165,7 +165,7 @@ function create_list(array $files, string $dir, array $pageExtensions): array
         $content = filesystem\read_file($dir, $file->file);
         $backups[] = new Backup(
             $file->file,
-            str_replace('|', DIRECTORY_SEPARATOR, substr($file->file, 21)),
+            str_replace('|', DIRECTORY_SEPARATOR, substr($file->file, filesystem\BACKUP_NAME_PREFIX_LENGTH)),
             html\get_title($content),
             filesystem\restore_timestamp_from_file_name($file->file),
             $file->modified,
