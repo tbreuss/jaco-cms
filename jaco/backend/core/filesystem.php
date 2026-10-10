@@ -143,19 +143,16 @@ function backup_file(string $dir, string $file, string $bakDir): bool
 function restore_file(string $bakDir, string $bakFile, string $dstDir): bool
 {
     $dstFile = \str_replace('|', '/', \substr($bakFile, 21));
-    if (file_exists($dstDir, $dstFile)) {
-        $status = delete_file($dstDir, $dstFile);
-        if (!$status) {
-            return false;
-        }
+
+    // rename replaces an existing target file atomically,
+    // so the current file is kept if the backup cannot be moved
+    if (!move_file($bakDir, $bakFile, $dstDir, $dstFile)) {
+        return false;
     }
-    if (move_file($bakDir, $bakFile, $dstDir, $dstFile)) {
-        $timestamp = restore_timestamp_from_file_name($bakFile);
-        if (touch_file($dstFile, $dstDir, $timestamp)) {
-            return true;
-        }
-    }
-    return false;
+
+    $timestamp = restore_timestamp_from_file_name($bakFile);
+
+    return touch_file($dstFile, $dstDir, $timestamp);
 }
 
 function restore_timestamp_from_file_name(string $bakFile): int
