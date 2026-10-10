@@ -65,7 +65,7 @@ function required(array|string|float|int|bool|null $value): Result
     return Result::ok();
 }
 
-function safe(): Result
+function safe(mixed $value = null): Result
 {
     return Result::ok();
 }

@@ -1,0 +1,98 @@
+<?php declare(strict_types=1);
+
+namespace jaco\tests;
+
+use jaco\core\http\Response;
+use jaco\core\http\Status;
+
+use const jaco\APP_DIR;
+use const jaco\WEB_DIR;
+
+/**
+ * @testdox Page list API (page/list)
+ */
+final class ApiPageListTest extends ApiTestCase
+{
+    private const PAGE_A = 'api-list-a.html';
+    private const PAGE_B = 'api-list-b.html';
+    private const HIDDEN = 'api-list-hidden.html';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->watchDir(WEB_DIR);
+        file_put_contents(WEB_DIR . '/' . self::PAGE_A, $this->page('List A'));
+        file_put_contents(WEB_DIR . '/' . self::PAGE_B, $this->page('List B'));
+    }
+
+    public function testPagesAreListedWithTheirTitleAndWithoutContent(): void
+    {
+        $response = $this->api('page/list', method: 'GET');
+
+        $this->assertSame(Status::OK, $response->status);
+
+        $body = $this->body($response);
+        $this->assertSame('', $body['filter']);
+        $this->assertSame(['created', 'desc'], $body['sort']);
+
+        $item = $this->itemWithFile($body['items'], self::PAGE_A);
+        $this->assertSame('List A', $item['title']);
+        $this->assertNull($item['content']);
+        $this->assertIsInt($item['created']);
+    }
+
+    public function testFilterNarrowsTheList(): void
+    {
+        $body = $this->body($this->api('page/list', method: 'GET', query: ['filter' => 'api-list-a']));
+
+        $this->assertSame('api-list-a', $body['filter']);
+        $this->assertCount(1, $body['items']);
+        $this->assertSame(self::PAGE_A, $body['items'][0]['file']);
+    }
+
+    public function testSortIsReported(): void
+    {
+        $body = $this->body($this->api('page/list', method: 'GET', query: ['sort' => 'title']));
+
+        $this->assertSame(['title', 'asc'], $body['sort']);
+    }
+
+    public function testInvalidSortIsRejected(): void
+    {
+        $response = $this->api('page/list', method: 'GET', query: ['sort' => 'unknown']);
+
+        $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
+    }
+
+    public function testPagesInTheAppDirAreNeverListed(): void
+    {
+        file_put_contents(APP_DIR . '/' . self::HIDDEN, $this->page('Hidden'));
+
+        try {
+            $body = $this->body($this->api('page/list', method: 'GET', query: ['filter' => 'api-list-hidden']));
+
+            $this->assertSame([], $body['items'], 'the app directory must stay invisible');
+        } finally {
+            @unlink(APP_DIR . '/' . self::HIDDEN);
+        }
+    }
+
+    public function testRequestWithoutTokenIsForbidden(): void
+    {
+        $response = $this->api('page/list', method: 'GET', authenticated: false);
+
+        $this->assertSame(Status::FORBIDDEN, $response->status);
+    }
+
+    private function page(string $title): string
+    {
+        return "<!DOCTYPE html>\n<html lang=\"en\"><head><title>" . $title . "</title></head><body></body></html>\n";
+    }
+
+    /** @return array<string, mixed> */
+    private function body(Response $response): array
+    {
+        return (array) json_decode((string) $response->body, true);
+    }
+}

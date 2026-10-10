@@ -28,3 +28,6 @@ define('jaco\PHP_DISPLAY_ERRORS', 0);
 define('jaco\PHP_DISPLAY_STARTUP_ERRORS', 0);
 define('jaco\PHP_LOG_ERRORS', 1);
 define('jaco\PHP_ERROR_LOG', __DIR__ . '/runtime/log/error.log');
+
+// phpunit does not autoload the test namespace, so load the shared base class explicitly
+require_once __DIR__ . '/ApiTestCase.php';

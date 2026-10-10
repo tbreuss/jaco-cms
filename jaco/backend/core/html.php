@@ -19,7 +19,8 @@ function get_title(string $html): string
 
     $dom = new \DOMDocument();
     \libxml_use_internal_errors(true);
-    if ($dom->loadHTML($html)) {
+    // without a charset hint libxml assumes ISO-8859-1 and mangles non-ascii titles
+    if ($dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">' . $html)) {
         $list = $dom->getElementsByTagName("title");
         if ($list->length > 0) {
             $title = $list->item(0)->textContent;
@@ -165,6 +166,8 @@ function allowed_attribute(string $tag, string $name, string $value): bool
 function handle_embedded_data_url_images(string $html): array
 {
     \libxml_use_internal_errors(true);
+    // drop errors from earlier parsing, the check at the end reads the whole buffer
+    \libxml_clear_errors();
 
     $dom = new \DOMDocument();
 
