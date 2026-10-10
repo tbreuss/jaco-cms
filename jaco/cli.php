@@ -27,6 +27,11 @@ $app->onException(function (Throwable $e, int $exitCode) {
     exit($exitCode);
 });
 
+// $argv is only registered by PHP when the "register_argc_argv" ini setting is enabled,
+// so read the arguments from $_SERVER to stay independent of the environment
+/** @var list<string> $argv */
+$argv = $_SERVER['argv'] ?? [];
+
 $app->handle($argv);
 
 exit(0);
