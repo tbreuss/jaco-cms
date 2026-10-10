@@ -5,6 +5,7 @@ namespace jaco\core\auth;
 const AUDIENCE = 'ch.tebe.jaco';
 const ISSUER = 'ch.tebe.jaco';
 const TOKEN_TTL = 86400; // tokens are valid for 24 hours
+const JWT_ALGORITHM = 'HS256';
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -29,7 +30,7 @@ function authenticate(string $username, string $password): ?string
 function is_authenticated(string $token): bool
 {
     try {
-        $payload = JWT::decode($token, new Key(SECRET_KEY, 'HS512'));
+        $payload = JWT::decode($token, new Key(SECRET_KEY, JWT_ALGORITHM));
     } catch (\Exception) {
         return false;
     }
@@ -62,5 +63,5 @@ function create_token(string $username): string
         'admin' => true,
     ];
 
-    return JWT::encode($payload, SECRET_KEY, 'HS512');
+    return JWT::encode($payload, SECRET_KEY, JWT_ALGORITHM);
 }
