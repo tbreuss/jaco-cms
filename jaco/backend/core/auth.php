@@ -4,6 +4,7 @@ namespace jaco\core\auth;
 
 const AUDIENCE = 'ch.tebe.jaco';
 const ISSUER = 'ch.tebe.jaco';
+const TOKEN_TTL = 86400; // tokens are valid for 24 hours
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -47,11 +48,14 @@ function is_authenticated(string $token): bool
 
 function create_token(string $username): string
 {
+    $now = time();
+
     $payload = [
         'iss' => ISSUER,
         'aud' => AUDIENCE,
-        'iat' => time(),
-        'nbf' => time(),
+        'iat' => $now,
+        'nbf' => $now,
+        'exp' => $now + TOKEN_TTL,
         'user' => $username,
         'admin' => true,
     ];
