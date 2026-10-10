@@ -15,7 +15,8 @@ export const PageEditModel = {
     return api.post('action=page/update', {
       body: {
         fileName: PageEditModel.item.file,
-        html: PageEditModel.item.content
+        html: PageEditModel.item.content,
+        pageTitle: PageEditModel.item.title ?? ''
       }
     })
   }

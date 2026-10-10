@@ -78,6 +78,50 @@ final class HtmlFunctionsTest extends TestCase
         }
     }
 
+    public function testBodyIsReplacedAndTheHeadIsKept(): void
+    {
+        $document = '<!DOCTYPE html>' . "\n"
+            . '<html><head><title>T</title><base href="/"></head>'
+            . '<body class="main"><p>old</p></body></html>';
+
+        $result = html\replace_body($document, '<p>new</p>');
+
+        $this->assertStringContainsString('<!DOCTYPE html>', $result);
+        $this->assertStringContainsString('<head><title>T</title><base href="/"></head>', $result);
+        $this->assertStringContainsString('<body class="main"><p>new</p></body>', $result);
+        $this->assertStringNotContainsString('<p>old</p>', $result);
+    }
+
+    public function testFragmentIsUsedAsBodyWhenTheDocumentHasNoBody(): void
+    {
+        $this->assertSame('<p>new</p>', html\replace_body('<p>old</p>', '<p>new</p>'));
+        $this->assertSame('<p>new</p>', html\replace_body('', '<p>new</p>'));
+    }
+
+    public function testBodyIsNotRunThroughBackreferenceReplacement(): void
+    {
+        $this->assertSame(
+            '<body><p>price: $1</p></body>',
+            html\replace_body('<body><p>old</p></body>', '<p>price: $1</p>'),
+        );
+    }
+
+    public function testEditableMarkersSurviveSanitizing(): void
+    {
+        $html = '<div data-jaco-editable><h1>Block</h1></div>'
+            . '<p data-jaco-editable-line>Zeile</p>'
+            . '<a href="/x" data-jaco-editable-link>Link</a>'
+            . '<img src="upload/a.png" data-jaco-editable-image>';
+
+        $result = html\sanitize_html($html);
+
+        // without these the page cannot be edited in place any more
+        $this->assertStringContainsString('data-jaco-editable>', $result);
+        $this->assertStringContainsString('data-jaco-editable-line>', $result);
+        $this->assertStringContainsString('data-jaco-editable-link>', $result);
+        $this->assertStringContainsString('data-jaco-editable-image>', $result);
+    }
+
     public function testUpdatePageSanitizesContent(): void
     {
         $file = 'test/xss.html';

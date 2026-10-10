@@ -230,17 +230,19 @@ function create_page(string $file, string $fromTemplate, string $withTitle): Dom
     return DomainPayload::success();
 }
 
-function update_page(string $file, string $withContent): DomainPayload
+function update_page(string $file, string $withContent, string $withTitle = ''): DomainPayload
 {
     $data = data\sanitize(
         [
             'file' => $file,
             'withContent' => $withContent,
+            'withTitle' => $withTitle,
         ],
         [
             ['file', 'string'],
             ['file', 'filename'],
             ['withContent', 'string'],
+            ['withTitle', 'string'],
         ],
     );
 
@@ -260,7 +262,14 @@ function update_page(string $file, string $withContent): DomainPayload
     [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['withContent']);
 
     if ($status) {
-        $data['withContent'] = html\sanitize_html($htmlOrErrors);
+        // the client owns the body, the stored document keeps its doctype and head
+        $document = filesystem\read_file(WEB_DIR, $data['file']) ?? '';
+        $data['withContent'] = html\replace_body($document, html\sanitize_html($htmlOrErrors));
+
+        // the title is the only head value a client may change, and only if it sends one
+        if ($data['withTitle'] !== '') {
+            $data['withContent'] = html\set_title($data['withContent'], $data['withTitle']);
+        }
     } else {
         return DomainPayload::error([['withContent', \reset($htmlOrErrors)]]);
     }

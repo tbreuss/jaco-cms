@@ -73,6 +73,122 @@ final class ApiPageUpdateTest extends ApiTestCase
         );
     }
 
+    public function testStoredDocumentHeadSurvivesASaveAndTheClientHeadIsIgnored(): void
+    {
+        $clientDocument = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
+            . '<title>Injected title</title><script src="https://evil.example/x.js"></script></head>'
+            . '<body><p>from the client</p></body></html>';
+
+        $response = $this->api('page/update', [
+            'fileName' => self::PAGE,
+            'html' => $clientDocument,
+        ]);
+
+        $this->assertSame(Status::CREATED, $response->status);
+
+        $content = (string) file_get_contents(WEB_DIR . '/' . self::PAGE);
+
+        // the stored document stays a document
+        $this->assertStringContainsString('<!DOCTYPE html>', $content);
+        $this->assertStringContainsString('<title>Update test</title>', $content);
+
+        // the head of the request is not taken over
+        $this->assertStringNotContainsString('Injected title', $content);
+        $this->assertStringNotContainsString('evil.example', $content);
+
+        // the body of the request is
+        $this->assertStringContainsString('<p>from the client</p>', $content);
+        $this->assertStringNotContainsString('<p>before</p>', $content);
+
+        // the title is still there for the api
+        $view = $this->api('page/view', method: 'GET', query: ['file' => self::PAGE]);
+        $body = (array) json_decode((string) $view->body, true);
+        $this->assertSame('Update test', $body['title']);
+    }
+
+    public function testTitleCanBeChangedWithoutTouchingTheHead(): void
+    {
+        $response = $this->api('page/update', [
+            'fileName' => self::PAGE,
+            'html' => '<html lang="en"><head><title>Whatever the client sends</title></head>'
+                . '<body><p>new body</p></body></html>',
+            'pageTitle' => 'New title',
+        ]);
+
+        $this->assertSame(Status::CREATED, $response->status);
+
+        $content = (string) file_get_contents(WEB_DIR . '/' . self::PAGE);
+        $this->assertStringContainsString('<title>New title</title>', $content);
+        $this->assertStringNotContainsString('Whatever the client sends', $content);
+        $this->assertStringNotContainsString('Update test', $content);
+        $this->assertStringContainsString('<!DOCTYPE html>', $content);
+        $this->assertStringContainsString('<p>new body</p>', $content);
+    }
+
+    public function testTitleIsEscaped(): void
+    {
+        $this->api('page/update', [
+            'fileName' => self::PAGE,
+            'html' => '<body><p>new</p></body>',
+            'pageTitle' => '<script>alert(1)</script>',
+        ]);
+
+        $content = (string) file_get_contents(WEB_DIR . '/' . self::PAGE);
+        $this->assertStringContainsString(
+            '<title>&lt;script&gt;alert(1)&lt;/script&gt;</title>',
+            $content,
+        );
+        $this->assertStringNotContainsString('<script>', $content);
+    }
+
+    public function testMissingOrEmptyTitleLeavesTheStoredTitleUntouched(): void
+    {
+        $this->api('page/update', [
+            'fileName' => self::PAGE,
+            'html' => '<body><p>new</p></body>',
+        ]);
+        $this->assertStringContainsString(
+            '<title>Update test</title>',
+            (string) file_get_contents(WEB_DIR . '/' . self::PAGE),
+        );
+
+        $this->api('page/update', [
+            'fileName' => self::PAGE,
+            'html' => '<body><p>new</p></body>',
+            'pageTitle' => '',
+        ]);
+        $this->assertStringContainsString(
+            '<title>Update test</title>',
+            (string) file_get_contents(WEB_DIR . '/' . self::PAGE),
+        );
+    }
+
+    public function testTitleOfAWrongTypeIsRejected(): void
+    {
+        $response = $this->api('page/update', [
+            'fileName' => self::PAGE,
+            'html' => '<body><p>new</p></body>',
+            'pageTitle' => 123,
+        ]);
+
+        $this->assertSame(Status::BAD_REQUEST, $response->status);
+    }
+
+    public function testEditableMarkersSurviveASave(): void
+    {
+        $response = $this->api('page/update', [
+            'fileName' => self::PAGE,
+            'html' => '<body><div data-jaco-editable><h1>Block</h1></div>'
+                . '<p data-jaco-editable-line>Zeile</p></body>',
+        ]);
+
+        $this->assertSame(Status::CREATED, $response->status);
+
+        $content = (string) file_get_contents(WEB_DIR . '/' . self::PAGE);
+        $this->assertStringContainsString('data-jaco-editable>', $content);
+        $this->assertStringContainsString('data-jaco-editable-line>', $content);
+    }
+
     public function testPageIsNotTouchedWhenTheRequestHasNoToken(): void
     {
         $response = $this->api('page/update', [

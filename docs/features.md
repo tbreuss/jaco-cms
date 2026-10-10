@@ -44,6 +44,16 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   `upload/<file>`. The parser clears the global libxml error buffer first, because the
   check at the end reads all of it – a leftover error from earlier parsing would turn a
   valid save into a failure.
+- **The server owns the document head.** `page/update` replaces only the body of the stored
+  document: doctype, `<head>` and everything outside `<body>` come from the file on disk,
+  never from the request. A page that is stored as a fragment stays a fragment. The title is
+  the one head value a client may change, and only explicitly through `pageTitle`:
+  `html\set_title()` escapes it, and a missing or empty value leaves the stored title alone.
+- **The editable markers are allowlisted.** `data-jaco-editable`, `-line`, `-link`, `-image`
+  and `-image-extended` must stay in `ALLOWED_ATTRIBUTES`: dropping one silently makes the
+  page uneditable in place, because the editor finds its blocks through these attributes.
+  `<script>` stays removed on purpose, so a script include belongs in the `<head>`, which
+  the server owns.
 - **Lists do not ship content.** `page/list` and `upload/list` return `content: null`,
   `backup/list` returns an empty string. Only `page/view` and `backup/view` return the
   body – for an upload inside a backup as base64.
