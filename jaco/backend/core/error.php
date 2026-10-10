@@ -21,12 +21,9 @@ function exception_handler(\Throwable $t): void
     error_log($message);
 
     $response = json_response([
-        [
-            'title' => get_error_type($t->getCode()),
-            'detail' => $message,
-        ],
-        Status::INTERNAL_SERVER_ERROR,
-    ]);
+        'title' => get_error_type($t->getCode()),
+        'detail' => $message,
+    ], Status::INTERNAL_SERVER_ERROR);
 
     http\emit($response);
 }
@@ -38,12 +35,9 @@ function error_handler(int $errno, string $errstr, string $errfile, int $errline
     error_log($message);
 
     $response = json_response([
-        [
-            'title' => get_error_type($errno),
-            'detail' => $message,
-        ],
-        Status::INTERNAL_SERVER_ERROR,
-    ]);
+        'title' => get_error_type($errno),
+        'detail' => $message,
+    ], Status::INTERNAL_SERVER_ERROR);
 
     http\emit($response, false);
 
@@ -61,12 +55,9 @@ function fatal_handler(): void
         error_log($message);
 
         $response = json_response([
-            [
-                'title' => get_error_type($error['type']),
-                'detail' => $message,
-            ],
-            Status::INTERNAL_SERVER_ERROR,
-        ]);
+            'title' => get_error_type($error['type']),
+            'detail' => $message,
+        ], Status::INTERNAL_SERVER_ERROR);
 
         http\emit($response);
     }
