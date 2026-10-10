@@ -1,5 +1,9 @@
 <?php declare(strict_types=1);
 
+if (is_readable(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+}
+
 define('jaco\APP_VERSION', '0.1.0');
 define('jaco\APP_DIR', __DIR__ . '/asset/jaco');
 define('jaco\APP_DIR_NAME', basename(jaco\APP_DIR));
