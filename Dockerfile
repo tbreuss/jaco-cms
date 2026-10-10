@@ -53,4 +53,4 @@ VOLUME /app
 
 EXPOSE 8888
 
-CMD ["php", "-S", "0.0.0.0:8888", "-t", "/app/web"]
+CMD ["php", "-S", "0.0.0.0:8888", "-t", "/app"]
