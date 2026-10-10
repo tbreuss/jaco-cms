@@ -60,15 +60,17 @@ final class FileFunctionsTest extends TestCase
 
     public function testDirectoryCanBeCreated(): void
     {
-        filesystem\make_dir(WEB_DIR, 'foo/abc');
-        $this->assertTrue(is_dir(WEB_DIR . '/foo/abc'));
+        // make_dir is not recursive, so the parent has to exist
+        filesystem\make_dir_rec(WEB_DIR, 'test/parent');
+        filesystem\make_dir(WEB_DIR, 'test/parent/abc');
+        $this->assertTrue(is_dir(WEB_DIR . '/test/parent/abc'));
     }
 
     public function testDirectoryCanBeCreatedRecursively(): void
     {
-        filesystem\make_dir_rec(WEB_DIR, 'foo/bar/baz');
-        $this->assertTrue(is_dir(WEB_DIR . '/foo'));
-        $this->assertTrue(is_dir(WEB_DIR . '/foo/bar'));
-        $this->assertTrue(is_dir(WEB_DIR . '/foo/bar/baz'));
+        filesystem\make_dir_rec(WEB_DIR, 'test/foo/bar/baz');
+        $this->assertTrue(is_dir(WEB_DIR . '/test/foo'));
+        $this->assertTrue(is_dir(WEB_DIR . '/test/foo/bar'));
+        $this->assertTrue(is_dir(WEB_DIR . '/test/foo/bar/baz'));
     }
 }
