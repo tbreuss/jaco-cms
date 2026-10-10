@@ -200,12 +200,21 @@ function file_name_to_write(string $dir, string $file): string
 {
     if (file_exists($dir, $file)) {
         $info = \pathinfo($file);
+        $extension = $info['extension'] ?? '';
+        $prefix = $info['dirname'] === '.' ? '' : $info['dirname'] . DIRECTORY_SEPARATOR;
         $i = 1;
+
         do {
-            $file = sprintf('%s-%d.%s', $info['filename'], $i, $info['extension']);
+            $file = $prefix . $info['filename'] . '-' . $i;
+
+            if ($extension !== '') {
+                $file = $file . '.' . $extension;
+            }
+
             $i++;
         } while (file_exists($dir, $file));
     }
+
     return $file;
 }
 

@@ -10,6 +10,7 @@ parameters:
     paths:
         - backend
         - api.php
+        - routes.php
         - autoload.php
         - cli.php
         - constants.php

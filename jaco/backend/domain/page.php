@@ -70,6 +70,7 @@ function find_page(string $file): DomainPayload
         ['required'],
         ['file_exists', 'dir' => WEB_DIR],
         ['file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS)],
+        ['file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
     ]);
 
     if (count($errors) > 0) {
@@ -102,6 +103,7 @@ function delete_page(string $file): DomainPayload
         ['file_writeable'],
         ['html_file_name'],
         ['html_file_extension'],
+        ['file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
     ]);
 
     if (count($errors) > 0) {
@@ -141,6 +143,7 @@ function copy_page(string $file, string $toFile, string $withTitle): DomainPaylo
     $errors = data\validate($data, [
         ['file', 'required'],
         ['file', 'file_exists'],
+        ['file', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
         ['toFile', 'required'],
         ['toFile', 'html_file_name'],
         ['toFile', 'html_file_extension'],
@@ -246,6 +249,7 @@ function update_page(string $file, string $withContent): DomainPayload
         ['file', 'file_exists'],
         ['file', 'html_file_name'],
         ['file', 'html_file_extension'],
+        ['file', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
         ['withContent', 'required'],
     ]);
 
