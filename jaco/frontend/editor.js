@@ -482,13 +482,13 @@ window.removeBlockTags = (element) => {
   return element.innerHTML
 }
 
-window.addInternalLinkHandler = () => {
-  const originReg = new RegExp(location.hostname, 'i')
-  document.querySelectorAll('a').forEach(a => {
-    if (!originReg.test(a.href)) return // external link
-    document.addEventListener('click', (event) => {
+window.addLinkHandler = () => {
+  document.addEventListener('click', (event) => {
+    // prevent navigation to internal and external links
+    // to keep unsaved changes in the editor
+    if (event.target.closest('a')) {
       event.preventDefault()
-    })
+    }
   })
 }
 
@@ -507,4 +507,4 @@ window.resize = () => {
 }
 
 window.addClickHandler()
-window.addInternalLinkHandler()
+window.addLinkHandler()
