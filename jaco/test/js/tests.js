@@ -9,6 +9,7 @@ import {ViewUploadView} from '/jaco/frontend/view/upload/ViewUploadView.js'
 import {UploadListModel} from '/jaco/frontend/model/UploadListModel.js'
 import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
 import {api} from '/jaco/frontend/service/api.js'
+import {tError} from '/jaco/frontend/model/i18n.js'
 import {state} from '/jaco/frontend/state/state.js'
 const fixture = () => document.getElementById('qunit-fixture')
 
@@ -66,7 +67,7 @@ QUnit.test('FormErrors renders nothing without errors and the details with error
   const errors = [{source: {pointer: ''}, title: 'Validation Error', detail: 'Authentication failed.'}]
   m.render(fixture(), m(FormErrors, {errors}))
 
-  assert.ok(fixture().textContent.includes('Authentication failed.'), 'the detail is rendered')
+  assert.ok(fixture().textContent.includes(tError('Authentication failed.')), 'the translated detail is rendered')
 })
 
 QUnit.test('Select follows the value attribute', (assert) => {
@@ -186,7 +187,7 @@ QUnit.test('the form sends one request and shows the message from the api', (ass
     const errors = fixture().querySelector('fieldset.errors')
     if (errors) {
       assert.strictEqual(calls.length, 1, 'exactly one login request')
-      assert.ok(errors.textContent.includes('Authentication failed'), 'the api message is shown')
+      assert.ok(errors.textContent.includes(tError('Authentication failed.')), 'the api message is shown translated')
       assert.strictEqual(fixture().querySelector('#username').value, '', 'username is cleared')
       assert.strictEqual(fixture().querySelector('#password').value, '', 'password is cleared')
       assert.strictEqual(document.activeElement.id, 'username', 'focus is back on username')
