@@ -5,9 +5,9 @@ jobs:
         runs-on: ${{ matrix.operating-system }}
         strategy:
             matrix:
-                operating-system: [ubuntu-latest]
+                operating-system: [ubuntu-24.04]
                 php-versions: ['8.2', '8.3', '8.4', '8.5']
-        name: PHP ${{ matrix.php-versions }} smoke test on ${{ matrix.operating-system }}
+        name: PHP ${{ matrix.php-versions }} tests on ${{ matrix.operating-system }}
         steps:
             - name: Checkout
               uses: actions/checkout@v6
@@ -34,7 +34,7 @@ jobs:
                   node jaco/test/js/runner.mjs
     publish:
         name: Publish Website
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         needs: test
         if: github.ref == 'refs/heads/main'
         steps:
