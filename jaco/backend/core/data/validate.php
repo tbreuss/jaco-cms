@@ -89,6 +89,9 @@ function html_file_extension(string $value, array $allowedExtensions): Result
 
 function html_file_name(string $value, bool $isBackup = false): Result
 {
+    if (str_contains($value, '..')) {
+        return Result::error('{value} is an invalid filename');
+    }
     if (filesystem\validate_filename($value, $isBackup)) {
         return Result::ok();
     }
@@ -105,6 +108,9 @@ function file_writeable(string $value, string $dir): Result
 
 function file_exists(string $value, string $dir, bool $negate = false): Result
 {
+    if (str_contains($value, '..')) {
+        return Result::error($negate === false ? '{value} does not exist.' : '{value} must not exist.');
+    }
     if (filesystem\file_exists($dir, $value) === !$negate) {
         return Result::ok();
     }

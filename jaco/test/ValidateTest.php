@@ -66,6 +66,23 @@ final class ValidateTest extends TestCase
         $this->assertSame([], data\validate(['f' => 'nope.html'], [['f', 'file_exists', 'dir' => $config->webDir, 'negate' => true]]));
     }
 
+    public function testParentSegmentsAreRejected(): void
+    {
+        $config = test_config();
+        $this->assertSame(
+            [['f', '../foo.html does not exist.']],
+            data\validate(['f' => '../foo.html'], [['f', 'file_exists', 'dir' => $config->webDir]]),
+        );
+        $this->assertSame(
+            [['f', '../new.html must not exist.']],
+            data\validate(['f' => '../new.html'], [['f', 'file_exists', 'dir' => $config->webDir, 'negate' => true]]),
+        );
+        $this->assertSame(
+            [['f', '../evil.html is an invalid filename']],
+            data\validate(['f' => '../evil.html'], [['f', 'html_file_name']]),
+        );
+    }
+
     public function testFileInDirRuleGuardsTheAppDirectory(): void
     {
         $this->assertSame([], data\validate(['f' => 'jaco/x.html'], [['f', 'file_in_dir', 'dir' => 'jaco']]));

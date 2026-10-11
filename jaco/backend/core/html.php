@@ -3,7 +3,7 @@
 namespace jaco\core\html;
 
 use jaco\core\config\Config;
-use jaco\core\data;
+use jaco\core\data\sanitize;
 use jaco\core\filesystem;
 
 function get_title(string $html): string
@@ -234,9 +234,8 @@ function handle_embedded_data_url_images(Config $config, string $html): array
             continue;
         }
 
-        // sanitize the file name to prevent path traversal
-        $imgFile = data\sanitize\filename($imgFile);
-        $imgFile = data\sanitize\normalize_filename($imgFile);
+        // normalize cosmetic issues (whitespace, umlauts), traversal is rejected loudly below
+        $imgFile = sanitize\normalize_filename($imgFile);
 
         // only plain file names with an allowed extension may be written
         if (\str_contains($imgFile, DIRECTORY_SEPARATOR)
