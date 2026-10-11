@@ -45,7 +45,7 @@ const restoreBackup = (backup) => {
 }
 
 const viewBackup = (file) => {
-  m.route.set('/backups/view/:file', {file: file})
+  m.route.set('/backups/view/:file...', {file: file})
 }
 
 const deleteAction = (backup) => {

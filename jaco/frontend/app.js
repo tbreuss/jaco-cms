@@ -57,7 +57,7 @@ m.route(document.getElementById('app'), '/', {
       return m(DefaultLayout, m(vnode.tag))
     }
   },
-  '/backups/view/:file': {
+  '/backups/view/:file...': {
     onmatch:  () => {
       return loadComponent('backup/BackupEditView.js')
     },
