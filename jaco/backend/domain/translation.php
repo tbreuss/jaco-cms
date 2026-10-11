@@ -30,7 +30,13 @@ function load(Config $config, string $language): array
     $template = dirname(__DIR__, 2) . '/language/{language}.json';
     $path = str_replace('{language}', $language, $template);
 
-    if (is_file($path)) {
+    // the language comes from user input, so only plain language codes
+    // may reach the file system, everything else falls back to default
+    if (!preg_match('/^[a-z]{2}(-[a-z]+)?$/i', $language)) {
+        $path = '';
+    }
+
+    if ($path !== '' && is_file($path)) {
         $decoded = json_decode(file_get_contents($path), true);
         $translations[$language] = is_array($decoded) ? $decoded : [];
     } elseif ($language === $config->defaultLanguage) {

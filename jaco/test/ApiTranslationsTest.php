@@ -38,6 +38,19 @@ final class ApiTranslationsTest extends ApiTestCase
         $this->assertSame($default, $unknown);
     }
 
+    public function testTraversalAttemptFallsBackToTheDefault(): void
+    {
+        $default = (string) $this->api('translations', method: 'GET', authenticated: false)->body;
+        $traversal = (string) $this->api(
+            'translations',
+            method: 'GET',
+            authenticated: false,
+            query: ['language' => '../secret'],
+        )->body;
+
+        $this->assertSame($default, $traversal);
+    }
+
     /** @return array<string, string> */
     private function languageFile(): array
     {
