@@ -82,6 +82,34 @@ final class ApiBackupListTest extends ApiTestCase
         $this->assertSame(Status::FORBIDDEN, $response->status);
     }
 
+    public function testBackupOlderThanRetentionIsPruned(): void
+    {
+        $backup = $this->createPageBackup(self::PAGE, $this->changedPage());
+        touch(BACKUP_DIR . '/' . $backup, time() - 91 * 86400);
+
+        $response = $this->api('backup/list', method: 'GET');
+
+        $this->assertSame(Status::OK, $response->status);
+
+        $body = (array) json_decode((string) $response->body, true);
+
+        foreach ($body['items'] as $item) {
+            $this->assertNotSame($backup, $item['file']);
+        }
+        $this->assertFileDoesNotExist(BACKUP_DIR . '/' . $backup);
+    }
+
+    public function testFreshBackupSurvivesPruning(): void
+    {
+        $backup = $this->createPageBackup(self::PAGE, $this->changedPage());
+
+        $response = $this->api('backup/list', method: 'GET');
+        $body = (array) json_decode((string) $response->body, true);
+
+        $this->itemWithFile($body['items'], $backup);
+        $this->assertFileExists(BACKUP_DIR . '/' . $backup);
+    }
+
     private function changedPage(): string
     {
         return "<!DOCTYPE html>\n<html lang=\"en\"><head><title>Backup list test</title></head>"

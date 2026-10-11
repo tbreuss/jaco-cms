@@ -10,6 +10,7 @@ define('jaco\APP_VERSION', '0.1.0');
 define('jaco\APP_DIR', __DIR__);
 define('jaco\APP_DIR_NAME', basename(jaco\APP_DIR));
 define('jaco\BACKUP_DIR', __DIR__ . '/_backup');
+define('jaco\BACKUP_RETENTION_DAYS', $settings['jaco\BACKUP_RETENTION_DAYS'] ?? 90);
 define('jaco\TEMPLATE_PAGE_DIR', __DIR__ . '/_template/page');
 define('jaco\TEMPLATE_CONTENT_DIR', __DIR__ . '/_template/content');
 define('jaco\WEB_DIR', dirname(__DIR__));

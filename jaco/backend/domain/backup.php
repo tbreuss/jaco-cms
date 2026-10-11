@@ -8,6 +8,7 @@ use jaco\core\html;
 use jaco\core\list;
 
 use const jaco\BACKUP_DIR;
+use const jaco\BACKUP_RETENTION_DAYS;
 use const jaco\PAGE_EXTENSIONS;
 use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\WEB_DIR;
@@ -52,6 +53,10 @@ function find_backups(string $filteredBy, string $sortedBy): DomainPayload
     }
 
     $files = filesystem\find_files(BACKUP_DIR, array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS));
+
+    // retention is lazy: every listing drops backups older than the
+    // configured days, so no cron job is needed
+    $files = prune_old_backups($files);
 
     $sort = sort_field($sortedBy);
     $backups = create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
@@ -173,6 +178,30 @@ function create_list(array $files, string $dir, array $pageExtensions): array
         );
     }
     return $backups;
+}
+
+/**
+ * @param filesystem\File[] $files
+ * @return filesystem\File[] files within the retention period
+ */
+function prune_old_backups(array $files): array
+{
+    $days = (int) BACKUP_RETENTION_DAYS;
+
+    if ($days <= 0) {
+        return $files;
+    }
+
+    $kept = [];
+    foreach ($files as $file) {
+        if ($file->modified < time() - $days * 86400) {
+            filesystem\delete_file(BACKUP_DIR, $file->file);
+            continue;
+        }
+        $kept[] = $file;
+    }
+
+    return $kept;
 }
 
 function sort_field(string $sort): array
