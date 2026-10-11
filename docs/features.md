@@ -73,6 +73,13 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 - **The login form submits natively.** `jaco/frontend/view/LoginView.js` wraps the fields
   in a `<form>` and cancels the submit event, so RETURN and the submit button each send
   exactly one request and the page never reloads.
+- **Server errors stay English on the wire and are translated in the frontend.**
+  The backend has no per-request locale, so `detail` strings arrive in English and
+  `tError()` in `jaco/frontend/model/i18n.js` translates them for display
+  (`FormErrors.js`). A new static message needs a key in all four
+  `jaco/language/*.json` files (guarded by `jaco/test/LanguageTest.php`); a new
+  dynamic message additionally needs its English template in `errorTemplates`,
+  otherwise it falls back to English.
 
 ## Where the rules live
 
@@ -83,7 +90,7 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | Pages: list, view, copy, create, update (document and body), delete | `jaco/test/ApiPage*Test.php` |
 | Backups: list, view, restore, delete | `jaco/test/ApiBackup*Test.php` |
 | Uploads: list, delete | `jaco/test/ApiUpload*Test.php` |
-| Page templates, translations | `jaco/test/ApiTemplatePagesTest.php`, `jaco/test/ApiTranslationsTest.php` |
+| Page templates, translations | `jaco/test/ApiTemplatePagesTest.php`, `jaco/test/ApiTranslationsTest.php`, `jaco/test/LanguageTest.php` |
 | Shared base: real route table, token, fixture cleanup | `jaco/test/ApiTestCase.php` |
 | Input sanitizing and validation rules | `jaco/test/SanitizeTest.php`, `jaco/test/ValidateTest.php` |
 | HTML: sanitizing (XSS), titles, embedded images | `jaco/test/HtmlFunctionsTest.php`, `jaco/test/HtmlTitleTest.php`, `jaco/test/EmbeddedImagesTest.php` |
