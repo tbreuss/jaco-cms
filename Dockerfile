@@ -33,6 +33,7 @@ RUN apt-get update; \
     apt-get install -y --no-install-recommends \
         git \
         libfreetype6 \
+        libicu76 \
         libjpeg62-turbo \
         libpng16-16 \
         unzip \
