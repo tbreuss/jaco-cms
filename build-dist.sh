@@ -37,6 +37,7 @@ rm -f "$WORK/jaco/.php-cs-fixer.php" "$WORK/jaco/.php-cs-fixer.cache"
 rm -f "$WORK/jaco/phpunit.xml" "$WORK/jaco/.phpunit.cache" "$WORK/jaco/.phpunit.result.cache"
 rm -f "$WORK/jaco/composer.json" "$WORK/jaco/composer.lock"
 rm -f "$WORK/jaco/settings.php"
+rm -f "$WORK/jaco/api.http" "$WORK/jaco/phpstan.neon" "$WORK/jaco/rte-example.md"
 find "$WORK" -name ".DS_Store" -delete
 
 # leere Laufzeitverzeichnisse sicherstellen (braucht die App zum Schreiben)
