@@ -41,9 +41,40 @@ final class Request
             query: new Map($_GET),
             post: new Map(get_post_values()),
             server: new Map($_SERVER),
-            headers: new Map(apache_request_headers()),
+            headers: new Map(request_headers()),
         );
     }
+}
+
+/**
+ * apache_request_headers only exists with mod_php and the built-in server,
+ * parse $_SERVER so nginx and php-fpm work as well.
+ *
+ * @return array<string, string>
+ */
+function request_headers(): array
+{
+    if (function_exists('apache_request_headers')) {
+        return apache_request_headers();
+    }
+
+    $headers = [];
+    foreach ($_SERVER as $key => $value) {
+        if (is_string($key) && is_string($value) && str_starts_with($key, 'HTTP_')) {
+            $name = str_replace(' ', '-', ucwords(str_replace('_', ' ', strtolower(substr($key, 5)))));
+            $headers[$name] = $value;
+        }
+    }
+
+    if (isset($_SERVER['CONTENT_TYPE']) && is_string($_SERVER['CONTENT_TYPE'])) {
+        $headers['Content-Type'] = $_SERVER['CONTENT_TYPE'];
+    }
+
+    if (isset($_SERVER['CONTENT_LENGTH']) && is_string($_SERVER['CONTENT_LENGTH'])) {
+        $headers['Content-Length'] = $_SERVER['CONTENT_LENGTH'];
+    }
+
+    return $headers;
 }
 
 function get_post_values(): array
