@@ -477,6 +477,12 @@ fieldset .row.text-right button {
     overflow-wrap: anywhere;
 }
 
+.table th.text-right,
+.table td.text-right {
+    text-align: right;
+    padding-right: 1rem;
+}
+
 .table-log-view td {
     vertical-align: top;
 }

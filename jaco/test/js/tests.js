@@ -4,6 +4,9 @@ import {InputText} from '/jaco/frontend/component/InputText.js'
 import {FormErrors} from '/jaco/frontend/component/FormErrors.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
 import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
+import {ViewUploadView} from '/jaco/frontend/view/upload/ViewUploadView.js'
+import {UploadListModel} from '/jaco/frontend/model/UploadListModel.js'
+import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
 
 const fixture = () => document.getElementById('qunit-fixture')
 
@@ -177,4 +180,98 @@ QUnit.test('the form sends one request and shows the message from the api', (ass
     setTimeout(poll, 50)
   }
   setTimeout(poll, 50)
+})
+
+QUnit.module('ViewUploadView preview', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    UploadListModel.load = () => Promise.resolve()
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    UploadListModel.items = []
+    document.getElementById('app')?.remove()
+  }
+})
+
+const renderUploadView = (file) => {
+  m.render(fixture(), m(ViewUploadView, {file}))
+}
+
+QUnit.test('images render an inline img preview', (assert) => {
+  UploadListModel.items = [{file: 'pic.png', extension: 'png', size: 42, created: 1700000000}]
+  renderUploadView('pic.png')
+
+  const img = fixture().querySelector('img')
+  assert.ok(img, 'an img is rendered')
+  assert.strictEqual(img.getAttribute('src'), '/pic.png')
+})
+
+QUnit.test('pdfs render an embedded preview', (assert) => {
+  UploadListModel.items = [{file: 'doc.pdf', extension: 'pdf', size: 42, created: 1700000000}]
+  renderUploadView('doc.pdf')
+
+  const embed = fixture().querySelector('embed[type="application/pdf"]')
+  assert.ok(embed, 'an embed is rendered')
+  assert.strictEqual(embed.getAttribute('src'), '/doc.pdf')
+})
+
+QUnit.test('other files render a link', (assert) => {
+  UploadListModel.items = [{file: 'a.svg', extension: 'svg', size: 42, created: 1700000000}]
+  renderUploadView('a.svg')
+
+  assert.ok(fixture().querySelector('img'), 'svg counts as image')
+})
+
+QUnit.test('unknown files render a link', (assert) => {
+  UploadListModel.items = [{file: 'archive.zip', extension: 'zip', size: 42, created: 1700000000}]
+  renderUploadView('archive.zip')
+
+  const link = fixture().querySelector('a[target="_blank"]')
+  assert.ok(link, 'a link is rendered')
+  assert.strictEqual(link.getAttribute('href'), '/archive.zip')
+})
+
+QUnit.test('metadata is shown in disabled inputs', (assert) => {
+  UploadListModel.items = [{file: 'pic.png', extension: 'png', size: 1234, created: 1700000000}]
+  renderUploadView('pic.png')
+
+  const text = fixture().textContent
+  assert.ok(text.includes('pic.png'), 'the filename is shown')
+  const values = [...fixture().querySelectorAll('input')].map((el) => el.value)
+  assert.ok(values.some((v) => /1\D234/.test(v)), 'the size is formatted, got: ' + values.join(', '))
+})
+
+QUnit.module('UploadListView size column', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    UploadListModel.load = () => Promise.resolve()
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    UploadListModel.items = []
+    document.getElementById('app')?.remove()
+  }
+})
+
+QUnit.test('size shows thousands separators and is right aligned', (assert) => {
+  UploadListModel.items = [{file: 'big.png', extension: 'png', size: 1234567, created: 1700000000}]
+  UploadListModel.isLoading = false
+  m.render(fixture(), m(UploadListView))
+
+  const cells = [...fixture().querySelectorAll('tbody td')]
+  const sizeCell = cells.find((td) => td.textContent.includes('234'))
+  assert.ok(sizeCell, 'the size cell is rendered')
+  assert.ok(/^1\D234\D567$/.test(sizeCell.textContent), 'thousands separators, got: ' + sizeCell.textContent)
+  assert.ok(sizeCell.classList.contains('text-right'), 'cell right aligned')
+  const sizeHead = [...fixture().querySelectorAll('thead th')].find((th) => th.textContent.includes('Size'))
+  assert.ok(sizeHead && sizeHead.classList.contains('text-right'), 'header right aligned')
 })

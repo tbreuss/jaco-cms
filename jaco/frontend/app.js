@@ -129,7 +129,7 @@ m.route(document.getElementById('app'), '/', {
       return m(DefaultLayout, m(vnode.tag))
     }
   },
-  '/uploads/edit/:file': {
+  '/uploads/view/:file...': {
     onmatch:  () => {
       return loadComponent('upload/ViewUploadView.js')
     },

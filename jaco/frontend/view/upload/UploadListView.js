@@ -8,23 +8,24 @@ import {app} from '../../lib/app.js'
 
 const dateTime = (timestamp) => {
   const date = new Date(timestamp * 1000)
+  const pad = (n) => String(n).padStart(2, '0')
   let parts = []
-  parts.push(date.getDate().pad(2))
+  parts.push(pad(date.getDate()))
   parts.push('.')
-  parts.push((date.getMonth() + 1).pad(2))
+  parts.push(pad(date.getMonth() + 1))
   parts.push('.')
   parts.push(date.getFullYear())
   parts.push(' ')
-  parts.push(date.getHours().pad(2))
+  parts.push(pad(date.getHours()))
   parts.push(':')
-  parts.push(date.getMinutes().pad(2))
+  parts.push(pad(date.getMinutes()))
   parts.push(':')
-  parts.push(date.getSeconds().pad(2))
+  parts.push(pad(date.getSeconds()))
   return parts.join('')
 }
 
 const viewUpload = (file) => {
-  m.route.set('/upload/view/:file', {file: file})
+  m.route.set('/uploads/view/:file...', {file: file})
 }
 
 const deleteAction = (page) => {
@@ -51,7 +52,7 @@ const deleteAction = (page) => {
 const headings = [
   {field: 'file', label: 'Filename', sortable: true, default: 'asc'},
   {field: 'extension', label: 'Type', sortable: true, default: 'desc'},
-  {field: 'size', label: 'Size', sortable: true, default: 'desc'},
+  {field: 'size', label: 'Size', sortable: true, default: 'desc', align: 'right'},
   {field: 'created', label: 'Created at', sortable: true, default: 'desc'},
   {label: '', sortable: false}
 ]
@@ -61,6 +62,7 @@ const sortableHead = (headings, onclick) => {
   const [sortField, sortDir] = sort.substring(0, 1) === '-' ? [sort.substring(1), 'desc'] : [sort, 'asc']
   const markup = headings.map((heading) => {
     const label = heading.label.length ? t(heading.label) : ''
+    const align = heading.align === 'right' ? '.text-right' : ''
     if (heading.sortable) {
       let arrow = ''
       let newSort = ''
@@ -70,7 +72,7 @@ const sortableHead = (headings, onclick) => {
       } else {
         newSort = (heading.default === 'desc' ? '-' : '') + heading.field
       }
-      return m('th', m('a[href=#]', {
+      return m('th' + align, m('a[href=#]', {
         onclick: (e) => {
           e.redraw = false
           e.preventDefault()
@@ -79,7 +81,7 @@ const sortableHead = (headings, onclick) => {
         }
       }, label, arrow))
     }
-    return m('th', label)
+    return m('th' + align, label)
   })
   return markup
 }
@@ -101,6 +103,8 @@ const dataFilter = (oninput) => {
 const loadList = () => {
   UploadListModel.load()
 }
+
+const formatSize = (size) => Number(size).toLocaleString('de-CH')
 
 export const UploadListView = {
   oninit: () => {
@@ -136,7 +140,7 @@ export const UploadListView = {
             m('tbody', UploadListModel.items.map((page) => m('tr',
                 m('td', page.file),
                 m('td', page.extension),
-                m('td', page.size),
+                m('td.text-right', formatSize(page.size)),
                 m('td', dateTime(page.created)),
                 m('td.text-right.text-nowrap',
                   m(ButtonSecondary, {
