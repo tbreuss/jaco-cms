@@ -76,6 +76,7 @@ export const DefaultLayout = {
               m(m.route.Link, {href: '/pages'}, t('Pages')),
               m(m.route.Link, {href: '/uploads'}, t('Uploads')),
               m(m.route.Link, {href: '/backups'}, t('Backups')),
+              m(m.route.Link, {href: '/css'}, t('CSS')),
               m('.dropdown',
                 m('button.dropbtn', t('Diagnostics')),
                 m('.dropdown-content',

@@ -2,6 +2,7 @@ import {Input} from '/jaco/frontend/component/Input.js'
 import {InputPassword} from '/jaco/frontend/component/InputPassword.js'
 import {InputText} from '/jaco/frontend/component/InputText.js'
 import {FormErrors} from '/jaco/frontend/component/FormErrors.js'
+import {Select} from '/jaco/frontend/component/Select.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
 import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
 import {ViewUploadView} from '/jaco/frontend/view/upload/ViewUploadView.js'
@@ -65,6 +66,26 @@ QUnit.test('FormErrors renders nothing without errors and the details with error
   m.render(fixture(), m(FormErrors, {errors}))
 
   assert.ok(fixture().textContent.includes('Authentication failed.'), 'the detail is rendered')
+})
+
+QUnit.test('Select follows the value attribute', (assert) => {
+  const options = [{value: 'a.css', label: 'a.css'}, {value: 'b.css', label: 'b.css'}]
+  m.render(fixture(), m(Select, {id: 'css', prompt: 'Select an option', options, value: '', onchange: () => {}}))
+  assert.strictEqual(fixture().querySelector('select').value, '', 'prompt is shown')
+
+  m.render(fixture(), m(Select, {id: 'css', prompt: 'Select an option', options, value: 'b.css', onchange: () => {}}))
+  assert.strictEqual(fixture().querySelector('select').value, 'b.css', 'selection follows the state')
+})
+
+QUnit.test('Select shows the value when options arrive later', (assert) => {
+  const render = (options, value) => {
+    m.render(fixture(), m(Select, {id: 'late', prompt: 'Select an option', options, value, onchange: () => {}}))
+  }
+  render([], '')
+  assert.strictEqual(fixture().querySelector('select').value, '', 'prompt is shown first')
+
+  render([{value: 'style.css', label: 'style.css'}], 'style.css')
+  assert.strictEqual(fixture().querySelector('select').value, 'style.css', 'loaded file is shown, not the prompt')
 })
 
 QUnit.module('PageEditModel')

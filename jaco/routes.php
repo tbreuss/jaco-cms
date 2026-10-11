@@ -140,6 +140,28 @@ router\get(
     responseSchema: 'template/response.json',
 );
 
+router\get(
+    route: 'css/view',
+    callback: jaco\api\css\view\action(...),
+    authenticated: true,
+    responseSchema: 'css/view/response.json',
+);
+
+router\get(
+    route: 'css/list',
+    callback: jaco\api\css\files\action(...),
+    authenticated: true,
+    responseSchema: 'css/list/response.json',
+);
+
+router\post(
+    route: 'css/update',
+    callback: jaco\api\css\update\action(...),
+    authenticated: true,
+    requestSchema: 'css/update/request.json',
+    responseSchema: 'null.json',
+);
+
 router\post(
     route: 'upload/delete',
     callback: jaco\api\upload\delete\action(...),

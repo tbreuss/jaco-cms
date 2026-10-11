@@ -19,10 +19,21 @@ const selectOptions = (options) => {
   })
 }
 
+const syncValue = ({dom, attrs}) => {
+  // mithril applies the value before new options arrive, so reapply it
+  // after the children updated, otherwise the prompt stays selected
+  if (attrs.value !== undefined && dom.value !== attrs.value) {
+    dom.value = attrs.value
+  }
+}
+
 const SelectElement = {
-  view: ({attrs: {disabled, id, options, prompt, onchange}}) => m('select', {
+  view: ({attrs: {disabled, id, value, options, prompt, onchange}}) => m('select', {
     id: id,
     disabled: disabled,
+    value: value,
+    oncreate: syncValue,
+    onupdate: syncValue,
     onchange: ({target}) => {
       const index = target.selectedIndex
       onchange(target[index].value)
@@ -31,14 +42,14 @@ const SelectElement = {
 }
 
 export const Select = {
-  view: ({attrs: {disabled, wrap, label, id, options, prompt, onchange}}) =>
+  view: ({attrs: {disabled, wrap, label, id, value, options, prompt, onchange}}) =>
     wrap
       ? m(wrap,
         label && m(Label, {id}, label),
-        m(SelectElement, {disabled, id, options, prompt, onchange})
+        m(SelectElement, {disabled, id, value, options, prompt, onchange})
       )
       : (
         label && m(Label, {id}, label),
-          m(SelectElement, {disabled, id, options, prompt, onchange})
+          m(SelectElement, {disabled, id, value, options, prompt, onchange})
       )
 }

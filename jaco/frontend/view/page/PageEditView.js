@@ -112,7 +112,7 @@ export const PageEditView = {
         m(ButtonGroup, {wrap: 'div.row.text-right'},
           m(ButtonPrimary, {onclick: onSaveButtonClicked}, t('Save')),
           m(ButtonPrimary, {onclick: onSaveAndCloseButtonClicked}, t('Save & Close')),
-          m(ButtonSecondary, {onclick: onCancelButtonClicked}, t('Back'))
+          m(ButtonSecondary, {onclick: onCancelButtonClicked}, t('Cancel'))
         )
       ),
       m(FormErrors, {errors: state.errors}),
