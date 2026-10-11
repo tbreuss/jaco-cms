@@ -35,6 +35,27 @@ final class SanitizeTest extends TestCase
         $this->assertSame('', sanitize\filename(['a']));
     }
 
+    public function testNormalizeFileNameMakesNamesStorable(): void
+    {
+        $cases = [
+            'Bildschirmfoto 2026-07-21 um 06.51.53.png' => 'Bildschirmfoto-2026-07-21-um-06-51-53.png',
+            'Grüße aus Zürich.jpg' => 'Gruesse-aus-Zuerich.jpg',
+            'a  b   c.gif' => 'a-b-c.gif',
+            'UPPER case.PDF' => 'UPPER-case.PDF',
+        ];
+
+        foreach ($cases as $input => $expected) {
+            $this->assertSame($expected, sanitize\normalize_filename($input), $input);
+        }
+    }
+
+    public function testNormalizeFileNameKeepsSeparatorsForTheTraversalCheck(): void
+    {
+        $this->assertSame('a/b.png', sanitize\normalize_filename('a/b.png'));
+        $this->assertSame('', sanitize\normalize_filename(123));
+        $this->assertSame('', sanitize\normalize_filename('...'));
+    }
+
     public function testScalarSanitizers(): void
     {
         $this->assertSame(7, sanitize\integer('7abc'));

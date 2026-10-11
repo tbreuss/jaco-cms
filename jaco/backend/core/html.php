@@ -239,6 +239,7 @@ function handle_embedded_data_url_images(string $html): array
 
         // sanitize the file name to prevent path traversal
         $imgFile = data\sanitize\filename($imgFile);
+        $imgFile = data\sanitize\normalize_filename($imgFile);
 
         // only plain file names with an allowed extension may be written
         if (\str_contains($imgFile, DIRECTORY_SEPARATOR)

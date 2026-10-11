@@ -148,6 +148,13 @@ router\post(
     responseSchema: 'null.json',
 );
 
+router\post(
+    route: 'upload/create',
+    callback: jaco\api\upload\create\action(...),
+    authenticated: true,
+    responseSchema: 'upload/create/response.json',
+);
+
 router\get(
     route: 'upload/list',
     callback: jaco\api\upload\list\action(...),

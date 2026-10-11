@@ -28,6 +28,31 @@ const viewUpload = (file) => {
   m.route.set('/uploads/view/:file...', {file: file})
 }
 
+const uploadFiles = (files) => {
+  const uploads = [...files].map((file) => {
+    const body = new FormData()
+    body.append('file', file)
+    return api.post('action=upload/create', {
+      background: true, // no redraw
+      body: body,
+      withCredentials: false
+    })
+  })
+
+  Promise.all(uploads)
+    .then(() => {
+      UploadListModel.load().then(() => {
+        addSuccess(t('Upload was successfully uploaded.'))
+      })
+    })
+    .catch(({code, response}) => {
+      if (code === 422) {
+        addDanger(response[0].title)
+      }
+      m.redraw()
+    })
+}
+
 const deleteAction = (page) => {
   if (confirm(t('Do you want to delete the upload?', {name: page.file}))) {
     api.post('action=upload/delete', {
@@ -121,7 +146,26 @@ export const UploadListView = {
   },
   view: () => m('div.main',
     m('.content',
-      m('h1', t('Uploads')),
+      m('div', {style: {display: 'flex', justifyContent: 'space-between', alignItems: 'center'}},
+        m('h1', t('Uploads')),
+        m('div',
+          m(ButtonPrimary, {
+            onclick: () => {
+              const input = document.getElementById('uploadFiles')
+              if (input) {
+                input.click()
+              }
+            }
+          }, t('Upload files')),
+          m('input#uploadFiles[type=file][multiple]', {
+            style: {display: 'none'},
+            onchange: ({target}) => {
+              uploadFiles(target.files)
+              target.value = ''
+            }
+          })
+        )
+      ),
       dataFilter(loadList),
       UploadListModel.isLoading
         ? m('table.table', m('tr', m('td', t('Loading') + '...')))

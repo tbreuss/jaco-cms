@@ -256,4 +256,8 @@ QUnit.test('size shows thousands separators and is right aligned', (assert) => {
   assert.ok(sizeCell.classList.contains('text-right'), 'cell right aligned')
   const sizeHead = [...fixture().querySelectorAll('thead th')].find((th) => th.textContent.includes('Size'))
   assert.ok(sizeHead && sizeHead.classList.contains('text-right'), 'header right aligned')
+  const head = fixture().querySelector('.content > div')
+  const style = window.getComputedStyle(head)
+  assert.strictEqual(style.display, 'flex', 'header row is flex')
+  assert.strictEqual(style.justifyContent, 'space-between', 'button is right aligned')
 })

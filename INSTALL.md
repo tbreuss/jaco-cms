@@ -59,6 +59,21 @@ The PHP process must be allowed to write:
 - `upload/` in the root directory (images from the editor)
 - `jaco/runtime/log/` (error log)
 
+## File upload limits
+
+Uploads are limited by PHP, not by Jaco:
+
+- per file: `upload_max_filesize` (default 2 MB)
+- per request: `post_max_size` (default 8 MB)
+
+Oversized files are rejected with an error message. To allow larger
+files, raise the limits where PHP is configured, e.g. in `php.ini`:
+
+```ini
+upload_max_filesize = 20M
+post_max_size = 24M
+```
+
 ## 5. Mark editable regions
 
 Without markers there is nothing to edit inline (only source via Ace).

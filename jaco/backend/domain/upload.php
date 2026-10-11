@@ -8,6 +8,7 @@ use jaco\core\list;
 
 use const jaco\APP_DIR;
 use const jaco\BACKUP_DIR;
+use const jaco\UPLOAD_DIR;
 use const jaco\UPLOAD_EXTENSIONS;
 use const jaco\WEB_DIR;
 
@@ -60,6 +61,65 @@ function find_uploads(string $filteredBy, string $sortedBy): DomainPayload
         'filter' => $filteredBy,
         'sort' => $sort,
     ]);
+}
+
+/**
+ * Store an uploaded file in the upload directory. The argument is one
+ * entry of the $_FILES array. Existing files are never overwritten,
+ * a counter suffix is appended instead.
+ *
+ * @param array<string, mixed> $file
+ */
+function create_upload(array $file): DomainPayload
+{
+    $error = $file['error'] ?? UPLOAD_ERR_NO_FILE;
+
+    if ($error !== UPLOAD_ERR_OK) {
+        return DomainPayload::invalid([['file', upload_error_message((int) $error)]]);
+    }
+
+    $tmpName = isset($file['tmp_name']) && is_string($file['tmp_name']) ? $file['tmp_name'] : '';
+    $size = isset($file['size']) && is_int($file['size']) ? $file['size'] : 0;
+
+    if ($tmpName === '' || $size < 1) {
+        return DomainPayload::invalid([['file', 'The file is empty.']]);
+    }
+
+    $name = data\sanitize_one((string) ($file['name'] ?? ''), [
+        ['filename'],
+    ]);
+    $name = data\sanitize\normalize_filename($name);
+
+    $errors = data\validate_one($name, 'file', [
+        ['required'],
+        ['file_extension', 'allowedExtensions' => UPLOAD_EXTENSIONS],
+        ['html_file_name'],
+    ]);
+
+    if (count($errors) > 0) {
+        return DomainPayload::invalid($errors);
+    }
+
+    $newFile = filesystem\file_name_to_write(UPLOAD_DIR, $name);
+    $moved = \is_uploaded_file($tmpName)
+        ? \move_uploaded_file($tmpName, filesystem\combine(UPLOAD_DIR, $newFile))
+        : \rename($tmpName, filesystem\combine(UPLOAD_DIR, $newFile));
+
+    if (!$moved) {
+        return DomainPayload::error([['file', 'Could not store file.']]);
+    }
+
+    return DomainPayload::success(['file' => $newFile]);
+}
+
+function upload_error_message(int $error): string
+{
+    return match ($error) {
+        UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'The file exceeds the size limit.',
+        UPLOAD_ERR_PARTIAL => 'The file was only partially uploaded.',
+        UPLOAD_ERR_NO_FILE => 'No file was uploaded.',
+        default => 'The file could not be uploaded.',
+    };
 }
 
 function delete_upload(string $file): DomainPayload
