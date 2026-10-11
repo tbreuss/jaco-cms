@@ -25,7 +25,7 @@ jobs:
             - name: Run PHPUnit
               run: docker run --rm -v $(pwd)/jaco:/app jitesoft/phpunit
             - name: Set up Node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v5
               with:
                   node-version: 22
             - name: Run QUnit tests
