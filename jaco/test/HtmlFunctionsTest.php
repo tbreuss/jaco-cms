@@ -60,6 +60,11 @@ final class HtmlFunctionsTest extends TestCase
         if (filesystem\dir_exists($config->backupDir, 'test')) {
             filesystem\remove_dir_rec($config->backupDir, 'test');
         }
+        // page backups are stored flat with "|" instead of "/", so the
+        // backup of test/xss.html has to be removed by file name
+        foreach ((array) glob($config->backupDir . '/*test|xss.html') as $backup) {
+            @unlink($backup);
+        }
     }
 
     public function testDangerousHtmlIsRemoved(): void

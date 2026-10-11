@@ -13,6 +13,11 @@
             "autoload.php"
         ]
     },
+    "config": {
+        "platform": {
+            "php": "8.2"
+        }
+    },
     "require-dev": {
         "phpunit/phpunit": "^11.5",
         "phpstan/phpstan": "^2.3",

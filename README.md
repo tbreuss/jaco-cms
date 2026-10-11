@@ -40,24 +40,24 @@ Debug website using Xdebug
 
 ### Static Code Analyses & Unit Tests
 
-The dev tools are Composer dev dependencies (`composer install` inside `jaco/`
-installs them); run them from the repository root:
+The dev tools are Composer dev dependencies; inside Docker they run through
+the image built above (which already contains the installed packages):
 
 PHP CS Fixer (check only, `cs-fix` to fix)
 
-    composer cs-check --working-dir jaco
+    docker run --rm -v .:/app jaco composer cs-check -d /app/jaco
 
 PHPStan
 
-    composer phpstan --working-dir jaco
+    docker run --rm -v .:/app jaco composer phpstan -d /app/jaco
 
 PHPUnit (extra options after `--`, e.g. `-- --filter AuthTest`)
 
-    composer test --working-dir jaco
+    docker run --rm -v .:/app jaco composer test -d /app/jaco
 
 Everything at once
 
-    composer check --working-dir jaco
+    docker run --rm -v .:/app jaco composer check -d /app/jaco
 
 QUnit (frontend, runs in headless Chrome, needs node >= 22)
 
