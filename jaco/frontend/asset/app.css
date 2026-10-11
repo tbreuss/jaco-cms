@@ -490,6 +490,11 @@ fieldset .row.text-right button {
     white-space: pre;
 }
 
+.table-system-view td:first-child {
+    white-space: nowrap;
+    padding-right: 1rem;
+}
+
 .errors {
     color: #cc3333;
     border: 1px solid #cc8888;

@@ -5,7 +5,7 @@ import {app} from '../lib/app.js'
 const keyValueTable = (title, object) => object
   ? m('div',
     m('h2', title),
-    m('table.table',
+    m('table.table.table-system-view',
       m('thead', m('tr', m('th', t('Name')), m('th', t('Value')))),
       m('tbody', Object.entries(object).map((constant) => m('tr',
           m('td', constant[0]),
@@ -18,7 +18,7 @@ const keyValueTable = (title, object) => object
 const listTable = (title, array) => array
   ? m('div',
     m('h2', title),
-    m('table.table',
+    m('table.table.table-system-view',
       m('thead', m('tr', m('th', t('Name')))),
       m('tbody', array.map((constant) => m('tr',
           m('td', constant)
