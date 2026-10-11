@@ -38,6 +38,28 @@ final class ApiTranslationsTest extends ApiTestCase
         $this->assertSame($default, $unknown);
     }
 
+    public function testDefaultLanguageIsConfigurable(): void
+    {
+        $config = test_config_with(['defaultLanguage' => 'de']);
+
+        $response = $this->api('translations', method: 'GET', authenticated: false, config: $config);
+
+        $this->assertSame(Status::OK, $response->status);
+
+        $body = (array) json_decode((string) $response->body, true);
+        $this->assertSame('Seiten', $body['Pages']);
+        $this->assertSame('Anmelden', $body['Login']);
+    }
+
+    public function testMissingDefaultLanguageFallsBackToItself(): void
+    {
+        $config = test_config_with(['defaultLanguage' => 'xx']);
+
+        $response = $this->api('translations', method: 'GET', authenticated: false, config: $config);
+
+        $this->assertSame(Status::OK, $response->status);
+    }
+
     public function testTraversalAttemptFallsBackToTheDefault(): void
     {
         $default = (string) $this->api('translations', method: 'GET', authenticated: false)->body;

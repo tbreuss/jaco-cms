@@ -2,36 +2,29 @@
 
 import {api} from '../service/api.js'
 
-const defaultLocale = 'en'
-
-const loadAndSetLocale = (newLocale) => {
-  if (i18n.currentLocale === newLocale) {
-    return
-  }
-
+const loadAndSetLocale = () => {
   i18n.status = 'loading'
 
-  fetchMessages(newLocale, (data) => {
-    i18n.messages = data
-    i18n.currentLocale = newLocale
-    i18n.status = 'idle'
-  })
-}
-
-const fetchMessages = (locale, onComplete) => {
-  api.get('translations', {language: locale}).then(
-    onComplete,
+  // no language parameter: the api serves the configured default language
+  api.get('translations').then(
+    (data) => {
+      i18n.messages = data
+      i18n.currentLocale = ''
+      i18n.status = 'idle'
+    },
   )
 }
 
 export const i18n = {
-  defaultLocale,
   currentLocale: '',
   messages: {}, // loadAndSetLocale() populates these
   status: 'loading',
   t,
   loadAndSetLocale,
 }
+
+// the app locale follows the ui language
+loadAndSetLocale()
 
 export function t(key, placeholders = null) {
   let t = i18n.messages[key] || '{' + key + '}'

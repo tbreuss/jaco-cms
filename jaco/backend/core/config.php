@@ -54,7 +54,7 @@ function default_config(string $appDir, array $settings = []): Config
         uploadUrl: 'upload',
         pageExtensions: ['htm', 'html'],
         defaultPage: 'index.html',
-        defaultLanguage: 'en',
+        defaultLanguage: (string) ($settings['jaco\DEFAULT_LANGUAGE'] ?? 'en'),
         directoryPermissions: 0755,
         filePermissions: 0644,
         secretKey: (string) ($settings['jaco\SECRET_KEY'] ?? openssl_random_pseudo_bytes(32)),

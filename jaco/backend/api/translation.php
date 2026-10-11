@@ -15,13 +15,13 @@ function action(Config $config, Request $request): Response
 {
     $payload = load_translations(
         $config,
-        forLanguage: $request->query->strVal('language', 'en'),
+        forLanguage: $request->query->strVal('language', $config->defaultLanguage),
     );
 
-    return responder($payload);
+    return responder($config, $payload);
 }
 
-function responder(Payload $payload): Response
+function responder(Config $config, Payload $payload): Response
 {
     if ($payload->isSuccess) {
         // translations are a map, encode an empty list as an empty object

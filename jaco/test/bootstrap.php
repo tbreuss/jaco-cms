@@ -43,3 +43,18 @@ function test_config(): Config
         backupRetentionDays: 90,
     );
 }
+
+/**
+ * @param array<string, mixed> $overrides
+ */
+function test_config_with(array $overrides): Config
+{
+    $values = get_object_vars(test_config());
+    foreach ($overrides as $key => $value) {
+        if (!array_key_exists($key, $values)) {
+            throw new \InvalidArgumentException("Unknown config key: $key");
+        }
+        $values[$key] = $value;
+    }
+    return new Config(...$values);
+}

@@ -32,7 +32,7 @@ function load(Config $config, string $language): array
 
     // the language comes from user input, so only plain language codes
     // may reach the file system, everything else falls back to default
-    if (!preg_match('/^[a-z]{2}(-[a-z]+)?$/i', $language)) {
+    if (!preg_match('/^[a-z]{2}$/i', $language)) {
         $path = '';
     }
 
