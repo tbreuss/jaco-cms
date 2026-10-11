@@ -54,6 +54,26 @@ final class ApiPageViewTest extends ApiTestCase
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
     }
 
+    public function testPageInSubdirectoryIsReturned(): void
+    {
+        $dir = WEB_DIR . '/api-view-sub';
+        @mkdir($dir);
+        file_put_contents($dir . '/deep.html', self::CONTENT);
+
+        try {
+            $response = $this->api('page/view', method: 'GET', query: ['file' => 'api-view-sub/deep.html']);
+
+            $this->assertSame(Status::OK, $response->status);
+
+            $body = (array) json_decode((string) $response->body, true);
+            $this->assertSame('api-view-sub/deep.html', $body['file']);
+            $this->assertSame(self::CONTENT, $body['content']);
+        } finally {
+            @unlink($dir . '/deep.html');
+            @rmdir($dir);
+        }
+    }
+
     public function testPageInTheAppDirIsNotReadable(): void
     {
         $protected = APP_DIR . '/api-view-protected.html';

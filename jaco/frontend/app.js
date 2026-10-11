@@ -73,7 +73,7 @@ m.route(document.getElementById('app'), '/', {
       return m(DefaultLayout, m(vnode.tag))
     }
   },
-  '/pages/edit/:file': {
+  '/pages/edit/:file...': {
     onmatch:  () => {
       return loadComponent('page/PageEditView.js')
     },

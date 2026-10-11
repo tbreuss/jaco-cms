@@ -24,7 +24,7 @@ const dateTime = (timestamp) => {
 }
 
 const editPage = (file) => {
-  m.route.set('/pages/edit/:file', {file: file})
+  m.route.set('/pages/edit/:file...', {file: file})
 }
 
 const deleteAction = (page) => {
