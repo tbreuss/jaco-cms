@@ -36,7 +36,7 @@ final class AuthTest extends TestCase
         $parts = explode('.', $token);
         $header = json_decode((string) base64_decode(strtr($parts[0], '-_', '+/'), true), true);
 
-        $this->assertSame(auth\JWT_ALGORITHM, $header['alg']);
+        $this->assertSame(auth\TOKEN_ALGORITHM, $header['alg']);
     }
 
     public function testTokenIsValidForTheConfiguredDuration(): void
@@ -150,8 +150,8 @@ final class AuthTest extends TestCase
         $now = time();
 
         $payload = array_merge([
-            'iss' => auth\ISSUER,
-            'aud' => auth\AUDIENCE,
+            'iss' => auth\TOKEN_ISSUER,
+            'aud' => auth\TOKEN_AUDIENCE,
             'iat' => $now,
             'nbf' => $now,
             'exp' => $now + 3600,
@@ -159,7 +159,7 @@ final class AuthTest extends TestCase
             'admin' => true,
         ], $claims);
 
-        return JWT::encode($payload, $secret, auth\JWT_ALGORITHM);
+        return JWT::encode($payload, $secret, auth\TOKEN_ALGORITHM);
     }
 
     private function tokenWithoutAdminClaim(): string
@@ -167,12 +167,12 @@ final class AuthTest extends TestCase
         $now = time();
 
         return JWT::encode([
-            'iss' => auth\ISSUER,
-            'aud' => auth\AUDIENCE,
+            'iss' => auth\TOKEN_ISSUER,
+            'aud' => auth\TOKEN_AUDIENCE,
             'iat' => $now,
             'nbf' => $now,
             'exp' => $now + 3600,
             'user' => USERNAME,
-        ], SECRET_KEY, auth\JWT_ALGORITHM);
+        ], SECRET_KEY, auth\TOKEN_ALGORITHM);
     }
 }

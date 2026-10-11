@@ -149,6 +149,9 @@ QUnit.test('the form sends one request and shows the message from the api', (ass
     if (errors) {
       assert.strictEqual(calls.length, 1, 'exactly one login request')
       assert.ok(errors.textContent.includes('Authentication failed'), 'the api message is shown')
+      assert.strictEqual(fixture().querySelector('#username').value, '', 'username is cleared')
+      assert.strictEqual(fixture().querySelector('#password').value, '', 'password is cleared')
+      assert.strictEqual(document.activeElement.id, 'username', 'focus is back on username')
       finish(null)
       return
     }

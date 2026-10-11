@@ -20,20 +20,28 @@ const login = () => {
     password: state.password
   }
 
+  const clear = () => {
+    state.username = ''
+    state.password = ''
+  }
+
   api.post('action=login', {
     background: true, // no redraw
     body: credentials,
     withCredentials: false
   })
     .then((data) => {
+      clear()
       app.setAuthToken(data.token)
       m.route.set('/')
     })
     .catch(({code, response}) => {
+      clear()
       if (code === 422) {
         state.errors = response
       }
       m.redraw()
+      document.getElementById('username')?.focus()
     })
 }
 

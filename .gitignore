@@ -6,6 +6,7 @@
 /jaco/.phpunit.result.cache
 /jaco/settings.php
 /jaco/vendor
+/jaco/test/runtime
 /inspiration
 /test
 /upload

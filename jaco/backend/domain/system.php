@@ -30,11 +30,30 @@ function authenticate_user(string $username, string $withPassword): DomainPayloa
         return DomainPayload::invalid($errors);
     }
 
+    // strict: a block rejects everything without looking at credentials.
+    // blocked attempts still count, so persistent guessing reaches the
+    // permanent block instead of stalling the counter at the temp limit.
+    $blocked = auth\login_blocked();
+
+    if ($blocked === PHP_INT_MAX) {
+        auth\record_login_failure();
+        return DomainPayload::invalid([['', 'Login blocked. Contact the administrator.']]);
+    }
+
+    if ($blocked > 0) {
+        auth\record_login_failure();
+        $minutes = (int) ceil($blocked / 60);
+        return DomainPayload::invalid([['', 'Too many attempts. Try again in ' . $minutes . ' minute(s).']]);
+    }
+
     $token = auth\authenticate($username, $withPassword);
 
     if ($token === null) {
+        auth\record_login_failure();
         return DomainPayload::invalid([['', 'Authentication failed.']]);
     }
+
+    auth\record_login_success();
 
     return DomainPayload::success(['token' => $token]);
 }
