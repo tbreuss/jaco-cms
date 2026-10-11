@@ -3,7 +3,7 @@
 namespace jaco\cli\auth\token;
 
 use jaco\core\config\Config;
-use jaco\domain\system\DomainPayload;
+use jaco\domain\Payload;
 
 use function jaco\core\responder\cli_errors;
 use function jaco\domain\system\authenticate_user;
@@ -19,7 +19,7 @@ function command(Config $config, string $user, string $pass): void
     responder($payload, $user);
 }
 
-function responder(DomainPayload $payload, string $user): void
+function responder(Payload $payload, string $user): void
 {
     if ($payload->isSuccess) {
         fwrite(STDOUT, sprintf('The token for user "%s" is:', $user) . PHP_EOL);

@@ -7,6 +7,7 @@ use jaco\core\data;
 use jaco\core\filesystem;
 use jaco\core\html;
 use jaco\core\list;
+use jaco\domain\Payload;
 
 const SORT_PARAMETERS = ['backedUp', 'created', 'name', 'title', 'type'];
 
@@ -23,9 +24,8 @@ final class Backup
     ) {}
 }
 
-final class DomainPayload extends \jaco\domain\Payload {}
 
-function find_backups(Config $config, string $filteredBy, string $sortedBy): DomainPayload
+function find_backups(Config $config, string $filteredBy, string $sortedBy): Payload
 {
     $errors = data\validate(
         [
@@ -40,11 +40,11 @@ function find_backups(Config $config, string $filteredBy, string $sortedBy): Dom
     );
 
     if (count($errors) > 0) {
-        return DomainPayload::invalid($errors);
+        return Payload::invalid($errors);
     }
 
     if (!filesystem\dir_exists($config->backupDir)) {
-        return DomainPayload::error([['', 'Dir does not exist.']]);
+        return Payload::error([['', 'Dir does not exist.']]);
     }
 
     $files = filesystem\find_files($config->backupDir, array_merge($config->uploadExtensions, $config->pageExtensions));
@@ -58,14 +58,14 @@ function find_backups(Config $config, string $filteredBy, string $sortedBy): Dom
     $backups = list\filter_list($backups, $filteredBy);
     $backups = list\sort_list($backups, $sort);
 
-    return DomainPayload::success([
+    return Payload::success([
         'items' => $backups,
         'filter' => $filteredBy,
         'sort' => $sort,
     ]);
 }
 
-function find_backup(Config $config, string $file): DomainPayload
+function find_backup(Config $config, string $file): Payload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -79,18 +79,18 @@ function find_backup(Config $config, string $file): DomainPayload
     ]);
 
     if (count($errors) > 0) {
-        return DomainPayload::invalid($errors);
+        return Payload::invalid($errors);
     }
 
     $content = filesystem\read_file($config->backupDir, $file);
 
     if ($content === null) {
-        return DomainPayload::error([['file', 'Could not read file.']]);
+        return Payload::error([['file', 'Could not read file.']]);
     }
 
     $extension = \pathinfo($file, PATHINFO_EXTENSION);
     $type = in_array($extension, $config->pageExtensions) ? 'page' : 'upload';
-    return DomainPayload::success(
+    return Payload::success(
         (array) new Backup(
             $file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file, filesystem\BACKUP_NAME_PREFIX_LENGTH)),
@@ -103,7 +103,7 @@ function find_backup(Config $config, string $file): DomainPayload
     );
 }
 
-function restore_backup(Config $config, string $file): DomainPayload
+function restore_backup(Config $config, string $file): Payload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -117,19 +117,19 @@ function restore_backup(Config $config, string $file): DomainPayload
     ]);
 
     if (count($errors) > 0) {
-        return DomainPayload::invalid($errors);
+        return Payload::invalid($errors);
     }
 
     $status = filesystem\restore_file($config, $config->backupDir, $file, $config->webDir);
 
     if (!$status) {
-        return DomainPayload::error([['file', 'Could not restore file.']]);
+        return Payload::error([['file', 'Could not restore file.']]);
     }
 
-    return DomainPayload::success();
+    return Payload::success();
 }
 
-function delete_backup(Config $config, string $file): DomainPayload
+function delete_backup(Config $config, string $file): Payload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -141,16 +141,16 @@ function delete_backup(Config $config, string $file): DomainPayload
     ]);
 
     if (count($errors) > 0) {
-        return DomainPayload::invalid($errors);
+        return Payload::invalid($errors);
     }
 
     $status = filesystem\delete_file($config->backupDir, $file);
 
     if (!$status) {
-        return DomainPayload::error([['file', 'Could not delete file.']]);
+        return Payload::error([['file', 'Could not delete file.']]);
     }
 
-    return DomainPayload::success();
+    return Payload::success();
 }
 
 /**

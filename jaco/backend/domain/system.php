@@ -6,10 +6,9 @@ use jaco\core\auth;
 use jaco\core\config\Config;
 use jaco\core\data;
 use jaco\core\system;
+use jaco\domain\Payload;
 
-final class DomainPayload extends \jaco\domain\Payload {}
-
-function authenticate_user(Config $config, string $username, string $withPassword): DomainPayload
+function authenticate_user(Config $config, string $username, string $withPassword): Payload
 {
     $errors = data\validate(
         [
@@ -25,7 +24,7 @@ function authenticate_user(Config $config, string $username, string $withPasswor
     );
 
     if (count($errors) > 0) {
-        return DomainPayload::invalid($errors);
+        return Payload::invalid($errors);
     }
 
     // strict: a block rejects everything without looking at credentials.
@@ -35,40 +34,40 @@ function authenticate_user(Config $config, string $username, string $withPasswor
 
     if ($blocked === PHP_INT_MAX) {
         auth\record_login_failure($config);
-        return DomainPayload::invalid([['', 'Login blocked. Contact the administrator.']]);
+        return Payload::invalid([['', 'Login blocked. Contact the administrator.']]);
     }
 
     if ($blocked > 0) {
         auth\record_login_failure($config);
         $minutes = (int) ceil($blocked / 60);
-        return DomainPayload::invalid([['', 'Too many attempts. Try again in ' . $minutes . ' minute(s).']]);
+        return Payload::invalid([['', 'Too many attempts. Try again in ' . $minutes . ' minute(s).']]);
     }
 
     $token = auth\authenticate($config, $username, $withPassword);
 
     if ($token === null) {
         auth\record_login_failure($config);
-        return DomainPayload::invalid([['', 'Authentication failed.']]);
+        return Payload::invalid([['', 'Authentication failed.']]);
     }
 
     auth\record_login_success($config);
 
-    return DomainPayload::success(['token' => $token]);
+    return Payload::success(['token' => $token]);
 }
 
-function get_environment(Config $config): DomainPayload
+function get_environment(Config $config): Payload
 {
-    return DomainPayload::success([
+    return Payload::success([
         'classes' => system\defined_classes(),
         'constants' => system\defined_constants($config),
         'functions' => system\defined_functions(),
     ]);
 }
 
-function get_log_entries(Config $config, int $size = 100): DomainPayload
+function get_log_entries(Config $config, int $size = 100): Payload
 {
     if ($size < 1) {
-        return DomainPayload::success([]);
+        return Payload::success([]);
     }
 
     $lines = [];
@@ -100,10 +99,10 @@ function get_log_entries(Config $config, int $size = 100): DomainPayload
         \fclose($fp);
     }
 
-    return DomainPayload::success($lines);
+    return Payload::success($lines);
 }
 
-function get_phpinfo(): DomainPayload
+function get_phpinfo(): Payload
 {
     \ob_start();
     \phpinfo();
@@ -113,15 +112,15 @@ function get_phpinfo(): DomainPayload
     \preg_match("/<body[^>]*>(.*?)<\/body>/is", $data, $matches);
 
     if (!isset($matches[1])) {
-        return DomainPayload::error([['', 'Could not parse phpinfo output.']]);
+        return Payload::error([['', 'Could not parse phpinfo output.']]);
     }
 
-    return DomainPayload::success($matches[1]);
+    return Payload::success($matches[1]);
 }
 
-function get_version(Config $config): DomainPayload
+function get_version(Config $config): Payload
 {
-    return DomainPayload::success([
+    return Payload::success([
         'name' => 'jaco',
         'version' => $config->appVersion,
     ]);

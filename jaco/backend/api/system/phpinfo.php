@@ -4,7 +4,7 @@ namespace jaco\api\system\phpinfo;
 
 use jaco\core\config\Config;
 use jaco\core\http\Response;
-use jaco\domain\system\DomainPayload;
+use jaco\domain\Payload;
 
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
@@ -17,7 +17,7 @@ function action(Config $config): Response
     return responder($payload);
 }
 
-function responder(DomainPayload $payload): Response
+function responder(Payload $payload): Response
 {
     if ($payload->isSuccess) {
         return json_response([

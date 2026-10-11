@@ -3,21 +3,20 @@
 namespace jaco\domain\translation;
 
 use jaco\core\config\Config;
+use jaco\domain\Payload;
 
-final class DomainPayload extends \jaco\domain\Payload {}
-
-function load_translations(Config $config, string $forLanguage): DomainPayload
+function load_translations(Config $config, string $forLanguage): Payload
 {
     $translations = load($config, $forLanguage);
 
-    return DomainPayload::success($translations);
+    return Payload::success($translations);
 }
 
-function load_translation(Config $config, string $forLanguage, string $withKey): DomainPayload
+function load_translation(Config $config, string $forLanguage, string $withKey): Payload
 {
     $translations = load($config, $forLanguage);
 
-    return DomainPayload::success($translations[$withKey] ?? $withKey);
+    return Payload::success($translations[$withKey] ?? $withKey);
 }
 
 function load(Config $config, string $language): array

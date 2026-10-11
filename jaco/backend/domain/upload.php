@@ -6,6 +6,7 @@ use jaco\core\config\Config;
 use jaco\core\data;
 use jaco\core\filesystem;
 use jaco\core\list;
+use jaco\domain\Payload;
 
 const SORT_PARAMETERS = ['file', 'extension', 'size', 'created'];
 
@@ -20,9 +21,8 @@ final class Upload
     ) {}
 }
 
-final class DomainPayload extends \jaco\domain\Payload {}
 
-function find_uploads(Config $config, string $filteredBy, string $sortedBy): DomainPayload
+function find_uploads(Config $config, string $filteredBy, string $sortedBy): Payload
 {
     $errors = data\validate(
         [
@@ -37,11 +37,11 @@ function find_uploads(Config $config, string $filteredBy, string $sortedBy): Dom
     );
 
     if (count($errors) > 0) {
-        return DomainPayload::invalid($errors);
+        return Payload::invalid($errors);
     }
 
     if (!filesystem\dir_exists($config->webDir)) {
-        return DomainPayload::error([['', 'Dir does not exist.']]);
+        return Payload::error([['', 'Dir does not exist.']]);
     }
 
     $files = filesystem\find_files_rec($config->webDir, $config->uploadExtensions, [$config->appDir]);
@@ -51,7 +51,7 @@ function find_uploads(Config $config, string $filteredBy, string $sortedBy): Dom
     $uploads = list\filter_list($uploads, $filteredBy);
     $uploads = list\sort_list($uploads, $sort);
 
-    return DomainPayload::success([
+    return Payload::success([
         'items' => $uploads,
         'filter' => $filteredBy,
         'sort' => $sort,
@@ -65,19 +65,19 @@ function find_uploads(Config $config, string $filteredBy, string $sortedBy): Dom
  *
  * @param array<string, mixed> $file
  */
-function create_upload(Config $config, array $file): DomainPayload
+function create_upload(Config $config, array $file): Payload
 {
     $error = $file['error'] ?? UPLOAD_ERR_NO_FILE;
 
     if ($error !== UPLOAD_ERR_OK) {
-        return DomainPayload::invalid([['file', upload_error_message((int) $error)]]);
+        return Payload::invalid([['file', upload_error_message((int) $error)]]);
     }
 
     $tmpName = isset($file['tmp_name']) && is_string($file['tmp_name']) ? $file['tmp_name'] : '';
     $size = isset($file['size']) && is_int($file['size']) ? $file['size'] : 0;
 
     if ($tmpName === '' || $size < 1) {
-        return DomainPayload::invalid([['file', 'The file is empty.']]);
+        return Payload::invalid([['file', 'The file is empty.']]);
     }
 
     $name = data\sanitize_one((string) ($file['name'] ?? ''), [
@@ -92,7 +92,7 @@ function create_upload(Config $config, array $file): DomainPayload
     ]);
 
     if (count($errors) > 0) {
-        return DomainPayload::invalid($errors);
+        return Payload::invalid($errors);
     }
 
     $newFile = filesystem\file_name_to_write($config->uploadDir, $name);
@@ -101,10 +101,10 @@ function create_upload(Config $config, array $file): DomainPayload
         : \rename($tmpName, filesystem\combine($config->uploadDir, $newFile));
 
     if (!$moved) {
-        return DomainPayload::error([['file', 'Could not store file.']]);
+        return Payload::error([['file', 'Could not store file.']]);
     }
 
-    return DomainPayload::success(['file' => $newFile]);
+    return Payload::success(['file' => $newFile]);
 }
 
 function upload_error_message(int $error): string
@@ -117,7 +117,7 @@ function upload_error_message(int $error): string
     };
 }
 
-function delete_upload(Config $config, string $file): DomainPayload
+function delete_upload(Config $config, string $file): Payload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -132,22 +132,22 @@ function delete_upload(Config $config, string $file): DomainPayload
     ]);
 
     if (count($errors) > 0) {
-        return DomainPayload::invalid($errors);
+        return Payload::invalid($errors);
     }
 
     $status = filesystem\backup_file($config->webDir, $file, $config->backupDir);
 
     if (!$status) {
-        return DomainPayload::error([['file', 'Could not backup file.']]);
+        return Payload::error([['file', 'Could not backup file.']]);
     }
 
     $status = filesystem\delete_file($config->webDir, $file);
 
     if (!$status) {
-        return DomainPayload::error([['file', 'Could not delete file.']]);
+        return Payload::error([['file', 'Could not delete file.']]);
     }
 
-    return DomainPayload::success();
+    return Payload::success();
 }
 
 /**

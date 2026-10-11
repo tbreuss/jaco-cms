@@ -5,8 +5,7 @@ namespace jaco\domain\css;
 use jaco\core\config\Config;
 use jaco\core\data;
 use jaco\core\filesystem;
-
-final class DomainPayload extends \jaco\domain\Payload {}
+use jaco\domain\Payload;
 
 final class Stylesheet
 {
@@ -16,16 +15,16 @@ final class Stylesheet
     ) {}
 }
 
-function find_css_files(Config $config): DomainPayload
+function find_css_files(Config $config): Payload
 {
     if (!filesystem\dir_exists($config->webDir)) {
-        return DomainPayload::error([['', 'Dir does not exist.']]);
+        return Payload::error([['', 'Dir does not exist.']]);
     }
 
     // backups and the inspiration snapshots are no site stylesheets
     $files = filesystem\find_files_rec($config->webDir, ['css'], [$config->appDir, $config->backupDir, 'inspiration']);
 
-    return DomainPayload::success(
+    return Payload::success(
         array_map(fn(filesystem\File $file): Stylesheet => new Stylesheet(
             file: $file->file,
             created: $file->modified,
@@ -52,28 +51,28 @@ function validated_file(Config $config, string $file): array
     return [$file, $errors];
 }
 
-function find_css(Config $config, string $file): DomainPayload
+function find_css(Config $config, string $file): Payload
 {
     [$file, $errors] = validated_file($config, $file);
 
     if (count($errors) > 0) {
-        return DomainPayload::invalid($errors);
+        return Payload::invalid($errors);
     }
 
     $css = filesystem\read_file($config->webDir, $file);
 
     if ($css === null) {
-        return DomainPayload::error([['file', 'Could not read file.']]);
+        return Payload::error([['file', 'Could not read file.']]);
     }
 
-    return DomainPayload::success([
+    return Payload::success([
         'file' => $file,
         'created' => filesystem\file_mtime($file, $config->webDir),
         'content' => $css,
     ]);
 }
 
-function update_css(Config $config, string $file, string $withContent): DomainPayload
+function update_css(Config $config, string $file, string $withContent): Payload
 {
     [$file, $errors] = validated_file($config, $file);
 
@@ -83,13 +82,13 @@ function update_css(Config $config, string $file, string $withContent): DomainPa
     ]));
 
     if (count($errors) > 0) {
-        return DomainPayload::invalid($errors);
+        return Payload::invalid($errors);
     }
 
     $status = filesystem\backup_file($config->webDir, $file, $config->backupDir);
 
     if (!$status) {
-        return DomainPayload::error([['file', 'Could not backup file.']]);
+        return Payload::error([['file', 'Could not backup file.']]);
     }
 
     // stylesheets are no HTML documents: sanitize_html would destroy them,
@@ -97,8 +96,8 @@ function update_css(Config $config, string $file, string $withContent): DomainPa
     $status = filesystem\write_file($config, $config->webDir, $file, $withContent);
 
     if (!$status) {
-        return DomainPayload::error([['file', 'Could not write content to file.']]);
+        return Payload::error([['file', 'Could not write content to file.']]);
     }
 
-    return DomainPayload::success();
+    return Payload::success();
 }

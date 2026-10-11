@@ -5,6 +5,7 @@ namespace jaco\tests;
 use PHPUnit\Framework\TestCase;
 use jaco\core\http\Status;
 use jaco\core\responder;
+use jaco\domain\Payload;
 use jaco\domain\page;
 
 /**
@@ -36,7 +37,7 @@ final class ResponderMappingTest extends TestCase
 
     public function testInvalidPayloadBecomesA422Response(): void
     {
-        $payload = page\DomainPayload::invalid([['file', 'Could not write file.']]);
+        $payload = Payload::invalid([['file', 'Could not write file.']]);
 
         $response = responder\api_errors($payload, ['file' => 'fileName']);
 
@@ -50,7 +51,7 @@ final class ResponderMappingTest extends TestCase
 
     public function testErrorPayloadBecomesA500Response(): void
     {
-        $payload = page\DomainPayload::error([['file', 'Could not backup file.']]);
+        $payload = Payload::error([['file', 'Could not backup file.']]);
 
         $response = responder\api_errors($payload, []);
 
@@ -62,7 +63,7 @@ final class ResponderMappingTest extends TestCase
 
     public function testSuccessPayloadHasNoErrorRepresentation(): void
     {
-        $response = responder\api_errors(page\DomainPayload::success(), []);
+        $response = responder\api_errors(Payload::success(), []);
 
         $this->assertSame(Status::INTERNAL_SERVER_ERROR, $response->status);
 

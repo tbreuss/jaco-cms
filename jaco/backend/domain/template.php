@@ -5,8 +5,7 @@ namespace jaco\domain\template;
 use jaco\core\config\Config;
 use jaco\core\filesystem;
 use jaco\core\html;
-
-final class DomainPayload extends \jaco\domain\Payload {}
+use jaco\domain\Payload;
 
 final class Template
 {
@@ -17,10 +16,10 @@ final class Template
     ) {}
 }
 
-function find_page_templates(Config $config): DomainPayload
+function find_page_templates(Config $config): Payload
 {
     if (!filesystem\dir_exists($config->templatePageDir)) {
-        return DomainPayload::error([['', 'Dir does not exist.']]);
+        return Payload::error([['', 'Dir does not exist.']]);
     }
 
     $files = filesystem\find_files(
@@ -29,7 +28,7 @@ function find_page_templates(Config $config): DomainPayload
         withContent: true,
     );
 
-    return DomainPayload::success(
+    return Payload::success(
         array_map(fn(filesystem\File $file): Template => new Template(
             file: $file->file,
             title: html\get_title($file->content),
@@ -38,7 +37,7 @@ function find_page_templates(Config $config): DomainPayload
     );
 }
 
-function find_content_templates(): DomainPayload
+function find_content_templates(): Payload
 {
-    return DomainPayload::error([['', 'TODO: implement this.']]); // TODO
+    return Payload::error([['', 'TODO: implement this.']]); // TODO
 }

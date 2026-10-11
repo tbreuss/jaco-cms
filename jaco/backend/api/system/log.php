@@ -4,7 +4,7 @@ namespace jaco\api\system\log;
 
 use jaco\core\config\Config;
 use jaco\core\http\Response;
-use jaco\domain\system\DomainPayload;
+use jaco\domain\Payload;
 
 use function jaco\core\http\json_response;
 use function jaco\domain\system\get_log_entries;
@@ -19,7 +19,7 @@ function action(Config $config): Response
     return responder($payload);
 }
 
-function responder(DomainPayload $payload): Response
+function responder(Payload $payload): Response
 {
     return json_response($payload->data);
 }

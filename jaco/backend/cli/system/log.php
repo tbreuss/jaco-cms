@@ -3,7 +3,7 @@
 namespace jaco\cli\system\log;
 
 use jaco\core\config\Config;
-use jaco\domain\system\DomainPayload;
+use jaco\domain\Payload;
 
 use function jaco\domain\system\get_log_entries;
 
@@ -17,7 +17,7 @@ function command(Config $config, int $size): void
     responder($payload);
 }
 
-function responder(DomainPayload $payload): void
+function responder(Payload $payload): void
 {
     foreach ($payload->data as $line) {
         echo $line . PHP_EOL;

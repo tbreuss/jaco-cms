@@ -5,7 +5,7 @@ namespace jaco\api\upload\create;
 use jaco\core\config\Config;
 use jaco\core\http\Request;
 use jaco\core\http\Response;
-use jaco\domain\upload\DomainPayload;
+use jaco\domain\Payload;
 
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
@@ -29,7 +29,7 @@ function action(Config $config, Request $request): Response
     return responder($payload);
 }
 
-function responder(DomainPayload $payload): Response
+function responder(Payload $payload): Response
 {
     if ($payload->isSuccess) {
         return json_response([
