@@ -2,13 +2,12 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\auth;
 use jaco\domain\system;
 
-/**
- * @testdox Login throttle
- */
+#[TestDox('Login throttle')]
 final class LoginThrottleTest extends TestCase
 {
     protected function setUp(): void

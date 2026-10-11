@@ -2,15 +2,14 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\http\Status;
 use jaco\core\responder;
 use jaco\domain\Payload;
 use jaco\domain\page;
 
-/**
- * @testdox Error responses and field mapping
- */
+#[TestDox('Error responses and field mapping')]
 final class ResponderMappingTest extends TestCase
 {
     public function testClientErrorsAreMappedToApiFieldNames(): void

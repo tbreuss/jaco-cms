@@ -2,12 +2,11 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\filesystem;
 
-/**
- * @testdox File naming and path handling
- */
+#[TestDox('File naming and path handling')]
 final class FileSystemNamingTest extends TestCase
 {
     private const DIR = 'naming-test';

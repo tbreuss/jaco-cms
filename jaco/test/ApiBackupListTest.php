@@ -3,10 +3,9 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Backup list API (backup/list)
- */
+#[TestDox('Backup list API (backup/list)')]
 final class ApiBackupListTest extends ApiTestCase
 {
     private const PAGE = 'api-backup-list.html';

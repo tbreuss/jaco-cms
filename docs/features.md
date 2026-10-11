@@ -98,12 +98,18 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | Schema validation, error responses and field mapping | `jaco/test/SchemaValidationTest.php`, `jaco/test/ResponderMappingTest.php` |
 | Frontend components, page editor model, login form | `jaco/test/js/tests.js` |
 
-Run them from the repository root:
+Run them from the repository root (dev tools come from `composer install`):
 
-    docker run --rm -v $(pwd)/jaco:/app jitesoft/phpunit
+    composer test --working-dir jaco
 
-Options for the PHPUnit binary have to be passed explicitly, because the image entrypoint
-is PHP: `docker run --rm -v $(pwd)/jaco:/app jitesoft/phpunit phpunit --filter AuthTest`.
+Options for the PHPUnit binary are appended after `--`, because the Composer
+script forwards them: `composer test --working-dir jaco -- --filter AuthTest`.
+
+Static analysis, code style and the full check run the same way:
+
+    composer phpstan --working-dir jaco
+    composer cs-check --working-dir jaco
+    composer check --working-dir jaco
 
 The frontend tests are QUnit tests that run in a real browser; they need node ≥ 22 and a
 local Chrome and drive the page through the devtools protocol, so no npm packages are

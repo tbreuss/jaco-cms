@@ -3,10 +3,9 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Stylesheet view API (css/view)
- */
+#[TestDox('Stylesheet view API (css/view)')]
 final class ApiCssViewTest extends ApiTestCase
 {
     private const FILE = 'api-css-view-test.css';

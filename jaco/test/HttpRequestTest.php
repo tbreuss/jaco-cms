@@ -2,12 +2,11 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\http;
 
-/**
- * @testdox HTTP request headers
- */
+#[TestDox('HTTP request headers')]
 final class HttpRequestTest extends TestCase
 {
     public function testHeadersAreParsedFromServerVariables(): void

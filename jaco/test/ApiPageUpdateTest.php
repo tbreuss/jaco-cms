@@ -3,13 +3,13 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
 /**
  * Integration tests for the page/update API - the path the page manager uses. It owns the
  * whole document: doctype and head are stored as sent, only the body is sanitized.
- *
- * @testdox Page update API (page/update)
- */
+*/
+#[TestDox('Page update API (page/update)')]
 final class ApiPageUpdateTest extends ApiTestCase
 {
     private const PAGE = 'api-update-test.html';

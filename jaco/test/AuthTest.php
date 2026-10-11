@@ -3,12 +3,11 @@
 namespace jaco\tests;
 
 use Firebase\JWT\JWT;
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\auth;
 
-/**
- * @testdox Authentication tokens
- */
+#[TestDox('Authentication tokens')]
 final class AuthTest extends TestCase
 {
     public function testValidCredentialsAreAccepted(): void

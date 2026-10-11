@@ -40,17 +40,24 @@ Debug website using Xdebug
 
 ### Static Code Analyses & Unit Tests
 
-PHP CS Fixer
+The dev tools are Composer dev dependencies (`composer install` inside `jaco/`
+installs them); run them from the repository root:
 
-    docker run --rm -v $(pwd)/jaco:/code ghcr.io/php-cs-fixer/php-cs-fixer:${FIXER_VERSION:-3-php8.2} fix
+PHP CS Fixer (check only, `cs-fix` to fix)
+
+    composer cs-check --working-dir jaco
 
 PHPStan
 
-    docker run --rm -v $(pwd)/jaco:/app ghcr.io/phpstan/phpstan:2.3.1 analyse
+    composer phpstan --working-dir jaco
 
-PHPUnit
+PHPUnit (extra options after `--`, e.g. `-- --filter AuthTest`)
 
-    docker run --rm -v $(pwd)/jaco:/app jitesoft/phpunit
+    composer test --working-dir jaco
+
+Everything at once
+
+    composer check --working-dir jaco
 
 QUnit (frontend, runs in headless Chrome, needs node >= 22)
 

@@ -3,10 +3,9 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Translations API (translations)
- */
+#[TestDox('Translations API (translations)')]
 final class ApiTranslationsTest extends ApiTestCase
 {
     public function testEnglishTranslationsAreAvailableWithoutAToken(): void

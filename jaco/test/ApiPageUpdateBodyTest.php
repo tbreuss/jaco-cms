@@ -3,13 +3,13 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
 /**
  * Integration tests for the page/update-body API - the path the inline editor uses.
  * It sends content, never a document: the stored document keeps doctype and head.
- *
- * @testdox Page update body API (page/update-body)
- */
+*/
+#[TestDox('Page update body API (page/update-body)')]
 final class ApiPageUpdateBodyTest extends ApiTestCase
 {
     private const PAGE = 'api-update-body.html';

@@ -2,11 +2,10 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @testdox Translation files
- */
+#[TestDox('Translation files')]
 final class LanguageTest extends TestCase
 {
     /** @return array<string, array<string, string>> */

@@ -2,13 +2,12 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\data;
 use jaco\core\data\sanitize;
 
-/**
- * @testdox Input sanitizing
- */
+#[TestDox('Input sanitizing')]
 final class SanitizeTest extends TestCase
 {
     public function testFileNameDropsTraversalAndLeadingDots(): void

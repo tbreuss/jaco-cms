@@ -2,17 +2,16 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\filesystem;
 use jaco\core\html;
 
-/**
- * @testdox HTML Sanitizing
- */
+#[TestDox('HTML Sanitizing')]
 final class HtmlFunctionsTest extends TestCase
 {
     /**
-     * @var array<int, array{string, string}> [input, expected] pairs of dangerous html
+     * @var array<string, array{string, string}> [input, expected] pairs of dangerous html
      */
     private const DANGEROUS_HTML = [
         'script tag' => ['<p>ok</p><script>alert(1)</script>', '<p>ok</p>'],
@@ -31,7 +30,7 @@ final class HtmlFunctionsTest extends TestCase
     ];
 
     /**
-     * @var array<int, array{string, string}> [input, expected] pairs of legitimate html
+     * @var array<string, array{string, string}> [input, expected] pairs of legitimate html
      */
     private const LEGITIMATE_HTML = [
         'bold link' => ['<p><a href="https://example.com" target="_blank">x</a> <strong>b</strong></p>', '<p><a href="https://example.com" target="_blank">x</a> <strong>b</strong></p>'],

@@ -2,12 +2,11 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\data;
 
-/**
- * @testdox Input validation rules
- */
+#[TestDox('Input validation rules')]
 final class ValidateTest extends TestCase
 {
     public function testRequiredRule(): void

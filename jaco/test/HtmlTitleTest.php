@@ -2,12 +2,11 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\html;
 
-/**
- * @testdox Page titles
- */
+#[TestDox('Page titles')]
 final class HtmlTitleTest extends TestCase
 {
     public function testTitleIsReadFromTheDocument(): void

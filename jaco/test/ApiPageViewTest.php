@@ -3,10 +3,9 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Page view API (page/view)
- */
+#[TestDox('Page view API (page/view)')]
 final class ApiPageViewTest extends ApiTestCase
 {
     private const PAGE = 'api-view-test.html';

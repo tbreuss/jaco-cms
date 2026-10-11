@@ -2,12 +2,11 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\html;
 
-/**
- * @testdox Embedded data-url images
- */
+#[TestDox('Embedded data-url images')]
 final class EmbeddedImagesTest extends TestCase
 {
     private const FILE = 'api-embed-image.png';

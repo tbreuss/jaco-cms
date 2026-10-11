@@ -3,10 +3,9 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Upload delete API (upload/delete)
- */
+#[TestDox('Upload delete API (upload/delete)')]
 final class ApiUploadDeleteTest extends ApiTestCase
 {
     private const UPLOAD = 'upload/api-upload-delete-test.jpg';

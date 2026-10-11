@@ -8,6 +8,7 @@ parameters:
     level: 6
     paths:
         - backend
+        - test
         - api.php
         - routes.php
         - autoload.php

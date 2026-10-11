@@ -3,10 +3,9 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Page create API (page/create)
- */
+#[TestDox('Page create API (page/create)')]
 final class ApiPageCreateTest extends ApiTestCase
 {
     private const TEMPLATE = 'api-create-template.html';

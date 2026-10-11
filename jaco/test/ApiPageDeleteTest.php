@@ -3,10 +3,9 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Page delete API (page/delete)
- */
+#[TestDox('Page delete API (page/delete)')]
 final class ApiPageDeleteTest extends ApiTestCase
 {
     private const PAGE = 'api-delete-test.html';

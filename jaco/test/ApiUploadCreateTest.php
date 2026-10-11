@@ -3,10 +3,9 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Upload create API (upload/create)
- */
+#[TestDox('Upload create API (upload/create)')]
 final class ApiUploadCreateTest extends ApiTestCase
 {
     private const CONTENT = 'not really an image, but the extension is what counts';

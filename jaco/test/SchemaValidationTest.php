@@ -2,12 +2,11 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\json\schema;
 
-/**
- * @testdox JSON schema validation
- */
+#[TestDox('JSON schema validation')]
 final class SchemaValidationTest extends TestCase
 {
     public function testValidRequestDataPasses(): void

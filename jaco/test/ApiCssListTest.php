@@ -3,10 +3,9 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Stylesheet list API (css/list)
- */
+#[TestDox('Stylesheet list API (css/list)')]
 final class ApiCssListTest extends ApiTestCase
 {
     protected function setUp(): void

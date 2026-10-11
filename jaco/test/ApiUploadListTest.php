@@ -3,10 +3,9 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Upload list API (upload/list)
- */
+#[TestDox('Upload list API (upload/list)')]
 final class ApiUploadListTest extends ApiTestCase
 {
     private const UPLOAD = 'upload/api-upload-list.jpg';

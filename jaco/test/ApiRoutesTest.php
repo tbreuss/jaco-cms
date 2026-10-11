@@ -3,13 +3,13 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
 /**
  * Guards the route table in jaco/routes.php: a public route must work without a token,
  * a private route must not.
- *
- * @testdox Route table (jaco/routes.php)
- */
+*/
+#[TestDox('Route table (jaco/routes.php)')]
 final class ApiRoutesTest extends ApiTestCase
 {
     public function testPublicIndexRouteIsRegisteredAndResponds(): void

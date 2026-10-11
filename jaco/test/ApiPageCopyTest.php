@@ -3,10 +3,9 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Page copy API (page/copy)
- */
+#[TestDox('Page copy API (page/copy)')]
 final class ApiPageCopyTest extends ApiTestCase
 {
     private const SOURCE = 'api-copy-source.html';

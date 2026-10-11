@@ -2,12 +2,11 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\filesystem;
 
-/**
- * @testdox Filesystem Module
- */
+#[TestDox('Filesystem Module')]
 final class FileFunctionsTest extends TestCase
 {
     protected function setUp(): void

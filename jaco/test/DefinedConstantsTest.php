@@ -2,12 +2,11 @@
 
 namespace jaco\tests;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\system;
 
-/**
- * @testdox Defined constants
- */
+#[TestDox('Defined constants')]
 final class DefinedConstantsTest extends TestCase
 {
     public function testConfigValuesAreListedWithSecretsMasked(): void

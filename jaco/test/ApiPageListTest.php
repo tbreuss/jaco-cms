@@ -4,10 +4,9 @@ namespace jaco\tests;
 
 use jaco\core\http\Response;
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Page list API (page/list)
- */
+#[TestDox('Page list API (page/list)')]
 final class ApiPageListTest extends ApiTestCase
 {
     private const PAGE_A = 'api-list-a.html';

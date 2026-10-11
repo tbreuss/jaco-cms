@@ -3,10 +3,9 @@
 namespace jaco\tests;
 
 use jaco\core\http\Status;
+use PHPUnit\Framework\Attributes\TestDox;
 
-/**
- * @testdox Stylesheet update API (css/update)
- */
+#[TestDox('Stylesheet update API (css/update)')]
 final class ApiCssUpdateTest extends ApiTestCase
 {
     private const FILE = 'api-css-update-test.css';

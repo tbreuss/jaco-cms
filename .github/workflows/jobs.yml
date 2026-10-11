@@ -19,11 +19,11 @@ jobs:
             - name: Install dependencies
               run: composer install -d jaco
             - name: Run PHP CS Fixer
-              run: docker run --rm -v $(pwd)/jaco:/code ghcr.io/php-cs-fixer/php-cs-fixer:${FIXER_VERSION:-3-php${{ matrix.php-versions }}} fix
+              run: composer cs-check -d jaco
             - name: Run PHPStan
-              run: docker run --rm -v ./jaco:/app ghcr.io/phpstan/phpstan:2.3.1 analyse
+              run: composer phpstan -d jaco
             - name: Run PHPUnit
-              run: docker run --rm -v $(pwd)/jaco:/app jitesoft/phpunit
+              run: composer test -d jaco
             - name: Set up Node
               uses: actions/setup-node@v5
               with:
