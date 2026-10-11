@@ -121,6 +121,7 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | HTML: sanitizing (XSS), titles, embedded images | `jaco/test/HtmlFunctionsTest.php`, `jaco/test/HtmlTitleTest.php`, `jaco/test/EmbeddedImagesTest.php` |
 | Filesystem: naming, extensions, paths, timestamps | `jaco/test/FileFunctionsTest.php`, `jaco/test/FileSystemNamingTest.php` |
 | Schema validation, error responses and field mapping | `jaco/test/SchemaValidationTest.php`, `jaco/test/ResponderMappingTest.php` |
+| Json files: every `*.json` below `jaco/` parses | `jaco/test/JsonFilesTest.php` |
 | Config defaults and masked diagnostics | `jaco/test/DefinedConstantsTest.php` |
 | Frontend components, page editor model, login form | `jaco/test/js/tests.js` |
 
