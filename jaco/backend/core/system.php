@@ -4,8 +4,6 @@ namespace jaco\core\system;
 
 use jaco\core\config\Config;
 
-const SECRETS = ['jaco\SECRET_KEY', 'jaco\PASSWORD'];
-
 function defined_classes(): array
 {
     $classes = array_filter(
@@ -21,21 +19,30 @@ function defined_constants(Config $config): array
 {
     $constants = [];
     foreach (get_defined_constants() as $key => $value) {
-        if (str_starts_with($key, 'JACO_') || str_starts_with($key, 'jaco\\')) {
-            if (is_array($value)) {
-                $value = json_encode($value);
-            }
-            if (in_array($key, SECRETS) !== false) {
-                $value = '****';
-            }
-            if (is_string($value) && str_starts_with($value, $config->webDir)) {
-                $value = substr($value, strlen($config->webDir));
-            }
-            $constants[$key] = $value;
+        if (!str_starts_with($key, 'jaco\\')) {
+            continue;
         }
+        $constants[$key] = display_value($value, $config);
+    }
+    foreach (get_object_vars($config) as $key => $value) {
+        if ($key === 'secretKey' || $key === 'password') {
+            $value = '****';
+        }
+        $constants['config.' . $key] = display_value($value, $config);
     }
     ksort($constants);
     return $constants;
+}
+
+function display_value(mixed $value, Config $config): mixed
+{
+    if (is_array($value)) {
+        $value = json_encode($value);
+    }
+    if (is_string($value) && str_starts_with($value, $config->webDir)) {
+        $value = substr($value, strlen($config->webDir));
+    }
+    return $value;
 }
 
 function defined_functions(): array
