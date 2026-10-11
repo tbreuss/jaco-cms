@@ -97,9 +97,7 @@ export const PageEditView = {
           wrap: 'div.row',
           label: t('Page title'),
           value: PageEditModel.item.title ?? '',
-          oninput: (value) => {
-            PageEditModel.item.title = value
-          }
+          disabled: true
         }),
         m(InputText, {
           wrap: 'div.row',

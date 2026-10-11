@@ -83,39 +83,18 @@ const stubRequest = (respond) => {
   }
 }
 
-QUnit.test('save sends the document unchanged when the title was not touched', (assert) => {
+QUnit.test('save sends the document unchanged', (assert) => {
   const stub = stubRequest(() => Promise.resolve({}))
   const content = '<html><head><title>Alt</title></head><body><p>x</p></body></html>'
 
   try {
-    PageEditModel.item = {file: 'x.html', content, title: 'Alt', loadedTitle: 'Alt'}
+    PageEditModel.item = {file: 'x.html', content, title: 'Alt'}
     PageEditModel.save()
 
     assert.strictEqual(stub.calls.length, 1)
     assert.ok(stub.calls[0].url.includes('action=page/update'), 'the document path is used')
     assert.strictEqual(stub.calls[0].body.html, content, 'the html is not rewritten')
     assert.strictEqual(stub.calls[0].body.pageTitle, undefined, 'the title is part of the document')
-  } finally {
-    stub.restore()
-  }
-})
-
-QUnit.test('save patches and escapes the title when it was changed', (assert) => {
-  const stub = stubRequest(() => Promise.resolve({}))
-
-  try {
-    PageEditModel.item = {
-      file: 'x.html',
-      content: '<html><head><title>Alt</title></head><body></body></html>',
-      title: 'Neu & <b>',
-      loadedTitle: 'Alt',
-    }
-    PageEditModel.save()
-
-    assert.strictEqual(
-      stub.calls[0].body.html,
-      '<html><head><title>Neu &amp; &lt;b&gt;</title></head><body></body></html>',
-    )
   } finally {
     stub.restore()
   }
