@@ -22,7 +22,7 @@ const state = {
 
 const onSaveButtonClicked = (e) => {
   e.redraw = false
-  api.post('action=page/create', {
+  api.post('page/create', {}, {
     background: true, // no redraw
     body: {
       fileName: state.fileName,

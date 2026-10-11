@@ -25,7 +25,7 @@ const dateTime = (timestamp) => {
 
 const restoreBackup = (backup) => {
   if (confirm(t('Do you want to restore this page?', {name: backup.name}))) {
-    api.post('action=backup/restore', {
+    api.post('backup/restore', {}, {
       background: true, // no redraw
       body: {file: backup.file},
       withCredentials: false
@@ -50,7 +50,7 @@ const viewBackup = (file) => {
 
 const deleteAction = (backup) => {
   if (confirm(t('Do you want to delete the page?', {name: backup.name}))) {
-    api.post('action=backup/delete', {
+    api.post('backup/delete', {}, {
       background: true, // no redraw
       body: {file: backup.file},
       withCredentials: false

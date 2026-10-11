@@ -30,7 +30,7 @@ const editPage = (file) => {
 const deleteAction = (page) => {
   console.log(page)
   if (confirm(t('Do you want to delete the page?', {name: page.file}))) {
-    api.post('action=page/delete', {
+    api.post('page/delete', {}, {
       background: true, // no redraw
       body: {fileName: page.file},
       withCredentials: false

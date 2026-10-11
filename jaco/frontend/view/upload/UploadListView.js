@@ -32,7 +32,7 @@ const uploadFiles = (files) => {
   const uploads = [...files].map((file) => {
     const body = new FormData()
     body.append('file', file)
-    return api.post('action=upload/create', {
+    return api.post('upload/create', {}, {
       background: true, // no redraw
       body: body,
       withCredentials: false
@@ -55,7 +55,7 @@ const uploadFiles = (files) => {
 
 const deleteAction = (page) => {
   if (confirm(t('Do you want to delete the upload?', {name: page.file}))) {
-    api.post('action=upload/delete', {
+    api.post('upload/delete', {}, {
       background: true, // no redraw
       body: {fileName: page.file},
       withCredentials: false

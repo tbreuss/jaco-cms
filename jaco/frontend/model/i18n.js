@@ -3,7 +3,6 @@
 import {api} from '../service/api.js'
 
 const defaultLocale = 'en'
-const messageUrl = 'action=translations&language={locale}'
 
 const loadAndSetLocale = (newLocale) => {
   if (i18n.currentLocale === newLocale) {
@@ -20,7 +19,7 @@ const loadAndSetLocale = (newLocale) => {
 }
 
 const fetchMessages = (locale, onComplete) => {
-  api.get(messageUrl.replace('{locale}', locale)).then(
+  api.get('translations', {language: locale}).then(
     onComplete,
   )
 }

@@ -25,7 +25,7 @@ const login = () => {
     state.password = ''
   }
 
-  api.post('action=login', {
+  api.post('login', {}, {
     background: true, // no redraw
     body: credentials,
     withCredentials: false

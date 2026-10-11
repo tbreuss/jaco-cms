@@ -9,7 +9,7 @@ import {app} from '../lib/app.js'
 
 const save = (e) => {
   e.redraw = false
-  api.post('action=page/update-body', {
+  api.post('page/update-body', {}, {
     background: true, // no redraw
     body: {
       fileName: iframe.fileName(),

@@ -17,7 +17,7 @@ const state = {
 
 const save = (e) => {
   e.redraw = false
-  api.post('action=page/delete', {
+  api.post('page/delete', {}, {
     background: true, // no redraw
     body: {fileName: state.fileName},
     withCredentials: false

@@ -21,7 +21,7 @@ const state = {
 
 const save = (e) => {
   e.redraw = false
-  api.post('action=page/copy', {
+  api.post('page/copy', {}, {
     background: true, // no redraw
     body: {
       srcFileName: state.srcFileName,

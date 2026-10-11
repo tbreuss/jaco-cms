@@ -9,13 +9,11 @@ const handlers = {
   },
 }
 
-const request = method => (url, options) => {
+const request = method => (action, params = {}, options = {}) => {
   const token = app.getAuthToken()
   if (token) {
-    if (!options) {
-      options = {}
-    }
     options.headers = {
+      ...(options.headers ?? {}),
       Authorization: 'Bearer ' + token
     }
   }
@@ -31,7 +29,7 @@ const request = method => (url, options) => {
 
   return m.request({
     method,
-    url: 'api.php?' + url,
+    url: 'api.php?action=' + action + '&' + m.buildQueryString(params),
     ...options // might need Object.assign for Edge
   })
     .catch(err => {
