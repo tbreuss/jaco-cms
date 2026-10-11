@@ -293,8 +293,16 @@ QUnit.test('size shows thousands separators and is right aligned', (assert) => {
   assert.ok(sizeCell, 'the size cell is rendered')
   assert.ok(/^1\D234\D567$/.test(sizeCell.textContent), 'thousands separators, got: ' + sizeCell.textContent)
   assert.ok(sizeCell.classList.contains('text-right'), 'cell right aligned')
-  const sizeHead = [...fixture().querySelectorAll('thead th')].find((th) => th.textContent.includes('Size'))
-  assert.ok(sizeHead && sizeHead.classList.contains('text-right'), 'header right aligned')
+
+  // the labels are translated, so address the column by its position: file, type, size, created, actions
+  const heads = [...fixture().querySelectorAll('thead th')]
+  assert.strictEqual(heads.length, 5, 'five columns')
+  assert.ok(heads[2].classList.contains('text-right'), 'size header right aligned')
+  assert.strictEqual(
+    heads.filter((th) => th.classList.contains('text-right')).length,
+    1,
+    'only the size column is right aligned'
+  )
   const head = fixture().querySelector('.content > div')
   const style = window.getComputedStyle(head)
   assert.strictEqual(style.display, 'flex', 'header row is flex')
