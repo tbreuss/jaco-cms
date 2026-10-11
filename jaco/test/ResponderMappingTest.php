@@ -69,4 +69,25 @@ final class ResponderMappingTest extends TestCase
         $body = (array) json_decode((string) $response->body, true);
         $this->assertSame('Invalid service status', $body[0]['detail']);
     }
+
+    public function testMaintenanceResponseIsNullWhenDisabled(): void
+    {
+        $this->assertNull(responder\maintenance_response(false));
+        $this->assertNull(responder\maintenance_response());
+    }
+
+    public function testMaintenanceResponseIsA503ErrorWhenEnabled(): void
+    {
+        $response = responder\maintenance_response(true);
+
+        $this->assertNotNull($response);
+        $this->assertSame(Status::SERVICE_UNAVAILABLE, $response->status);
+
+        $body = (array) json_decode((string) $response->body, true);
+        $this->assertSame('Maintenance mode: changes are disabled', $body[0]['title']);
+        $this->assertSame('Changes are disabled while maintenance mode is enabled.', $body[0]['detail']);
+
+        // the router validates error responses, so the body must comply
+        $this->assertSame([], \jaco\core\http\validate_response($response->body, 'errors.json'));
+    }
 }

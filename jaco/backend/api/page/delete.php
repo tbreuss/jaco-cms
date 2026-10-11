@@ -8,10 +8,15 @@ use jaco\domain\page\DomainPayload;
 
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
+use function jaco\core\responder\maintenance_response;
 use function jaco\domain\page\delete_page;
 
 function action(Request $request): Response
 {
+    if (($blocked = maintenance_response()) !== null) {
+        return $blocked;
+    }
+
     $payload = delete_page(
         file: $request->post->strVal('fileName'),
     );

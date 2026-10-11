@@ -14,6 +14,7 @@ enum Status: int
     case METHOD_NOT_ALLOWED = 405;
     case UNPROCESSABLE_ENTITY = 422;
     case INTERNAL_SERVER_ERROR = 500;
+    case SERVICE_UNAVAILABLE = 503;
 }
 
 final class Response

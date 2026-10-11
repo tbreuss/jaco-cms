@@ -32,3 +32,4 @@ define('jaco\PHP_DISPLAY_STARTUP_ERRORS', $settings['jaco\PHP_DISPLAY_STARTUP_ER
 define('jaco\PHP_LOG_ERRORS', $settings['jaco\PHP_LOG_ERRORS'] ?? 1);
 define('jaco\PHP_ERROR_LOG', __DIR__ . '/runtime/log/error.log');
 define('jaco\LOGIN_HISTORY_FILE', __DIR__ . '/runtime/log/loginhistory.json');
+define('jaco\MAINTENANCE_MODE', $settings['jaco\MAINTENANCE_MODE'] ?? false);

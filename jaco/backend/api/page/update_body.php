@@ -9,10 +9,15 @@ use jaco\domain\page\DomainPayload;
 
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
+use function jaco\core\responder\maintenance_response;
 use function jaco\domain\page\update_page_body;
 
 function action(Request $request): Response
 {
+    if (($blocked = maintenance_response()) !== null) {
+        return $blocked;
+    }
+
     $payload = update_page_body(
         file: $request->post->strVal('fileName'),
         withBody: $request->post->strVal('body'),
