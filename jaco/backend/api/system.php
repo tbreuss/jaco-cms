@@ -22,6 +22,7 @@ function responder(Payload $payload): Response
     if ($payload->isSuccess) {
         return json_response([
             'classes' => $payload->data['classes'],
+            'config' => $payload->data['config'],
             'constants' => $payload->data['constants'],
             'functions' => $payload->data['functions'],
         ]);

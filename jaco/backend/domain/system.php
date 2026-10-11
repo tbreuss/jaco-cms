@@ -61,7 +61,23 @@ function get_environment(Config $config): Payload
         'classes' => system\defined_classes(),
         'constants' => system\defined_constants($config),
         'functions' => system\defined_functions(),
+        'config' => display_config($config),
     ]);
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function display_config(Config $config): array
+{
+    $values = get_object_vars($config);
+    $values['secretKey'] = '********';
+    $values['password'] = '********';
+    $values['directoryPermissions'] = sprintf('0%o', $config->directoryPermissions);
+    $values['filePermissions'] = sprintf('0%o', $config->filePermissions);
+    $values['maintenanceMode'] = $config->maintenanceMode ? 'true' : 'false';
+
+    return $values;
 }
 
 function get_log_entries(Config $config, int $size = 100): Payload

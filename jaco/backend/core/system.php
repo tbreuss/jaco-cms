@@ -24,12 +24,6 @@ function defined_constants(Config $config): array
         }
         $constants[$key] = display_value($value, $config);
     }
-    foreach (get_object_vars($config) as $key => $value) {
-        if ($key === 'secretKey' || $key === 'password') {
-            $value = '****';
-        }
-        $constants['config.' . $key] = display_value($value, $config);
-    }
     ksort($constants);
     return $constants;
 }

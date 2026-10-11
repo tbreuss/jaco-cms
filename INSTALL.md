@@ -41,9 +41,9 @@ Copy `jaco/settings.dist.php` to `jaco/settings.php` and fill it in:
 
 ```php
 return [
-    'jaco\USERNAME' => 'admin',
-    'jaco\PASSWORD' => 'secure-password',
-    'jaco\SECRET_KEY' => 'at-least-32-random-characters',
+    'username' => 'admin',
+    'password' => 'secure-password',
+    'secretKey' => 'at-least-32-random-characters',
 ];
 ```
 

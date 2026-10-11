@@ -8,6 +8,9 @@
                 "type": "string"
             }
         },
+        "config": {
+            "type": "object"
+        },
         "constants": {
             "type": "object"
         },
@@ -20,6 +23,7 @@
     },
     "required": [
         "classes",
+        "config",
         "constants",
         "functions"
     ],

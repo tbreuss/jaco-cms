@@ -9,7 +9,7 @@ const keyValueTable = (title, object) => object
       m('thead', m('tr', m('th', t('Name')), m('th', t('Value')))),
       m('tbody', Object.entries(object).map((constant) => m('tr',
           m('td', constant[0]),
-          m('td', constant[1]),
+          m('td', Array.isArray(constant[1]) ? constant[1].join(', ') : constant[1]),
         ))
       )
     ))
@@ -43,6 +43,7 @@ export const SystemView = {
   view: () => m('div.main',
     m('.content',
       m('h1', t('System environment')),
+      keyValueTable(t('Configuration'), SystemModel.info.config),
       keyValueTable(t('Constants'), SystemModel.info.constants),
       listTable(t('Classes'), SystemModel.info.classes),
       listTable(t('Functions'), SystemModel.info.functions),
