@@ -1,4 +1,4 @@
-import {t} from '../model/i18n.js'
+import {t, tError} from '../model/i18n.js'
 
 const selectLabel = (label) => {
   const el = (document.querySelector('[for=' + label + ']'))
@@ -11,9 +11,9 @@ const selectLabel = (label) => {
 export const FormErrors = {
   view: ({attrs: {errors}}) =>
     errors.length > 0 && m('fieldset.errors',
-      m('legend', t('The following errors occured')),
+      m('legend', t('The following errors occurred')),
       m('ul', errors.map((error) =>
-        m('li', error.source.pointer ? selectLabel(error.source.pointer) + error.detail : error.detail)
+        m('li', error.source.pointer ? selectLabel(error.source.pointer) + tError(error.detail) : tError(error.detail))
       ))
     )
 }

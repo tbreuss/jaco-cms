@@ -1,7 +1,7 @@
 import {api} from '../service/api.js'
 import {iframe} from '../lib/iframe.js'
 import {addDanger, addSuccess} from '../state/actions.js'
-import {t} from '../model/i18n.js'
+import {t, tError} from '../model/i18n.js'
 import {ButtonGroup} from '../component/ButtonGroup.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../component/ButtonSecondary.js'
@@ -25,7 +25,7 @@ const save = (e) => {
     .catch(({code, response}) => {
       if (code === 422) {
         response.forEach(function (error) {
-          addDanger(error.title) // TODO better error handling (we have no place to render errors atm)
+          addDanger(error.detail ? tError(error.detail) : t(error.title, null, error.title)) // TODO better error handling (we have no place to render errors atm)
         })
       }
       m.redraw()

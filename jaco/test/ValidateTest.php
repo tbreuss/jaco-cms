@@ -100,7 +100,7 @@ final class ValidateTest extends TestCase
         $this->assertSame([], data\validate(['s' => 'file'], [['s', 'sort_parameter', 'fields' => $fields]]));
         $this->assertSame([], data\validate(['s' => '-created'], [['s', 'sort_parameter', 'fields' => $fields]]));
         $this->assertSame(
-            [['s', 'nope is a invalid sort parameter.']],
+            [['s', 'nope is an invalid sort parameter.']],
             data\validate(['s' => 'nope'], [['s', 'sort_parameter', 'fields' => $fields]]),
         );
     }

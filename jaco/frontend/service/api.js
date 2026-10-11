@@ -1,5 +1,6 @@
 import {addDanger} from '../state/actions.js'
 import {app} from '../lib/app.js'
+import {t} from '../model/i18n.js'
 
 const handlers = {
   // 422 Unprocessable Entity (validation of form data failed)
@@ -41,7 +42,7 @@ const request = method => (action, params = {}, options = {}) => {
         // nothing to map, show a generic message instead of crashing
         const errors = Array.isArray(err.response) ? err.response : [{title: 'Request failed'}]
         errors.forEach((error) => {
-          addDanger(error.title)
+          addDanger(t(error.title, null, error.title))
         })
         throw err
       }

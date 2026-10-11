@@ -120,11 +120,11 @@ function file_exists(string $value, string $dir, bool $negate = false): Result
 function file_in_dir(string $value, string $dir, bool $negate = false): Result
 {
     if (!$negate && !filesystem\file_in_dir($value, $dir)) {
-        return Result::error(sprintf('{value} must be in the %s folder.', $dir));
+        return Result::error(str_replace('{dir}', $dir, '{value} must be in the {dir} folder.'));
     }
 
     if ($negate && filesystem\file_in_dir($value, $dir)) {
-        return Result::error(sprintf('{value} must not be in the %s folder.', $dir));
+        return Result::error(str_replace('{dir}', $dir, '{value} must not be in the {dir} folder.'));
     }
 
     return Result::ok();
@@ -134,7 +134,7 @@ function sort_parameter(string $value, array $fields = []): Result
 {
     $field = ltrim($value, '-');
     if (!in_array($field, $fields)) {
-        return Result::error('{value} is a invalid sort parameter.');
+        return Result::error('{value} is an invalid sort parameter.');
     }
 
     return Result::ok();
