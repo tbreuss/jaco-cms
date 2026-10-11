@@ -1,5 +1,6 @@
 import {DefaultLayout} from './layout/Default.js'
 import {Notifications} from './service/Notifications.js'
+import {addDanger} from './state/actions.js'
 
 Number.prototype.pad = function (size) {
   let s = String(this)
@@ -32,8 +33,14 @@ const loadComponent = async (path) => {
     .slice(-1)
     .shift()
     .replace('.js', '')
-  const module = await import('./view/' + path)
-  return module[name]
+  try {
+    const module = await import('./view/' + path)
+    return module[name]
+  } catch {
+    // e.g. the network is offline while a route module loads
+    addDanger('Request failed')
+    throw new Error('Could not load component: ' + path)
+  }
 }
 
 // notifications

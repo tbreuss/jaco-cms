@@ -37,7 +37,10 @@ const request = method => (action, params = {}, options = {}) => {
       if (code in handlers) {
         handlers[code](err)
       } else {
-        err.response.forEach((error) => {
+        // without a response body (network failure, timeout) there is
+        // nothing to map, show a generic message instead of crashing
+        const errors = Array.isArray(err.response) ? err.response : [{title: 'Request failed'}]
+        errors.forEach((error) => {
           addDanger(error.title)
         })
         throw err

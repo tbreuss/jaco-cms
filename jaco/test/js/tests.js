@@ -8,7 +8,8 @@ import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
 import {ViewUploadView} from '/jaco/frontend/view/upload/ViewUploadView.js'
 import {UploadListModel} from '/jaco/frontend/model/UploadListModel.js'
 import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
-
+import {api} from '/jaco/frontend/service/api.js'
+import {state} from '/jaco/frontend/state/state.js'
 const fixture = () => document.getElementById('qunit-fixture')
 
 QUnit.module('components')
@@ -116,6 +117,22 @@ QUnit.test('save sends the document unchanged', (assert) => {
     assert.ok(stub.calls[0].url.includes('action=page/update'), 'the document path is used')
     assert.strictEqual(stub.calls[0].body.html, content, 'the html is not rewritten')
     assert.strictEqual(stub.calls[0].body.pageTitle, undefined, 'the title is part of the document')
+  } finally {
+    stub.restore()
+  }
+})
+
+QUnit.module('api service error handling')
+
+QUnit.test('network failure shows a toast instead of crashing', async (assert) => {
+  const stub = stubRequest(() => Promise.reject({code: 0}))
+  const before = state.list.length
+
+  try {
+    await api.get('page/list').catch(() => {})
+
+    assert.ok(true, 'no TypeError on missing response body')
+    assert.ok(state.list.length > before, 'a danger message was added')
   } finally {
     stub.restore()
   }
