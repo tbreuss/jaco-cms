@@ -2,13 +2,15 @@
 
 namespace jaco\cli\system\log;
 
+use jaco\core\config\Config;
 use jaco\domain\system\DomainPayload;
 
 use function jaco\domain\system\get_log_entries;
 
-function command(int $size): void
+function command(Config $config, int $size): void
 {
     $payload = get_log_entries(
+        $config,
         size: $size,
     );
 

@@ -2,6 +2,7 @@
 
 namespace jaco\api\css\files;
 
+use jaco\core\config\Config;
 use jaco\core\http\Response;
 use jaco\domain\css\DomainPayload;
 use jaco\domain\css\Stylesheet;
@@ -10,9 +11,9 @@ use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
 use function jaco\domain\css\find_css_files;
 
-function action(): Response
+function action(Config $config): Response
 {
-    $payload = find_css_files();
+    $payload = find_css_files($config);
 
     return responder($payload);
 }

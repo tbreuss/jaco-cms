@@ -15,29 +15,25 @@ const LOGIN_MAX_TOTAL = 15;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use jaco\core\config\Config;
 
-use const jaco\LOGIN_HISTORY_FILE;
-use const jaco\PASSWORD;
-use const jaco\SECRET_KEY;
-use const jaco\USERNAME;
-
-function authenticate(string $username, string $password): ?string
+function authenticate(Config $config, string $username, string $password): ?string
 {
     // compare both values in constant time to prevent timing attacks
-    $isUsernameValid = \hash_equals(USERNAME, $username);
-    $isPasswordValid = \hash_equals(PASSWORD, $password);
+    $isUsernameValid = \hash_equals($config->username, $username);
+    $isPasswordValid = \hash_equals($config->password, $password);
 
     if (!$isUsernameValid || !$isPasswordValid) {
         return null;
     }
 
-    return create_token($username);
+    return create_token($config, $username);
 }
 
-function is_authenticated(string $token): bool
+function is_authenticated(Config $config, string $token): bool
 {
     try {
-        $payload = JWT::decode($token, new Key(SECRET_KEY, TOKEN_ALGORITHM));
+        $payload = JWT::decode($token, new Key($config->secretKey, TOKEN_ALGORITHM));
     } catch (\Exception) {
         return false;
     }
@@ -46,7 +42,7 @@ function is_authenticated(string $token): bool
     if (($payload->iss ?? null) !== TOKEN_ISSUER || ($payload->aud ?? null) !== TOKEN_AUDIENCE) {
         return false;
     }
-    if (($payload->user ?? null) !== USERNAME) {
+    if (($payload->user ?? null) !== $config->username) {
         return false;
     }
     if (($payload->admin ?? null) !== true) {
@@ -56,7 +52,7 @@ function is_authenticated(string $token): bool
     return true;
 }
 
-function create_token(string $username): string
+function create_token(Config $config, string $username): string
 {
     $now = time();
 
@@ -70,7 +66,7 @@ function create_token(string $username): string
         'admin' => true,
     ];
 
-    return JWT::encode($payload, SECRET_KEY, TOKEN_ALGORITHM);
+    return JWT::encode($payload, $config->secretKey, TOKEN_ALGORITHM);
 }
 
 /**
@@ -83,9 +79,9 @@ function create_token(string $username): string
  *
  * @return int<0, max>
  */
-function login_blocked(): int
+function login_blocked(Config $config): int
 {
-    $history = read_login_history();
+    $history = read_login_history($config);
 
     if ($history['total'] >= LOGIN_MAX_TOTAL) {
         return PHP_INT_MAX;
@@ -103,9 +99,9 @@ function login_blocked(): int
     return max($window) + LOGIN_BLOCK_SECONDS - time();
 }
 
-function record_login_failure(): void
+function record_login_failure(Config $config): void
 {
-    $history = read_login_history();
+    $history = read_login_history($config);
     // prune expired entries and cap the list: only the count within the
     // window and the latest timestamp matter, so sustained brute force
     // cannot grow the file beyond a few entries
@@ -117,25 +113,25 @@ function record_login_failure(): void
     $history['fails'] = array_slice($history['fails'], -LOGIN_MAX_ATTEMPTS);
     $history['total'] = $history['total'] + 1;
 
-    write_login_history($history);
+    write_login_history($config, $history);
 }
 
-function record_login_success(): void
+function record_login_success(Config $config): void
 {
-    if (read_login_history() !== ['fails' => [], 'total' => 0]) {
-        write_login_history(['fails' => [], 'total' => 0]);
+    if (read_login_history($config) !== ['fails' => [], 'total' => 0]) {
+        write_login_history($config, ['fails' => [], 'total' => 0]);
     }
 }
 
-function clear_login_history(): void
+function clear_login_history(Config $config): void
 {
-    record_login_success();
+    record_login_success($config);
 }
 
 /** @return array{fails: list<int>, total: int} */
-function read_login_history(): array
+function read_login_history(Config $config): array
 {
-    $content = @file_get_contents(LOGIN_HISTORY_FILE);
+    $content = @file_get_contents($config->loginHistoryFile);
 
     if (!is_string($content)) {
         return ['fails' => [], 'total' => 0];
@@ -155,9 +151,9 @@ function read_login_history(): array
 }
 
 /** @param array{fails: list<int>, total: int} $history */
-function write_login_history(array $history): void
+function write_login_history(Config $config, array $history): void
 {
-    $dir = \dirname(LOGIN_HISTORY_FILE);
+    $dir = \dirname($config->loginHistoryFile);
 
     if (!\is_dir($dir)) {
         @mkdir($dir, 0755, true);
@@ -165,7 +161,7 @@ function write_login_history(array $history): void
 
     $encoded = json_encode($history);
 
-    if ($encoded === false || @file_put_contents(LOGIN_HISTORY_FILE, $encoded, LOCK_EX) === false) {
-        error_log('Could not write login history to ' . LOGIN_HISTORY_FILE);
+    if ($encoded === false || @file_put_contents($config->loginHistoryFile, $encoded, LOCK_EX) === false) {
+        error_log('Could not write login history to ' . $config->loginHistoryFile);
     }
 }

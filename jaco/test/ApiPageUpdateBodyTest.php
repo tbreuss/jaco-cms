@@ -4,11 +4,6 @@ namespace jaco\tests;
 
 use jaco\core\http\Status;
 
-use const jaco\APP_DIR;
-use const jaco\APP_DIR_NAME;
-use const jaco\BACKUP_DIR;
-use const jaco\WEB_DIR;
-
 /**
  * Integration tests for the page/update-body API - the path the inline editor uses.
  * It sends content, never a document: the stored document keeps doctype and head.
@@ -28,9 +23,9 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir(WEB_DIR);
-        $this->watchDir(BACKUP_DIR);
-        file_put_contents(WEB_DIR . '/' . self::PAGE, self::DOCUMENT);
+        $this->watchDir($this->config->webDir);
+        $this->watchDir($this->config->backupDir);
+        file_put_contents($this->config->webDir . '/' . self::PAGE, self::DOCUMENT);
     }
 
     public function testBodyIsReplacedAndTheStoredDocumentStaysUntouched(): void
@@ -42,7 +37,7 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
 
         $this->assertSame(Status::CREATED, $response->status);
 
-        $content = (string) file_get_contents(WEB_DIR . '/' . self::PAGE);
+        $content = (string) file_get_contents($this->config->webDir . '/' . self::PAGE);
 
         // the document around the body is the stored one
         $this->assertStringContainsString('<!DOCTYPE html>', $content);
@@ -67,7 +62,7 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
 
         $this->assertSame(Status::CREATED, $response->status);
 
-        $content = (string) file_get_contents(WEB_DIR . '/' . self::PAGE);
+        $content = (string) file_get_contents($this->config->webDir . '/' . self::PAGE);
         $this->assertStringContainsString('<p>text</p>', $content);
         $this->assertStringNotContainsString('onclick', $content);
         $this->assertStringNotContainsString('evil.example', $content);
@@ -81,7 +76,7 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
 
     public function testFragmentPageStaysAFragment(): void
     {
-        file_put_contents(WEB_DIR . '/' . self::FRAGMENT, '<p>alt</p>');
+        file_put_contents($this->config->webDir . '/' . self::FRAGMENT, '<p>alt</p>');
 
         $response = $this->api('page/update-body', [
             'fileName' => self::FRAGMENT,
@@ -89,16 +84,16 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
         ]);
 
         $this->assertSame(Status::CREATED, $response->status);
-        $this->assertSame('<p>neu</p>', file_get_contents(WEB_DIR . '/' . self::FRAGMENT));
+        $this->assertSame('<p>neu</p>', file_get_contents($this->config->webDir . '/' . self::FRAGMENT));
     }
 
     public function testStoredDocumentIsBackedUpBeforeTheWrite(): void
     {
         $this->api('page/update-body', ['fileName' => self::PAGE, 'body' => '<p>neu</p>']);
 
-        $newBackups = $this->newEntriesIn(BACKUP_DIR);
+        $newBackups = $this->newEntriesIn($this->config->backupDir);
         $this->assertCount(1, $newBackups);
-        $this->assertSame(self::DOCUMENT, file_get_contents(BACKUP_DIR . '/' . $newBackups[0]));
+        $this->assertSame(self::DOCUMENT, file_get_contents($this->config->backupDir . '/' . $newBackups[0]));
     }
 
     public function testEmptyBodyIsRejected(): void
@@ -106,7 +101,7 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
         $response = $this->api('page/update-body', ['fileName' => self::PAGE, 'body' => '']);
 
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
-        $this->assertSame(self::DOCUMENT, file_get_contents(WEB_DIR . '/' . self::PAGE));
+        $this->assertSame(self::DOCUMENT, file_get_contents($this->config->webDir . '/' . self::PAGE));
     }
 
     public function testMissingBodyIsRejected(): void
@@ -114,17 +109,17 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
         $response = $this->api('page/update-body', ['fileName' => self::PAGE]);
 
         $this->assertSame(Status::BAD_REQUEST, $response->status);
-        $this->assertSame(self::DOCUMENT, file_get_contents(WEB_DIR . '/' . self::PAGE));
+        $this->assertSame(self::DOCUMENT, file_get_contents($this->config->webDir . '/' . self::PAGE));
     }
 
     public function testPageInTheAppDirIsRejected(): void
     {
-        $file = APP_DIR . '/api-update-body-protected.html';
+        $file = $this->config->appDir . '/api-update-body-protected.html';
         file_put_contents($file, 'admin ui');
 
         try {
             $response = $this->api('page/update-body', [
-                'fileName' => APP_DIR_NAME . '/api-update-body-protected.html',
+                'fileName' => $this->config->appDirName . '/api-update-body-protected.html',
                 'body' => '<p>overwritten</p>',
             ]);
 
@@ -150,6 +145,6 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
         ], 'POST', false);
 
         $this->assertSame(Status::FORBIDDEN, $response->status);
-        $this->assertSame(self::DOCUMENT, file_get_contents(WEB_DIR . '/' . self::PAGE));
+        $this->assertSame(self::DOCUMENT, file_get_contents($this->config->webDir . '/' . self::PAGE));
     }
 }

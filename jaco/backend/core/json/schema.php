@@ -6,7 +6,7 @@ use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Errors\ValidationError;
 use Opis\JsonSchema\Validator;
 
-use const jaco\JSON_SCHEMA_URL;
+const JSON_SCHEMA_URL = 'https://jaco.tebe.ch';
 
 function validate_data(array|string|null $data, string $schema): array
 {

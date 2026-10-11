@@ -4,10 +4,6 @@ namespace jaco\tests;
 
 use jaco\core\http\Status;
 
-use const jaco\APP_DIR;
-use const jaco\APP_DIR_NAME;
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Page copy API (page/copy)
  */
@@ -20,8 +16,8 @@ final class ApiPageCopyTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir(WEB_DIR);
-        file_put_contents(WEB_DIR . '/' . self::SOURCE, $this->page('Source title', 'source body'));
+        $this->watchDir($this->config->webDir);
+        file_put_contents($this->config->webDir . '/' . self::SOURCE, $this->page('Source title', 'source body'));
     }
 
     public function testPageIsCopiedWithANewTitle(): void
@@ -39,20 +35,20 @@ final class ApiPageCopyTest extends ApiTestCase
         $this->assertSame('Copied title', $body['title']);
         $this->assertIsInt($body['created']);
 
-        $copy = (string) file_get_contents(WEB_DIR . '/' . self::TARGET);
+        $copy = (string) file_get_contents($this->config->webDir . '/' . self::TARGET);
         $this->assertStringContainsString('<title>Copied title</title>', $copy);
         $this->assertStringContainsString('source body', $copy);
 
         // the source keeps its own title
         $this->assertStringContainsString(
             '<title>Source title</title>',
-            (string) file_get_contents(WEB_DIR . '/' . self::SOURCE),
+            (string) file_get_contents($this->config->webDir . '/' . self::SOURCE),
         );
     }
 
     public function testExistingTargetIsNotOverwritten(): void
     {
-        file_put_contents(WEB_DIR . '/' . self::TARGET, 'existing content');
+        file_put_contents($this->config->webDir . '/' . self::TARGET, 'existing content');
 
         $response = $this->api('page/copy', [
             'srcFileName' => self::SOURCE,
@@ -61,35 +57,35 @@ final class ApiPageCopyTest extends ApiTestCase
         ]);
 
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
-        $this->assertSame('existing content', file_get_contents(WEB_DIR . '/' . self::TARGET));
+        $this->assertSame('existing content', file_get_contents($this->config->webDir . '/' . self::TARGET));
     }
 
     public function testTargetInTheAppDirIsRejected(): void
     {
         $response = $this->api('page/copy', [
             'srcFileName' => self::SOURCE,
-            'dstFileName' => APP_DIR_NAME . '/' . self::TARGET,
+            'dstFileName' => $this->config->appDirName . '/' . self::TARGET,
             'dstPageTitle' => 'Copied title',
         ]);
 
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
-        $this->assertFileDoesNotExist(APP_DIR . '/' . self::TARGET);
+        $this->assertFileDoesNotExist($this->config->appDir . '/' . self::TARGET);
     }
 
     public function testSourceInTheAppDirIsRejected(): void
     {
-        $source = APP_DIR . '/api-copy-protected.html';
+        $source = $this->config->appDir . '/api-copy-protected.html';
         file_put_contents($source, '<p>app internals</p>');
 
         try {
             $response = $this->api('page/copy', [
-                'srcFileName' => APP_DIR_NAME . '/api-copy-protected.html',
+                'srcFileName' => $this->config->appDirName . '/api-copy-protected.html',
                 'dstFileName' => self::TARGET,
                 'dstPageTitle' => 'Copied title',
             ]);
 
             $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
-            $this->assertFileDoesNotExist(WEB_DIR . '/' . self::TARGET);
+            $this->assertFileDoesNotExist($this->config->webDir . '/' . self::TARGET);
         } finally {
             @unlink($source);
         }
@@ -104,7 +100,7 @@ final class ApiPageCopyTest extends ApiTestCase
         ]);
 
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
-        $this->assertFileDoesNotExist(WEB_DIR . '/' . self::TARGET);
+        $this->assertFileDoesNotExist($this->config->webDir . '/' . self::TARGET);
     }
 
     public function testRequestWithoutTokenIsForbidden(): void
@@ -116,7 +112,7 @@ final class ApiPageCopyTest extends ApiTestCase
         ], 'POST', false);
 
         $this->assertSame(Status::FORBIDDEN, $response->status);
-        $this->assertFileDoesNotExist(WEB_DIR . '/' . self::TARGET);
+        $this->assertFileDoesNotExist($this->config->webDir . '/' . self::TARGET);
     }
 
     private function page(string $title, string $body): string

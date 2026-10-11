@@ -2,6 +2,7 @@
 
 namespace jaco\api\login;
 
+use jaco\core\config\Config;
 use jaco\core\http\Request;
 use jaco\core\http\Response;
 use jaco\domain\system\DomainPayload;
@@ -10,9 +11,10 @@ use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
 use function jaco\domain\system\authenticate_user;
 
-function action(Request $request): Response
+function action(Config $config, Request $request): Response
 {
     $payload = authenticate_user(
+        $config,
         username: $request->post->strVal('username'),
         withPassword: $request->post->strVal('password'),
     );

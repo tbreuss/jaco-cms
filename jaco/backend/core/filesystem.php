@@ -2,10 +2,8 @@
 
 namespace jaco\core\filesystem;
 
+use jaco\core\config\Config;
 use jaco\core\strings;
-
-use const jaco\DIRECTORY_PERMISSIONS;
-use const jaco\PAGE_EXTENSIONS;
 
 const BACKUP_NAME_PREFIX_LENGTH = 21; // {Ymd_His}_{random 4}_ prefix of backup file names
 
@@ -32,8 +30,9 @@ function dir_is_writable(string $root, string $dir): bool
     return dir_exists($root, $dir) && \is_writable($path);
 }
 
-function make_dir(string $root, string $dir, int $permissions = DIRECTORY_PERMISSIONS): bool
+function make_dir(Config $config, string $root, string $dir, ?int $permissions = null): bool
 {
+    $permissions = $permissions ?? $config->directoryPermissions;
     $path = combine($root, $dir);
     if (\is_dir($path)) {
         return true;
@@ -41,8 +40,9 @@ function make_dir(string $root, string $dir, int $permissions = DIRECTORY_PERMIS
     return \mkdir($path, $permissions);
 }
 
-function make_dir_rec(string $root, string $dir, int $permissions = DIRECTORY_PERMISSIONS): bool
+function make_dir_rec(Config $config, string $root, string $dir, ?int $permissions = null): bool
 {
+    $permissions = $permissions ?? $config->directoryPermissions;
     $path = combine($root, $dir);
     if (\is_dir($path)) {
         return true;
@@ -81,26 +81,26 @@ function file_is_writable(string $dir, string $file): bool
     return file_exists($dir, $file) && \is_writable($path);
 }
 
-function copy_file(string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
+function copy_file(Config $config, string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
 {
     $srcPath = combine($srcDir, $srcFile);
     $dstPath = combine($dstDir, $dstFile);
     $srcDirname = \dirname($srcFile);
     $dstDirname = \dirname($dstFile);
     if ($srcDirname !== $dstDirname) {
-        make_dir_rec($dstDir, $dstDirname);
+        make_dir_rec($config, $dstDir, $dstDirname);
     }
     return \copy($srcPath, $dstPath);
 }
 
-function move_file(string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
+function move_file(Config $config, string $srcDir, string $srcFile, string $dstDir, string $dstFile): bool
 {
     $srcPath = combine($srcDir, $srcFile);
     $dstPath = combine($dstDir, $dstFile);
     $srcDirname = \dirname($srcFile);
     $dstDirname = \dirname($dstFile);
     if ($srcDirname !== $dstDirname) {
-        make_dir_rec($dstDir, $dstDirname);
+        make_dir_rec($config, $dstDir, $dstDirname);
     }
     return \rename($srcPath, $dstPath);
 }
@@ -133,13 +133,13 @@ function backup_file(string $dir, string $file, string $bakDir): bool
     return \copy($srcPath, $dstPath); // triggers an error
 }
 
-function restore_file(string $bakDir, string $bakFile, string $dstDir): bool
+function restore_file(Config $config, string $bakDir, string $bakFile, string $dstDir): bool
 {
     $dstFile = \str_replace('|', '/', \substr($bakFile, BACKUP_NAME_PREFIX_LENGTH));
 
     // rename replaces an existing target file atomically,
     // so the current file is kept if the backup cannot be moved
-    if (!move_file($bakDir, $bakFile, $dstDir, $dstFile)) {
+    if (!move_file($config, $bakDir, $bakFile, $dstDir, $dstFile)) {
         return false;
     }
 
@@ -171,12 +171,12 @@ function file_mtime(string $file, string $dir): int
     return \is_int($time) ? $time : 0;
 }
 
-function write_file(string $dir, string $file, string $data): bool
+function write_file(Config $config, string $dir, string $file, string $data): bool
 {
     $filePath = combine($dir, $file);
     $fileDir = \dirname($file);
     if (!dir_exists($dir, $fileDir)) {
-        $status = make_dir_rec($dir, $fileDir);
+        $status = make_dir_rec($config, $dir, $fileDir);
         if ($status === false) {
             return false;
         }
@@ -185,11 +185,11 @@ function write_file(string $dir, string $file, string $data): bool
     return !($status === false);
 }
 
-function write_file_without_overwrite(string $dir, string $file, string $data): array
+function write_file_without_overwrite(Config $config, string $dir, string $file, string $data): array
 {
     $newFile = file_name_to_write($dir, $file);
 
-    if (write_file($dir, $newFile, $data)) {
+    if (write_file($config, $dir, $newFile, $data)) {
         return [true, $newFile];
     }
 
@@ -218,15 +218,13 @@ function file_name_to_write(string $dir, string $file): string
     return $file;
 }
 
-function validate_filename(string $dir, string $file, bool $isBackup = false): bool
+function validate_filename(string $file, bool $isBackup = false): bool
 {
     if (\strlen($file) === 0) {
         return false;
     }
 
-    $abs_path = combine($dir, $file);
-
-    $filename = \pathinfo($abs_path, \PATHINFO_FILENAME);
+    $filename = \pathinfo($file, \PATHINFO_FILENAME);
 
     if (\strlen($filename) === 0) {
         return false;
@@ -245,11 +243,9 @@ function validate_filename(string $dir, string $file, bool $isBackup = false): b
 /**
  * @param string[] $allowed
  */
-function validate_extension(string $dir, string $file, array $allowed = PAGE_EXTENSIONS): bool
+function validate_extension(string $file, array $allowed): bool
 {
-    $abs_path = combine($dir, $file);
-
-    $extension = \pathinfo($abs_path, \PATHINFO_EXTENSION);
+    $extension = \pathinfo($file, \PATHINFO_EXTENSION);
 
     if (!\in_array($extension, $allowed)) {
         return false;

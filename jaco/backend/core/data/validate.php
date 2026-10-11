@@ -4,8 +4,6 @@ namespace jaco\core\data\validate;
 
 use jaco\core\filesystem;
 
-use const jaco\WEB_DIR;
-
 final class Result
 {
     public function __construct(
@@ -75,15 +73,15 @@ function safe(mixed $value = null): Result
  */
 function file_extension(string $value, array $allowedExtensions = []): Result
 {
-    if (filesystem\validate_extension(WEB_DIR, $value, $allowedExtensions)) {
+    if (filesystem\validate_extension($value, $allowedExtensions)) {
         return Result::ok();
     }
     return Result::error('{value} is an invalid extension');
 }
 
-function html_file_extension(string $value): Result
+function html_file_extension(string $value, array $allowedExtensions): Result
 {
-    if (filesystem\validate_extension(WEB_DIR, $value)) {
+    if (filesystem\validate_extension($value, $allowedExtensions)) {
         return Result::ok();
     }
     return Result::error('{value} is an invalid extension');
@@ -91,21 +89,21 @@ function html_file_extension(string $value): Result
 
 function html_file_name(string $value, bool $isBackup = false): Result
 {
-    if (filesystem\validate_filename(WEB_DIR, $value, $isBackup)) {
+    if (filesystem\validate_filename($value, $isBackup)) {
         return Result::ok();
     }
     return Result::error('{value} is an invalid filename');
 }
 
-function file_writeable(string $value): Result
+function file_writeable(string $value, string $dir): Result
 {
-    if (filesystem\file_is_writable(WEB_DIR, $value)) {
+    if (filesystem\file_is_writable($dir, $value)) {
         return Result::ok();
     }
     return Result::error('{value} is not writeable.');
 }
 
-function file_exists(string $value, string $dir = WEB_DIR, bool $negate = false): Result
+function file_exists(string $value, string $dir, bool $negate = false): Result
 {
     if (filesystem\file_exists($dir, $value) === !$negate) {
         return Result::ok();

@@ -4,9 +4,6 @@ namespace jaco\tests;
 
 use jaco\core\http\Status;
 
-use const jaco\BACKUP_DIR;
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Backup view API (backup/view)
  */
@@ -21,9 +18,9 @@ final class ApiBackupViewTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir(WEB_DIR);
-        $this->watchDir(BACKUP_DIR);
-        file_put_contents(WEB_DIR . '/' . self::PAGE, self::ORIGINAL);
+        $this->watchDir($this->config->webDir);
+        $this->watchDir($this->config->backupDir);
+        file_put_contents($this->config->webDir . '/' . self::PAGE, self::ORIGINAL);
     }
 
     public function testBackupIsReturnedWithItsContent(): void

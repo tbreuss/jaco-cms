@@ -2,25 +2,25 @@
 
 namespace jaco\domain\translation;
 
-use const jaco\DEFAULT_LANGUAGE;
+use jaco\core\config\Config;
 
 final class DomainPayload extends \jaco\domain\Payload {}
 
-function load_translations(string $forLanguage): DomainPayload
+function load_translations(Config $config, string $forLanguage): DomainPayload
 {
-    $translations = load($forLanguage);
+    $translations = load($config, $forLanguage);
 
     return DomainPayload::success($translations);
 }
 
-function load_translation(string $forLanguage, string $withKey): DomainPayload
+function load_translation(Config $config, string $forLanguage, string $withKey): DomainPayload
 {
-    $translations = load($forLanguage);
+    $translations = load($config, $forLanguage);
 
     return DomainPayload::success($translations[$withKey] ?? $withKey);
 }
 
-function load(string $language): array
+function load(Config $config, string $language): array
 {
     static $translations = [];
 
@@ -34,11 +34,11 @@ function load(string $language): array
     if (is_file($path)) {
         $decoded = json_decode(file_get_contents($path), true);
         $translations[$language] = is_array($decoded) ? $decoded : [];
-    } elseif ($language === DEFAULT_LANGUAGE) {
+    } elseif ($language === $config->defaultLanguage) {
         // the default language file is missing, return empty translations
         $translations[$language] = [];
     } else {
-        $translations[$language] = load(DEFAULT_LANGUAGE);
+        $translations[$language] = load($config, $config->defaultLanguage);
     }
 
     return $translations[$language];

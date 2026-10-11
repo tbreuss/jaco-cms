@@ -1,7 +1,6 @@
 parameters:
     bootstrapFiles:
         - vendor/autoload.php
-        - constants.php
     ignoreErrors:
         - '#Path in require\(\) "settings.php" is not a file or it does not exist.#'
         - '#with no value type specified in iterable type array.#'
@@ -13,6 +12,5 @@ parameters:
         - routes.php
         - autoload.php
         - cli.php
-        - constants.php
         - settings.dist.php
     reportUnmatchedIgnoredErrors: false

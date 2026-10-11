@@ -2,14 +2,16 @@
 
 namespace jaco\cli\auth\token;
 
+use jaco\core\config\Config;
 use jaco\domain\system\DomainPayload;
 
 use function jaco\core\responder\cli_errors;
 use function jaco\domain\system\authenticate_user;
 
-function command(string $user, string $pass): void
+function command(Config $config, string $user, string $pass): void
 {
     $payload = authenticate_user(
+        $config,
         username: $user,
         withPassword: $pass,
     );

@@ -4,9 +4,6 @@ namespace jaco\tests;
 
 use jaco\core\http\Status;
 
-use const jaco\BACKUP_DIR;
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Backup delete API (backup/delete)
  */
@@ -21,20 +18,20 @@ final class ApiBackupDeleteTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir(WEB_DIR);
-        $this->watchDir(BACKUP_DIR);
-        file_put_contents(WEB_DIR . '/' . self::PAGE, self::ORIGINAL);
+        $this->watchDir($this->config->webDir);
+        $this->watchDir($this->config->backupDir);
+        file_put_contents($this->config->webDir . '/' . self::PAGE, self::ORIGINAL);
     }
 
     public function testBackupIsDeleted(): void
     {
         $backup = $this->createPageBackup(self::PAGE, $this->changedPage());
-        $this->assertFileExists(BACKUP_DIR . '/' . $backup);
+        $this->assertFileExists($this->config->backupDir . '/' . $backup);
 
         $response = $this->api('backup/delete', ['file' => $backup]);
 
         $this->assertSame(Status::OK, $response->status);
-        $this->assertFileDoesNotExist(BACKUP_DIR . '/' . $backup);
+        $this->assertFileDoesNotExist($this->config->backupDir . '/' . $backup);
     }
 
     public function testUnknownBackupIsRejected(): void
@@ -49,7 +46,7 @@ final class ApiBackupDeleteTest extends ApiTestCase
         $response = $this->api('backup/delete', ['file' => self::PAGE]);
 
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
-        $this->assertFileExists(WEB_DIR . '/' . self::PAGE);
+        $this->assertFileExists($this->config->webDir . '/' . self::PAGE);
     }
 
     public function testRequestWithoutTokenIsForbidden(): void
@@ -59,7 +56,7 @@ final class ApiBackupDeleteTest extends ApiTestCase
         $response = $this->api('backup/delete', ['file' => $backup], 'POST', false);
 
         $this->assertSame(Status::FORBIDDEN, $response->status);
-        $this->assertFileExists(BACKUP_DIR . '/' . $backup);
+        $this->assertFileExists($this->config->backupDir . '/' . $backup);
     }
 
     private function changedPage(): string

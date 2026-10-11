@@ -3,6 +3,7 @@
         "php": "^8.2",
         "ext-dom": "*",
         "ext-libxml": "*",
+        "ext-openssl": "*",
         "firebase/php-jwt": "^6.1",
         "opis/json-schema": "^2.3",
         "adhocore/cli": "^1.6"

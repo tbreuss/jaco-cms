@@ -5,8 +5,6 @@ namespace jaco\tests;
 use PHPUnit\Framework\TestCase;
 use jaco\core\filesystem;
 
-use const jaco\WEB_DIR;
-
 /**
  * @testdox File naming and path handling
  */
@@ -17,15 +15,17 @@ final class FileSystemNamingTest extends TestCase
 
     protected function setUp(): void
     {
-        filesystem\make_dir_rec(WEB_DIR, self::DIR);
+        $config = test_config();
+        filesystem\make_dir_rec($config, $config->webDir, self::DIR);
     }
 
     protected function tearDown(): void
     {
-        @unlink(WEB_DIR . '/' . self::PLAIN);
-        @unlink(WEB_DIR . '/naming-plain-1.html');
-        @unlink(WEB_DIR . '/naming-plain-2.html');
-        filesystem\remove_dir_rec(WEB_DIR, self::DIR);
+        $config = test_config();
+        @unlink($config->webDir . '/' . self::PLAIN);
+        @unlink($config->webDir . '/naming-plain-1.html');
+        @unlink($config->webDir . '/naming-plain-2.html');
+        filesystem\remove_dir_rec($config->webDir, self::DIR);
     }
 
     public function testCombineJoinsWithASingleSeparator(): void
@@ -36,67 +36,71 @@ final class FileSystemNamingTest extends TestCase
 
     public function testFileNamesGetANumberWhenTheyAlreadyExist(): void
     {
+        $config = test_config();
         // this is the supported case, all callers pass plain file names
-        $this->assertSame(self::PLAIN, filesystem\file_name_to_write(WEB_DIR, self::PLAIN));
+        $this->assertSame(self::PLAIN, filesystem\file_name_to_write($config->webDir, self::PLAIN));
 
-        filesystem\write_file(WEB_DIR, self::PLAIN, 'a');
-        $this->assertSame('naming-plain-1.html', filesystem\file_name_to_write(WEB_DIR, self::PLAIN));
+        filesystem\write_file($config, $config->webDir, self::PLAIN, 'a');
+        $this->assertSame('naming-plain-1.html', filesystem\file_name_to_write($config->webDir, self::PLAIN));
 
-        filesystem\write_file(WEB_DIR, 'naming-plain-1.html', 'b');
-        $this->assertSame('naming-plain-2.html', filesystem\file_name_to_write(WEB_DIR, self::PLAIN));
+        filesystem\write_file($config, $config->webDir, 'naming-plain-1.html', 'b');
+        $this->assertSame('naming-plain-2.html', filesystem\file_name_to_write($config->webDir, self::PLAIN));
     }
 
     public function testCollisionKeepsTheDirectoryPrefix(): void
     {
-        filesystem\write_file(WEB_DIR, self::DIR . '/x.html', 'a');
+        $config = test_config();
+        filesystem\write_file($config, $config->webDir, self::DIR . '/x.html', 'a');
 
         $this->assertSame(
             self::DIR . '/x-1.html',
-            filesystem\file_name_to_write(WEB_DIR, self::DIR . '/x.html'),
+            filesystem\file_name_to_write($config->webDir, self::DIR . '/x.html'),
         );
 
-        filesystem\write_file(WEB_DIR, self::DIR . '/x-1.html', 'b');
+        filesystem\write_file($config, $config->webDir, self::DIR . '/x-1.html', 'b');
 
         // the next check has to look into the same directory again
         $this->assertSame(
             self::DIR . '/x-2.html',
-            filesystem\file_name_to_write(WEB_DIR, self::DIR . '/x.html'),
+            filesystem\file_name_to_write($config->webDir, self::DIR . '/x.html'),
         );
     }
 
     public function testFileNameWithoutExtensionGetsANumber(): void
     {
-        filesystem\write_file(WEB_DIR, self::DIR . '/noext', 'a');
+        $config = test_config();
+        filesystem\write_file($config, $config->webDir, self::DIR . '/noext', 'a');
 
-        $this->assertSame(self::DIR . '/noext-1', filesystem\file_name_to_write(WEB_DIR, self::DIR . '/noext'));
+        $this->assertSame(self::DIR . '/noext-1', filesystem\file_name_to_write($config->webDir, self::DIR . '/noext'));
 
-        filesystem\write_file(WEB_DIR, self::DIR . '/noext-1', 'b');
+        filesystem\write_file($config, $config->webDir, self::DIR . '/noext-1', 'b');
 
-        $this->assertSame(self::DIR . '/noext-2', filesystem\file_name_to_write(WEB_DIR, self::DIR . '/noext'));
+        $this->assertSame(self::DIR . '/noext-2', filesystem\file_name_to_write($config->webDir, self::DIR . '/noext'));
     }
 
     public function testValidateFilenameAllowsSubdirectoriesButNoSpaces(): void
     {
-        $this->assertTrue(filesystem\validate_filename(WEB_DIR, 'x.html'));
-        $this->assertTrue(filesystem\validate_filename(WEB_DIR, 'sub/x.html'));
-        $this->assertFalse(filesystem\validate_filename(WEB_DIR, 'x y.html'));
-        $this->assertFalse(filesystem\validate_filename(WEB_DIR, ''));
+        $this->assertTrue(filesystem\validate_filename('x.html'));
+        $this->assertTrue(filesystem\validate_filename('sub/x.html'));
+        $this->assertFalse(filesystem\validate_filename('x y.html'));
+        $this->assertFalse(filesystem\validate_filename(''));
     }
 
     public function testValidateFilenameAcceptsThePipeOnlyInBackupNames(): void
     {
         $backup = '20200102_030405_abcd_sub|page.html';
 
-        $this->assertTrue(filesystem\validate_filename(WEB_DIR, $backup, true));
-        $this->assertFalse(filesystem\validate_filename(WEB_DIR, $backup));
+        $this->assertTrue(filesystem\validate_filename($backup, true));
+        $this->assertFalse(filesystem\validate_filename($backup));
     }
 
     public function testValidateExtensionOnlyLooksAtTheExtension(): void
     {
-        $this->assertTrue(filesystem\validate_extension(WEB_DIR, 'x.html'));
-        $this->assertFalse(filesystem\validate_extension(WEB_DIR, 'x.txt'));
-        $this->assertFalse(filesystem\validate_extension(WEB_DIR, 'noextension'));
-        $this->assertTrue(filesystem\validate_extension(WEB_DIR, 'upload/x.jpg', ['jpg']));
+        $config = test_config();
+        $this->assertTrue(filesystem\validate_extension('x.html', $config->pageExtensions));
+        $this->assertFalse(filesystem\validate_extension('x.txt', $config->pageExtensions));
+        $this->assertFalse(filesystem\validate_extension('noextension', $config->pageExtensions));
+        $this->assertTrue(filesystem\validate_extension('upload/x.jpg', ['jpg']));
     }
 
     public function testFileInDirComparesTheFirstSegmentOnly(): void

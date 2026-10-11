@@ -2,16 +2,11 @@
 
 namespace jaco\domain\backup;
 
+use jaco\core\config\Config;
 use jaco\core\data;
 use jaco\core\filesystem;
 use jaco\core\html;
 use jaco\core\list;
-
-use const jaco\BACKUP_DIR;
-use const jaco\BACKUP_RETENTION_DAYS;
-use const jaco\PAGE_EXTENSIONS;
-use const jaco\UPLOAD_EXTENSIONS;
-use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['backedUp', 'created', 'name', 'title', 'type'];
 
@@ -30,7 +25,7 @@ final class Backup
 
 final class DomainPayload extends \jaco\domain\Payload {}
 
-function find_backups(string $filteredBy, string $sortedBy): DomainPayload
+function find_backups(Config $config, string $filteredBy, string $sortedBy): DomainPayload
 {
     $errors = data\validate(
         [
@@ -48,18 +43,18 @@ function find_backups(string $filteredBy, string $sortedBy): DomainPayload
         return DomainPayload::invalid($errors);
     }
 
-    if (!filesystem\dir_exists(BACKUP_DIR)) {
+    if (!filesystem\dir_exists($config->backupDir)) {
         return DomainPayload::error([['', 'Dir does not exist.']]);
     }
 
-    $files = filesystem\find_files(BACKUP_DIR, array_merge(UPLOAD_EXTENSIONS, PAGE_EXTENSIONS));
+    $files = filesystem\find_files($config->backupDir, array_merge($config->uploadExtensions, $config->pageExtensions));
 
     // retention is lazy: every listing drops backups older than the
     // configured days, so no cron job is needed
-    $files = prune_old_backups($files);
+    $files = prune_old_backups($config, $files);
 
     $sort = sort_field($sortedBy);
-    $backups = create_list($files, BACKUP_DIR, PAGE_EXTENSIONS);
+    $backups = create_list($files, $config->backupDir, $config->pageExtensions);
     $backups = list\filter_list($backups, $filteredBy);
     $backups = list\sort_list($backups, $sort);
 
@@ -70,7 +65,7 @@ function find_backups(string $filteredBy, string $sortedBy): DomainPayload
     ]);
 }
 
-function find_backup(string $file): DomainPayload
+function find_backup(Config $config, string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -78,8 +73,8 @@ function find_backup(string $file): DomainPayload
 
     $errors = data\validate_one($file, 'file', [
         ['required'],
-        ['file_exists', 'dir' => BACKUP_DIR],
-        ['file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
+        ['file_exists', 'dir' => $config->backupDir],
+        ['file_extension', 'allowedExtensions' => array_merge($config->pageExtensions, $config->uploadExtensions)],
         ['html_file_name', 'isBackup' => true],
     ]);
 
@@ -87,28 +82,28 @@ function find_backup(string $file): DomainPayload
         return DomainPayload::invalid($errors);
     }
 
-    $content = filesystem\read_file(BACKUP_DIR, $file);
+    $content = filesystem\read_file($config->backupDir, $file);
 
     if ($content === null) {
         return DomainPayload::error([['file', 'Could not read file.']]);
     }
 
     $extension = \pathinfo($file, PATHINFO_EXTENSION);
-    $type = in_array($extension, PAGE_EXTENSIONS) ? 'page' : 'upload';
+    $type = in_array($extension, $config->pageExtensions) ? 'page' : 'upload';
     return DomainPayload::success(
         (array) new Backup(
             $file,
             str_replace('|', DIRECTORY_SEPARATOR, substr($file, filesystem\BACKUP_NAME_PREFIX_LENGTH)),
             html\get_title($content),
             filesystem\restore_timestamp_from_file_name($file),
-            filesystem\file_mtime($file, BACKUP_DIR),
+            filesystem\file_mtime($file, $config->backupDir),
             $type,
             $type === 'page' ? $content : base64_encode($content),
         ),
     );
 }
 
-function restore_backup(string $file): DomainPayload
+function restore_backup(Config $config, string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -116,8 +111,8 @@ function restore_backup(string $file): DomainPayload
 
     $errors = data\validate_one($file, 'file', [
         ['required'],
-        ['file_exists', 'dir' => BACKUP_DIR],
-        ['file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS, UPLOAD_EXTENSIONS)],
+        ['file_exists', 'dir' => $config->backupDir],
+        ['file_extension', 'allowedExtensions' => array_merge($config->pageExtensions, $config->uploadExtensions)],
         ['html_file_name', 'isBackup' => true],
     ]);
 
@@ -125,7 +120,7 @@ function restore_backup(string $file): DomainPayload
         return DomainPayload::invalid($errors);
     }
 
-    $status = filesystem\restore_file(BACKUP_DIR, $file, WEB_DIR);
+    $status = filesystem\restore_file($config, $config->backupDir, $file, $config->webDir);
 
     if (!$status) {
         return DomainPayload::error([['file', 'Could not restore file.']]);
@@ -134,7 +129,7 @@ function restore_backup(string $file): DomainPayload
     return DomainPayload::success();
 }
 
-function delete_backup(string $file): DomainPayload
+function delete_backup(Config $config, string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -142,14 +137,14 @@ function delete_backup(string $file): DomainPayload
 
     $errors = data\validate_one($file, 'file', [
         ['required'],
-        ['file_exists', 'dir' => BACKUP_DIR],
+        ['file_exists', 'dir' => $config->backupDir],
     ]);
 
     if (count($errors) > 0) {
         return DomainPayload::invalid($errors);
     }
 
-    $status = filesystem\delete_file(BACKUP_DIR, $file);
+    $status = filesystem\delete_file($config->backupDir, $file);
 
     if (!$status) {
         return DomainPayload::error([['file', 'Could not delete file.']]);
@@ -184,9 +179,9 @@ function create_list(array $files, string $dir, array $pageExtensions): array
  * @param filesystem\File[] $files
  * @return filesystem\File[] files within the retention period
  */
-function prune_old_backups(array $files): array
+function prune_old_backups(Config $config, array $files): array
 {
-    $days = (int) BACKUP_RETENTION_DAYS;
+    $days = $config->backupRetentionDays;
 
     if ($days <= 0) {
         return $files;
@@ -195,7 +190,7 @@ function prune_old_backups(array $files): array
     $kept = [];
     foreach ($files as $file) {
         if ($file->modified < time() - $days * 86400) {
-            filesystem\delete_file(BACKUP_DIR, $file->file);
+            filesystem\delete_file($config->backupDir, $file->file);
             continue;
         }
         $kept[] = $file;

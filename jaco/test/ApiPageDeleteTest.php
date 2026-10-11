@@ -4,11 +4,6 @@ namespace jaco\tests;
 
 use jaco\core\http\Status;
 
-use const jaco\APP_DIR;
-use const jaco\APP_DIR_NAME;
-use const jaco\BACKUP_DIR;
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Page delete API (page/delete)
  */
@@ -23,10 +18,10 @@ final class ApiPageDeleteTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir(WEB_DIR);
-        $this->watchDir(BACKUP_DIR);
+        $this->watchDir($this->config->webDir);
+        $this->watchDir($this->config->backupDir);
 
-        file_put_contents(WEB_DIR . '/' . self::PAGE, self::CONTENT);
+        file_put_contents($this->config->webDir . '/' . self::PAGE, self::CONTENT);
     }
 
     public function testPageIsBackedUpBeforeItIsDeleted(): void
@@ -34,12 +29,12 @@ final class ApiPageDeleteTest extends ApiTestCase
         $response = $this->api('page/delete', ['fileName' => self::PAGE]);
 
         $this->assertSame(Status::OK, $response->status);
-        $this->assertFileDoesNotExist(WEB_DIR . '/' . self::PAGE);
+        $this->assertFileDoesNotExist($this->config->webDir . '/' . self::PAGE);
 
-        $backups = $this->newEntriesIn(BACKUP_DIR);
+        $backups = $this->newEntriesIn($this->config->backupDir);
         $this->assertCount(1, $backups, 'exactly one backup is expected');
         $this->assertStringContainsString(self::PAGE, $backups[0]);
-        $this->assertSame(self::CONTENT, file_get_contents(BACKUP_DIR . '/' . $backups[0]));
+        $this->assertSame(self::CONTENT, file_get_contents($this->config->backupDir . '/' . $backups[0]));
     }
 
     public function testUnknownPageIsRejected(): void
@@ -51,7 +46,7 @@ final class ApiPageDeleteTest extends ApiTestCase
 
     public function testFileWithoutPageExtensionIsNotDeleted(): void
     {
-        $file = WEB_DIR . '/api-delete-test.txt';
+        $file = $this->config->webDir . '/api-delete-test.txt';
         file_put_contents($file, 'not a page');
 
         $response = $this->api('page/delete', ['fileName' => 'api-delete-test.txt']);
@@ -62,12 +57,12 @@ final class ApiPageDeleteTest extends ApiTestCase
 
     public function testFileInTheAppDirIsNotDeleted(): void
     {
-        $file = APP_DIR . '/api-delete-protected.html';
+        $file = $this->config->appDir . '/api-delete-protected.html';
         file_put_contents($file, 'admin ui');
 
         try {
             $response = $this->api('page/delete', [
-                'fileName' => APP_DIR_NAME . '/api-delete-protected.html',
+                'fileName' => $this->config->appDirName . '/api-delete-protected.html',
             ]);
 
             $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
@@ -82,6 +77,6 @@ final class ApiPageDeleteTest extends ApiTestCase
         $response = $this->api('page/delete', ['fileName' => self::PAGE], 'POST', false);
 
         $this->assertSame(Status::FORBIDDEN, $response->status);
-        $this->assertFileExists(WEB_DIR . '/' . self::PAGE);
+        $this->assertFileExists($this->config->webDir . '/' . self::PAGE);
     }
 }

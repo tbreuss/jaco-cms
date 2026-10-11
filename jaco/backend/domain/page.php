@@ -2,17 +2,11 @@
 
 namespace jaco\domain\page;
 
+use jaco\core\config\Config;
 use jaco\core\data;
 use jaco\core\filesystem;
 use jaco\core\html;
 use jaco\core\list;
-
-use const jaco\APP_DIR;
-use const jaco\APP_DIR_NAME;
-use const jaco\BACKUP_DIR;
-use const jaco\PAGE_EXTENSIONS;
-use const jaco\TEMPLATE_PAGE_DIR;
-use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['created', 'file', 'title'];
 
@@ -28,7 +22,7 @@ final class Page
 
 final class DomainPayload extends \jaco\domain\Payload {}
 
-function find_pages(string $filteredBy, string $sortedBy): DomainPayload
+function find_pages(Config $config, string $filteredBy, string $sortedBy): DomainPayload
 {
     $errors = data\validate(
         [
@@ -46,10 +40,10 @@ function find_pages(string $filteredBy, string $sortedBy): DomainPayload
         return DomainPayload::invalid($errors);
     }
 
-    $files = filesystem\find_files_rec(WEB_DIR, PAGE_EXTENSIONS, [APP_DIR]);
+    $files = filesystem\find_files_rec($config->webDir, $config->pageExtensions, [$config->appDir]);
 
     $sorted = sort_field($sortedBy);
-    $pages = create_list($files, WEB_DIR);
+    $pages = create_list($files, $config->webDir);
     $pages = list\filter_list($pages, $filteredBy);
     $pages = list\sort_list($pages, $sorted);
 
@@ -60,7 +54,7 @@ function find_pages(string $filteredBy, string $sortedBy): DomainPayload
     ]);
 }
 
-function find_page(string $file): DomainPayload
+function find_page(Config $config, string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -68,16 +62,16 @@ function find_page(string $file): DomainPayload
 
     $errors = data\validate_one($file, 'file', [
         ['required'],
-        ['file_exists', 'dir' => WEB_DIR],
-        ['file_extension', 'allowedExtensions' => array_merge(PAGE_EXTENSIONS)],
-        ['file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
+        ['file_exists', 'dir' => $config->webDir],
+        ['file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
     ]);
 
     if (count($errors) > 0) {
         return DomainPayload::invalid($errors);
     }
 
-    $html = filesystem\read_file(WEB_DIR, $file);
+    $html = filesystem\read_file($config->webDir, $file);
 
     if ($html === null) {
         return DomainPayload::error([['file', 'Could not read file.']]);
@@ -86,12 +80,12 @@ function find_page(string $file): DomainPayload
     return DomainPayload::success([
         'file' => $file,
         'title' => html\get_title($html),
-        'created' => filesystem\file_mtime($file, WEB_DIR),
+        'created' => filesystem\file_mtime($file, $config->webDir),
         'content' => $html,
     ]);
 }
 
-function delete_page(string $file): DomainPayload
+function delete_page(Config $config, string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -99,24 +93,24 @@ function delete_page(string $file): DomainPayload
 
     $errors = data\validate_one($file, 'file', [
         ['required'],
-        ['file_exists', 'dir' => WEB_DIR],
-        ['file_writeable'],
+        ['file_exists', 'dir' => $config->webDir],
+        ['file_writeable', 'dir' => $config->webDir],
         ['html_file_name'],
-        ['html_file_extension'],
-        ['file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
+        ['html_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
     ]);
 
     if (count($errors) > 0) {
         return DomainPayload::invalid($errors);
     }
 
-    $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
+    $status = filesystem\backup_file($config->webDir, $file, $config->backupDir);
 
     if (!$status) {
         return DomainPayload::error([['file', 'Could not backup file.']]);
     }
 
-    $status = filesystem\delete_file(WEB_DIR, $file);
+    $status = filesystem\delete_file($config->webDir, $file);
 
     if (!$status) {
         return DomainPayload::error([['file', 'Could not delete file.']]);
@@ -125,7 +119,7 @@ function delete_page(string $file): DomainPayload
     return DomainPayload::success();
 }
 
-function copy_page(string $file, string $toFile, string $withTitle): DomainPayload
+function copy_page(Config $config, string $file, string $toFile, string $withTitle): DomainPayload
 {
     $data = data\sanitize(
         [
@@ -142,13 +136,13 @@ function copy_page(string $file, string $toFile, string $withTitle): DomainPaylo
 
     $errors = data\validate($data, [
         ['file', 'required'],
-        ['file', 'file_exists'],
-        ['file', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
+        ['file', 'file_exists', 'dir' => $config->webDir],
+        ['file', 'file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
         ['toFile', 'required'],
         ['toFile', 'html_file_name'],
-        ['toFile', 'html_file_extension'],
-        ['toFile', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
-        ['toFile', 'file_exists', 'negate' => true],
+        ['toFile', 'html_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['toFile', 'file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
+        ['toFile', 'file_exists', 'dir' => $config->webDir, 'negate' => true],
         ['withTitle', 'required'],
     ]);
 
@@ -156,7 +150,7 @@ function copy_page(string $file, string $toFile, string $withTitle): DomainPaylo
         return DomainPayload::invalid($errors);
     }
 
-    $html = filesystem\read_file(WEB_DIR, $data['file']);
+    $html = filesystem\read_file($config->webDir, $data['file']);
 
     if ($html === null) {
         return DomainPayload::error([['file', 'Could not read file content.']]);
@@ -164,13 +158,13 @@ function copy_page(string $file, string $toFile, string $withTitle): DomainPaylo
 
     $html = html\set_title($html, $data['withTitle']);
 
-    $status = filesystem\write_file(WEB_DIR, $data['toFile'], $html);
+    $status = filesystem\write_file($config, $config->webDir, $data['toFile'], $html);
 
     if ($status === false) {
         return DomainPayload::error([['toFile', 'Could not write file content.']]);
     }
 
-    $html = filesystem\read_file(WEB_DIR, $data['toFile']);
+    $html = filesystem\read_file($config->webDir, $data['toFile']);
 
     if ($html === null) {
         return DomainPayload::error([['toFile', 'Could not read new page.']]);
@@ -179,12 +173,12 @@ function copy_page(string $file, string $toFile, string $withTitle): DomainPaylo
     return DomainPayload::success([
         'file' => $data['toFile'],
         'title' => html\get_title($html),
-        'created' => filesystem\file_mtime($data['toFile'], WEB_DIR),
+        'created' => filesystem\file_mtime($data['toFile'], $config->webDir),
         'content' => $html,
     ]);
 }
 
-function create_page(string $file, string $fromTemplate, string $withTitle): DomainPayload
+function create_page(Config $config, string $file, string $fromTemplate, string $withTitle): DomainPayload
 {
     $data = data\sanitize(
         [
@@ -202,9 +196,9 @@ function create_page(string $file, string $fromTemplate, string $withTitle): Dom
     $errors = data\validate($data, [
         ['file', 'required'],
         ['file', 'html_file_name'],
-        ['file', 'html_file_extension'],
-        ['file', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
-        ['file', 'file_exists', 'negate' => true],
+        ['file', 'html_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['file', 'file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
+        ['file', 'file_exists', 'dir' => $config->webDir, 'negate' => true],
         ['fromTemplate', 'required'],
         ['withTitle', 'required'],
     ]);
@@ -213,7 +207,7 @@ function create_page(string $file, string $fromTemplate, string $withTitle): Dom
         return DomainPayload::invalid($errors);
     }
 
-    $html = filesystem\read_file(TEMPLATE_PAGE_DIR, $data['fromTemplate']);
+    $html = filesystem\read_file($config->templatePageDir, $data['fromTemplate']);
 
     if ($html === null) {
         return DomainPayload::error([['fromTemplate', 'Could not read file.']]);
@@ -221,7 +215,7 @@ function create_page(string $file, string $fromTemplate, string $withTitle): Dom
 
     $html = html\set_title($html, $data['withTitle']);
 
-    $status = filesystem\write_file(WEB_DIR, $data['file'], $html);
+    $status = filesystem\write_file($config, $config->webDir, $data['file'], $html);
 
     if (!$status) {
         return DomainPayload::error([['file', 'Could not write file.']]);
@@ -230,7 +224,7 @@ function create_page(string $file, string $fromTemplate, string $withTitle): Dom
     return DomainPayload::success();
 }
 
-function update_page(string $file, string $withContent): DomainPayload
+function update_page(Config $config, string $file, string $withContent): DomainPayload
 {
     $data = data\sanitize(
         [
@@ -246,10 +240,10 @@ function update_page(string $file, string $withContent): DomainPayload
 
     $errors = data\validate($data, [
         ['file', 'required'],
-        ['file', 'file_exists'],
+        ['file', 'file_exists', 'dir' => $config->webDir],
         ['file', 'html_file_name'],
-        ['file', 'html_file_extension'],
-        ['file', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
+        ['file', 'html_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['file', 'file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
         ['withContent', 'required'],
     ]);
 
@@ -257,7 +251,7 @@ function update_page(string $file, string $withContent): DomainPayload
         return DomainPayload::invalid($errors);
     }
 
-    [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['withContent']);
+    [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($config, $data['withContent']);
 
     if ($status) {
         // the page manager owns the document: doctype and head stay as sent,
@@ -267,13 +261,13 @@ function update_page(string $file, string $withContent): DomainPayload
         return DomainPayload::error([['withContent', \reset($htmlOrErrors)]]);
     }
 
-    $status = filesystem\backup_file(WEB_DIR, $data['file'], BACKUP_DIR);
+    $status = filesystem\backup_file($config->webDir, $data['file'], $config->backupDir);
 
     if (!$status) {
         return DomainPayload::error([['file', 'Could not backup file.']]);
     }
 
-    $status = filesystem\write_file(WEB_DIR, $data['file'], $data['withContent']);
+    $status = filesystem\write_file($config, $config->webDir, $data['file'], $data['withContent']);
 
     if (!$status) {
         return DomainPayload::error([['file', 'Could not write content to file.']]);
@@ -286,7 +280,7 @@ function update_page(string $file, string $withContent): DomainPayload
  * Update only the body of a page. The inline editor sends content, never a document,
  * so the document around it - doctype and head - stays untouched.
  */
-function update_page_body(string $file, string $withBody): DomainPayload
+function update_page_body(Config $config, string $file, string $withBody): DomainPayload
 {
     $data = data\sanitize(
         [
@@ -302,10 +296,10 @@ function update_page_body(string $file, string $withBody): DomainPayload
 
     $errors = data\validate($data, [
         ['file', 'required'],
-        ['file', 'file_exists'],
+        ['file', 'file_exists', 'dir' => $config->webDir],
         ['file', 'html_file_name'],
-        ['file', 'html_file_extension'],
-        ['file', 'file_in_dir', 'dir' => APP_DIR_NAME, 'negate' => true],
+        ['file', 'html_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['file', 'file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
         ['withBody', 'required'],
     ]);
 
@@ -313,23 +307,23 @@ function update_page_body(string $file, string $withBody): DomainPayload
         return DomainPayload::invalid($errors);
     }
 
-    [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($data['withBody']);
+    [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($config, $data['withBody']);
 
     if (!$status) {
         return DomainPayload::error([['withBody', \reset($htmlOrErrors)]]);
     }
 
     // the client owns the content, the stored document keeps doctype and head
-    $document = filesystem\read_file(WEB_DIR, $data['file']) ?? '';
+    $document = filesystem\read_file($config->webDir, $data['file']) ?? '';
     $data['withBody'] = html\replace_body($document, html\sanitize_html($htmlOrErrors));
 
-    $status = filesystem\backup_file(WEB_DIR, $data['file'], BACKUP_DIR);
+    $status = filesystem\backup_file($config->webDir, $data['file'], $config->backupDir);
 
     if (!$status) {
         return DomainPayload::error([['file', 'Could not backup file.']]);
     }
 
-    $status = filesystem\write_file(WEB_DIR, $data['file'], $data['withBody']);
+    $status = filesystem\write_file($config, $config->webDir, $data['file'], $data['withBody']);
 
     if (!$status) {
         return DomainPayload::error([['file', 'Could not write content to file.']]);

@@ -2,15 +2,17 @@
 
 namespace jaco\api\system\log;
 
+use jaco\core\config\Config;
 use jaco\core\http\Response;
 use jaco\domain\system\DomainPayload;
 
 use function jaco\core\http\json_response;
 use function jaco\domain\system\get_log_entries;
 
-function action(): Response
+function action(Config $config): Response
 {
     $payload = get_log_entries(
+        $config,
         size: 1000,
     );
 

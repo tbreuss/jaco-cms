@@ -2,6 +2,7 @@
 
 namespace jaco\api\page\copy;
 
+use jaco\core\config\Config;
 use jaco\core\http\Request;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
@@ -12,13 +13,14 @@ use function jaco\core\responder\api_errors;
 use function jaco\core\responder\maintenance_response;
 use function jaco\domain\page\copy_page;
 
-function action(Request $request): Response
+function action(Config $config, Request $request): Response
 {
-    if (($blocked = maintenance_response()) !== null) {
+    if (($blocked = maintenance_response($config->maintenanceMode)) !== null) {
         return $blocked;
     }
 
     $payload = copy_page(
+        $config,
         file: $request->post->strVal('srcFileName'),
         toFile: $request->post->strVal('dstFileName'),
         withTitle: $request->post->strVal('dstPageTitle'),

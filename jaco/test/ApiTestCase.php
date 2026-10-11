@@ -4,14 +4,11 @@ namespace jaco\tests;
 
 use PHPUnit\Framework\TestCase;
 use jaco\core\auth;
+use jaco\core\config\Config;
 use jaco\core\http\Map;
 use jaco\core\http\Request;
 use jaco\core\http\Response;
 use jaco\core\router;
-
-use const jaco\BACKUP_DIR;
-use const jaco\PASSWORD;
-use const jaco\USERNAME;
 
 /**
  * Base class for tests that send requests through the real route table, so the
@@ -19,12 +16,16 @@ use const jaco\USERNAME;
  */
 abstract class ApiTestCase extends TestCase
 {
+    protected Config $config;
+
     /** @var array<string, list<string>> */
     private array $watchedDirs = [];
 
     protected function setUp(): void
     {
         require_once __DIR__ . '/../routes.php';
+
+        $this->config = test_config();
     }
 
     protected function tearDown(): void
@@ -64,6 +65,7 @@ abstract class ApiTestCase extends TestCase
         string $method = 'POST',
         bool $authenticated = true,
         array $query = [],
+        ?Config $config = null,
     ): Response {
         $server = ['REQUEST_METHOD' => $method];
 
@@ -76,18 +78,18 @@ abstract class ApiTestCase extends TestCase
             post: new Map($post),
             server: new Map($server),
             headers: new Map([]),
-        ));
+        ), $config ?? $this->config);
     }
 
     /**
      * Update a page through the API and return the file name of the backup this created.
-     * The test must have called watchDir(BACKUP_DIR) before.
+     * The test must have called watchDir() with the backup directory before.
      */
     protected function createPageBackup(string $page, string $html): string
     {
         $this->api('page/update', ['fileName' => $page, 'html' => $html]);
 
-        $newEntries = $this->newEntriesIn(BACKUP_DIR);
+        $newEntries = $this->newEntriesIn($this->config->backupDir);
         $this->assertCount(1, $newEntries, 'exactly one backup is expected');
 
         return $newEntries[0];
@@ -95,7 +97,7 @@ abstract class ApiTestCase extends TestCase
 
     protected function token(): string
     {
-        return (string) auth\authenticate(USERNAME, PASSWORD);
+        return (string) auth\authenticate($this->config, $this->config->username, $this->config->password);
     }
 
     /**

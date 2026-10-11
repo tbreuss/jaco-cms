@@ -5,8 +5,6 @@ namespace jaco\tests;
 use PHPUnit\Framework\TestCase;
 use jaco\core\filesystem;
 
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Filesystem Module
  */
@@ -14,63 +12,71 @@ final class FileFunctionsTest extends TestCase
 {
     protected function setUp(): void
     {
-        if (filesystem\dir_exists(WEB_DIR, 'test')) {
-            filesystem\remove_dir_rec(WEB_DIR, 'test');
+        $config = test_config();
+        if (filesystem\dir_exists($config->webDir, 'test')) {
+            filesystem\remove_dir_rec($config->webDir, 'test');
         }
-        filesystem\make_dir_rec(WEB_DIR, 'test');
+        filesystem\make_dir_rec($config, $config->webDir, 'test');
     }
 
     public function tearDown(): void
     {
-        if (filesystem\dir_exists(WEB_DIR, 'test')) {
-            filesystem\remove_dir_rec(WEB_DIR, 'test');
+        $config = test_config();
+        if (filesystem\dir_exists($config->webDir, 'test')) {
+            filesystem\remove_dir_rec($config->webDir, 'test');
         }
     }
 
     public function testExistingFileCanBeChecked(): void
     {
-        touch(WEB_DIR . '/test/foo.html');
-        $this->assertTrue(filesystem\file_exists(WEB_DIR, 'test/foo.html'));
+        $config = test_config();
+        touch($config->webDir . '/test/foo.html');
+        $this->assertTrue(filesystem\file_exists($config->webDir, 'test/foo.html'));
     }
 
     public function testNotExistingFileCanBeChecked(): void
     {
-        $this->assertFalse(filesystem\file_exists(WEB_DIR, 'xxx.html'));
-        $this->assertFalse(filesystem\file_exists(WEB_DIR, 'xxx/yyy/zzz.html'));
+        $config = test_config();
+        $this->assertFalse(filesystem\file_exists($config->webDir, 'xxx.html'));
+        $this->assertFalse(filesystem\file_exists($config->webDir, 'xxx/yyy/zzz.html'));
     }
 
     public function testWritableFileCanBeChecked(): void
     {
-        filesystem\make_dir_rec(WEB_DIR, 'test/is_writeable');
-        touch(WEB_DIR . '/test/is_writeable/a.html');
-        $this->assertTrue(filesystem\file_is_writable(WEB_DIR, 'test/is_writeable/a.html'));
+        $config = test_config();
+        filesystem\make_dir_rec($config, $config->webDir, 'test/is_writeable');
+        touch($config->webDir . '/test/is_writeable/a.html');
+        $this->assertTrue(filesystem\file_is_writable($config->webDir, 'test/is_writeable/a.html'));
     }
 
     public function testNotWritableFileCanBeChecked(): void
     {
-        filesystem\make_dir_rec(WEB_DIR, 'test/is_writeable');
-        touch(WEB_DIR . '/test/is_writeable/a.html');
-        filesystem\make_dir_rec(WEB_DIR, 'test/not_writeable', 0644);
-        $this->assertFalse(filesystem\file_is_writable(WEB_DIR, 'test/foo/writeable.html'));
+        $config = test_config();
+        filesystem\make_dir_rec($config, $config->webDir, 'test/is_writeable');
+        touch($config->webDir . '/test/is_writeable/a.html');
+        filesystem\make_dir_rec($config, $config->webDir, 'test/not_writeable', 0644);
+        $this->assertFalse(filesystem\file_is_writable($config->webDir, 'test/foo/writeable.html'));
 
         // the not_writeable dir is not traversable, restore permissions and remove it
-        chmod(WEB_DIR . '/test/not_writeable', 0755);
-        filesystem\remove_dir(WEB_DIR, 'test/not_writeable');
+        chmod($config->webDir . '/test/not_writeable', 0755);
+        filesystem\remove_dir($config->webDir, 'test/not_writeable');
     }
 
     public function testDirectoryCanBeCreated(): void
     {
+        $config = test_config();
         // make_dir is not recursive, so the parent has to exist
-        filesystem\make_dir_rec(WEB_DIR, 'test/parent');
-        filesystem\make_dir(WEB_DIR, 'test/parent/abc');
-        $this->assertTrue(is_dir(WEB_DIR . '/test/parent/abc'));
+        filesystem\make_dir_rec($config, $config->webDir, 'test/parent');
+        filesystem\make_dir($config, $config->webDir, 'test/parent/abc');
+        $this->assertTrue(is_dir($config->webDir . '/test/parent/abc'));
     }
 
     public function testDirectoryCanBeCreatedRecursively(): void
     {
-        filesystem\make_dir_rec(WEB_DIR, 'test/foo/bar/baz');
-        $this->assertTrue(is_dir(WEB_DIR . '/test/foo'));
-        $this->assertTrue(is_dir(WEB_DIR . '/test/foo/bar'));
-        $this->assertTrue(is_dir(WEB_DIR . '/test/foo/bar/baz'));
+        $config = test_config();
+        filesystem\make_dir_rec($config, $config->webDir, 'test/foo/bar/baz');
+        $this->assertTrue(is_dir($config->webDir . '/test/foo'));
+        $this->assertTrue(is_dir($config->webDir . '/test/foo/bar'));
+        $this->assertTrue(is_dir($config->webDir . '/test/foo/bar/baz'));
     }
 }

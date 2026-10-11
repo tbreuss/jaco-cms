@@ -4,10 +4,6 @@ namespace jaco\tests;
 
 use jaco\core\http\Status;
 
-use const jaco\APP_DIR;
-use const jaco\APP_DIR_NAME;
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Page view API (page/view)
  */
@@ -22,9 +18,9 @@ final class ApiPageViewTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir(WEB_DIR);
-        file_put_contents(WEB_DIR . '/' . self::PAGE, self::CONTENT);
-        file_put_contents(WEB_DIR . '/api-view-test.txt', 'not a page');
+        $this->watchDir($this->config->webDir);
+        file_put_contents($this->config->webDir . '/' . self::PAGE, self::CONTENT);
+        file_put_contents($this->config->webDir . '/api-view-test.txt', 'not a page');
     }
 
     public function testPageIsReturnedWithItsContent(): void
@@ -37,7 +33,7 @@ final class ApiPageViewTest extends ApiTestCase
         $this->assertSame(self::PAGE, $body['file']);
         $this->assertSame('View test', $body['title']);
         $this->assertSame(self::CONTENT, $body['content']);
-        $this->assertSame(filemtime(WEB_DIR . '/' . self::PAGE), $body['created']);
+        $this->assertSame(filemtime($this->config->webDir . '/' . self::PAGE), $body['created']);
     }
 
     public function testUnknownPageIsRejected(): void
@@ -56,7 +52,7 @@ final class ApiPageViewTest extends ApiTestCase
 
     public function testPageInSubdirectoryIsReturned(): void
     {
-        $dir = WEB_DIR . '/api-view-sub';
+        $dir = $this->config->webDir . '/api-view-sub';
         @mkdir($dir);
         file_put_contents($dir . '/deep.html', self::CONTENT);
 
@@ -76,12 +72,12 @@ final class ApiPageViewTest extends ApiTestCase
 
     public function testPageInTheAppDirIsNotReadable(): void
     {
-        $protected = APP_DIR . '/api-view-protected.html';
+        $protected = $this->config->appDir . '/api-view-protected.html';
         file_put_contents($protected, '<p>app internals</p>');
 
         try {
             $response = $this->api('page/view', method: 'GET', query: [
-                'file' => APP_DIR_NAME . '/api-view-protected.html',
+                'file' => $this->config->appDirName . '/api-view-protected.html',
             ]);
 
             $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);

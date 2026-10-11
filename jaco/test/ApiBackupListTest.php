@@ -4,9 +4,6 @@ namespace jaco\tests;
 
 use jaco\core\http\Status;
 
-use const jaco\BACKUP_DIR;
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Backup list API (backup/list)
  */
@@ -21,9 +18,9 @@ final class ApiBackupListTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir(WEB_DIR);
-        $this->watchDir(BACKUP_DIR);
-        file_put_contents(WEB_DIR . '/' . self::PAGE, self::ORIGINAL);
+        $this->watchDir($this->config->webDir);
+        $this->watchDir($this->config->backupDir);
+        file_put_contents($this->config->webDir . '/' . self::PAGE, self::ORIGINAL);
     }
 
     public function testBackupAppearsInTheListWithItsPageInformation(): void
@@ -85,7 +82,7 @@ final class ApiBackupListTest extends ApiTestCase
     public function testBackupOlderThanRetentionIsPruned(): void
     {
         $backup = $this->createPageBackup(self::PAGE, $this->changedPage());
-        touch(BACKUP_DIR . '/' . $backup, time() - 91 * 86400);
+        touch($this->config->backupDir . '/' . $backup, time() - 91 * 86400);
 
         $response = $this->api('backup/list', method: 'GET');
 
@@ -96,7 +93,7 @@ final class ApiBackupListTest extends ApiTestCase
         foreach ($body['items'] as $item) {
             $this->assertNotSame($backup, $item['file']);
         }
-        $this->assertFileDoesNotExist(BACKUP_DIR . '/' . $backup);
+        $this->assertFileDoesNotExist($this->config->backupDir . '/' . $backup);
     }
 
     public function testFreshBackupSurvivesPruning(): void
@@ -107,7 +104,7 @@ final class ApiBackupListTest extends ApiTestCase
         $body = (array) json_decode((string) $response->body, true);
 
         $this->itemWithFile($body['items'], $backup);
-        $this->assertFileExists(BACKUP_DIR . '/' . $backup);
+        $this->assertFileExists($this->config->backupDir . '/' . $backup);
     }
 
     private function changedPage(): string

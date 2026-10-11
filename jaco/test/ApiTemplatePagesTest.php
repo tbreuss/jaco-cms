@@ -4,8 +4,6 @@ namespace jaco\tests;
 
 use jaco\core\http\Status;
 
-use const jaco\TEMPLATE_PAGE_DIR;
-
 /**
  * @testdox Page template API (template/pages)
  */
@@ -20,12 +18,12 @@ final class ApiTemplatePagesTest extends ApiTestCase
     {
         parent::setUp();
 
-        file_put_contents(TEMPLATE_PAGE_DIR . '/' . self::TEMPLATE, self::CONTENT);
+        file_put_contents($this->config->templatePageDir . '/' . self::TEMPLATE, self::CONTENT);
     }
 
     protected function tearDown(): void
     {
-        @unlink(TEMPLATE_PAGE_DIR . '/' . self::TEMPLATE);
+        @unlink($this->config->templatePageDir . '/' . self::TEMPLATE);
 
         parent::tearDown();
     }

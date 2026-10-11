@@ -6,22 +6,30 @@ use jaco\core\http;
 use jaco\core\http\Request;
 use jaco\core\router;
 
+use function jaco\core\config\default_config;
+
 set_error_handler('jaco\core\error\error_handler');
 set_exception_handler('jaco\core\error\exception_handler');
 register_shutdown_function('jaco\core\error\fatal_handler');
 
-require('constants.php');
+$settings = [];
 
-ini_set('error_reporting', (string) jaco\PHP_ERROR_REPORTING);
-ini_set('display_errors', (string) jaco\PHP_DISPLAY_ERRORS);
-ini_set('display_startup_errors', (string) jaco\PHP_DISPLAY_STARTUP_ERRORS);
-ini_set('log_errors', (string) jaco\PHP_LOG_ERRORS);
-ini_set('error_log', (string) jaco\PHP_ERROR_LOG);
+if (is_readable('settings.php')) {
+    $settings = require('settings.php');
+}
+
+$config = default_config(__DIR__, is_array($settings) ? $settings : []);
+
+ini_set('error_reporting', (string) $config->phpErrorReporting);
+ini_set('display_errors', (string) $config->phpDisplayErrors);
+ini_set('display_startup_errors', (string) $config->phpDisplayStartupErrors);
+ini_set('log_errors', (string) $config->phpLogErrors);
+ini_set('error_log', $config->phpErrorLog);
 
 require('routes.php');
 
 $request = Request::fromGlobals();
 
-$response = router\dispatch($request);
+$response = router\dispatch($request, $config);
 
 http\emit($response);

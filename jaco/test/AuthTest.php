@@ -6,10 +6,6 @@ use Firebase\JWT\JWT;
 use PHPUnit\Framework\TestCase;
 use jaco\core\auth;
 
-use const jaco\PASSWORD;
-use const jaco\SECRET_KEY;
-use const jaco\USERNAME;
-
 /**
  * @testdox Authentication tokens
  */
@@ -17,22 +13,25 @@ final class AuthTest extends TestCase
 {
     public function testValidCredentialsAreAccepted(): void
     {
-        $token = auth\authenticate(USERNAME, PASSWORD);
+        $config = test_config();
+        $token = auth\authenticate($config, $config->username, $config->password);
 
         $this->assertIsString($token);
-        $this->assertTrue(auth\is_authenticated($token));
+        $this->assertTrue(auth\is_authenticated($config, $token));
     }
 
     public function testWrongCredentialsAreRejected(): void
     {
-        $this->assertNull(auth\authenticate(USERNAME, PASSWORD . 'wrong'));
-        $this->assertNull(auth\authenticate(USERNAME . 'wrong', PASSWORD));
-        $this->assertNull(auth\authenticate('', ''));
+        $config = test_config();
+        $this->assertNull(auth\authenticate($config, $config->username, $config->password . 'wrong'));
+        $this->assertNull(auth\authenticate($config, $config->username . 'wrong', $config->password));
+        $this->assertNull(auth\authenticate($config, '', ''));
     }
 
     public function testTokenIsSignedWithTheConfiguredAlgorithm(): void
     {
-        $token = (string) auth\authenticate(USERNAME, PASSWORD);
+        $config = test_config();
+        $token = (string) auth\authenticate($config, $config->username, $config->password);
         $parts = explode('.', $token);
         $header = json_decode((string) base64_decode(strtr($parts[0], '-_', '+/'), true), true);
 
@@ -41,7 +40,8 @@ final class AuthTest extends TestCase
 
     public function testTokenIsValidForTheConfiguredDuration(): void
     {
-        $token = (string) auth\authenticate(USERNAME, PASSWORD);
+        $config = test_config();
+        $token = (string) auth\authenticate($config, $config->username, $config->password);
         $claims = $this->decode($token);
 
         $this->assertSame(auth\TOKEN_TTL, $claims['exp'] - $claims['iat']);
@@ -49,6 +49,7 @@ final class AuthTest extends TestCase
 
     public function testTokenWithModifiedPayloadIsRejected(): void
     {
+        $config = test_config();
         [$header, $payload, $signature] = explode('.', $this->validToken());
 
         $claims = (array) json_decode((string) base64_decode(strtr($payload, '-_', '+/'), true), true);
@@ -56,34 +57,38 @@ final class AuthTest extends TestCase
         $modifiedPayload = rtrim(strtr(base64_encode((string) json_encode($claims)), '+/', '-_'), '=');
 
         // the signature still belongs to the original payload
-        $this->assertFalse(auth\is_authenticated($header . '.' . $modifiedPayload . '.' . $signature));
+        $this->assertFalse(auth\is_authenticated($config, $header . '.' . $modifiedPayload . '.' . $signature));
     }
 
     public function testTokenWithTamperedSignatureIsRejected(): void
     {
+        $config = test_config();
         [$header, $payload, $signature] = explode('.', $this->validToken());
 
         // the first character carries data bits, unlike the last one which is padding
         $tamperedSignature = ($signature[0] === 'A' ? 'B' : 'A') . substr($signature, 1);
 
-        $this->assertFalse(auth\is_authenticated($header . '.' . $payload . '.' . $tamperedSignature));
+        $this->assertFalse(auth\is_authenticated($config, $header . '.' . $payload . '.' . $tamperedSignature));
     }
 
     public function testTokenSignedWithAnotherSecretIsRejected(): void
     {
-        $this->assertFalse(auth\is_authenticated($this->tokenWith(secret: 'another-secret')));
+        $config = test_config();
+        $this->assertFalse(auth\is_authenticated($config, $this->tokenWith(secret: 'another-secret')));
     }
 
     public function testExpiredTokenIsRejected(): void
     {
-        $this->assertFalse(auth\is_authenticated($this->tokenWith(claims: [
+        $config = test_config();
+        $this->assertFalse(auth\is_authenticated($config, $this->tokenWith(claims: [
             'exp' => time() - 10,
         ])));
     }
 
     public function testTokenThatIsNotValidYetIsRejected(): void
     {
-        $this->assertFalse(auth\is_authenticated($this->tokenWith(claims: [
+        $config = test_config();
+        $this->assertFalse(auth\is_authenticated($config, $this->tokenWith(claims: [
             'nbf' => time() + 3600,
             'exp' => time() + 7200,
         ])));
@@ -91,47 +96,54 @@ final class AuthTest extends TestCase
 
     public function testTokenWithWrongIssuerIsRejected(): void
     {
-        $this->assertFalse(auth\is_authenticated($this->tokenWith(claims: [
+        $config = test_config();
+        $this->assertFalse(auth\is_authenticated($config, $this->tokenWith(claims: [
             'iss' => 'ch.example.other',
         ])));
     }
 
     public function testTokenWithWrongAudienceIsRejected(): void
     {
-        $this->assertFalse(auth\is_authenticated($this->tokenWith(claims: [
+        $config = test_config();
+        $this->assertFalse(auth\is_authenticated($config, $this->tokenWith(claims: [
             'aud' => 'ch.example.other',
         ])));
     }
 
     public function testTokenOfAnotherUserIsRejected(): void
     {
-        $this->assertFalse(auth\is_authenticated($this->tokenWith(claims: [
+        $config = test_config();
+        $this->assertFalse(auth\is_authenticated($config, $this->tokenWith(claims: [
             'user' => 'someone-else',
         ])));
     }
 
     public function testTokenWithoutAdminClaimIsRejected(): void
     {
-        $this->assertFalse(auth\is_authenticated($this->tokenWith(claims: [
+        $config = test_config();
+        $this->assertFalse(auth\is_authenticated($config, $this->tokenWith(claims: [
             'admin' => false,
         ])));
     }
 
     public function testTokenWithoutAdminClaimAtAllIsRejected(): void
     {
-        $this->assertFalse(auth\is_authenticated($this->tokenWithoutAdminClaim()));
+        $config = test_config();
+        $this->assertFalse(auth\is_authenticated($config, $this->tokenWithoutAdminClaim()));
     }
 
     public function testGarbageIsRejected(): void
     {
-        $this->assertFalse(auth\is_authenticated(''));
-        $this->assertFalse(auth\is_authenticated('not-a-token'));
-        $this->assertFalse(auth\is_authenticated('not.a.token'));
+        $config = test_config();
+        $this->assertFalse(auth\is_authenticated($config, ''));
+        $this->assertFalse(auth\is_authenticated($config, 'not-a-token'));
+        $this->assertFalse(auth\is_authenticated($config, 'not.a.token'));
     }
 
     private function validToken(): string
     {
-        return (string) auth\authenticate(USERNAME, PASSWORD);
+        $config = test_config();
+        return (string) auth\authenticate($config, $config->username, $config->password);
     }
 
     /** @return array<string, mixed> */
@@ -145,8 +157,10 @@ final class AuthTest extends TestCase
     /**
      * @param array<string, mixed> $claims
      */
-    private function tokenWith(array $claims = [], string $secret = SECRET_KEY): string
+    private function tokenWith(array $claims = [], ?string $secret = null): string
     {
+        $config = test_config();
+        $secret ??= $config->secretKey;
         $now = time();
 
         $payload = array_merge([
@@ -155,7 +169,7 @@ final class AuthTest extends TestCase
             'iat' => $now,
             'nbf' => $now,
             'exp' => $now + 3600,
-            'user' => USERNAME,
+            'user' => $config->username,
             'admin' => true,
         ], $claims);
 
@@ -164,6 +178,7 @@ final class AuthTest extends TestCase
 
     private function tokenWithoutAdminClaim(): string
     {
+        $config = test_config();
         $now = time();
 
         return JWT::encode([
@@ -172,7 +187,7 @@ final class AuthTest extends TestCase
             'iat' => $now,
             'nbf' => $now,
             'exp' => $now + 3600,
-            'user' => USERNAME,
-        ], SECRET_KEY, auth\TOKEN_ALGORITHM);
+            'user' => $config->username,
+        ], $config->secretKey, auth\TOKEN_ALGORITHM);
     }
 }

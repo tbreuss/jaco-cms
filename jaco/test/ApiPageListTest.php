@@ -5,9 +5,6 @@ namespace jaco\tests;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
 
-use const jaco\APP_DIR;
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Page list API (page/list)
  */
@@ -21,9 +18,9 @@ final class ApiPageListTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir(WEB_DIR);
-        file_put_contents(WEB_DIR . '/' . self::PAGE_A, $this->page('List A'));
-        file_put_contents(WEB_DIR . '/' . self::PAGE_B, $this->page('List B'));
+        $this->watchDir($this->config->webDir);
+        file_put_contents($this->config->webDir . '/' . self::PAGE_A, $this->page('List A'));
+        file_put_contents($this->config->webDir . '/' . self::PAGE_B, $this->page('List B'));
     }
 
     public function testPagesAreListedWithTheirTitleAndWithoutContent(): void
@@ -67,14 +64,14 @@ final class ApiPageListTest extends ApiTestCase
 
     public function testPagesInTheAppDirAreNeverListed(): void
     {
-        file_put_contents(APP_DIR . '/' . self::HIDDEN, $this->page('Hidden'));
+        file_put_contents($this->config->appDir . '/' . self::HIDDEN, $this->page('Hidden'));
 
         try {
             $body = $this->body($this->api('page/list', method: 'GET', query: ['filter' => 'api-list-hidden']));
 
             $this->assertSame([], $body['items'], 'the app directory must stay invisible');
         } finally {
-            @unlink(APP_DIR . '/' . self::HIDDEN);
+            @unlink($this->config->appDir . '/' . self::HIDDEN);
         }
     }
 

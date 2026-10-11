@@ -5,8 +5,6 @@ namespace jaco\tests;
 use PHPUnit\Framework\TestCase;
 use jaco\core\data;
 
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Input validation rules
  */
@@ -34,7 +32,11 @@ final class ValidateTest extends TestCase
 
     public function testOnlyTheFirstFailurePerFieldIsReported(): void
     {
-        $errors = data\validate(['file' => ''], [['file', 'required'], ['file', 'html_file_extension']]);
+        $config = test_config();
+        $errors = data\validate(['file' => ''], [
+            ['file', 'required'],
+            ['file', 'html_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ]);
 
         $this->assertCount(1, $errors);
         $this->assertSame('Value cannot be blank.', $errors[0][1]);
@@ -50,17 +52,18 @@ final class ValidateTest extends TestCase
 
     public function testFileExistsRuleWithAndWithoutNegation(): void
     {
+        $config = test_config();
         // foo.html is part of the test fixtures
-        $this->assertSame([], data\validate(['f' => 'foo.html'], [['f', 'file_exists']]));
+        $this->assertSame([], data\validate(['f' => 'foo.html'], [['f', 'file_exists', 'dir' => $config->webDir]]));
         $this->assertSame(
             [['f', 'foo.html must not exist.']],
-            data\validate(['f' => 'foo.html'], [['f', 'file_exists', 'negate' => true]]),
+            data\validate(['f' => 'foo.html'], [['f', 'file_exists', 'dir' => $config->webDir, 'negate' => true]]),
         );
         $this->assertSame(
             [['f', 'nope.html does not exist.']],
-            data\validate(['f' => 'nope.html'], [['f', 'file_exists']]),
+            data\validate(['f' => 'nope.html'], [['f', 'file_exists', 'dir' => $config->webDir]]),
         );
-        $this->assertSame([], data\validate(['f' => 'nope.html'], [['f', 'file_exists', 'negate' => true]]));
+        $this->assertSame([], data\validate(['f' => 'nope.html'], [['f', 'file_exists', 'dir' => $config->webDir, 'negate' => true]]));
     }
 
     public function testFileInDirRuleGuardsTheAppDirectory(): void
@@ -94,7 +97,8 @@ final class ValidateTest extends TestCase
 
     public function testWebDirIsTheDefaultDirectoryForFileRules(): void
     {
-        $this->assertFileExists(WEB_DIR . '/foo.html');
-        $this->assertSame([], data\validate(['f' => 'foo.html'], [['f', 'file_exists']]));
+        $config = test_config();
+        $this->assertFileExists($config->webDir . '/foo.html');
+        $this->assertSame([], data\validate(['f' => 'foo.html'], [['f', 'file_exists', 'dir' => $config->webDir]]));
     }
 }

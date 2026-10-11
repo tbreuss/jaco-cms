@@ -2,11 +2,9 @@
 
 namespace jaco\domain\template;
 
+use jaco\core\config\Config;
 use jaco\core\filesystem;
 use jaco\core\html;
-
-use const jaco\PAGE_EXTENSIONS;
-use const jaco\TEMPLATE_PAGE_DIR;
 
 final class DomainPayload extends \jaco\domain\Payload {}
 
@@ -19,15 +17,15 @@ final class Template
     ) {}
 }
 
-function find_page_templates(): DomainPayload
+function find_page_templates(Config $config): DomainPayload
 {
-    if (!filesystem\dir_exists(TEMPLATE_PAGE_DIR)) {
+    if (!filesystem\dir_exists($config->templatePageDir)) {
         return DomainPayload::error([['', 'Dir does not exist.']]);
     }
 
     $files = filesystem\find_files(
-        inDir: TEMPLATE_PAGE_DIR,
-        allowedExtensions: PAGE_EXTENSIONS,
+        inDir: $config->templatePageDir,
+        allowedExtensions: $config->pageExtensions,
         withContent: true,
     );
 

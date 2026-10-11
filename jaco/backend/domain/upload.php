@@ -2,15 +2,10 @@
 
 namespace jaco\domain\upload;
 
+use jaco\core\config\Config;
 use jaco\core\data;
 use jaco\core\filesystem;
 use jaco\core\list;
-
-use const jaco\APP_DIR;
-use const jaco\BACKUP_DIR;
-use const jaco\UPLOAD_DIR;
-use const jaco\UPLOAD_EXTENSIONS;
-use const jaco\WEB_DIR;
 
 const SORT_PARAMETERS = ['file', 'extension', 'size', 'created'];
 
@@ -27,7 +22,7 @@ final class Upload
 
 final class DomainPayload extends \jaco\domain\Payload {}
 
-function find_uploads(string $filteredBy, string $sortedBy): DomainPayload
+function find_uploads(Config $config, string $filteredBy, string $sortedBy): DomainPayload
 {
     $errors = data\validate(
         [
@@ -45,11 +40,11 @@ function find_uploads(string $filteredBy, string $sortedBy): DomainPayload
         return DomainPayload::invalid($errors);
     }
 
-    if (!filesystem\dir_exists(WEB_DIR)) {
+    if (!filesystem\dir_exists($config->webDir)) {
         return DomainPayload::error([['', 'Dir does not exist.']]);
     }
 
-    $files = filesystem\find_files_rec(WEB_DIR, UPLOAD_EXTENSIONS, [APP_DIR]);
+    $files = filesystem\find_files_rec($config->webDir, $config->uploadExtensions, [$config->appDir]);
 
     $sort = sort_field($sortedBy);
     $uploads = create_list($files);
@@ -70,7 +65,7 @@ function find_uploads(string $filteredBy, string $sortedBy): DomainPayload
  *
  * @param array<string, mixed> $file
  */
-function create_upload(array $file): DomainPayload
+function create_upload(Config $config, array $file): DomainPayload
 {
     $error = $file['error'] ?? UPLOAD_ERR_NO_FILE;
 
@@ -92,7 +87,7 @@ function create_upload(array $file): DomainPayload
 
     $errors = data\validate_one($name, 'file', [
         ['required'],
-        ['file_extension', 'allowedExtensions' => UPLOAD_EXTENSIONS],
+        ['file_extension', 'allowedExtensions' => $config->uploadExtensions],
         ['html_file_name'],
     ]);
 
@@ -100,10 +95,10 @@ function create_upload(array $file): DomainPayload
         return DomainPayload::invalid($errors);
     }
 
-    $newFile = filesystem\file_name_to_write(UPLOAD_DIR, $name);
+    $newFile = filesystem\file_name_to_write($config->uploadDir, $name);
     $moved = \is_uploaded_file($tmpName)
-        ? \move_uploaded_file($tmpName, filesystem\combine(UPLOAD_DIR, $newFile))
-        : \rename($tmpName, filesystem\combine(UPLOAD_DIR, $newFile));
+        ? \move_uploaded_file($tmpName, filesystem\combine($config->uploadDir, $newFile))
+        : \rename($tmpName, filesystem\combine($config->uploadDir, $newFile));
 
     if (!$moved) {
         return DomainPayload::error([['file', 'Could not store file.']]);
@@ -122,7 +117,7 @@ function upload_error_message(int $error): string
     };
 }
 
-function delete_upload(string $file): DomainPayload
+function delete_upload(Config $config, string $file): DomainPayload
 {
     $file = data\sanitize_one($file, [
         ['filename'],
@@ -130,23 +125,23 @@ function delete_upload(string $file): DomainPayload
 
     $errors = data\validate_one($file, 'file', [
         ['required'],
-        ['file_exists'],
-        ['file_writeable'],
+        ['file_exists', 'dir' => $config->webDir],
+        ['file_writeable', 'dir' => $config->webDir],
         ['html_file_name'],
-        ['file_extension', 'allowedExtensions' => UPLOAD_EXTENSIONS],
+        ['file_extension', 'allowedExtensions' => $config->uploadExtensions],
     ]);
 
     if (count($errors) > 0) {
         return DomainPayload::invalid($errors);
     }
 
-    $status = filesystem\backup_file(WEB_DIR, $file, BACKUP_DIR);
+    $status = filesystem\backup_file($config->webDir, $file, $config->backupDir);
 
     if (!$status) {
         return DomainPayload::error([['file', 'Could not backup file.']]);
     }
 
-    $status = filesystem\delete_file(WEB_DIR, $file);
+    $status = filesystem\delete_file($config->webDir, $file);
 
     if (!$status) {
         return DomainPayload::error([['file', 'Could not delete file.']]);

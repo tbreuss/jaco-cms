@@ -4,9 +4,6 @@ namespace jaco\tests;
 
 use jaco\core\http\Status;
 
-use const jaco\BACKUP_DIR;
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Stylesheet list API (css/list)
  */
@@ -16,9 +13,9 @@ final class ApiCssListTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir(WEB_DIR);
-        file_put_contents(WEB_DIR . '/api-css-list-test.css', "h1 {\n    color: red;\n}\n");
-        file_put_contents(WEB_DIR . '/api-css-list-test.html', '<p>not a stylesheet</p>');
+        $this->watchDir($this->config->webDir);
+        file_put_contents($this->config->webDir . '/api-css-list-test.css', "h1 {\n    color: red;\n}\n");
+        file_put_contents($this->config->webDir . '/api-css-list-test.html', '<p>not a stylesheet</p>');
     }
 
     public function testListContainsStylesheetsOnly(): void
@@ -45,8 +42,8 @@ final class ApiCssListTest extends ApiTestCase
 
     public function testBackupStylesheetsAreExcluded(): void
     {
-        $this->watchDir(BACKUP_DIR);
-        file_put_contents(BACKUP_DIR . '/api-css-list-backup.css', "h1 {\n    color: red;\n}\n");
+        $this->watchDir($this->config->backupDir);
+        file_put_contents($this->config->backupDir . '/api-css-list-backup.css', "h1 {\n    color: red;\n}\n");
 
         $response = $this->api('css/list', method: 'GET');
 

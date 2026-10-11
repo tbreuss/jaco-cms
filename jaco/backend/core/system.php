@@ -2,7 +2,7 @@
 
 namespace jaco\core\system;
 
-use const jaco\WEB_DIR;
+use jaco\core\config\Config;
 
 const SECRETS = ['jaco\SECRET_KEY', 'jaco\PASSWORD'];
 
@@ -17,7 +17,7 @@ function defined_classes(): array
     return $classes;
 }
 
-function defined_constants(): array
+function defined_constants(Config $config): array
 {
     $constants = [];
     foreach (get_defined_constants() as $key => $value) {
@@ -28,8 +28,8 @@ function defined_constants(): array
             if (in_array($key, SECRETS) !== false) {
                 $value = '****';
             }
-            if (is_string($value) && str_starts_with($value, WEB_DIR)) {
-                $value = substr($value, strlen(WEB_DIR));
+            if (is_string($value) && str_starts_with($value, $config->webDir)) {
+                $value = substr($value, strlen($config->webDir));
             }
             $constants[$key] = $value;
         }

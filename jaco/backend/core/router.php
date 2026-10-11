@@ -3,6 +3,7 @@
 namespace jaco\core\router;
 
 use jaco\core\auth;
+use jaco\core\config\Config;
 use jaco\core\http\Request;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
@@ -40,7 +41,7 @@ function post(string $route, callable $callback, bool $authenticated, ?string $r
     add('POST', $route, $callback, $authenticated, $requestSchema, $responseSchema);
 }
 
-function dispatch(Request $request): Response
+function dispatch(Request $request, Config $config): Response
 {
     $actionQuery = (string) $request->query->val('action', '');
     $requestMethod = (string) $request->server->val('REQUEST_METHOD', '');
@@ -62,15 +63,15 @@ function dispatch(Request $request): Response
     $route = reset($routes_by_method);
 
     if ($route['authenticated'] === true) {
-        if (check_authorization($authorizationHeader) === false) {
+        if (check_authorization($config, $authorizationHeader) === false) {
             return json_response([['title' => '403 Forbidden']], Status::FORBIDDEN);
         }
     }
 
-    return call_action($route['callback'], $request, $route['requestJsonSchema'], $route['responseJsonSchema']);
+    return call_action($route['callback'], $request, $config, $route['requestJsonSchema'], $route['responseJsonSchema']);
 }
 
-function call_action(callable $action, Request $request, ?string $requestJsonSchema, ?string $responseJsonSchema): Response
+function call_action(callable $action, Request $request, Config $config, ?string $requestJsonSchema, ?string $responseJsonSchema): Response
 {
     $function = new \ReflectionFunction($action);
 
@@ -89,6 +90,9 @@ function call_action(callable $action, Request $request, ?string $requestJsonSch
         $type = $parameter->getType()->getName(); // @phpstan-ignore-line
         if ($type === 'jaco\core\http\Request') {
             $parameters[$name] = $request;
+        }
+        if ($type === 'jaco\core\config\Config') {
+            $parameters[$name] = $config;
         }
     }
 
@@ -117,7 +121,7 @@ function call_action(callable $action, Request $request, ?string $requestJsonSch
     return $response;
 }
 
-function check_authorization(string $authorizationHeader): bool
+function check_authorization(Config $config, string $authorizationHeader): bool
 {
     if ($authorizationHeader === '') {
         return false;
@@ -131,7 +135,7 @@ function check_authorization(string $authorizationHeader): bool
 
     $token = trim(substr($authorizationHeader, strlen($bearer)));
 
-    return auth\is_authenticated($token);
+    return auth\is_authenticated($config, $token);
 }
 
 function filter_routes(array $routes, string $column, string $search): array

@@ -6,9 +6,6 @@ use PHPUnit\Framework\TestCase;
 use jaco\core\filesystem;
 use jaco\core\html;
 
-use const jaco\BACKUP_DIR;
-use const jaco\WEB_DIR;
-
 /**
  * @testdox HTML Sanitizing
  */
@@ -48,19 +45,21 @@ final class HtmlFunctionsTest extends TestCase
 
     protected function setUp(): void
     {
-        if (filesystem\dir_exists(WEB_DIR, 'test')) {
-            filesystem\remove_dir_rec(WEB_DIR, 'test');
+        $config = test_config();
+        if (filesystem\dir_exists($config->webDir, 'test')) {
+            filesystem\remove_dir_rec($config->webDir, 'test');
         }
-        filesystem\make_dir_rec(WEB_DIR, 'test');
+        filesystem\make_dir_rec($config, $config->webDir, 'test');
     }
 
     protected function tearDown(): void
     {
-        if (filesystem\dir_exists(WEB_DIR, 'test')) {
-            filesystem\remove_dir_rec(WEB_DIR, 'test');
+        $config = test_config();
+        if (filesystem\dir_exists($config->webDir, 'test')) {
+            filesystem\remove_dir_rec($config->webDir, 'test');
         }
-        if (filesystem\dir_exists(BACKUP_DIR, 'test')) {
-            filesystem\remove_dir_rec(BACKUP_DIR, 'test');
+        if (filesystem\dir_exists($config->backupDir, 'test')) {
+            filesystem\remove_dir_rec($config->backupDir, 'test');
         }
     }
 
@@ -124,14 +123,15 @@ final class HtmlFunctionsTest extends TestCase
 
     public function testUpdatePageSanitizesContent(): void
     {
+        $config = test_config();
         $file = 'test/xss.html';
-        $this->assertTrue(filesystem\write_file(WEB_DIR, $file, '<p>old</p>'));
+        $this->assertTrue(filesystem\write_file($config, $config->webDir, $file, '<p>old</p>'));
 
         $malicious = '<h1>Titel</h1><p onclick="steal()">Text <strong>fett</strong></p><script>alert(document.cookie)</script><a href="javascript:alert(1)">böser Link</a><iframe src="https://evil.example"></iframe>';
 
-        $payload = \jaco\domain\page\update_page($file, $malicious);
+        $payload = \jaco\domain\page\update_page($config, $file, $malicious);
 
         $this->assertTrue($payload->isSuccess);
-        $this->assertSame('<h1>Titel</h1><p>Text <strong>fett</strong></p><a>böser Link</a>', filesystem\read_file(WEB_DIR, $file));
+        $this->assertSame('<h1>Titel</h1><p>Text <strong>fett</strong></p><a>böser Link</a>', filesystem\read_file($config->webDir, $file));
     }
 }

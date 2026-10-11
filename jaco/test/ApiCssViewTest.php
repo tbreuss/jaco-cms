@@ -4,8 +4,6 @@ namespace jaco\tests;
 
 use jaco\core\http\Status;
 
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Stylesheet view API (css/view)
  */
@@ -18,8 +16,8 @@ final class ApiCssViewTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir(WEB_DIR);
-        file_put_contents(WEB_DIR . '/' . self::FILE, self::CONTENT);
+        $this->watchDir($this->config->webDir);
+        file_put_contents($this->config->webDir . '/' . self::FILE, self::CONTENT);
     }
 
     public function testStylesheetIsReturnedWithItsContent(): void
@@ -31,7 +29,7 @@ final class ApiCssViewTest extends ApiTestCase
         $body = (array) json_decode((string) $response->body, true);
         $this->assertSame(self::FILE, $body['file']);
         $this->assertSame(self::CONTENT, $body['content']);
-        $this->assertSame(filemtime(WEB_DIR . '/' . self::FILE), $body['created']);
+        $this->assertSame(filemtime($this->config->webDir . '/' . self::FILE), $body['created']);
     }
 
     public function testMissingStylesheetIsRejected(): void

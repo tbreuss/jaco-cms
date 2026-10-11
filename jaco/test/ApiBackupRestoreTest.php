@@ -4,9 +4,6 @@ namespace jaco\tests;
 
 use jaco\core\http\Status;
 
-use const jaco\BACKUP_DIR;
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Backup restore API (backup/restore)
  */
@@ -24,10 +21,10 @@ final class ApiBackupRestoreTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir(WEB_DIR);
-        $this->watchDir(BACKUP_DIR);
+        $this->watchDir($this->config->webDir);
+        $this->watchDir($this->config->backupDir);
 
-        file_put_contents(WEB_DIR . '/' . self::PAGE, self::ORIGINAL);
+        file_put_contents($this->config->webDir . '/' . self::PAGE, self::ORIGINAL);
     }
 
     public function testBackupIsRestoredIntoTheOriginalPage(): void
@@ -36,20 +33,20 @@ final class ApiBackupRestoreTest extends ApiTestCase
         $update = $this->api('page/update', ['fileName' => self::PAGE, 'html' => self::CHANGED]);
         $this->assertSame(Status::CREATED, $update->status);
 
-        $backups = $this->newEntriesIn(BACKUP_DIR);
+        $backups = $this->newEntriesIn($this->config->backupDir);
         $this->assertCount(1, $backups);
-        $this->assertSame(self::ORIGINAL, file_get_contents(BACKUP_DIR . '/' . $backups[0]));
+        $this->assertSame(self::ORIGINAL, file_get_contents($this->config->backupDir . '/' . $backups[0]));
 
         // make the current page unrecognisable
-        file_put_contents(WEB_DIR . '/' . self::PAGE, "<p>overwritten</p>\n");
+        file_put_contents($this->config->webDir . '/' . self::PAGE, "<p>overwritten</p>\n");
 
         $response = $this->api('backup/restore', ['file' => $backups[0]]);
 
         $this->assertSame(Status::OK, $response->status);
-        $this->assertSame(self::ORIGINAL, file_get_contents(WEB_DIR . '/' . self::PAGE));
+        $this->assertSame(self::ORIGINAL, file_get_contents($this->config->webDir . '/' . self::PAGE));
 
         // the backup is moved into place, not copied
-        $this->assertFileDoesNotExist(BACKUP_DIR . '/' . $backups[0]);
+        $this->assertFileDoesNotExist($this->config->backupDir . '/' . $backups[0]);
     }
 
     public function testUnknownBackupIsRejected(): void
@@ -57,7 +54,7 @@ final class ApiBackupRestoreTest extends ApiTestCase
         $response = $this->api('backup/restore', ['file' => '20200101_000000_aaaa_' . self::PAGE]);
 
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
-        $this->assertSame(self::ORIGINAL, file_get_contents(WEB_DIR . '/' . self::PAGE));
+        $this->assertSame(self::ORIGINAL, file_get_contents($this->config->webDir . '/' . self::PAGE));
     }
 
     public function testPageNameIsNotAcceptedAsBackup(): void
@@ -65,7 +62,7 @@ final class ApiBackupRestoreTest extends ApiTestCase
         $response = $this->api('backup/restore', ['file' => self::PAGE]);
 
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
-        $this->assertSame(self::ORIGINAL, file_get_contents(WEB_DIR . '/' . self::PAGE));
+        $this->assertSame(self::ORIGINAL, file_get_contents($this->config->webDir . '/' . self::PAGE));
     }
 
     public function testRequestWithoutTokenIsForbidden(): void
@@ -73,6 +70,6 @@ final class ApiBackupRestoreTest extends ApiTestCase
         $response = $this->api('backup/restore', ['file' => self::PAGE], 'POST', false);
 
         $this->assertSame(Status::FORBIDDEN, $response->status);
-        $this->assertSame(self::ORIGINAL, file_get_contents(WEB_DIR . '/' . self::PAGE));
+        $this->assertSame(self::ORIGINAL, file_get_contents($this->config->webDir . '/' . self::PAGE));
     }
 }

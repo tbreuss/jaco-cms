@@ -9,15 +9,13 @@ use jaco\domain\Payload;
 
 use function jaco\core\http\json_response;
 
-use const jaco\MAINTENANCE_MODE;
-
 /**
  * 503 response when maintenance mode blocks writing.
  * The flag defaults to the constant so tests can exercise both branches.
  */
 function maintenance_response(?bool $enabled = null): ?Response
 {
-    if ($enabled ?? MAINTENANCE_MODE) {
+    if ($enabled ?? false) {
         return json_response(
             [['title' => 'Maintenance mode: changes are disabled', 'detail' => 'Changes are disabled while maintenance mode is enabled.']],
             Status::SERVICE_UNAVAILABLE,

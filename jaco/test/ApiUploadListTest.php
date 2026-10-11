@@ -4,11 +4,6 @@ namespace jaco\tests;
 
 use jaco\core\http\Status;
 
-use const jaco\APP_DIR;
-use const jaco\APP_DIR_NAME;
-use const jaco\UPLOAD_DIR;
-use const jaco\WEB_DIR;
-
 /**
  * @testdox Upload list API (upload/list)
  */
@@ -22,15 +17,15 @@ final class ApiUploadListTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir(WEB_DIR);
-        $this->watchDir(UPLOAD_DIR);
-        file_put_contents(WEB_DIR . '/' . self::UPLOAD, 'image bytes');
-        file_put_contents(WEB_DIR . '/' . self::TEXT, 'not an upload');
+        $this->watchDir($this->config->webDir);
+        $this->watchDir($this->config->uploadDir);
+        file_put_contents($this->config->webDir . '/' . self::UPLOAD, 'image bytes');
+        file_put_contents($this->config->webDir . '/' . self::TEXT, 'not an upload');
     }
 
     public function testOnlyAllowedFilesOutsideTheAppDirAreListed(): void
     {
-        file_put_contents(APP_DIR . '/' . self::HIDDEN, 'hidden');
+        file_put_contents($this->config->appDir . '/' . self::HIDDEN, 'hidden');
 
         try {
             $response = $this->api('upload/list', method: 'GET');
@@ -43,7 +38,7 @@ final class ApiUploadListTest extends ApiTestCase
 
             $files = array_column($body['items'], 'file');
             $this->assertNotContains(self::TEXT, $files, 'a file without an allowed extension must not be listed');
-            $this->assertNotContains(APP_DIR_NAME . '/' . self::HIDDEN, $files, 'the app dir must stay invisible');
+            $this->assertNotContains($this->config->appDirName . '/' . self::HIDDEN, $files, 'the app dir must stay invisible');
 
             $item = $this->itemWithFile($body['items'], self::UPLOAD);
             $this->assertSame('jpg', $item['extension']);
@@ -51,7 +46,7 @@ final class ApiUploadListTest extends ApiTestCase
             $this->assertNull($item['content']);
             $this->assertIsInt($item['created']);
         } finally {
-            @unlink(APP_DIR . '/' . self::HIDDEN);
+            @unlink($this->config->appDir . '/' . self::HIDDEN);
         }
     }
 

@@ -2,25 +2,37 @@
 
 require_once 'vendor/autoload.php';
 
-require('constants.php');
-
 use Ahc\Cli\Application;
 
-use const jaco\APP_VERSION;
+use function jaco\core\config\default_config;
 
-$app = new Application('Jaco CLI', APP_VERSION);
+$settings = [];
+
+if (is_readable(__DIR__ . '/settings.php')) {
+    $settings = require(__DIR__ . '/settings.php');
+}
+
+$config = default_config(__DIR__, is_array($settings) ? $settings : []);
+
+$app = new Application('Jaco CLI', $config->appVersion);
 
 $app->command('sys:version', 'Show version info.')
-    ->action('jaco\cli\version\command');
+    ->action(function () use ($config): void {
+        \jaco\cli\version\command($config);
+    });
 
 $app->command('sys:log', 'Show log entries.')
     ->option('-s --size', 'Number of lines to show', 'intval', 100)
-    ->action('jaco\cli\system\log\command');
+    ->action(function (int $size) use ($config): void {
+        \jaco\cli\system\log\command($config, $size);
+    });
 
 $app->command('auth:token', 'Get token for credential.')
     ->option('-u --user', 'The Username', 'strval', '')
     ->option('-p --pass', 'The Password', 'strval', '')
-    ->action('jaco\cli\auth\token\command');
+    ->action(function (string $user, string $pass) use ($config): void {
+        \jaco\cli\auth\token\command($config, $user, $pass);
+    });
 
 $app->onException(function (Throwable $e, int $exitCode) {
     echo $e->getMessage();

@@ -2,12 +2,9 @@
 
 namespace jaco\core\html;
 
+use jaco\core\config\Config;
 use jaco\core\data;
 use jaco\core\filesystem;
-
-use const jaco\UPLOAD_DIR;
-use const jaco\UPLOAD_EXTENSIONS;
-use const jaco\UPLOAD_URL;
 
 function get_title(string $html): string
 {
@@ -194,7 +191,7 @@ function allowed_attribute(string $tag, string $name, string $value): bool
     return \preg_match('/^(https?|mailto|tel):/i', $value) === 1;
 }
 
-function handle_embedded_data_url_images(string $html): array
+function handle_embedded_data_url_images(Config $config, string $html): array
 {
     \libxml_use_internal_errors(true);
     // drop errors from earlier parsing, the check at the end reads the whole buffer
@@ -243,8 +240,8 @@ function handle_embedded_data_url_images(string $html): array
 
         // only plain file names with an allowed extension may be written
         if (\str_contains($imgFile, DIRECTORY_SEPARATOR)
-            || !filesystem\validate_filename(UPLOAD_DIR, $imgFile)
-            || !filesystem\validate_extension(UPLOAD_DIR, $imgFile, UPLOAD_EXTENSIONS)) {
+            || !filesystem\validate_filename($imgFile)
+            || !filesystem\validate_extension($imgFile, $config->uploadExtensions)) {
             $errors[] = 'Invalid file name or extension: ' . $imgFile;
             continue;
         }
@@ -257,14 +254,14 @@ function handle_embedded_data_url_images(string $html): array
             continue;
         }
 
-        [$status, $newFile] = filesystem\write_file_without_overwrite(UPLOAD_DIR, $imgFile, $decodedData);
+        [$status, $newFile] = filesystem\write_file_without_overwrite($config, $config->uploadDir, $imgFile, $decodedData);
 
         if ($status === false) {
             $errors[] = 'Could not write file: ' . $imgFile;
             continue;
         }
 
-        $el->setAttribute('src', filesystem\combine(UPLOAD_URL, $newFile));
+        $el->setAttribute('src', filesystem\combine($config->uploadUrl, $newFile));
         $el->removeAttribute($imgFileAttr);
         $handled++;
     }
