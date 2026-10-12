@@ -6,6 +6,7 @@ import {ButtonGroup} from '../component/ButtonGroup.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../component/ButtonSecondary.js'
 import {app} from '../lib/app.js'
+import {bindSaveShortcut, saveShortcutLabel} from '../lib/shortcuts.js'
 
 const save = (e) => {
   e.redraw = false
@@ -38,6 +39,22 @@ const cancel = (e) => {
   m.route.set('/')
 }
 
+let unbindSaveShortcuts = []
+
+const bindShortcut = () => {
+  unbindSaveShortcuts.forEach((unbind) => unbind())
+  // keydown does not cross document boundaries: listen in the parent
+  // document (toolbar, buttons) as well as inside the iframe (content)
+  unbindSaveShortcuts = [
+    bindSaveShortcut(document, {
+      onSave: () => save({redraw: false}),
+    }),
+    bindSaveShortcut(iframe.contentDocument(), {
+      onSave: () => save({redraw: false}),
+    }),
+  ]
+}
+
 export const PageInlineEditView = {
   oninit: () => {
     if (!app.hasAuthToken()) {
@@ -48,9 +65,17 @@ export const PageInlineEditView = {
       m.route.set('/')
     }
     iframe.makeEditable()
+    bindShortcut()
+    // the listener lives on the iframe document and dies with it on navigation
+    iframe.getElement().onload = bindShortcut
+  },
+  onremove: () => {
+    unbindSaveShortcuts.forEach((unbind) => unbind())
+    unbindSaveShortcuts = []
+    iframe.getElement().onload = null
   },
   view: () => m(ButtonGroup, {wrap: 'div.dialog'},
-    m(ButtonPrimary, {onclick: save}, t('Save')),
+    m(ButtonPrimary, {onclick: save, title: t('Save') + ' (' + saveShortcutLabel() + ')'}, t('Save')),
     m(ButtonSecondary, {onclick: cancel}, t('Cancel')),
   )
 }

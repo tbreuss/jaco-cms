@@ -8,8 +8,10 @@ import {addSuccess} from '../../state/actions.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {FormErrors} from '../../component/FormErrors.js'
 import {app} from '../../lib/app.js'
+import {bindSaveShortcut, saveAndCloseShortcutLabel, saveShortcutLabel} from '../../lib/shortcuts.js'
 
 let editor = undefined
+let unbindSaveShortcut = null
 
 const state = {
   errors: [],
@@ -34,6 +36,18 @@ const onCreateComponent = () => {
     readOnly: false
   })
   editor.resize(false)
+  // Ace swallows keydown inside its textarea, so the document listener
+  // alone would miss shortcuts with the focus in the editor
+  editor.commands.addCommand({
+    name: 'save',
+    bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
+    exec: () => onSaveButtonClicked({redraw: false}),
+  })
+  editor.commands.addCommand({
+    name: 'saveAndClose',
+    bindKey: {win: 'Ctrl-Shift-S', mac: 'Command-Shift-S'},
+    exec: () => onSaveAndCloseButtonClicked({redraw: false}),
+  })
 }
 
 const onInitComponent = (vnode) => {
@@ -43,6 +57,13 @@ const onInitComponent = (vnode) => {
   PageEditModel.load(vnode.attrs.file)
   state.errors = []
   state.initialized = false
+  if (unbindSaveShortcut) {
+    unbindSaveShortcut()
+  }
+  unbindSaveShortcut = bindSaveShortcut(document, {
+    onSave: () => onSaveButtonClicked({redraw: false}),
+    onSaveAndClose: () => onSaveAndCloseButtonClicked({redraw: false}),
+  })
 }
 
 const onSaveButtonClicked = (e) => {
@@ -68,6 +89,10 @@ const onSaveAndCloseButtonClicked = (e) => {
 }
 
 const onRemoveComponent = () => {
+  if (unbindSaveShortcut) {
+    unbindSaveShortcut()
+    unbindSaveShortcut = null
+  }
   app.makeIframeScrollable()
 }
 
@@ -110,8 +135,8 @@ export const PageEditView = {
           m('div#ace', {style: {width: '100%'}})
         ),
         m(ButtonGroup, {wrap: 'div.row.text-right'},
-          m(ButtonPrimary, {onclick: onSaveButtonClicked}, t('Save')),
-          m(ButtonPrimary, {onclick: onSaveAndCloseButtonClicked}, t('Save & Close')),
+          m(ButtonPrimary, {onclick: onSaveButtonClicked, title: t('Save') + ' (' + saveShortcutLabel() + ')'}, t('Save')),
+          m(ButtonPrimary, {onclick: onSaveAndCloseButtonClicked, title: t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')'}, t('Save & Close')),
           m(ButtonSecondary, {onclick: onCancelButtonClicked}, t('Cancel'))
         )
       ),

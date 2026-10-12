@@ -144,6 +144,12 @@ they do not belong in the source HTML. The same holds for
 `data-jaco-gallery-full`, which carries the full version to the server on save
 and is removed there.
 
+## Keyboard shortcuts
+
+In the edit views, `Cmd/Ctrl+S` saves and `Cmd/Ctrl+Shift+S` saves and
+closes (where a Save & Close button exists: page, CSS and JS editor). The
+browser's own save dialog is suppressed while an edit view is open.
+
 ## 6. Log in
 
 Open `/jaco/` in the browser and log in with the username and password from

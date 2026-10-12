@@ -2,6 +2,7 @@ import {Input} from '/jaco/frontend/component/Input.js'
 import {InputPassword} from '/jaco/frontend/component/InputPassword.js'
 import {InputText} from '/jaco/frontend/component/InputText.js'
 import {FormErrors} from '/jaco/frontend/component/FormErrors.js'
+import {ButtonPrimary} from '/jaco/frontend/component/ButtonPrimary.js'
 import {Select} from '/jaco/frontend/component/Select.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
 import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
@@ -10,6 +11,7 @@ import {UploadListModel} from '/jaco/frontend/model/UploadListModel.js'
 import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
 import {api} from '/jaco/frontend/service/api.js'
 import {tError} from '/jaco/frontend/model/i18n.js'
+import {isSaveShortcut, isSaveAndCloseShortcut, bindSaveShortcut, saveShortcutLabel, saveAndCloseShortcutLabel} from '/jaco/frontend/lib/shortcuts.js'
 import {state} from '/jaco/frontend/state/state.js'
 const fixture = () => document.getElementById('qunit-fixture')
 
@@ -690,4 +692,111 @@ QUnit.test('chrome is stripped but content markers survive', (assert) => {
   assert.strictEqual(list.getAttribute('data-jaco-fragment'), 'news.html', 'fragment reference survives')
   assert.strictEqual(list.getAttribute('data-jaco-pos'), 'top', 'position survives')
   assert.ok(list.querySelector('[data-jaco-content-item]'), 'blocks survive')
+})
+
+QUnit.test('ButtonPrimary forwards the title tooltip', (assert) => {
+  m.render(fixture(), m(ButtonPrimary, {onclick: () => {}, title: 'Save (Ctrl+S)'}, 'Save'))
+  assert.strictEqual(
+    fixture().querySelector('button.primary').getAttribute('title'),
+    'Save (Ctrl+S)',
+    'hint is hoverable'
+  )
+
+  m.render(fixture(), m(ButtonPrimary, {onclick: () => {}}, 'Save'))
+  assert.strictEqual(
+    fixture().querySelector('button.primary').getAttribute('title'),
+    null,
+    'no empty title without hint'
+  )
+})
+
+QUnit.module('shortcuts', {
+  beforeEach: () => {
+    m.render(fixture(), null)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+  }
+})
+
+const keydown = (target, init) => {
+  const event = new KeyboardEvent('keydown', Object.assign({bubbles: true, cancelable: true}, init))
+  target.dispatchEvent(event)
+  return event
+}
+
+QUnit.test('isSaveShortcut matches cmd/ctrl+s without modifiers', (assert) => {
+  assert.ok(isSaveShortcut({metaKey: true, ctrlKey: false, altKey: false, shiftKey: false, key: 's'}), 'cmd+s')
+  assert.ok(isSaveShortcut({metaKey: false, ctrlKey: true, altKey: false, shiftKey: false, key: 's'}), 'ctrl+s')
+  assert.ok(isSaveShortcut({metaKey: true, ctrlKey: false, altKey: false, shiftKey: false, key: 'S'}), 'cmd+shift produces capital S key')
+  assert.notOk(isSaveShortcut({metaKey: false, ctrlKey: false, altKey: false, shiftKey: false, key: 's'}), 'plain s')
+  assert.notOk(isSaveShortcut({metaKey: true, ctrlKey: false, altKey: false, shiftKey: false, key: 'x'}), 'cmd+x')
+  assert.notOk(isSaveShortcut({metaKey: true, ctrlKey: false, altKey: true, shiftKey: false, key: 's'}), 'alt combinations are left alone')
+  assert.notOk(isSaveShortcut({metaKey: true, ctrlKey: false, altKey: false, shiftKey: true, key: 's'}), 'shift belongs to save-and-close')
+})
+
+QUnit.test('isSaveAndCloseShortcut needs shift on top', (assert) => {
+  assert.ok(isSaveAndCloseShortcut({metaKey: true, ctrlKey: false, altKey: false, shiftKey: true, key: 's'}), 'cmd+shift+s')
+  assert.ok(isSaveAndCloseShortcut({metaKey: false, ctrlKey: true, altKey: false, shiftKey: true, key: 'S'}), 'ctrl+shift+S')
+  assert.notOk(isSaveAndCloseShortcut({metaKey: true, ctrlKey: false, altKey: false, shiftKey: false, key: 's'}), 'plain save is not save-and-close')
+  assert.notOk(isSaveAndCloseShortcut({metaKey: true, ctrlKey: false, altKey: true, shiftKey: true, key: 's'}), 'alt combinations are left alone')
+})
+
+QUnit.test('bindSaveShortcut triggers save and swallows the browser dialog', (assert) => {
+  let saved = 0
+  let closed = 0
+  const unbind = bindSaveShortcut(fixture(), {
+    onSave: () => { saved++ },
+    onSaveAndClose: () => { closed++ },
+  })
+
+  const plain = keydown(fixture(), {key: 's', metaKey: true})
+  assert.strictEqual(saved, 1, 'cmd+s saves')
+  assert.ok(plain.defaultPrevented, 'browser dialog is swallowed')
+
+  keydown(fixture(), {key: 's', metaKey: true, shiftKey: true})
+  assert.strictEqual(closed, 1, 'cmd+shift+s saves and closes')
+  assert.strictEqual(saved, 1, 'plain save did not fire again')
+
+  keydown(fixture(), {key: 's'})
+  assert.strictEqual(saved, 1, 'typing s does nothing')
+
+  unbind()
+  keydown(fixture(), {key: 's', metaKey: true})
+  assert.strictEqual(saved, 1, 'unbound listener stays silent')
+})
+
+QUnit.test('bindSaveShortcut works without a close handler', (assert) => {
+  let saved = 0
+  const unbind = bindSaveShortcut(fixture(), {onSave: () => { saved++ }})
+
+  keydown(fixture(), {key: 's', metaKey: true, shiftKey: true})
+  assert.strictEqual(saved, 0, 'shift+s without close handler does nothing')
+
+  keydown(fixture(), {key: 's', ctrlKey: true})
+  assert.strictEqual(saved, 1, 'ctrl+s saves')
+
+  unbind()
+})
+
+QUnit.test('shortcut labels match the platform convention', (assert) => {
+  for (const label of [saveShortcutLabel(), saveAndCloseShortcutLabel()]) {
+    assert.ok(/S$/.test(label), `ends with S, got ${label}`)
+    assert.ok(label.includes('⌘') || label.includes('Ctrl'), `mac or pc style, got ${label}`)
+  }
+  assert.notStrictEqual(saveShortcutLabel(), saveAndCloseShortcutLabel(), 'save and save-and-close differ')
+})
+
+QUnit.test('bindSaveShortcut works on a separate document like the iframe', (assert) => {
+  let saved = 0
+  const other = document.implementation.createHTMLDocument()
+  const unbind = bindSaveShortcut(other, {onSave: () => { saved++ }})
+
+  keydown(other, {key: 's', metaKey: true})
+  assert.strictEqual(saved, 1, 'shortcut fires in the other document')
+
+  keydown(fixture(), {key: 's', metaKey: true})
+  assert.strictEqual(saved, 1, 'the main document stays silent')
+
+  unbind()
 })
