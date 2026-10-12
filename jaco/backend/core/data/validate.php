@@ -63,6 +63,9 @@ function required(array|string|float|int|bool|null $value): Result
     return Result::ok();
 }
 
+// the value is intentionally unused: "safe" is the explicit opt-out of
+// validation, but every rule is called with the value by the dispatcher
+// @phpstan-ignore function.unusedParameter
 function safe(mixed $value = null): Result
 {
     return Result::ok();

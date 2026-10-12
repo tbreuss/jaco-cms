@@ -2,7 +2,6 @@
 
 namespace jaco\api\system\phpinfo;
 
-use jaco\core\config\Config;
 use jaco\core\http\Response;
 use jaco\domain\Payload;
 
@@ -10,7 +9,7 @@ use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
 use function jaco\domain\system\get_phpinfo;
 
-function action(Config $config): Response
+function action(): Response
 {
     $payload = get_phpinfo();
 

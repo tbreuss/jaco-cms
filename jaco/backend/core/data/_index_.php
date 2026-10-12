@@ -38,7 +38,7 @@ function sanitize_one(string|float|int|bool|null $var, array $filters): string|f
 }
 
 /**
- * @return string[][]
+ * @return list<array{string, string}>
  */
 function validate(array $data, array $rules): array
 {
@@ -68,7 +68,7 @@ function validate(array $data, array $rules): array
 }
 
 /**
- * @return string[][]
+ * @return list<array{string, string}>
  */
 function validate_one(string|float|int|bool|null $var, string $name, array $rules): array
 {

@@ -1,3 +1,5 @@
+includes:
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
 parameters:
     bootstrapFiles:
         - vendor/autoload.php
@@ -10,8 +12,8 @@ parameters:
         - backend
         - test
         - api.php
-        - routes.php
         - autoload.php
         - cli.php
+        - routes.php
         - settings.dist.php
     reportUnmatchedIgnoredErrors: false

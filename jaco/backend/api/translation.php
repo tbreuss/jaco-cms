@@ -18,10 +18,10 @@ function action(Config $config, Request $request): Response
         forLanguage: $request->query->strVal('language', $config->defaultLanguage),
     );
 
-    return responder($config, $payload);
+    return responder($payload);
 }
 
-function responder(Config $config, Payload $payload): Response
+function responder(Payload $payload): Response
 {
     if ($payload->isSuccess) {
         // translations are a map, encode an empty list as an empty object

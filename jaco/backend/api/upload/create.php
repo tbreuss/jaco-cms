@@ -3,7 +3,6 @@
 namespace jaco\api\upload\create;
 
 use jaco\core\config\Config;
-use jaco\core\http\Request;
 use jaco\core\http\Response;
 use jaco\domain\Payload;
 
@@ -12,7 +11,7 @@ use function jaco\core\responder\api_errors;
 use function jaco\core\responder\maintenance_response;
 use function jaco\domain\upload\create_upload;
 
-function action(Config $config, Request $request): Response
+function action(Config $config): Response
 {
     if (($blocked = maintenance_response($config->maintenanceMode)) !== null) {
         return $blocked;
