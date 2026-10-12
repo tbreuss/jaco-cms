@@ -87,9 +87,8 @@ function get_log_entries(Config $config, int $size = 100): Payload
     }
 
     $lines = [];
-    if (\file_exists($config->phpErrorLog)) {
-        $fp = \fopen($config->phpErrorLog, 'r');
-
+    $fp = \file_exists($config->phpErrorLog) ? \fopen($config->phpErrorLog, 'r') : false;
+    if ($fp !== false) {
         $pos = -2; // Skip final new line character (Set to -1 if not present)
 
         $i = 0;

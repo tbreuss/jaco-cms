@@ -62,7 +62,7 @@ final class HtmlFunctionsTest extends TestCase
         }
         // page backups are stored flat with "|" instead of "/", so the
         // backup of test/xss.html has to be removed by file name
-        foreach ((array) glob($config->backupDir . '/*test|xss.html') as $backup) {
+        foreach (glob($config->backupDir . '/*test|xss.html') ?: [] as $backup) {
             @unlink($backup);
         }
     }

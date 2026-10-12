@@ -22,7 +22,7 @@ final class DefinedConstantsTest extends TestCase
         $this->assertSame(str_replace('\\', '/', $config->backupDir), $configValues['backupDir']);
 
         foreach ($configValues as $value) {
-            $string = is_array($value) ? json_encode($value) : (string) $value;
+            $string = is_array($value) ? (string) json_encode($value) : (string) $value;
             $this->assertStringNotContainsString('test_1234', $string);
             $this->assertStringNotContainsString('test_pass', $string);
         }

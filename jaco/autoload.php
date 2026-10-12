@@ -9,6 +9,9 @@ if (!function_exists('find_php_files')) {
                 continue;
             }
             $path = realpath($dir . DIRECTORY_SEPARATOR . $dirOrFile);
+            if ($path === false) {
+                continue;
+            }
             if (is_dir($path)) {
                 $files = array_merge($files, find_php_files($path));
             } elseif (str_ends_with($path, '.php')) {

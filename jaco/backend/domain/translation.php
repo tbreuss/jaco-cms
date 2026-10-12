@@ -41,7 +41,8 @@ function load(Config $config, string $language): array
     }
 
     if ($path !== '' && is_file($path)) {
-        $decoded = json_decode(file_get_contents($path), true);
+        $content = file_get_contents($path);
+        $decoded = $content === false ? null : json_decode($content, true);
         $translations[$key] = is_array($decoded) ? $decoded : [];
     } elseif ($language === $config->defaultLanguage) {
         // the default language file is missing, return empty translations

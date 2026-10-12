@@ -151,7 +151,9 @@ function restore_file(Config $config, string $bakDir, string $bakFile, string $d
 function restore_timestamp_from_file_name(string $bakFile): int
 {
     $bakFile = \str_replace('_', '', \substr($bakFile, 0, 15));
-    return \strtotime($bakFile);
+    $timestamp = \strtotime($bakFile);
+
+    return $timestamp === false ? 0 : $timestamp;
 }
 
 function read_file(string $dir, string $file): ?string
@@ -201,7 +203,8 @@ function file_name_to_write(string $dir, string $file): string
     if (file_exists($dir, $file)) {
         $info = \pathinfo($file);
         $extension = $info['extension'] ?? '';
-        $prefix = $info['dirname'] === '.' ? '' : $info['dirname'] . DIRECTORY_SEPARATOR;
+        $dirname = $info['dirname'] ?? '.';
+        $prefix = $dirname === '.' ? '' : $dirname . DIRECTORY_SEPARATOR;
         $i = 1;
 
         do {

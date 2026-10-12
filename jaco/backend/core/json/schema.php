@@ -15,7 +15,8 @@ function validate_data(array|string|null $data, string $schema): array
     $validator->resolver()->registerPrefix(JSON_SCHEMA_URL, dirname(__DIR__, 3) . '/schema/');
 
     if (is_array($data)) {
-        $dataAsObject = json_decode(json_encode($data), false);
+        $encoded = json_encode($data);
+        $dataAsObject = $encoded === false ? null : json_decode($encoded, false);
     } elseif (is_string($data)) {
         $dataAsObject = json_decode($data, false);
     } else {

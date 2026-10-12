@@ -6,7 +6,7 @@ parameters:
     ignoreErrors:
         - '#with no value type specified in iterable type array.#'
         - '#return type has no value type specified in iterable type array.#'
-    level: 6
+    level: 7
     paths:
         - backend
         - test

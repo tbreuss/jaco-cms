@@ -220,7 +220,7 @@ function handle_embedded_data_url_images(Config $config, string $html): array
 
     $dom = new \DOMDocument();
 
-    if (!$dom->loadHTML($html)) {
+    if ($html === '' || !$dom->loadHTML($html)) {
         return [false, ['Could not load HTML']];
     }
 

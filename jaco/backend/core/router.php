@@ -2,6 +2,7 @@
 
 namespace jaco\core\router;
 
+use Closure;
 use jaco\core\auth;
 use jaco\core\config\Config;
 use jaco\core\http\Request;
@@ -71,7 +72,7 @@ function dispatch(Request $request, Config $config): Response
     return call_action($route['callback'], $request, $config, $route['requestJsonSchema'], $route['responseJsonSchema']);
 }
 
-function call_action(callable $action, Request $request, Config $config, ?string $requestJsonSchema, ?string $responseJsonSchema): Response
+function call_action(Closure $action, Request $request, Config $config, ?string $requestJsonSchema, ?string $responseJsonSchema): Response
 {
     $function = new \ReflectionFunction($action);
 

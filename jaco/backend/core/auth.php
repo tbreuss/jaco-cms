@@ -96,7 +96,9 @@ function login_blocked(Config $config): int
         return 0;
     }
 
-    return max($window) + LOGIN_BLOCK_SECONDS - time();
+    // every entry in the window is newer than time() - LOGIN_BLOCK_SECONDS,
+    // so the remaining seconds cannot drop below zero
+    return max(max($window) + LOGIN_BLOCK_SECONDS - time(), 0);
 }
 
 function record_login_failure(Config $config): void

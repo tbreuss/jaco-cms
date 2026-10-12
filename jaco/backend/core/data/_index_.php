@@ -2,8 +2,21 @@
 
 namespace jaco\core\data;
 
+use InvalidArgumentException;
 use jaco\core\data\validate\Result;
 
+/**
+ * Sanitizes the given fields with the named filter functions.
+ *
+ * The parameter type lists the filters this helper supports, all of them
+ * return a string or null. The sanitize namespace also holds sanitizers with
+ * other return types (integer, float), they are not part of the contract here
+ * because every sanitized value of the cms is a string.
+ *
+ * @param array<string, mixed> $data
+ * @param list<array{0: string, 1: 'filename'|'string', ...}> $filters
+ * @return array<string, string>
+ */
 function sanitize(array $data, array $filters): array
 {
     $filtered = [];
@@ -11,6 +24,9 @@ function sanitize(array $data, array $filters): array
         $name = $rule[0];
         $value = $data[$name] ?? null;
         $callable = 'jaco\\core\\data\\sanitize\\' . $rule[1];
+        if (!function_exists($callable)) {
+            throw new InvalidArgumentException('Unknown sanitizer: ' . $callable);
+        }
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         $filteredValue = call_user_func_array($callable, $options);
@@ -22,7 +38,10 @@ function sanitize(array $data, array $filters): array
     return $filtered;
 }
 
-function sanitize_one(string|float|int|bool|null $var, array $filters): string|float|int|bool|null
+/**
+ * @param list<array{0: 'filename'|'string', ...}> $filters
+ */
+function sanitize_one(string|float|int|bool|null $var, array $filters): ?string
 {
     $name = '__name__';
     $data = [$name => $var];
@@ -38,6 +57,8 @@ function sanitize_one(string|float|int|bool|null $var, array $filters): string|f
 }
 
 /**
+ * @param array<string, mixed> $data
+ * @param array<array-key, mixed> $rules rule name, validator name and its options
  * @return list<array{string, string}>
  */
 function validate(array $data, array $rules): array
@@ -51,6 +72,9 @@ function validate(array $data, array $rules): array
         }
         $value = $data[$name] ?? null;
         $callable = 'jaco\\core\\data\\validate\\' . $rule[1];
+        if (!function_exists($callable)) {
+            throw new InvalidArgumentException('Unknown validator: ' . $callable);
+        }
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         /** @var Result $result */
@@ -68,6 +92,7 @@ function validate(array $data, array $rules): array
 }
 
 /**
+ * @param array<array-key, mixed> $rules validator name and its options
  * @return list<array{string, string}>
  */
 function validate_one(string|float|int|bool|null $var, string $name, array $rules): array
