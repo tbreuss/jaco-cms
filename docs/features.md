@@ -105,6 +105,11 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   (`editor.commands.addCommand` in `PageEditView.js`, `CssEditView.js`); the inline
   editor needs listeners in both the parent and the iframe document, unbound in
   `onremove`, or shortcuts leak across routes.
+- **The theme is an explicit choice, not just the OS setting.** `jaco/frontend/lib/theme.js`
+  persists light/dark/auto in localStorage and applies it as `data-theme` on `<html>`
+  (`:root[data-theme="dark"]` carries the dark tokens, so no media query is needed).
+  An inline script in `jaco/index.html` sets the attribute before CSS paints to avoid
+  a flash; new theme-dependent colors belong in the `:root` tokens, never in rules.
 - **Server errors stay English on the wire and are translated in the frontend.**
   The backend has no per-request locale, so `detail` strings arrive in English and
   `tError()` in `jaco/frontend/model/i18n.js` translates them for display

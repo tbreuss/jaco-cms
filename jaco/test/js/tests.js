@@ -3,6 +3,7 @@ import {InputPassword} from '/jaco/frontend/component/InputPassword.js'
 import {InputText} from '/jaco/frontend/component/InputText.js'
 import {FormErrors} from '/jaco/frontend/component/FormErrors.js'
 import {ButtonPrimary} from '/jaco/frontend/component/ButtonPrimary.js'
+import {Icon} from '/jaco/frontend/component/Icon.js'
 import {Select} from '/jaco/frontend/component/Select.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
 import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
@@ -12,6 +13,7 @@ import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
 import {api} from '/jaco/frontend/service/api.js'
 import {tError} from '/jaco/frontend/model/i18n.js'
 import {isSaveShortcut, isSaveAndCloseShortcut, bindSaveShortcut, saveShortcutLabel, saveAndCloseShortcutLabel} from '/jaco/frontend/lib/shortcuts.js'
+import {getTheme, setTheme, applyTheme} from '/jaco/frontend/lib/theme.js'
 import {state} from '/jaco/frontend/state/state.js'
 const fixture = () => document.getElementById('qunit-fixture')
 
@@ -694,6 +696,43 @@ QUnit.test('chrome is stripped but content markers survive', (assert) => {
   assert.ok(list.querySelector('[data-jaco-content-item]'), 'blocks survive')
 })
 
+QUnit.test('Icon renders decorative svg paths', (assert) => {
+  for (const name of ['edit', 'delete', 'view', 'restore']) {
+    m.render(fixture(), m(Icon, {name}))
+    const svg = fixture().querySelector('svg.icon')
+    assert.ok(svg, `${name} renders an svg`)
+    assert.strictEqual(svg.getAttribute('aria-hidden'), 'true', `${name} is decorative`)
+    assert.ok(svg.querySelector('path, circle'), `${name} has drawing instructions`)
+  }
+})
+
+QUnit.test('row action buttons carry icons with accessible names', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+  const realLoad = UploadListModel.load
+  UploadListModel.load = () => Promise.resolve()
+  const app = document.createElement('div')
+  app.id = 'app'
+  document.body.appendChild(app)
+
+  UploadListModel.items = [{file: 'pic.png', extension: 'png', size: 42, created: 1700000000}]
+  UploadListModel.isLoading = false
+  m.render(fixture(), m(UploadListView))
+
+  const buttons = [...fixture().querySelectorAll('tbody td.text-right button')]
+  assert.strictEqual(buttons.length, 2, 'view and delete buttons')
+  for (const button of buttons) {
+    assert.ok(button.querySelector('svg.icon'), 'icon replaces the text label')
+    assert.ok(button.getAttribute('aria-label'), 'accessible name is present')
+    assert.ok(button.getAttribute('title'), 'tooltip is present')
+  }
+
+  UploadListModel.load = realLoad
+  UploadListModel.items = []
+  window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  m.render(fixture(), null)
+  document.getElementById('app')?.remove()
+})
+
 QUnit.test('ButtonPrimary forwards the title tooltip', (assert) => {
   m.render(fixture(), m(ButtonPrimary, {onclick: () => {}, title: 'Save (Ctrl+S)'}, 'Save'))
   assert.strictEqual(
@@ -799,4 +838,52 @@ QUnit.test('bindSaveShortcut works on a separate document like the iframe', (ass
   assert.strictEqual(saved, 1, 'the main document stays silent')
 
   unbind()
+})
+
+QUnit.module('theme', {
+  beforeEach: () => {
+    try {
+      localStorage.removeItem('jaco-theme')
+    } catch {
+      // private mode etc.
+    }
+    document.documentElement.removeAttribute('data-theme')
+  },
+  afterEach: () => {
+    try {
+      localStorage.removeItem('jaco-theme')
+    } catch {
+      // private mode etc.
+    }
+    document.documentElement.removeAttribute('data-theme')
+  }
+})
+
+QUnit.test('theme defaults to auto and persists the choice', (assert) => {
+  assert.strictEqual(getTheme(), 'auto', 'no stored choice means auto')
+
+  setTheme('dark')
+  assert.strictEqual(getTheme(), 'dark', 'choice is stored')
+  assert.strictEqual(document.documentElement.getAttribute('data-theme'), 'dark', 'attribute is set')
+
+  setTheme('light')
+  assert.strictEqual(document.documentElement.getAttribute('data-theme'), 'light', 'attribute follows')
+})
+
+QUnit.test('auto resolves through the OS setting', (assert) => {
+  const realMatchMedia = window.matchMedia
+  try {
+    window.matchMedia = () => ({matches: true, addEventListener: () => {}})
+    applyTheme('auto')
+    assert.strictEqual(document.documentElement.getAttribute('data-theme'), 'dark', 'dark OS means dark')
+
+    window.matchMedia = () => ({matches: false, addEventListener: () => {}})
+    applyTheme('auto')
+    assert.strictEqual(document.documentElement.getAttribute('data-theme'), 'light', 'light OS means light')
+
+    applyTheme('dark')
+    assert.strictEqual(document.documentElement.getAttribute('data-theme'), 'dark', 'explicit dark wins over OS')
+  } finally {
+    window.matchMedia = realMatchMedia
+  }
 })

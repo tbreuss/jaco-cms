@@ -1,5 +1,6 @@
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
+import {Icon} from '../../component/Icon.js'
 import {PageListModel as PageListModel} from '../../model/PageListModel.js'
 import {addDanger, addSuccess} from '../../state/actions.js'
 import {api} from '../../service/api.js'
@@ -140,14 +141,18 @@ export const PageListView = {
                   m(ButtonSecondary, {
                     onclick: () => {
                       editPage(page.file)
-                    }
-                  }, t('Edit')),
+                    },
+                    title: t('Edit'),
+                    'aria-label': t('Edit'),
+                  }, m(Icon, {name: 'edit'})),
                   m(ButtonPrimary, {
                     onclick: (e) => {
                       e.redraw = false
                       deleteAction(page)
-                    }
-                  }, t('Delete')),
+                    },
+                    title: t('Delete'),
+                    'aria-label': t('Delete'),
+                  }, m(Icon, {name: 'delete'})),
                 )
               ))
             )

@@ -2,6 +2,7 @@ import {t} from '../../model/i18n.js'
 import {BackupListModel} from '../../model/BackupListModel.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
+import {Icon} from '../../component/Icon.js'
 import {api} from '../../service/api.js'
 import {addDanger, addSuccess} from '../../state/actions.js'
 import {app} from '../../lib/app.js'
@@ -164,20 +165,26 @@ export const BackupListView = {
                 m(ButtonSecondary, {
                   onclick: () => {
                     viewBackup(backup.file)
-                  }
-                }, t('View')),
+                  },
+                  title: t('View'),
+                  'aria-label': t('View'),
+                }, m(Icon, {name: 'view'})),
                 m(ButtonPrimary, {
                   onclick: (e) => {
                     e.redraw = false
                     deleteAction(backup)
-                  }
-                }, t('Delete')),
+                  },
+                  title: t('Delete'),
+                  'aria-label': t('Delete'),
+                }, m(Icon, {name: 'delete'})),
                 m(ButtonPrimary, {
                   onclick: (e) => {
                     e.redraw = false
                     restoreBackup(backup)
-                  }
-                }, t('Restore'))
+                  },
+                  title: t('Restore'),
+                  'aria-label': t('Restore'),
+                }, m(Icon, {name: 'restore'}))
               )
             ))
           )

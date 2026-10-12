@@ -4,6 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JACO</title>
+    <script>
+      // set before CSS paints to avoid a theme flash (see lib/theme.js)
+      try {
+        var jacoTheme = localStorage.getItem('jaco-theme') || 'auto'
+        var jacoDark = jacoTheme === 'dark' || (jacoTheme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.setAttribute('data-theme', jacoDark ? 'dark' : 'light')
+      } catch (e) {}
+    </script>
     <link rel="stylesheet" href="frontend/asset/app.css">
   </head>
   <body>

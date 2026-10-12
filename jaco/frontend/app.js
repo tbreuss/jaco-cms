@@ -1,6 +1,9 @@
 import {DefaultLayout} from './layout/Default.js'
 import {Notifications} from './service/Notifications.js'
 import {addDanger} from './state/actions.js'
+import {initTheme} from './lib/theme.js'
+
+initTheme()
 
 Number.prototype.pad = function (size) {
   let s = String(this)

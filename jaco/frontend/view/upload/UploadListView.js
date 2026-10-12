@@ -2,6 +2,7 @@ import {t} from '../../model/i18n.js'
 import {UploadListModel} from '../../model/UploadListModel.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
+import {Icon} from '../../component/Icon.js'
 import {api} from '../../service/api.js'
 import {addDanger, addSuccess} from '../../state/actions.js'
 import {app} from '../../lib/app.js'
@@ -190,14 +191,18 @@ export const UploadListView = {
                   m(ButtonSecondary, {
                     onclick: () => {
                       viewUpload(page.file)
-                    }
-                  }, t('View')),
+                    },
+                    title: t('View'),
+                    'aria-label': t('View'),
+                  }, m(Icon, {name: 'view'})),
                   m(ButtonPrimary, {
                     onclick: (e) => {
                       e.redraw = false
                       deleteAction(page)
-                    }
-                  }, t('Delete')),
+                    },
+                    title: t('Delete'),
+                    'aria-label': t('Delete'),
+                  }, m(Icon, {name: 'delete'})),
                 )
               ))
             )

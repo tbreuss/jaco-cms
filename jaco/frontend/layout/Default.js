@@ -1,6 +1,23 @@
 import {closeDropdown} from '../lib/helpers.js'
 import {i18n, t} from '../model/i18n.js'
 import {app} from '../lib/app.js'
+import {getTheme, setTheme} from '../lib/theme.js'
+
+const themeLabel = (value) => t(value === 'light' ? 'Light' : value === 'dark' ? 'Dark' : 'Auto')
+
+// native select: one visible control, theme popup handled by the browser -
+// no state, nothing to get stuck, touch and keyboard free.
+// Only the hover of the dropdown options is styled, in both themes.
+const themeSwitch = () => m('select.theme-switch', {
+  'aria-label': t('Theme'),
+  value: getTheme(),
+  onchange: (e) => {
+    e.redraw = false
+    setTheme(e.target.value)
+  },
+}, ['light', 'dark', 'auto'].map((value) =>
+  m('option', {value}, themeLabel(value))
+))
 
 const title = () => m(m.route.Link, {
   class: 'title',
@@ -89,6 +106,7 @@ export const DefaultLayout = {
                 class: 'logout',
                 href: '/logout'
               }, t('Logout')),
+              themeSwitch(),
             ]) : m('.navbar', [
               title(),
               m(m.route.Link, {

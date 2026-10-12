@@ -1,16 +1,27 @@
 :root {
+    color-scheme: light;
     --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --radius: 6px;
     --color-chrome: #333;
     --color-chrome-translucent: rgba(51, 51, 51, 0.9);
+    --color-navbar: #fff;
+    --color-navbar-text: #212529;
     --color-surface: #f9f9f9;
+    --color-raised: #fff;
+    --color-input: #fff;
+    --color-text: #212529;
     --color-link: #2374d7;
     --color-primary: #04AA6D;
     --color-primary-dark: #038857;
     --color-secondary: #6c757d;
     --color-secondary-dark: #5a6268;
     --color-border: #ccc;
-    --color-nav-hover: red;
+    --color-error: #cc3333;
+    --color-error-border: #cc8888;
+    --color-error-legend: #cc7777;
+    --color-row-hover: rgba(0, 0, 0, 0.03);
+    --color-menu-hover: #ddd;
+    --color-nav-hover: #e9ecef;
     --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
@@ -32,7 +43,7 @@ a {
 
 /* https://www.w3schools.com/howto/howto_css_arrows.asp */
 .arrow {
-    border: solid #444;
+    border: solid currentColor;
     border-width: 0 3px 3px 0;
     display: inline-block;
     padding: 3px;
@@ -112,17 +123,18 @@ body {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    background-color: var(--color-chrome);
+    background-color: var(--color-navbar);
+    border-bottom: 1px solid var(--color-border);
 }
 
 .navbar .ruler {
-    border-top: 1px solid var(--color-chrome);
+    border-top: 1px solid var(--color-border);
 }
 
 /* Links inside the navbar */
 .navbar a {
     font-size: 16px;
-    color: white;
+    color: var(--color-navbar-text);
     text-align: center;
     padding: 14px 16px;
     text-decoration: none;
@@ -137,12 +149,57 @@ body {
     margin-left: auto;
 }
 
+/* Theme switch: native select, navbar-styled. The dropdown popup itself is
+   drawn by the browser; only its option hover is styled, in both themes. */
+.theme-switch {
+    margin: 0 0.5rem;
+    align-self: center;
+    width: auto;
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-navbar-text);
+    font-size: 14px;
+    padding: 6px 1.75rem 6px 12px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23212529' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1em;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.theme-switch:hover {
+    border-color: var(--color-navbar-text);
+}
+
+:root[data-theme="dark"] .theme-switch {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dee2e6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+.theme-switch option {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+}
+
+.theme-switch option {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+}
+
+.theme-switch option:hover,
+.theme-switch option:checked {
+    background-color: var(--color-nav-hover);
+}
+
 /* Dropdown button */
 .dropdown .dropbtn {
     font-size: 16px;
     border: none;
     outline: none;
-    color: white;
+    color: var(--color-navbar-text);
     padding: 14px 16px;
     background-color: inherit;
     font-family: inherit;
@@ -151,7 +208,7 @@ body {
     /* Important for vertical align on mobile phones */
 }
 
-/* Add a red background color to navbar links on hover */
+/* Subtle background color for navbar links on hover */
 .navbar a:hover,
 .dropdown:hover .dropbtn {
     background-color: var(--color-nav-hover);
@@ -173,7 +230,7 @@ body {
 
 /* Links inside the dropdown */
 .dropdown-content a {
-    color: black;
+    color: var(--color-text);
     padding: 12px 16px;
     text-decoration: none;
     display: block;
@@ -182,7 +239,7 @@ body {
 
 /* Add a grey background color to dropdown links on hover */
 .dropdown-content a:hover {
-    background-color: #ddd;
+    background-color: var(--color-menu-hover);
 }
 
 /* Show the dropdown menu on hover */
@@ -251,7 +308,8 @@ iframe {
     left: 0;
     width: 100%;
     min-height: 46.5px;
-    background: var(--color-chrome);
+    background: var(--color-navbar);
+    color: var(--color-navbar-text);
     z-index: 2;
 }
 
@@ -383,6 +441,8 @@ textarea {
     border-radius: var(--radius);
     box-sizing: border-box;
     resize: vertical;
+    background-color: var(--color-input);
+    color: var(--color-text);
 }
 
 /* Style the label to display next to the inputs */
@@ -453,6 +513,13 @@ textarea:focus-visible {
 table .primary,
 table .secondary {
     padding: 8px 12px;
+}
+
+/* Inline SVG row action icons scale with the button text */
+.icon {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
 }
 
 /* Style the container */
@@ -546,7 +613,7 @@ fieldset .row.text-right button {
 }
 
 .table tbody tr:hover {
-    background: rgba(0, 0, 0, 0.03);
+    background: var(--color-row-hover);
 }
 
 .table th.text-right,
@@ -574,12 +641,12 @@ fieldset .row.text-right button {
 }
 
 .errors {
-    color: #cc3333;
-    border: 1px solid #cc8888;
+    color: var(--color-error);
+    border: 1px solid var(--color-error-border);
 }
 
 .errors legend {
-    color: #cc7777;
+    color: var(--color-error-legend);
 }
 
 .errors ul {
@@ -611,7 +678,7 @@ fieldset .row.text-right button {
     display: block;
     padding: 12px;
     overflow: hidden;
-    background-color: #fff;
+    background-color: var(--color-raised);
 }
 
 .list-group-item:first-child {
@@ -768,4 +835,55 @@ a.list-group-item {
         left: 100%;
         transform: translateX(-99%);
     }
+}
+
+/* Dark mode follows the OS setting; every admin color runs through the
+   variables above, so only the tokens and the notification palettes
+   need overrides here. The editor iframe (editor.css) keeps its own
+   light chrome for now. */
+/* Explicit theme choice, see lib/theme.js and the select in the navbar.
+   The attribute is set before CSS paints; auto resolves through the OS. */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-chrome: #1a1d20;
+    --color-chrome-translucent: rgba(0, 0, 0, 0.75);
+    --color-navbar: #1a1d20;
+    --color-navbar-text: #fff;
+    --color-surface: #212529;
+    --color-raised: #2b3035;
+    --color-input: #2b3035;
+    --color-text: #dee2e6;
+    --color-link: #6ea8fe;
+    --color-border: #495057;
+    --color-error: #ea868f;
+    --color-error-border: #842029;
+    --color-error-legend: #ea868f;
+    --color-row-hover: rgba(255, 255, 255, 0.06);
+    --color-menu-hover: #343a40;
+    --color-nav-hover: rgba(255, 255, 255, 0.08);
+    --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="dark"] .m-notification.info {
+    color: #9eeaf9;
+    background-color: #03252b;
+    border-color: #087990;
+}
+
+:root[data-theme="dark"] .m-notification.warning {
+    color: #ffda6a;
+    background-color: #332701;
+    border-color: #997404;
+}
+
+:root[data-theme="dark"] .m-notification.danger {
+    color: #ea868f;
+    background-color: #2c0b0e;
+    border-color: #842029;
+}
+
+:root[data-theme="dark"] .m-notification.success {
+    color: #75b798;
+    background-color: #051b11;
+    border-color: #0f5132;
 }
