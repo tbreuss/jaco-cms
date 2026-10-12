@@ -110,8 +110,9 @@ then mark where blocks may appear:
 
 - `data-jaco-fragment` names the fragment file from `jaco/_template/content/`
 - `data-jaco-title` labels the add button shown in the editor
-- `data-jaco-pos` is `top` (new blocks first), `bottom` (new blocks last) or
-  `any` (a button before every block plus one at the end)
+- `data-jaco-pos` is `top` (new blocks first), `bottom` (new blocks last),
+  `any` (a button before every block plus one at the end) or `draggable`
+  (like `top`, plus blocks can be reordered with the ⠿ grip)
 - existing blocks are wrapped in `<div data-jaco-content-item>` and can be
   deleted in the editor (two-step: ×, then ✓)
 

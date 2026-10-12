@@ -337,7 +337,7 @@ QUnit.test('posOf reads top, bottom and defaults anything else to any', (assert)
   assert.strictEqual(lists.posOf(list('top')), 'top')
   assert.strictEqual(lists.posOf(list('bottom')), 'bottom')
   assert.strictEqual(lists.posOf(list('any')), 'any')
-  assert.strictEqual(lists.posOf(list('draggable')), 'any', 'draggable follows later')
+  assert.strictEqual(lists.posOf(list('draggable')), 'draggable')
   assert.strictEqual(lists.posOf(list(null)), 'any', 'missing pos follows')
 })
 
@@ -419,6 +419,123 @@ QUnit.test('a failed fragment load marks the button instead of dying silently', 
     )
     done()
   }, 50)
+})
+
+const pointerEvent = (type, x, y) => new PointerEvent(type, {
+  bubbles: true,
+  cancelable: true,
+  clientX: x ?? 0,
+  clientY: y ?? 0,
+  pointerType: 'mouse',
+  button: 0,
+})
+
+QUnit.test('draggable adds on top and reorders via the grip', (assert) => {
+  m.render(fixture(), m.trust(
+    '<div data-jaco-content-list data-jaco-fragment="news.html" data-jaco-title="Add news" data-jaco-pos="draggable">' +
+    '<div data-jaco-content-item><h2>First</h2></div>' +
+    '<div data-jaco-content-item><h2>Second</h2></div>' +
+    '</div>'
+  ))
+  const list = fixture().querySelector('[data-jaco-content-list]')
+
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+
+  const button = fixture().querySelector('.jaco-content-add-button')
+  assert.ok(button, 'an add button is rendered')
+  assert.strictEqual(button.nextElementSibling, list, 'button is before the list like top')
+  assert.ok(list.querySelector('.jaco-content-grip'), 'blocks have a grip')
+
+  const headings = () => [...list.querySelectorAll(':scope > [data-jaco-content-item] h2')]
+    .map((h2) => h2.textContent)
+  assert.deepEqual(headings(), ['First', 'Second'], 'initial order')
+
+  const grips = [...list.querySelectorAll('.jaco-content-grip')]
+  const secondItem = grips[1].closest('[data-jaco-content-item]')
+  const secondRect = grips[1].getBoundingClientRect()
+  const firstRect = grips[0].closest('[data-jaco-content-item]').getBoundingClientRect()
+
+  grips[1].dispatchEvent(pointerEvent('pointerdown', secondRect.left, secondRect.top))
+  grips[1].dispatchEvent(pointerEvent('pointermove', secondRect.left, secondRect.top + 20))
+  assert.ok(secondItem.classList.contains('is-dragging'), 'dragged block is marked past the threshold')
+
+  // move above the middle of the first block, then release
+  grips[1].dispatchEvent(pointerEvent('pointermove', secondRect.left, firstRect.top + 2))
+  grips[1].dispatchEvent(pointerEvent('pointerup'))
+  assert.deepEqual(headings(), ['Second', 'First'], 'blocks are reordered')
+  assert.strictEqual(list.querySelector('.is-dragging'), null, 'mark is cleaned up')
+})
+
+QUnit.test('a click on the grip without movement drags nothing', (assert) => {
+  m.render(fixture(), m.trust(
+    '<div data-jaco-content-list data-jaco-fragment="news.html" data-jaco-title="Add news" data-jaco-pos="draggable">' +
+    '<div data-jaco-content-item><h2>First</h2></div>' +
+    '<div data-jaco-content-item><h2>Second</h2></div>' +
+    '</div>'
+  ))
+  const list = fixture().querySelector('[data-jaco-content-list]')
+
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+
+  const grip = list.querySelector('.jaco-content-grip')
+  const rect = grip.getBoundingClientRect()
+  grip.dispatchEvent(pointerEvent('pointerdown', rect.left, rect.top))
+  grip.dispatchEvent(pointerEvent('pointermove', rect.left, rect.top + 2))
+  grip.dispatchEvent(pointerEvent('pointerup'))
+
+  const headings = [...list.querySelectorAll(':scope > [data-jaco-content-item] h2')]
+    .map((h2) => h2.textContent)
+  assert.deepEqual(headings, ['First', 'Second'], 'order unchanged below the threshold')
+  assert.strictEqual(list.querySelector('.is-dragging'), null, 'no residue')
+})
+
+QUnit.test('dragging near the bottom edge scrolls down', (assert) => {
+  const done = assert.async()
+  const spacer = document.createElement('div')
+  spacer.style.height = '3000px'
+  document.body.appendChild(spacer)
+  m.render(fixture(), m.trust(
+    '<div data-jaco-content-list data-jaco-fragment="news.html" data-jaco-title="Add news" data-jaco-pos="draggable">' +
+    '<div data-jaco-content-item><h2>First</h2></div>' +
+    '<div data-jaco-content-item><h2>Second</h2></div>' +
+    '</div>'
+  ))
+  const list = fixture().querySelector('[data-jaco-content-list]')
+  const scroller = document.scrollingElement || document.documentElement
+  scroller.scrollTop = 100
+
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+
+  const grip = list.querySelector('.jaco-content-grip')
+  const rect = grip.getBoundingClientRect()
+  grip.dispatchEvent(pointerEvent('pointerdown', rect.left, rect.top))
+  grip.dispatchEvent(pointerEvent('pointermove', rect.left, rect.top + 20))
+
+  const edgeY = (window.innerHeight || document.documentElement.clientHeight) - 10
+  const moved = () => grip.dispatchEvent(pointerEvent('pointermove', rect.left, edgeY))
+  moved()
+  const keepAlive = setInterval(moved, 50)
+
+  setTimeout(() => {
+    clearInterval(keepAlive)
+    grip.dispatchEvent(pointerEvent('pointerup'))
+    assert.ok(scroller.scrollTop > 100, `scrolled down, got ${scroller.scrollTop}`)
+    scroller.scrollTop = 0
+    spacer.remove()
+    done()
+  }, 400)
+})
+
+QUnit.test('only draggable lists show a grip', (assert) => {
+  for (const pos of ['top', 'bottom', 'any']) {
+    m.render(fixture(), m.trust(contentListHtml(pos)))
+    window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+    assert.strictEqual(
+      fixture().querySelector('.jaco-content-grip'),
+      null,
+      `no grip for pos=${pos}`
+    )
+  }
 })
 
 QUnit.test('delete asks twice and removes the block on confirm', (assert) => {
