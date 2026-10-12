@@ -158,6 +158,21 @@
     padding: 2px 8px;
 }
 
+.jaco-content-grip {
+    cursor: grab;
+    padding: 2px 8px;
+    user-select: none;
+    touch-action: none;
+}
+
+.jaco-content-grip:active {
+    cursor: grabbing;
+}
+
+[data-jaco-content-item].is-dragging {
+    opacity: 0.4;
+}
+
 .jaco-content-add-button.is-error {
     border-color: #c00;
     color: #c00;
