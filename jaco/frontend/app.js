@@ -136,6 +136,14 @@ m.route(document.getElementById('app'), '/', {
       return m(DefaultLayout, m(vnode.tag))
     }
   },
+  '/js': {
+    onmatch:  () => {
+      return loadComponent('JsEditView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
+    }
+  },
   '/css': {
     onmatch:  () => {
       return loadComponent('CssEditView.js')

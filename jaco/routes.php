@@ -162,6 +162,28 @@ router\post(
     responseSchema: 'null.json',
 );
 
+router\get(
+    route: 'js/view',
+    callback: jaco\api\js\view\action(...),
+    authenticated: true,
+    responseSchema: 'js/view/response.json',
+);
+
+router\get(
+    route: 'js/list',
+    callback: jaco\api\js\files\action(...),
+    authenticated: true,
+    responseSchema: 'js/list/response.json',
+);
+
+router\post(
+    route: 'js/update',
+    callback: jaco\api\js\update\action(...),
+    authenticated: true,
+    requestSchema: 'js/update/request.json',
+    responseSchema: 'null.json',
+);
+
 router\post(
     route: 'upload/delete',
     callback: jaco\api\upload\delete\action(...),

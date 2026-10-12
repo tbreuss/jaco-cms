@@ -15,10 +15,11 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | --- | --- |
 | Page | An `.htm`/`.html` file below the web root (`Config::$webDir`), excluding `jaco/`. The file is the data store – there is no database. |
 | Stylesheet | A `.css` file below the web root, excluding `jaco/`, `jaco/_backup` and the `inspiration` directory. Listed, viewed and written through `css/list`, `css/view` and `css/update`. |
+| Script | A `.js` file below the web root, excluding `jaco/`, `jaco/_backup` and the `inspiration` directory. Listed, viewed and written through `js/list`, `js/view` and `js/update`. Same rules as a stylesheet. |
 | Editable marker | A `data-jaco-*` attribute in page HTML. Five variants: `data-jaco-editable` (block, rich text), `data-jaco-editable-line` (single line, block tags stripped), `data-jaco-editable-image` (image swap, size from `width`/`height`), `data-jaco-editable-image-extended` (swap plus alt text and fit/fill), `data-jaco-editable-link` (`href` and `target`). |
 | Inline edit | Editing a page in the iframe that shows the live site (route `/page-edit`, `jaco/frontend/editor.js` injected into the iframe, saved through `page/update-body`). |
 | Upload | A file in `upload/`. Allowed extensions: `png`, `gif`, `jpg`, `jpeg`, `svg`, `pdf` (`Config::$uploadExtensions`). |
-| Backup | A copy in `jaco/_backup`, taken before a page, stylesheet or upload is overwritten or deleted. Name: `<YYYYMMDD>_<HHMMSS>_<4 chars>_<file>`, where `/` in the file path becomes `|`. |
+| Backup | A copy in `jaco/_backup`, taken before a page, stylesheet, script or upload is overwritten or deleted. Name: `<YYYYMMDD>_<HHMMSS>_<4 chars>_<file>`, where `/` in the file path becomes `|`. |
 | Template | A file in `jaco/_template/page`, used when a page is created. `jaco/_template/content` (fragments) is a stub in `jaco/backend/domain/template.php`. |
 | Config | The injected `jaco\core\config\Config` value object: directories, extensions, credentials, `defaultLanguage`, `maintenanceMode` and the php error settings. It replaced the former `jaco\*` constants; `jaco/settings.php` overrides the defaults. |
 | Domain payload | Return value of a `jaco\domain\*` function: `success`, `invalid` (HTTP 422 with an error list) or `error` (HTTP 500). |
@@ -33,11 +34,11 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   focus. `jaco/frontend/component/Input.js` focuses immediately *and* again on `load` if
   the first attempt did not take effect.
 - **Nothing is touched without a backup.** `page/update`, `page/update-body`,
-  `page/delete`, `css/update` and `upload/delete` write a copy into `jaco/_backup` before
-  they modify a file (`jaco/backend/domain/page.php`, `css.php`, `upload.php`).
+  `page/delete`, `css/update`, `js/update` and `upload/delete` write a copy into `jaco/_backup` before
+  they modify a file (`jaco/backend/domain/page.php`, `css.php`, `js.php`, `upload.php`).
 - **The app directory is out of reach.** Page create, update, update body, delete, copy
-  (source *and* target) and view, `css/update` and `upload/create` all reject paths whose
-  first segment is `jaco/` (the `file_in_dir` guard), and the page, stylesheet, upload and
+  (source *and* target) and view, `css/update`, `js/update` and `upload/create` all reject paths whose
+  first segment is `jaco/` (the `file_in_dir` guard), and the page, stylesheet, script, upload and
   backup lists never show files from `jaco/`.
 - **The JSON schemas are the API contract.** `jaco/schema/**` defines what a request must
   contain and what a response may contain; `jaco/backend/core/router.php` validates both.
@@ -54,15 +55,16 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   editor: it sends content, never a document, so the stored document keeps its doctype and
   head. A page that is stored as a fragment stays a fragment. Trust boundary: whoever holds
   a valid token has the page manager, which is file access.
-- **Stylesheets are content, but not HTML.** `css/update` stores the file as sent:
-  `html\sanitize_html()` would destroy a stylesheet, and a `.css` file served as
-  `text/css` carries no script vector. Only `.css` files below the web root are accepted,
-  `jaco/` is out of reach, and the previous version is backed up first
-  (`jaco/backend/domain/css.php`).
+- **Stylesheets and scripts are content, but not HTML.** `css/update` and `js/update` store
+  the file as sent: `html\sanitize_html()` would destroy a stylesheet or a script, and a
+  `.css` file served as `text/css` or a `.js` file served as `text/javascript` carries no
+  injection vector. Only `.css`/`.js` files below the web root are accepted, `jaco/` is out
+  of reach, and the previous version is backed up first
+  (`jaco/backend/domain/css.php`, `js.php`).
 - **Maintenance mode blocks writes, not reads.** With `MAINTENANCE_MODE` every mutating
-  route (page create, update, update body, delete, copy, `css/update`, `upload/create`,
-  `upload/delete`, `backup/restore`, `backup/delete`) answers with the maintenance
-  response, while lists and views keep working.
+  route (page create, update, update body, delete, copy, `css/update`, `js/update`,
+  `upload/create`, `upload/delete`, `backup/restore`, `backup/delete`) answers with the
+  maintenance response, while lists and views keep working.
 - **Login attempts are throttled.** Three failures within ten minutes block the login for
   ten minutes; fifteen failures in total block it until
   `jaco/runtime/log/loginhistory.json` is deleted. Every failure counts into one global
@@ -77,15 +79,15 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   `<script>` is removed from the body, so a script include belongs in the `<head>`, which
   the page manager owns.
 - **Lists do not ship content.** `page/list` and `upload/list` return `content: null`,
-  `css/list` does not even carry a content field (`additionalProperties: false` in its
-  schema), and `backup/list` returns an empty string. Only `page/view`, `css/view` and
+  `css/list` and `js/list` do not even carry a content field (`additionalProperties: false` in their
+  schema), and `backup/list` returns an empty string. Only `page/view`, `css/view`, `js/view` and
   `backup/view` return the body – for an upload inside a backup as base64.
 - **Sort parameters are validated per resource.** A field can appear in the response and
   still not be sortable: `sort=file` is rejected for backups, `sort=name` for uploads.
 - **Titles are read as UTF-8.** `html\get_title()` prepends a charset hint before parsing.
   A plain `DOMDocument::loadHTML()` assumes ISO-8859-1 and turns `Rückgabe` into
   `RÃ¼ckgabe` for pages without a `<meta charset>`.
-- **Paths are relative to the web root.** Page, stylesheet and upload names always contain
+- **Paths are relative to the web root.** Page, stylesheet, script and upload names always contain
   their directory (`upload/picture.jpg`), because the file search starts at
   `Config::$webDir`.
 - **`backup/restore` moves instead of copying, and trusts the name.** The destination comes
@@ -113,6 +115,7 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | HTTP: request headers, query handling | `jaco/test/HttpRequestTest.php` |
 | Pages: list, view, copy, create, update (document and body), delete | `jaco/test/ApiPage*Test.php` |
 | Stylesheets: list, view, update | `jaco/test/ApiCss*Test.php` |
+| Scripts: list, view, update | `jaco/test/ApiJs*Test.php` |
 | Backups: list, view, restore, delete | `jaco/test/ApiBackup*Test.php` |
 | Uploads: list, create, delete | `jaco/test/ApiUpload*Test.php` |
 | Page templates, translations | `jaco/test/ApiTemplatePagesTest.php`, `jaco/test/ApiTranslationsTest.php`, `jaco/test/LanguageTest.php` |
