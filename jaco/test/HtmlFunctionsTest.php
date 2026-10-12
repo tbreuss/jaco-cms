@@ -141,6 +141,18 @@ final class HtmlFunctionsTest extends TestCase
         $this->assertStringContainsString('data-jaco-editable-line', $result);
     }
 
+    public function testGalleryMarkerSurvivesSanitizing(): void
+    {
+        $html = '<a href="/keep.html"><img data-jaco-editable-image data-jaco-editable-image-gallery'
+            . ' data-jaco-gallery-full="data:image/png;base64,AAAA" src="upload/a.png" alt="test"></a>';
+
+        $result = html\sanitize_html($html);
+
+        $this->assertStringContainsString('data-jaco-editable-image-gallery', $result);
+        $this->assertStringNotContainsString('data-jaco-gallery-full', $result);
+        $this->assertStringContainsString('<a href="/keep.html">', $result);
+    }
+
     public function testUpdatePageSanitizesContent(): void
     {
         $config = test_config();

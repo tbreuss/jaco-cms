@@ -71,7 +71,7 @@ export const iframe = {
     let bodyHtml = contentWindow.document.body.innerHTML
 
     // use empty data attributes only (and remove the empty string part)
-    const dataAttrs = ['data-jaco-editable-image', 'data-jaco-editable-line', 'data-jaco-editable', 'data-jaco-content-list', 'data-jaco-content-item']
+    const dataAttrs = ['data-jaco-editable-image', 'data-jaco-editable-image-gallery', 'data-jaco-editable-line', 'data-jaco-editable', 'data-jaco-content-list', 'data-jaco-content-item']
     dataAttrs.forEach((attr) => {
       bodyHtml = bodyHtml.replaceAll(attr + '=""', attr)
     })

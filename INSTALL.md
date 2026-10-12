@@ -116,9 +116,26 @@ then mark where blocks may appear:
 - existing blocks are wrapped in `<div data-jaco-content-item>` and can be
   deleted in the editor (two-step: ×, then ✓)
 
+## Image gallery
+
+An image with `data-jaco-editable-image-gallery` (in addition to
+`data-jaco-editable-image`) links its thumbnail to the full version:
+
+```html
+<img data-jaco-editable-image data-jaco-editable-image-gallery width="800" src="upload/thumb.jpg" alt="Gallery">
+```
+
+When a file is picked in the editor, the thumbnail follows the `width`/`height`
+attributes as usual, while the full version is capped at 1920px wide. On save
+both files are stored (`thumb.jpg` and `thumb-full.jpg`) and the thumbnail is
+wrapped in `<a href="upload/thumb-full.jpg">`. An explicit parent link always
+wins and stays untouched.
+
 The editor sets the attributes `data-jaco-editable-image-file`,
 `data-jaco-editable-image-temp` and `data-jaco-is-editing` itself at runtime;
-they do not belong in the source HTML.
+they do not belong in the source HTML. The same holds for
+`data-jaco-gallery-full`, which carries the full version to the server on save
+and is removed there.
 
 ## 6. Log in
 

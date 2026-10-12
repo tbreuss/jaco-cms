@@ -636,6 +636,37 @@ QUnit.test('blocks introduce no positioned ancestor for editor chrome', (assert)
   }, 50)
 })
 
+QUnit.test('gallery full version is capped at lightbox width', (assert) => {
+  const done = assert.async()
+  const canvas = document.createElement('canvas')
+  canvas.width = 3000
+  canvas.height = 10
+  window.scaleDataUrlToWidth(canvas.toDataURL('image/png'), 'image/png', 1920, (full) => {
+    const image = new Image()
+    image.onload = () => {
+      assert.strictEqual(image.width, 1920, 'wide images are capped, aspect kept')
+      assert.strictEqual(image.height, 6, 'height follows the aspect ratio')
+      done()
+    }
+    image.src = full
+  })
+})
+
+QUnit.test('gallery full version keeps small images as they are', (assert) => {
+  const done = assert.async()
+  const canvas = document.createElement('canvas')
+  canvas.width = 800
+  canvas.height = 10
+  window.scaleDataUrlToWidth(canvas.toDataURL('image/png'), 'image/png', 1920, (full) => {
+    const image = new Image()
+    image.onload = () => {
+      assert.strictEqual(image.width, 800, 'no upscaling')
+      done()
+    }
+    image.src = full
+  })
+})
+
 QUnit.test('chrome is stripped but content markers survive', (assert) => {
   m.render(fixture(), m.trust(contentListHtml('top')))
 

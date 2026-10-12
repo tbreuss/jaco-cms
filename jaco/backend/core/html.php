@@ -58,6 +58,7 @@ const ALLOWED_ATTRIBUTES = [
         'data-jaco-editable-link',
         'data-jaco-editable-image',
         'data-jaco-editable-image-extended',
+        'data-jaco-editable-image-gallery',
         'data-jaco-content-list',
         'data-jaco-content-item',
         'data-jaco-fragment',
@@ -211,8 +212,11 @@ function handle_embedded_data_url_images(Config $config, string $html): array
     $imgAttrs = ['data-jaco-editable-image', 'data-jaco-editable-image-extended'];
     $imgSrcAttr = 'src';
     $imgFileAttr = 'data-jaco-editable-image-file';
+    $galleryAttr = 'data-jaco-editable-image-gallery';
+    $galleryFullAttr = 'data-jaco-gallery-full';
 
-    $images = $dom->getElementsByTagName('img');
+    // snapshot: gallery handling moves nodes, which a live list would not survive
+    $images = \iterator_to_array($dom->getElementsByTagName('img'));
 
     $handled = 0;
     $errors = [];
@@ -267,6 +271,15 @@ function handle_embedded_data_url_images(Config $config, string $html): array
 
         $el->setAttribute('src', filesystem\combine($config->uploadUrl, $newFile));
         $el->removeAttribute($imgFileAttr);
+
+        if ($el->hasAttribute($galleryAttr)) {
+            $galleryError = write_gallery_full($dom, $config, $el, $imgFile, $galleryFullAttr);
+            if ($galleryError !== null) {
+                $errors[] = $galleryError;
+                continue;
+            }
+        }
+
         $handled++;
     }
 
@@ -293,4 +306,63 @@ function handle_embedded_data_url_images(Config $config, string $html): array
     }
 
     return [true, $newHtml];
+}
+
+/**
+ * Gallery images link their thumbnail to the full version: the client sends
+ * the full data url in a temporary attribute, the server stores it as a
+ * second file ("name-full.ext") and wraps the thumbnail in a link. An
+ * existing parent link (e.g. an editable link) is never clobbered. Without
+ * the temporary attribute there is nothing to link, the thumbnail stays
+ * plain. Returns an error message or null on success.
+ */
+function write_gallery_full(\DOMDocument $dom, Config $config, \DOMElement $el, string $imgFile, string $galleryFullAttr): ?string
+{
+    if (!$el->hasAttribute($galleryFullAttr)) {
+        return null;
+    }
+
+    $fullSrc = $el->getAttribute($galleryFullAttr);
+    $el->removeAttribute($galleryFullAttr);
+
+    // an explicit parent link wins over the gallery link, no second file then
+    $parent = $el->parentNode;
+
+    if ($parent instanceof \DOMElement && \strtolower($parent->nodeName) === 'a') {
+        return null;
+    }
+
+    $fullFile = \pathinfo($imgFile, PATHINFO_FILENAME) . '-full.'
+        . \pathinfo($imgFile, PATHINFO_EXTENSION);
+
+    if (($pos = \strpos($fullSrc, ',')) === false) {
+        return null;
+    }
+
+    $fullData = \base64_decode(\str_replace(' ', '+', \substr($fullSrc, $pos + 1)), true);
+
+    if ($fullData === false) {
+        return 'Could not decode image data: ' . $fullFile;
+    }
+
+    if (\str_contains($fullFile, DIRECTORY_SEPARATOR)
+        || !filesystem\validate_filename($fullFile)
+        || !filesystem\validate_extension($fullFile, $config->uploadExtensions)) {
+        return 'Invalid file name or extension: ' . $fullFile;
+    }
+
+    [$status, $newFull] = filesystem\write_file_without_overwrite($config, $config->uploadDir, $fullFile, $fullData);
+
+    if ($status === false) {
+        return 'Could not write file: ' . $fullFile;
+    }
+
+    if ($parent instanceof \DOMElement) {
+        $link = $dom->createElement('a');
+        $link->setAttribute('href', filesystem\combine($config->uploadUrl, $newFull));
+        $parent->replaceChild($link, $el);
+        $link->appendChild($el);
+    }
+
+    return null;
 }
