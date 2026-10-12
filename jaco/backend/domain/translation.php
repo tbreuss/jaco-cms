@@ -23,8 +23,12 @@ function load(Config $config, string $language): array
 {
     static $translations = [];
 
-    if (isset($translations[$language])) {
-        return $translations[$language];
+    // the same language code resolves differently depending on the configured
+    // default language, so both have to be part of the cache key
+    $key = $config->defaultLanguage . '|' . $language;
+
+    if (isset($translations[$key])) {
+        return $translations[$key];
     }
 
     $template = dirname(__DIR__, 2) . '/language/{language}.json';
@@ -38,13 +42,13 @@ function load(Config $config, string $language): array
 
     if ($path !== '' && is_file($path)) {
         $decoded = json_decode(file_get_contents($path), true);
-        $translations[$language] = is_array($decoded) ? $decoded : [];
+        $translations[$key] = is_array($decoded) ? $decoded : [];
     } elseif ($language === $config->defaultLanguage) {
         // the default language file is missing, return empty translations
-        $translations[$language] = [];
+        $translations[$key] = [];
     } else {
-        $translations[$language] = load($config, $config->defaultLanguage);
+        $translations[$key] = load($config, $config->defaultLanguage);
     }
 
-    return $translations[$language];
+    return $translations[$key];
 }
