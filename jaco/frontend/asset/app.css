@@ -1,5 +1,21 @@
+:root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --radius: 6px;
+    --color-chrome: #333;
+    --color-chrome-translucent: rgba(51, 51, 51, 0.9);
+    --color-content: #eee;
+    --color-surface: #f9f9f9;
+    --color-link: #2374d7;
+    --color-primary: #04AA6D;
+    --color-primary-dark: #038857;
+    --color-secondary: #6c757d;
+    --color-secondary-dark: #5a6268;
+    --color-border: #ccc;
+    --color-nav-hover: red;
+}
+
 html {
-    background-color: rgba(51, 51, 51, 0.9);
+    background-color: var(--color-chrome-translucent);
 }
 
 html,
@@ -11,7 +27,7 @@ body {
 }
 
 a {
-    color: #2374d7;
+    color: var(--color-link);
 }
 
 /* https://www.w3schools.com/howto/howto_css_arrows.asp */
@@ -24,7 +40,7 @@ a {
 
 a .arrow {
     margin-left: 0.25rem;
-    border-color: #2374d7;
+    border-color: var(--color-link);
 }
 
 .right {
@@ -60,7 +76,7 @@ body {
 }
 
 body {
-    font-family: Arial;
+    font-family: var(--font-sans);
 }
 
 #app {
@@ -75,14 +91,14 @@ body {
 .main {
     overflow: auto;
     flex: auto;
-    background: rgba(51, 51, 51, 0.9);
+    background: var(--color-chrome-translucent);
 }
 
 .content {
     width: 100%;
     min-height: 100%;
     max-width: 1040px;
-    background-color: #eee;
+    background-color: var(--color-content);
     padding: 1rem;
 }
 
@@ -91,11 +107,11 @@ body {
 /* Navbar container */
 .navbar {
     overflow: hidden;
-    background-color: #333;
+    background-color: var(--color-chrome);
 }
 
 .navbar .ruler {
-    border-top: 1px solid #333;
+    border-top: 1px solid var(--color-chrome);
 }
 
 /* Links inside the navbar */
@@ -140,7 +156,7 @@ body {
 /* Add a red background color to navbar links on hover */
 .navbar a:hover,
 .dropdown:hover .dropbtn {
-    background-color: red;
+    background-color: var(--color-nav-hover);
 }
 
 .navbar a.title:hover {
@@ -151,7 +167,7 @@ body {
 .dropdown-content {
     display: none;
     position: absolute;
-    background-color: #f9f9f9;
+    background-color: var(--color-surface);
     min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
@@ -183,7 +199,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(51, 51, 51, 0.9);
+    background: var(--color-chrome-translucent);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -197,7 +213,7 @@ body {
     min-height: 100px;
     max-height: 90%;
     overflow: scroll;
-    background: #f9f9f9;
+    background: var(--color-surface);
 }
 
 .modal-sm {
@@ -206,7 +222,7 @@ body {
     width: 60%;
     max-width: 20rem;
     min-height: 100px;
-    background: #f9f9f9;
+    background: var(--color-surface);
 }
 
 .modal h2:first-child {
@@ -234,7 +250,7 @@ iframe {
     left: 0;
     width: 100%;
     min-height: 46.5px;
-    background: #333;
+    background: var(--color-chrome);
     z-index: 2;
 }
 
@@ -281,7 +297,7 @@ button {
     background-color: #d1ecf1;
     padding: 0.75rem 1.25rem;
     border: 1px solid #bee5eb;
-    border-radius: 0.25rem;
+    border-radius: var(--radius);
 }
 
 .m-notification.warning {
@@ -289,7 +305,7 @@ button {
     background-color: #fff3cd;
     padding: 0.75rem 1.25rem;
     border: 1px solid #ffeeba;
-    border-radius: 0.25rem;
+    border-radius: var(--radius);
 }
 
 .m-notification.danger {
@@ -297,7 +313,7 @@ button {
     background-color: #f8d7da;
     padding: 0.75rem 1.25rem;
     border: 1px solid #f5c6cb;
-    border-radius: 0.25rem;
+    border-radius: var(--radius);
 }
 
 .m-notification.success {
@@ -305,7 +321,7 @@ button {
     background-color: #d4edda;
     padding: 0.75rem 1.25rem;
     border: 1px solid #c3e6cb;
-    border-radius: 0.25rem;
+    border-radius: var(--radius);
 }
 
 @keyframes fade-in {
@@ -332,7 +348,7 @@ button {
 /* Form */
 
 fieldset {
-    border: 1px solid #ccc;
+    border: 1px solid var(--color-border);
 }
 
 fieldset:not(:last-child) {
@@ -340,7 +356,7 @@ fieldset:not(:last-child) {
 }
 
 legend {
-    color: #aaa;
+    color: var(--color-secondary);
 }
 
 /* Style inputs, select elements and textareas */
@@ -350,8 +366,8 @@ select,
 textarea {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
     box-sizing: border-box;
     resize: vertical;
 }
@@ -364,25 +380,61 @@ textarea {
 
 /* Style the submit button */
 .primary {
-    background-color: #04AA6D;
+    background-color: var(--color-primary);
     color: white;
     padding: 12px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius);
     cursor: pointer;
     font-weight: bold;
     margin: 0;
+    transition: background-color 0.15s ease;
+}
+
+.primary:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.primary:active {
+    background-color: var(--color-primary-dark);
+    transform: translateY(1px);
 }
 
 .secondary {
-    background-color: #aaa;
+    background-color: var(--color-secondary);
     color: white;
     padding: 12px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius);
     cursor: pointer;
     font-weight: bold;
     margin: 0;
+    transition: background-color 0.15s ease;
+}
+
+.secondary:hover {
+    background-color: var(--color-secondary-dark);
+}
+
+.secondary:active {
+    background-color: var(--color-secondary-dark);
+    transform: translateY(1px);
+}
+
+/* Visible keyboard focus everywhere; the navbar button removes the
+   outline for mouse users, so it needs an explicit override */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+.dropdown .dropbtn:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: -2px;
 }
 
 table .primary,
@@ -461,7 +513,7 @@ fieldset .row.text-right button {
 
 .table {
     width: 100%;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid var(--color-border);
     border-collapse: collapse;
 }
 
@@ -472,7 +524,7 @@ fieldset .row.text-right button {
 
 .table th,
 .table td {
-    border-top: 1px solid #ccc;
+    border-top: 1px solid var(--color-border);
     padding: 0.25rem 0;
     overflow-wrap: anywhere;
 }
@@ -533,9 +585,9 @@ fieldset .row.text-right button {
 }
 
 .list-group-item {
-    border-right: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
-    border-left: 1px solid #ccc;
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
     display: block;
     padding: 12px;
     overflow: hidden;
@@ -543,18 +595,18 @@ fieldset .row.text-right button {
 }
 
 .list-group-item:first-child {
-    border-top: 1px solid #ccc;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+    border-top: 1px solid var(--color-border);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
 }
 
 .list-group-item:last-child {
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
 }
 
 .list-group-item:hover {
-    background-color: #f9f9f9;
+    background-color: var(--color-surface);
 }
 
 a.list-group-item {
@@ -663,7 +715,7 @@ a.list-group-item {
     height: 2px;
     display: block;
     position: relative;
-    background: #333;
+    background: var(--color-chrome);
     overflow: hidden;
     margin: 0;
     padding: 0;
@@ -673,7 +725,7 @@ a.list-group-item {
     content: '';
     width: 96px;
     height: 2px;
-    background: #333;
+    background: var(--color-chrome);
     position: absolute;
     top: 0;
     left: 0;
