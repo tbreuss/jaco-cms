@@ -3,7 +3,6 @@
     --radius: 6px;
     --color-chrome: #333;
     --color-chrome-translucent: rgba(51, 51, 51, 0.9);
-    --color-content: #eee;
     --color-surface: #f9f9f9;
     --color-link: #2374d7;
     --color-primary: #04AA6D;
@@ -12,6 +11,7 @@
     --color-secondary-dark: #5a6268;
     --color-border: #ccc;
     --color-nav-hover: red;
+    --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
 html {
@@ -98,15 +98,20 @@ body {
     width: 100%;
     min-height: 100%;
     max-width: 1040px;
-    background-color: var(--color-content);
-    padding: 1rem;
+    margin: 1rem auto;
+    background-color: var(--color-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 1.5rem;
 }
 
 /* Dropdown */
 
 /* Navbar container */
 .navbar {
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
     background-color: var(--color-chrome);
 }
 
@@ -116,7 +121,6 @@ body {
 
 /* Links inside the navbar */
 .navbar a {
-    float: left;
     font-size: 16px;
     color: white;
     text-align: center;
@@ -130,13 +134,7 @@ body {
 
 .navbar a.logout,
 .navbar a.login {
-    float: right;
-}
-
-/* The dropdown container */
-.dropdown {
-    float: left;
-    overflow: hidden;
+    margin-left: auto;
 }
 
 /* Dropdown button */
@@ -175,7 +173,6 @@ body {
 
 /* Links inside the dropdown */
 .dropdown-content a {
-    float: none;
     color: black;
     padding: 12px 16px;
     text-decoration: none;
@@ -212,8 +209,10 @@ body {
     width: 60%;
     min-height: 100px;
     max-height: 90%;
-    overflow: scroll;
+    overflow: auto;
     background: var(--color-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
 }
 
 .modal-sm {
@@ -223,6 +222,8 @@ body {
     max-width: 20rem;
     min-height: 100px;
     background: var(--color-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
 }
 
 .modal h2:first-child {
@@ -281,7 +282,7 @@ button {
     margin-bottom: 0.25rem;
     max-width: 400px;
     cursor: pointer;
-    animation: fade-in 0.3s;
+    animation: toast-in 0.25s ease-out;
 }
 
 .m-notification:hover {
@@ -331,6 +332,18 @@ button {
 
     to {
         opacity: 1;
+    }
+}
+
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        transform: translateX(1rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }
 
@@ -439,7 +452,7 @@ textarea:focus-visible {
 
 table .primary,
 table .secondary {
-    padding: 6px 10px;
+    padding: 8px 12px;
 }
 
 /* Style the container */
@@ -520,13 +533,20 @@ fieldset .row.text-right button {
 .table th {
     text-align: left;
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
 }
 
 .table th,
 .table td {
     border-top: 1px solid var(--color-border);
-    padding: 0.25rem 0;
+    padding: 0.4rem 0;
     overflow-wrap: anywhere;
+}
+
+.table tbody tr:hover {
+    background: rgba(0, 0, 0, 0.03);
 }
 
 .table th.text-right,
