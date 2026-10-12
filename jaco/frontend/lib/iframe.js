@@ -10,9 +10,15 @@ export const iframe = {
   makeEditable: () => {
     const contentDocument = iframe.contentDocument()
     const contentWindow = iframe.contentWindow()
-    if (contentDocument.getElementById('editorInstanceJavascript')) {
+    const initEditors = () => {
       contentWindow.initRichTextEditor()
       contentWindow.initImages()
+      if (contentWindow.JacoContentLists) {
+        contentWindow.JacoContentLists.initContentLists()
+      }
+    }
+    if (contentDocument.getElementById('editorInstanceJavascript')) {
+      initEditors()
     } else {
       const script = contentDocument.createElement('script')
       script.id = 'editorInstanceJavascript'
@@ -20,8 +26,13 @@ export const iframe = {
       script.src = '/jaco/frontend/editor.js'
       script.async = false
       script.onload = () => {
-        contentWindow.initRichTextEditor()
-        contentWindow.initImages()
+        const contentLists = contentDocument.createElement('script')
+        contentLists.id = 'editorContentListsJavascript'
+        contentLists.type = 'text/javascript'
+        contentLists.src = '/jaco/frontend/contentlists.js'
+        contentLists.async = false
+        contentLists.onload = initEditors
+        contentDocument.head.appendChild(contentLists)
       }
       contentDocument.head.appendChild(script)
     }
@@ -52,12 +63,15 @@ export const iframe = {
     contentWindow.removeLinks()
     contentWindow.removeRichTextEditor()
     contentWindow.removeTempImageElements()
+    if (contentWindow.JacoContentLists) {
+      contentWindow.JacoContentLists.removeContentListChrome()
+    }
 
     // the inline editor owns the content of the page, not the document around it
     let bodyHtml = contentWindow.document.body.innerHTML
 
     // use empty data attributes only (and remove the empty string part)
-    const dataAttrs = ['data-jaco-editable-image', 'data-jaco-editable-line', 'data-jaco-editable']
+    const dataAttrs = ['data-jaco-editable-image', 'data-jaco-editable-line', 'data-jaco-editable', 'data-jaco-content-list', 'data-jaco-content-item']
     dataAttrs.forEach((attr) => {
       bodyHtml = bodyHtml.replaceAll(attr + '=""', attr)
     })

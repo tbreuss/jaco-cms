@@ -125,6 +125,22 @@ final class HtmlFunctionsTest extends TestCase
         $this->assertStringContainsString('data-jaco-editable-image>', $result);
     }
 
+    public function testContentListMarkersSurviveSanitizing(): void
+    {
+        $html = '<div data-jaco-content-list data-jaco-fragment="news.html" data-jaco-title="Add news" data-jaco-pos="top">'
+            . '<div data-jaco-content-item><h2 data-jaco-editable-line>Headline</h2></div>'
+            . '</div>';
+
+        $result = html\sanitize_html($html);
+
+        $this->assertStringContainsString('data-jaco-content-list', $result);
+        $this->assertStringContainsString('data-jaco-content-item', $result);
+        $this->assertStringContainsString('data-jaco-fragment="news.html"', $result);
+        $this->assertStringContainsString('data-jaco-title="Add news"', $result);
+        $this->assertStringContainsString('data-jaco-pos="top"', $result);
+        $this->assertStringContainsString('data-jaco-editable-line', $result);
+    }
+
     public function testUpdatePageSanitizesContent(): void
     {
         $config = test_config();

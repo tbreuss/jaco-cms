@@ -94,6 +94,27 @@ Example:
 <img data-jaco-editable-image src="upload/image.jpg" alt="Image" width="800">
 ```
 
+## Recurring content blocks
+
+A content list lets editors add prebuilt blocks (e.g. news items) themselves.
+Put a fragment file in `jaco/_template/content/` (see the samples there),
+then mark where blocks may appear:
+
+```html
+<div data-jaco-content-list data-jaco-fragment="sample_news_section.html" data-jaco-title="Add news" data-jaco-pos="top">
+    <div data-jaco-content-item>
+        <h2 data-jaco-editable-line>Existing headline</h2>
+    </div>
+</div>
+```
+
+- `data-jaco-fragment` names the fragment file from `jaco/_template/content/`
+- `data-jaco-title` labels the add button shown in the editor
+- `data-jaco-pos` is `top` (new blocks first), `bottom` (new blocks last) or
+  `any` (a button before every block plus one at the end)
+- existing blocks are wrapped in `<div data-jaco-content-item>` and can be
+  deleted in the editor (two-step: ×, then ✓)
+
 The editor sets the attributes `data-jaco-editable-image-file`,
 `data-jaco-editable-image-temp` and `data-jaco-is-editing` itself at runtime;
 they do not belong in the source HTML.

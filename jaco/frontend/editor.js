@@ -46,9 +46,12 @@ window.initRichTextEditor = () => {
   }
 }
 
-window.initImages = () => {
+window.initImages = (root) => {
   const selector = '[data-jaco-editable-image], [data-jaco-editable-image-extended]'
-  document.querySelectorAll(selector).forEach((image) => {
+  ;(root || document).querySelectorAll(selector).forEach((image) => {
+    if (image.nextElementSibling && image.nextElementSibling.hasAttribute('data-jaco-editable-image-temp')) {
+      return // already initialized
+    }
     let container
     if (getDisplayType(image.parentNode) === 'inline') {
       container = document.createElement('span')
@@ -108,7 +111,7 @@ window.disableRichTextEditor = () => {
 
 window.addClickHandler = () => {
   document.addEventListener('click', (event) => {
-    if (event.target.closest('.ql-container, .ql-toolbar, [data-jaco-is-editing], #editableImageExtended, #editableLink')) {
+    if (event.target.closest('.ql-container, .ql-toolbar, [data-jaco-is-editing], #editableImageExtended, #editableLink, .jaco-content-add-button, .jaco-content-item-bar')) {
       //event.stopPropagation()
       return
     }

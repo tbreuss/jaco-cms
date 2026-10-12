@@ -141,6 +141,20 @@ router\get(
 );
 
 router\get(
+    route: 'template/content',
+    callback: jaco\api\template\content\action(...),
+    authenticated: true,
+    responseSchema: 'template/response.json',
+);
+
+router\get(
+    route: 'template/content/view',
+    callback: jaco\api\template\content\view\action(...),
+    authenticated: true,
+    responseSchema: 'template/content/view/response.json',
+);
+
+router\get(
     route: 'css/view',
     callback: jaco\api\css\view\action(...),
     authenticated: true,
