@@ -1,0 +1,50 @@
+# Architecture rules for the backend.
+#
+# The backend is split into layers. Dependencies point inwards only,
+# everything that is not listed in a ruleset entry may not be used at all:
+#
+#   Api   -> Domain -> Core
+#   Cli   -> Domain -> Core
+#
+# core/responder.php is a separate layer: it turns domain payloads into HTTP
+# responses and CLI output, so it sits above the domain and not inside the
+# infrastructure.
+deptrac:
+    paths:
+        - backend
+    layers:
+        - name: Core
+          collectors:
+              - type: directory
+                value: '/backend/core/(?!responder\.php$).*\.php$'
+        - name: Responder
+          collectors:
+              - type: directory
+                value: '/backend/core/responder\.php$'
+        - name: Domain
+          collectors:
+              - type: directory
+                value: '/backend/domain/.*\.php$'
+        - name: Api
+          collectors:
+              - type: directory
+                value: '/backend/api/.*\.php$'
+        - name: Cli
+          collectors:
+              - type: directory
+                value: '/backend/cli/.*\.php$'
+    ruleset:
+        Core: ~
+        Responder:
+            - Domain
+            - Core
+        Domain:
+            - Core
+        Api:
+            - Responder
+            - Domain
+            - Core
+        Cli:
+            - Responder
+            - Domain
+            - Core

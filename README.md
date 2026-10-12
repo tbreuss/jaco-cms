@@ -51,6 +51,14 @@ PHPStan
 
     docker run --rm -v .:/app jaco composer phpstan -d /app/jaco
 
+Deptrac (architecture rules, see `jaco/deptrac.yaml`)
+
+    docker run --rm -v .:/app jaco composer deptrac -d /app/jaco
+
+List what points at third party libraries (they are outside the layers)
+
+    docker run --rm -v .:/app jaco composer deptrac -d /app/jaco -- --report-uncovered
+
 PHPUnit (extra options after `--`, e.g. `-- --filter AuthTest`)
 
     docker run --rm -v .:/app jaco composer test -d /app/jaco

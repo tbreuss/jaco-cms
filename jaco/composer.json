@@ -31,17 +31,20 @@
         "phpstan/phpstan": "^2.3",
         "friendsofphp/php-cs-fixer": "^3.95",
         "phpstan/phpstan-phpunit": "^2.1",
-        "phpstan/phpstan-strict-rules": "^2.1"
+        "phpstan/phpstan-strict-rules": "^2.1",
+        "deptrac/deptrac": "^4.7"
     },
     "scripts": {
         "test": "phpunit",
         "phpstan": "phpstan analyse --no-progress",
         "cs-check": "php-cs-fixer fix --dry-run --diff",
         "cs-fix": "php-cs-fixer fix",
+        "deptrac": "deptrac analyse --config-file=deptrac.yaml --no-progress",
         "check": [
             "@test",
             "@phpstan",
-            "@cs-check"
+            "@cs-check",
+            "@deptrac"
         ]
     }
 }

@@ -27,6 +27,8 @@ jobs:
               run: composer cs-check -d jaco
             - name: Run PHPStan
               run: composer phpstan -d jaco
+            - name: Run Deptrac
+              run: composer deptrac -d jaco
             - name: Run PHPUnit
               run: composer test -d jaco
             - name: Report code coverage
