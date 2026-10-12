@@ -153,6 +153,31 @@ final class HtmlFunctionsTest extends TestCase
         $this->assertStringContainsString('<a href="/keep.html">', $result);
     }
 
+    public function testYouTubeEmbedSurvivesSanitizing(): void
+    {
+        $html = '<p>Watch</p><iframe width="560" height="315"'
+            . ' src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Video"'
+            . ' frameborder="0" allowfullscreen onclick="steal()"></iframe>';
+
+        $result = html\sanitize_html($html);
+
+        $this->assertStringContainsString('src="https://www.youtube.com/embed/dQw4w9WgXcQ"', $result);
+        $this->assertStringContainsString('allowfullscreen', $result);
+        $this->assertStringNotContainsString('onclick', $result);
+    }
+
+    public function testNonYouTubeIframeIsRemoved(): void
+    {
+        $html = '<p>a</p><iframe src="https://evil.example/player"></iframe><p>b</p>'
+            . '<p>c</p><iframe src="https://player.vimeo.com/video/123"></iframe><p>d</p>';
+
+        $result = html\sanitize_html($html);
+
+        $this->assertStringNotContainsString('<iframe', $result);
+        $this->assertStringContainsString('<p>a</p>', $result);
+        $this->assertStringContainsString('<p>d</p>', $result);
+    }
+
     public function testUpdatePageSanitizesContent(): void
     {
         $config = test_config();

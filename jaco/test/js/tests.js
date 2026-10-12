@@ -667,6 +667,15 @@ QUnit.test('gallery full version keeps small images as they are', (assert) => {
   })
 })
 
+QUnit.test('the block toolbar offers video embeds', (assert) => {
+  m.render(fixture(), m.trust('<div data-jaco-editable><p>with video</p></div>'))
+
+  fixture().querySelector('[data-jaco-editable] p')
+    .dispatchEvent(new MouseEvent('click', {bubbles: true}))
+
+  assert.ok(document.querySelector('.ql-toolbar .ql-video'), 'video button is in the toolbar')
+})
+
 QUnit.test('chrome is stripped but content markers survive', (assert) => {
   m.render(fixture(), m.trust(contentListHtml('top')))
 

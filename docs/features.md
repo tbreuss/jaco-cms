@@ -57,6 +57,7 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   editor: it sends content, never a document, so the stored document keeps its doctype and
   head. A page that is stored as a fragment stays a fragment. Trust boundary: whoever holds
   a valid token has the page manager, which is file access.
+- **Only YouTube embeds survive sanitizing.** `iframe` elements stay only with a `src` below `https://www.youtube.com/embed/` or `https://www.youtube-nocookie.com/embed/`; anything else (including a stripped `src`) is removed with the node. Event handlers never survive, on any tag.
 - **Stylesheets are content, but not HTML.** `css/update` stores the file as sent:
   `html\sanitize_html()` would destroy a stylesheet, and a `.css` file served as
   `text/css` carries no script vector. Only `.css` files below the web root are accepted,

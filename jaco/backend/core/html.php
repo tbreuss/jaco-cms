@@ -39,13 +39,13 @@ function set_title(string $html, string $title): string
 const ALLOWED_TAGS = [
     'a', 'abbr', 'b', 'blockquote', 'br', 'caption', 'cite', 'code', 'col', 'colgroup',
     'dd', 'del', 'details', 'div', 'dl', 'dt', 'em', 'figcaption', 'figure', 'h1', 'h2',
-    'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'ins', 'kbd', 'li', 'mark', 'ol', 'p',
+    'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'iframe', 'img', 'ins', 'kbd', 'li', 'mark', 'ol', 'p',
     'pre', 'q', 's', 'samp', 'small', 'span', 'strong', 'sub', 'summary', 'sup',
     'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'time', 'tr', 'u', 'ul', 'var',
 ];
 
 const REMOVE_TAGS = [
-    'applet', 'base', 'embed', 'iframe', 'link', 'math', 'meta', 'noscript', 'object',
+    'applet', 'base', 'embed', 'link', 'math', 'meta', 'noscript', 'object',
     'script', 'style', 'svg', 'template',
 ];
 
@@ -66,6 +66,7 @@ const ALLOWED_ATTRIBUTES = [
         'data-jaco-pos',
     ],
     'a' => ['href', 'rel', 'target', 'title'],
+    'iframe' => ['allowfullscreen', 'frameborder', 'height', 'src', 'title', 'width'],
     'img' => ['alt', 'height', 'src', 'title', 'width'],
     'td' => ['colspan', 'rowspan'],
     'th' => ['colspan', 'rowspan'],
@@ -154,6 +155,12 @@ function sanitize_node(\DOMElement $el): void
 
         sanitize_node($child);
 
+        if ($childTag === 'iframe' && !$child->hasAttribute('src')) {
+            // a player without a trusted source is dead weight, drop it
+            $el->removeChild($child);
+            continue;
+        }
+
         if (!\in_array($childTag, ALLOWED_TAGS, true)) {
             // unwrap the element, keep its sanitized children
             while ($child->firstChild !== null) {
@@ -170,6 +177,14 @@ function allowed_attribute(string $tag, string $name, string $value): bool
 
     if (!\in_array($name, $allowed, true)) {
         return false;
+    }
+
+    // embedded players are the only iframe use case: same-origin script
+    // vectors stay out by restricting sources to the YouTube embeds
+    if ($tag === 'iframe' && $name === 'src') {
+        $value = \str_replace(["\t", "\n", "\r", "\0"], '', \trim($value));
+
+        return \preg_match('#^https://(www\.youtube\.com/embed/|www\.youtube-nocookie\.com/embed/)#i', $value) === 1;
     }
 
     if ($name !== 'href' && $name !== 'src') {

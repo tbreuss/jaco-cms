@@ -116,6 +116,13 @@ then mark where blocks may appear:
 - existing blocks are wrapped in `<div data-jaco-content-item>` and can be
   deleted in the editor (two-step: ×, then ✓)
 
+## Embedded videos
+
+In a text block (`data-jaco-editable`), the toolbar video button embeds a
+video from its URL. Only YouTube embeds survive saving
+(`https://www.youtube.com/embed/…` and `https://www.youtube-nocookie.com/embed/…`);
+any other iframe source is removed, along with event handler attributes.
+
 ## Image gallery
 
 An image with `data-jaco-editable-image-gallery` (in addition to
