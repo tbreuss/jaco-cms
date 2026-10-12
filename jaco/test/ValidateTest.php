@@ -4,6 +4,7 @@ namespace jaco\tests;
 
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
+use InvalidArgumentException;
 use jaco\core\data;
 
 #[TestDox('Input validation rules')]
@@ -109,6 +110,14 @@ final class ValidateTest extends TestCase
         // "safe" is the explicit opt out of validation
         $this->assertSame([], data\validate(['f' => 'anything'], [['f', 'safe']]));
         $this->assertSame([], data\validate_one('', 'file', [['safe']]));
+    }
+
+    public function testUnknownValidatorIsRejectedWithItsName(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('jaco\core\data\validate\filed_exists');
+
+        data\validate(['f' => 'a.html'], [['f', 'filed_exists']]);
     }
 
     public function testWebDirIsTheDefaultDirectoryForFileRules(): void

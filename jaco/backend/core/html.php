@@ -6,11 +6,11 @@ use jaco\core\config\Config;
 use jaco\core\data\sanitize;
 use jaco\core\filesystem;
 
-function get_title(string $html): string
+function get_title(?string $html): string
 {
     $title = '';
 
-    if ($html === '') {
+    if ($html === null || $html === '') {
         return $title;
     }
 
@@ -19,8 +19,9 @@ function get_title(string $html): string
     // without a charset hint libxml assumes ISO-8859-1 and mangles non-ascii titles
     if ($dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">' . $html)) {
         $list = $dom->getElementsByTagName("title");
-        if ($list->length > 0) {
-            $title = $list->item(0)->textContent;
+        $node = $list->item(0);
+        if ($node instanceof \DOMElement) {
+            $title = $node->textContent;
         }
     }
     \libxml_clear_errors();
@@ -132,7 +133,7 @@ function sanitize_node(\DOMElement $el): void
 
     $remove = [];
     foreach ($el->attributes as $attr) {
-        if (!allowed_attribute($tag, \strtolower($attr->nodeName), $attr->nodeValue)) {
+        if (!allowed_attribute($tag, \strtolower($attr->nodeName), $attr->nodeValue ?? '')) {
             $remove[] = $attr->nodeName;
         }
     }

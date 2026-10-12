@@ -4,6 +4,7 @@ namespace jaco\tests;
 
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
+use InvalidArgumentException;
 use jaco\core\data;
 use jaco\core\data\sanitize;
 
@@ -76,5 +77,18 @@ final class SanitizeTest extends TestCase
         $this->assertSame('', data\sanitize_one(123, [['filename']]));
         $this->assertSame('a/b.html', data\sanitize_one('../../a/b.html', [['filename']]));
         $this->assertSame(' a/b.html ', data\sanitize_one(' a/b.html ', [['filename']]));
+    }
+
+    public function testUnknownSanitizerIsRejectedWithItsName(): void
+    {
+        // the parameter type of sanitize() admits only the supported filters,
+        // so the call has to go through reflection: the runtime guard has to
+        // hold on its own, without the type system in front of it
+        $sanitize = new \ReflectionFunction('jaco\core\data\sanitize');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('jaco\core\data\sanitize\filenam');
+
+        $sanitize->invoke(['file' => 'a.html'], [['file', 'filenam']]);
     }
 }

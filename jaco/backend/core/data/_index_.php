@@ -41,7 +41,7 @@ function sanitize(array $data, array $filters): array
 /**
  * @param list<array{0: 'filename'|'string', ...}> $filters
  */
-function sanitize_one(string|float|int|bool|null $var, array $filters): ?string
+function sanitize_one(string|float|int|bool|null $var, array $filters): string
 {
     $name = '__name__';
     $data = [$name => $var];
@@ -53,7 +53,9 @@ function sanitize_one(string|float|int|bool|null $var, array $filters): ?string
 
     $filtered = sanitize($data, $filters);
 
-    return $filtered[$name] ?? null;
+    // the supported sanitizers never return null, so the field is always set;
+    // an empty string lets the required rule report the problem to the user
+    return $filtered[$name] ?? '';
 }
 
 /**

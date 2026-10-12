@@ -12,7 +12,7 @@ function validate_data(array|string|null $data, string $schema): array
 {
     $validator = new Validator();
     $validator->setMaxErrors(20);
-    $validator->resolver()->registerPrefix(JSON_SCHEMA_URL, dirname(__DIR__, 3) . '/schema/');
+    $validator->resolver()?->registerPrefix(JSON_SCHEMA_URL, dirname(__DIR__, 3) . '/schema/');
 
     if (is_array($data)) {
         $encoded = json_encode($data);
@@ -30,6 +30,9 @@ function validate_data(array|string|null $data, string $schema): array
     }
 
     $error = $result->error();
+    if ($error === null) {
+        return [];
+    }
 
     $formatter = new ErrorFormatter();
 
