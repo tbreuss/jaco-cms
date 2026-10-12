@@ -99,6 +99,12 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 - **The login form submits natively.** `jaco/frontend/view/LoginView.js` wraps the fields
   in a `<form>` and cancels the submit event, so RETURN and the submit button each send
   exactly one request and the page never reloads.
+- **Save shortcuts listen in two places.** `bindSaveShortcut` in `jaco/frontend/lib/shortcuts.js`
+  covers Cmd/Ctrl+S (save) and Cmd/Ctrl+Shift+S (save and close). Ace swallows keydown
+  inside its textarea, so the Ace editors need native commands too
+  (`editor.commands.addCommand` in `PageEditView.js`, `CssEditView.js`); the inline
+  editor needs listeners in both the parent and the iframe document, unbound in
+  `onremove`, or shortcuts leak across routes.
 - **Server errors stay English on the wire and are translated in the frontend.**
   The backend has no per-request locale, so `detail` strings arrive in English and
   `tError()` in `jaco/frontend/model/i18n.js` translates them for display
