@@ -5,7 +5,7 @@ FROM php:$PHP_VERSION-cli AS base
 
 
 FROM base AS composer
-COPY --from=composer:lts /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 
 FROM base AS builder

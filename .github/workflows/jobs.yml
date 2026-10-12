@@ -19,6 +19,10 @@ jobs:
                   coverage: ${{ matrix.php-versions == '8.4' && 'pcov' || 'none' }}
             - name: Install dependencies
               run: composer install -d jaco
+            - name: Composer audit
+              run: composer audit -d jaco
+            - name: Composer validate
+              run: composer validate --strict -d jaco
             - name: Run PHP CS Fixer
               run: composer cs-check -d jaco
             - name: Run PHPStan
@@ -32,6 +36,8 @@ jobs:
               uses: actions/setup-node@v5
               with:
                   node-version: 22
+            - name: Check JavaScript syntax
+              run: find jaco/frontend jaco/test/js \( -name '*.js' -o -name '*.mjs' \) -not -path '*/asset/*' -exec node --check {} \;
             - name: Run QUnit tests
               run: |
                   php -S 127.0.0.1:8899 -t . > /tmp/jaco-server.log 2>&1 &

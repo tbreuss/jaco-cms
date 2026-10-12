@@ -1,4 +1,7 @@
 {
+    "name": "tbreuss/jaco-cms",
+    "description": "Flat-file CMS that manages static HTML files directly in the web directory",
+    "license": "proprietary",
     "require": {
         "php": "^8.2",
         "ext-dom": "*",
@@ -16,6 +19,11 @@
     "config": {
         "platform": {
             "php": "8.2"
+        },
+        "audit": {
+            "ignore": {
+                "PKSA-y2cr-5h3j-g3ys": "Accepted low risk, drop after upgrade to firebase/php-jwt v7"
+            }
         }
     },
     "require-dev": {

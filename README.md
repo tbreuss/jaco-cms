@@ -63,6 +63,18 @@ Code coverage (the image contains xdebug; in the pipeline pcov does the same job
 
     docker run --rm -e XDEBUG_MODE=coverage -v .:/app jaco composer test -d /app/jaco -- --coverage-text --only-summary-for-coverage-text
 
+Composer audit (security advisories; one known php-jwt low is ignored in composer.json)
+
+    docker run --rm -v .:/app jaco composer audit -d /app/jaco
+
+Composer validate (strict)
+
+    docker run --rm -v .:/app jaco composer validate --strict -d /app/jaco
+
+JavaScript syntax check (needs node >= 22, vendored assets excluded)
+
+    find jaco/frontend jaco/test/js \( -name '*.js' -o -name '*.mjs' \) -not -path '*/asset/*' -exec node --check {} \;
+
 QUnit (frontend, runs in headless Chrome, needs node >= 22)
 
     php -S 127.0.0.1:8899 -t . &
