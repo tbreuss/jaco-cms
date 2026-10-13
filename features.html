@@ -4,8 +4,11 @@
 <head>
   <base href="/">
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jaco CMS – Features</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.css">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/theme.js"></script>
+  <script src="assets/nav.js"></script>
 </head>
 
 <body>
@@ -14,11 +17,15 @@
     <li class="active"><a href="features.html">Features</a></li>
     <li><a href="docs.html">Docs</a></li>
     <li><a href="download.html">Download</a></li>
-    <li><a href="de/index.html">DE</a></li>
+    <li class="nav-utility"><a href="de/index.html">DE</a></li>
   </ul>
-  <h1 data-jaco-editable-line>Jaco CMS features</h1>
+  <div class="page-head">
+    <h1 data-jaco-editable-line>Jaco CMS features</h1>
+    <div data-jaco-editable>
+      <p>Jaco CMS manages the static HTML files of a website directly in the web directory. The pages are the database: there is nothing to install besides PHP itself, no database server, no build step.</p>
+    </div>
+  </div>
   <div data-jaco-editable>
-    <p>Jaco CMS manages the static HTML files of a website directly in the web directory. The pages are the database: there is nothing to install besides PHP itself, no database server, no build step.</p>
     <h2>Editing</h2>
     <ul>
       <li><strong>Inline editor:</strong> edit pages on the live site, in place, with rich text, images, links and embedded videos.</li>

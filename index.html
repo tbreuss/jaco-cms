@@ -4,8 +4,11 @@
 <head>
   <base href="/">
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jaco CMS – Flat-file CMS for static HTML sites</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.css">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/theme.js"></script>
+  <script src="assets/nav.js"></script>
 </head>
 
 <body>
@@ -14,14 +17,55 @@
     <li><a href="features.html">Features</a></li>
     <li><a href="docs.html">Docs</a></li>
     <li><a href="download.html">Download</a></li>
-    <li><a href="de/index.html">DE</a></li>
+    <li class="nav-utility"><a href="de/index.html">DE</a></li>
   </ul>
-  <h1 data-jaco-editable-line>Jaco CMS</h1>
-  <div data-jaco-editable>
-    <p><strong>The flat-file CMS that manages static HTML files directly in the web directory.</strong> The pages are the database: no database server, no build step, no composer on the server – PHP 8.2 or newer on any shared hoster is all it takes.</p>
-    <p>Edit pages inline on the live site, manage recurring content blocks by drag and drop, keep automatic backups of every change. This very site runs on Jaco CMS – the manual below describes what you are looking at.</p>
-    <p><a href="features.html">Features</a> · <a href="docs.html">Docs</a> · <a href="download.html">Download</a></p>
+
+  <div class="hero">
+    <h1 data-jaco-editable-line>Jaco CMS</h1>
+    <p data-jaco-editable>
+      The flat-file CMS that manages static HTML files directly in the web
+      directory. No database, no build step – PHP 8.2 on any shared host.
+      Edit pages inline on the live site, reorder content blocks by drag and
+      drop, and keep automatic backups of every change.
+    </p>
+    <a class="cta" href="download.html">Download</a>
+    <a class="cta secondary" href="docs.html">Try locally</a>
   </div>
+
+  <h2 data-jaco-editable-line>Why Jaco?</h2>
+  <div class="features">
+    <div class="feature">
+      <h3 data-jaco-editable-line>Inline editing</h3>
+      <p>Edit pages on the live site, in place. Rich text, images, links and embedded videos – no separate backend screen.</p>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Content blocks</h3>
+      <p>Recurring sections that editors add, fill and reorder by drag and drop. No HTML knowledge required.</p>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Automatic backups</h3>
+      <p>Every overwrite or delete keeps a timestamped copy. Restoring is one click.</p>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>No database</h3>
+      <p>The pages are the database. Everything lives in plain HTML files – portable, versionable, inspectable.</p>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Four languages</h3>
+      <p>The admin interface speaks English, German, French and Italian.</p>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Free and open</h3>
+      <p>Freeware, including commercial use. MIT-licensed source, no phone home, no licence validation.</p>
+    </div>
+  </div>
+
+  <h2 data-jaco-editable-line>This site runs on Jaco</h2>
+  <div data-jaco-editable>
+    <p>Every page you are reading right now is a plain HTML file in this repository, edited through the Jaco admin panel. The headings and paragraphs carry <code>data-jaco-editable-line</code> and <code>data-jaco-editable</code> markers – the same mechanism your own site will use.</p>
+    <p>Try it: open <code>/jaco/</code> below this domain, log in with <code>demo</code> / <code>demo</code>, and edit this very text.</p>
+  </div>
+
   <footer>
     <a href="imprint.html">Imprint</a> · <a href="privacy.html">Privacy</a>
   </footer>

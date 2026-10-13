@@ -110,6 +110,19 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   (`:root[data-theme="dark"]` carries the dark tokens, so no media query is needed).
   An inline script in `jaco/index.html` sets the attribute before CSS paints to avoid
   a flash; new theme-dependent colors belong in the `:root` tokens, never in rules.
+  The project site shares that key: `assets/theme.js` in the head of every site page
+  writes the same `jaco-theme`, and `assets/site.css` keeps its palette in `:root` tokens
+  with `light-dark()`, so the automatic case follows the OS without a media query. The
+  explicit `data-theme="dark"` block repeats the dark tokens on purpose: browsers without
+  `light-dark()` (iOS < 17.5, Chrome < 123) would otherwise ignore a chosen dark theme.
+  The switch button is built by that script on purpose – the sanitizer removes `<button>`
+  and `<svg>` from a page body, so markup would be gone after the next save and only the
+  `<script src>` in the head survives both save paths. The mobile menu in
+  `assets/nav.js` follows the same rule: the button is built at runtime and the open state
+  is a class on `<html>`, which no save touches – injecting `<span>`s or classes into the
+  body instead would be baked into the page on the next save. It takes over below 40rem;
+  the plain row needs 500px of content plus the page padding in german, so a smaller
+  breakpoint makes the row wrap on tablets.
 - **Server errors stay English on the wire and are translated in the frontend.**
   The backend has no per-request locale, so `detail` strings arrive in English and
   `tError()` in `jaco/frontend/model/i18n.js` translates them for display

@@ -4,8 +4,11 @@
 <head>
   <base href="/">
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jaco CMS – Docs</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.css">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/theme.js"></script>
+  <script src="assets/nav.js"></script>
 </head>
 
 <body>
@@ -14,11 +17,15 @@
     <li><a href="features.html">Features</a></li>
     <li class="active"><a href="docs.html">Docs</a></li>
     <li><a href="download.html">Download</a></li>
-    <li><a href="de/index.html">DE</a></li>
+    <li class="nav-utility"><a href="de/index.html">DE</a></li>
   </ul>
-  <h1 data-jaco-editable-line>Jaco CMS docs</h1>
+  <div class="page-head">
+    <h1 data-jaco-editable-line>Jaco CMS docs</h1>
+    <div data-jaco-editable>
+      <p>This page is itself edited with Jaco CMS – everything described below runs on this very site.</p>
+    </div>
+  </div>
   <div data-jaco-editable>
-    <p>This page is itself edited with Jaco CMS – everything described below runs on this very site.</p>
     <h2>Log in</h2>
     <p>Open <code>/jaco/</code> below the website address and log in. For a local trial, the login is <code>demo</code> / <code>demo</code>.</p>
     <h2>Pages</h2>

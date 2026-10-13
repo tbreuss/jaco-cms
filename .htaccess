@@ -1,0 +1,12 @@
+# Staging guard: keep search engines out until the site goes live.
+#
+# The header is sent with every response, so it also covers uploads, PDFs and error
+# pages, where a <meta name="robots"> cannot sit. Delete this file (or just the header
+# line) when the site goes public – together with the noindex meta tags in the pages.
+#
+# Needs mod_headers. On nginx this file is ignored; set the header there instead:
+#     add_header X-Robots-Tag "noindex, nofollow" always;
+
+<IfModule mod_headers.c>
+    Header always set X-Robots-Tag "noindex, nofollow"
+</IfModule>

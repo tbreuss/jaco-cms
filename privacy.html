@@ -4,8 +4,11 @@
 <head>
   <base href="/">
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Privacy – Jaco CMS</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.css">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/theme.js"></script>
+  <script src="assets/nav.js"></script>
 </head>
 
 <body>
@@ -14,21 +17,23 @@
     <li><a href="features.html">Features</a></li>
     <li><a href="docs.html">Docs</a></li>
     <li><a href="download.html">Download</a></li>
-    <li><a href="de/datenschutz.html">DE</a></li>
+    <li class="nav-utility"><a href="de/datenschutz.html">DE</a></li>
   </ul>
-  <h1>Privacy policy</h1>
-  <div>
+  <div class="page-head">
+    <h1>Privacy policy</h1>
     <p>This website runs without tracking, without cookies and without analytics tools. In detail:</p>
+  </div>
+  <div>
     <h2>Controller</h2>
     <p>[VORNAME NACHNAME / FIRMENNAME], [STRASSE NUMMER], [PLZ ORT] – email: [E-MAIL-ADRESSE].</p>
     <h2>Hosting and server logs</h2>
     <p>This website is hosted by [HOSTER NAME]. When pages are retrieved, the hoster stores server logs (IP address, time, page requested) as needed for secure operation. See the hoster's privacy policy for details.</p>
-    <h2>Stylesheet CDN</h2>
-    <p>The layout loads its stylesheet from cdn.jsdelivr.net. Technically, this transmits your IP address to that provider.</p>
+    <h2>Stylesheet and fonts</h2>
+    <p>The layout uses a stylesheet from this domain and the fonts already installed on your device. No stylesheets, fonts or scripts are loaded from third parties.</p>
     <h2>Login (only when using the admin area)</h2>
     <p>The login token lives exclusively in your browser (session storage) and is deleted when the tab closes. It reaches the server only as proof of login with your own requests. Failed login attempts are logged for a limited time as timestamps to protect against attacks – without usernames, passwords or IP addresses. No cookies are set.</p>
     <h2>Appearance</h2>
-    <p>The chosen appearance (light/dark/automatic) is stored locally by your browser (local storage). It never leaves your device either.</p>
+    <p>The chosen appearance (light/dark/automatic) is stored locally by your browser (local storage), in the admin panel and on this website. It never leaves your device either.</p>
     <h2>No sharing</h2>
     <p>No personal data is shared with, sold to or used for advertising by third parties.</p>
     <h2>Your rights</h2>

@@ -2,21 +2,19 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <title>Complex page template</title>
-    <link href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.css" rel="stylesheet">
-    <link href="style.css" rel="stylesheet">
+  <base href="/">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simple page template</title>
+  <link rel="stylesheet" href="assets/site.css">
+  <!-- scripts belong in the head: the inline editor strips them from the body -->
 </head>
 
 <body>
-<ul class="navigation">
-    <li><a href="index.html">Index</a></li>
-    <li><a href="foo.html">Foo</a></li>
-    <li><a href="bar.html">Bar</a></li>
-    <li><a href="baz.html">Baz</a></li>
-</ul>
-<div class="jaco-editable"></div>
-<script src="script.js"></script>
+  <h1 data-jaco-editable-line>New page</h1>
+  <div data-jaco-editable>
+    <p>Start writing here.</p>
+  </div>
 </body>
 
 </html>

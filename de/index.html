@@ -4,8 +4,11 @@
 <head>
   <base href="/">
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jaco CMS – Flat-file-CMS für statische HTML-Websites</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.css">
+  <link rel="stylesheet" href="../assets/site.css">
+  <script src="../assets/theme.js"></script>
+  <script src="../assets/nav.js"></script>
 </head>
 
 <body>
@@ -14,14 +17,55 @@
     <li><a href="de/features.html">Funktionen</a></li>
     <li><a href="de/docs.html">Doku</a></li>
     <li><a href="de/download.html">Download</a></li>
-    <li><a href="index.html">EN</a></li>
+    <li class="nav-utility"><a href="index.html">EN</a></li>
   </ul>
-  <h1 data-jaco-editable-line>Jaco CMS</h1>
-  <div data-jaco-editable>
-    <p><strong>Das Flat-file-CMS, das statische HTML-Dateien direkt im Webverzeichnis verwaltet.</strong> Die Seiten sind die Datenbank: kein Datenbankserver, kein Build-Schritt, kein Composer auf dem Server – PHP 8.2 oder neuer auf jedem Shared Host genügt.</p>
-    <p>Seiten direkt auf der live Website bearbeiten, wiederkehrende Inhaltsblöcke per Drag and Drop verwalten, vor jeder Änderung automatisch sichern. Genau diese Website läuft auf Jaco CMS – die Anleitung unten beschreibt, was Sie hier sehen.</p>
-    <p><a href="de/features.html">Funktionen</a> · <a href="de/docs.html">Doku</a> · <a href="de/download.html">Download</a></p>
+
+  <div class="hero">
+    <h1 data-jaco-editable-line>Jaco CMS</h1>
+    <p data-jaco-editable>
+      Das Flat-file-CMS, das statische HTML-Dateien direkt im Webverzeichnis
+      verwaltet. Keine Datenbank, kein Build-Schritt – PHP 8.2 auf jedem Shared
+      Host. Seiten direkt auf der live Website bearbeiten, Inhaltsblöcke per
+      Drag and Drop sortieren und vor jeder Änderung automatisch sichern.
+    </p>
+    <a class="cta" href="de/download.html">Download</a>
+    <a class="cta secondary" href="de/docs.html">Lokal testen</a>
   </div>
+
+  <h2 data-jaco-editable-line>Warum Jaco?</h2>
+  <div class="features">
+    <div class="feature">
+      <h3 data-jaco-editable-line>Inline-Editor</h3>
+      <p>Seiten direkt auf der live Website bearbeiten, an Ort und Stelle. Rich Text, Bilder, Links und eingebettete Videos – ohne separate Backend-Ansicht.</p>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Inhaltsblöcke</h3>
+      <p>Wiederkehrende Bereiche, die Redakteure einfügen, ausfüllen und per Drag and Drop sortieren. Ohne HTML-Kenntnisse.</p>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Automatische Backups</h3>
+      <p>Jedes Überschreiben oder Löschen behält eine zeitgestempelte Kopie. Wiederherstellen mit einem Klick.</p>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Keine Datenbank</h3>
+      <p>Die Seiten sind die Datenbank. Alles liegt in einfachen HTML-Dateien – portabel, versionierbar, prüfbar.</p>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Vier Sprachen</h3>
+      <p>Die Admin-Oberfläche spricht Deutsch, Englisch, Französisch und Italienisch.</p>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Frei und offen</h3>
+      <p>Freeware, auch für kommerzielle Nutzung. MIT-lizenzierter Quellcode, kein Nach-Hause-Telefonieren, keine Lizenzprüfung.</p>
+    </div>
+  </div>
+
+  <h2 data-jaco-editable-line>Diese Website läuft auf Jaco</h2>
+  <div data-jaco-editable>
+    <p>Jede Seite, die Sie hier lesen, ist eine einfache HTML-Datei in diesem Repository, bearbeitet über das Jaco-Admin-Panel. Die Überschriften und Absätze tragen <code>data-jaco-editable-line</code>- und <code>data-jaco-editable</code>-Marker – derselbe Mechanismus, den Ihre eigene Website nutzen wird.</p>
+    <p>Zum Ausprobieren: <code>/jaco/</code> unter dieser Domain öffnen, mit <code>demo</code> / <code>demo</code> anmelden und genau diesen Text bearbeiten.</p>
+  </div>
+
   <footer>
     <a href="de/impressum.html">Impressum</a> · <a href="de/datenschutz.html">Datenschutz</a>
   </footer>
