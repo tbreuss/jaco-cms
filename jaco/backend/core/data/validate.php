@@ -103,7 +103,7 @@ function html_file_name(string $value, bool $isBackup = false): Result
 
 function file_writeable(string $value, string $dir): Result
 {
-    if (filesystem\file_is_writable($dir, $value)) {
+    if (filesystem\is_file_writable($dir, $value)) {
         return Result::ok();
     }
     return Result::error('{value} is not writeable.');
@@ -122,11 +122,11 @@ function file_exists(string $value, string $dir, bool $negate = false): Result
 
 function file_in_dir(string $value, string $dir, bool $negate = false): Result
 {
-    if (!$negate && !filesystem\file_in_dir($value, $dir)) {
+    if (!$negate && !filesystem\is_file_in_dir($value, $dir)) {
         return Result::error(str_replace('{dir}', $dir, '{value} must be in the {dir} folder.'));
     }
 
-    if ($negate && filesystem\file_in_dir($value, $dir)) {
+    if ($negate && filesystem\is_file_in_dir($value, $dir)) {
         return Result::error(str_replace('{dir}', $dir, '{value} must not be in the {dir} folder.'));
     }
 

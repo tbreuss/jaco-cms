@@ -24,12 +24,6 @@ function dir_exists(string $root, string $dir = ''): bool
     return \file_exists($path) && \is_dir($path);
 }
 
-function dir_is_writable(string $root, string $dir): bool
-{
-    $path = combine($root, $dir);
-    return dir_exists($root, $dir) && \is_writable($path);
-}
-
 function make_dir(Config $config, string $root, string $dir, ?int $permissions = null): bool
 {
     $permissions = $permissions ?? $config->directoryPermissions;
@@ -75,7 +69,7 @@ function file_exists(string $dir, string $file): bool
     return \file_exists($path) && \is_file($path);
 }
 
-function file_is_writable(string $dir, string $file): bool
+function is_file_writable(string $dir, string $file): bool
 {
     $path = combine($dir, $file);
     return file_exists($dir, $file) && \is_writable($path);
@@ -126,7 +120,7 @@ function backup_file(string $dir, string $file, string $bakDir): bool
         \sprintf(
             '%s_%s_%s',
             \date('Ymd_His', $modTime),
-            strings\random(4),
+            strings\random_string(4),
             \str_replace('/', '|', $file),
         ),
     );
@@ -363,7 +357,7 @@ function filter_filename(string $file): string
     return implode(DIRECTORY_SEPARATOR, $absolutes);
 }
 
-function file_in_dir(string $file, string $dir): bool
+function is_file_in_dir(string $file, string $dir): bool
 {
     $parts = explode(DIRECTORY_SEPARATOR, $file);
     return $parts[0] === $dir;

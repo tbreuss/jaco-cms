@@ -133,7 +133,7 @@ function sanitize_node(\DOMElement $el): void
 
     $remove = [];
     foreach ($el->attributes as $attr) {
-        if (!allowed_attribute($tag, \strtolower($attr->nodeName), $attr->nodeValue ?? '')) {
+        if (!is_allowed_attribute($tag, \strtolower($attr->nodeName), $attr->nodeValue ?? '')) {
             $remove[] = $attr->nodeName;
         }
     }
@@ -172,7 +172,7 @@ function sanitize_node(\DOMElement $el): void
     }
 }
 
-function allowed_attribute(string $tag, string $name, string $value): bool
+function is_allowed_attribute(string $tag, string $name, string $value): bool
 {
     $allowed = \array_merge(ALLOWED_ATTRIBUTES['*'], ALLOWED_ATTRIBUTES[$tag] ?? []);
 

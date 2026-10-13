@@ -79,7 +79,7 @@ function create_token(Config $config, string $username): string
  *
  * @return int<0, max>
  */
-function login_blocked(Config $config): int
+function get_login_block_remaining(Config $config): int
 {
     $history = read_login_history($config);
 

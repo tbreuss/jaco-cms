@@ -23,14 +23,14 @@ final class LoginThrottleTest extends TestCase
     public function testThreeFailuresBlockTheLogin(): void
     {
         $config = test_config();
-        $this->assertSame(0, auth\login_blocked($config));
+        $this->assertSame(0, auth\get_login_block_remaining($config));
 
         auth\record_login_failure($config);
         auth\record_login_failure($config);
-        $this->assertSame(0, auth\login_blocked($config));
+        $this->assertSame(0, auth\get_login_block_remaining($config));
 
         auth\record_login_failure($config);
-        $this->assertGreaterThan(0, auth\login_blocked($config));
+        $this->assertGreaterThan(0, auth\get_login_block_remaining($config));
     }
 
     public function testSuccessResetsTheFailures(): void
@@ -42,7 +42,7 @@ final class LoginThrottleTest extends TestCase
 
         auth\record_login_failure($config);
         auth\record_login_failure($config);
-        $this->assertSame(0, auth\login_blocked($config));
+        $this->assertSame(0, auth\get_login_block_remaining($config));
     }
 
     public function testFifteenFailuresBlockTheLoginPermanently(): void
@@ -52,7 +52,7 @@ final class LoginThrottleTest extends TestCase
             auth\record_login_failure($config);
         }
 
-        $this->assertSame(PHP_INT_MAX, auth\login_blocked($config));
+        $this->assertSame(PHP_INT_MAX, auth\get_login_block_remaining($config));
     }
 
     public function testRotatingUsernamesDoesNotAvoidTheBlock(): void
@@ -81,7 +81,7 @@ final class LoginThrottleTest extends TestCase
 
         $this->assertFalse($payload->isSuccess);
         $this->assertSame('Too many attempts. Try again in 10 minute(s).', $payload->data[0][1]);
-        $this->assertGreaterThan(0, auth\login_blocked($config));
+        $this->assertGreaterThan(0, auth\get_login_block_remaining($config));
     }
 
     public function testPermanentlyBlockedLoginShowsContactMessage(): void
@@ -109,7 +109,7 @@ final class LoginThrottleTest extends TestCase
 
         $this->assertLessThanOrEqual(auth\LOGIN_MAX_ATTEMPTS, count($history['fails']));
         $this->assertSame(1000, $history['total']);
-        $this->assertSame(PHP_INT_MAX, auth\login_blocked($config));
+        $this->assertSame(PHP_INT_MAX, auth\get_login_block_remaining($config));
     }
 
     public function testPermanentBlockRejectsCorrectCredentials(): void
@@ -123,6 +123,6 @@ final class LoginThrottleTest extends TestCase
 
         $this->assertFalse($payload->isSuccess);
         $this->assertSame('Login blocked. Contact the administrator.', $payload->data[0][1]);
-        $this->assertSame(PHP_INT_MAX, auth\login_blocked($config));
+        $this->assertSame(PHP_INT_MAX, auth\get_login_block_remaining($config));
     }
 }

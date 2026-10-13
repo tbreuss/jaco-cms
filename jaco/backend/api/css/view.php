@@ -9,11 +9,11 @@ use jaco\domain\Payload;
 
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
-use function jaco\domain\css\find_css;
+use function jaco\domain\css\find_css_file;
 
 function action(Config $config, Request $request): Response
 {
-    $payload = find_css(
+    $payload = find_css_file(
         $config,
         file: $request->query->strVal('file'),
     );

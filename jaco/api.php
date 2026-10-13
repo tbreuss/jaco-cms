@@ -6,7 +6,7 @@ use jaco\core\http;
 use jaco\core\http\Request;
 use jaco\core\router;
 
-use function jaco\core\config\default_config;
+use function jaco\core\config\create_default_config;
 
 set_error_handler('jaco\core\error\error_handler');
 set_exception_handler('jaco\core\error\exception_handler');
@@ -18,7 +18,7 @@ if (is_readable('settings.php')) {
     $settings = require('settings.php');
 }
 
-$config = default_config(__DIR__, is_array($settings) ? $settings : []);
+$config = create_default_config(__DIR__, is_array($settings) ? $settings : []);
 
 ini_set('error_reporting', (string) $config->phpErrorReporting);
 ini_set('display_errors', (string) $config->phpDisplayErrors);

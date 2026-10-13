@@ -4,7 +4,7 @@ require_once 'vendor/autoload.php';
 
 use Ahc\Cli\Application;
 
-use function jaco\core\config\default_config;
+use function jaco\core\config\create_default_config;
 
 $settings = [];
 
@@ -12,7 +12,7 @@ if (is_readable(__DIR__ . '/settings.php')) {
     $settings = require(__DIR__ . '/settings.php');
 }
 
-$config = default_config(__DIR__, is_array($settings) ? $settings : []);
+$config = create_default_config(__DIR__, is_array($settings) ? $settings : []);
 
 $app = new Application('Jaco CLI', $config->appVersion);
 

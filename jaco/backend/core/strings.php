@@ -2,7 +2,7 @@
 
 namespace jaco\core\strings;
 
-function random(int $length = 6): string
+function random_string(int $length = 6): string
 {
     return \substr(\str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, $length);
 }

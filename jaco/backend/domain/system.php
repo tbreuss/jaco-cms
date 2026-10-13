@@ -30,7 +30,7 @@ function authenticate_user(Config $config, string $username, string $withPasswor
     // strict: a block rejects everything without looking at credentials.
     // blocked attempts still count, so persistent guessing reaches the
     // permanent block instead of stalling the counter at the temp limit.
-    $blocked = auth\login_blocked($config);
+    $blocked = auth\get_login_block_remaining($config);
 
     if ($blocked === PHP_INT_MAX) {
         auth\record_login_failure($config);

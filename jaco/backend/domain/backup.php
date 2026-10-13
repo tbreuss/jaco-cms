@@ -67,11 +67,11 @@ function find_backups(Config $config, string $filteredBy, string $sortedBy): Pay
 
 function find_backup(Config $config, string $file): Payload
 {
-    $file = data\sanitize_one($file, [
+    $file = data\sanitize_value($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_one($file, 'file', [
+    $errors = data\validate_value($file, 'file', [
         ['required'],
         ['file_exists', 'dir' => $config->backupDir],
         ['file_extension', 'allowedExtensions' => array_merge($config->pageExtensions, $config->uploadExtensions)],
@@ -105,11 +105,11 @@ function find_backup(Config $config, string $file): Payload
 
 function restore_backup(Config $config, string $file): Payload
 {
-    $file = data\sanitize_one($file, [
+    $file = data\sanitize_value($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_one($file, 'file', [
+    $errors = data\validate_value($file, 'file', [
         ['required'],
         ['file_exists', 'dir' => $config->backupDir],
         ['file_extension', 'allowedExtensions' => array_merge($config->pageExtensions, $config->uploadExtensions)],
@@ -131,11 +131,11 @@ function restore_backup(Config $config, string $file): Payload
 
 function delete_backup(Config $config, string $file): Payload
 {
-    $file = data\sanitize_one($file, [
+    $file = data\sanitize_value($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_one($file, 'file', [
+    $errors = data\validate_value($file, 'file', [
         ['required'],
         ['file_exists', 'dir' => $config->backupDir],
     ]);

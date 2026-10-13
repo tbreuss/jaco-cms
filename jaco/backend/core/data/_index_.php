@@ -55,7 +55,7 @@ function sanitize(array $data, array $filters): array
 /**
  * @param list<array{0: string, ...}> $filters filter name and its options, the field name is added here
  */
-function sanitize_one(string|float|int|bool|null $var, array $filters): string
+function sanitize_value(string|float|int|bool|null $var, array $filters): string
 {
     $name = '__name__';
     $data = [$name => $var];
@@ -126,7 +126,7 @@ function validate(array $data, array $rules): array
  * @param array<array-key, mixed> $rules validator name and its options
  * @return list<array{string, string}>
  */
-function validate_one(string|float|int|bool|null $var, string $name, array $rules): array
+function validate_value(string|float|int|bool|null $var, string $name, array $rules): array
 {
     $data = [$name => $var];
 

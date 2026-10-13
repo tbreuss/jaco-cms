@@ -29,7 +29,7 @@ final class HttpRequestTest extends TestCase
                     'Content-Type' => 'application/json',
                     'Content-Length' => '42',
                 ],
-                http\request_headers(),
+                http\get_request_headers(),
             );
         } finally {
             $_SERVER = $backup;

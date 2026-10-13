@@ -72,11 +72,11 @@ final class SanitizeTest extends TestCase
         $this->assertSame('', sanitize\html_specialchars(123));
     }
 
-    public function testSanitizeOneAppliesTheSameRulesAndKeepsTheRest(): void
+    public function testSanitizeValueAppliesTheSameRulesAndKeepsTheRest(): void
     {
-        $this->assertSame('', data\sanitize_one(123, [['filename']]));
-        $this->assertSame('a/b.html', data\sanitize_one('../../a/b.html', [['filename']]));
-        $this->assertSame(' a/b.html ', data\sanitize_one(' a/b.html ', [['filename']]));
+        $this->assertSame('', data\sanitize_value(123, [['filename']]));
+        $this->assertSame('a/b.html', data\sanitize_value('../../a/b.html', [['filename']]));
+        $this->assertSame(' a/b.html ', data\sanitize_value(' a/b.html ', [['filename']]));
     }
 
     public function testUnknownSanitizerIsRejectedWithItsName(): void

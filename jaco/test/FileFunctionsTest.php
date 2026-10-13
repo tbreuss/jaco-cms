@@ -45,7 +45,7 @@ final class FileFunctionsTest extends TestCase
         $config = test_config();
         filesystem\make_dir_rec($config, $config->webDir, 'test/is_writeable');
         touch($config->webDir . '/test/is_writeable/a.html');
-        $this->assertTrue(filesystem\file_is_writable($config->webDir, 'test/is_writeable/a.html'));
+        $this->assertTrue(filesystem\is_file_writable($config->webDir, 'test/is_writeable/a.html'));
     }
 
     public function testNotWritableFileCanBeChecked(): void
@@ -54,7 +54,7 @@ final class FileFunctionsTest extends TestCase
         filesystem\make_dir_rec($config, $config->webDir, 'test/is_writeable');
         touch($config->webDir . '/test/is_writeable/a.html');
         filesystem\make_dir_rec($config, $config->webDir, 'test/not_writeable', 0644);
-        $this->assertFalse(filesystem\file_is_writable($config->webDir, 'test/foo/writeable.html'));
+        $this->assertFalse(filesystem\is_file_writable($config->webDir, 'test/foo/writeable.html'));
 
         // the not_writeable dir is not traversable, restore permissions and remove it
         chmod($config->webDir . '/test/not_writeable', 0755);

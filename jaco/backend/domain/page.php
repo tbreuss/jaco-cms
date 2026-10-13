@@ -56,11 +56,11 @@ function find_pages(Config $config, string $filteredBy, string $sortedBy): Paylo
 
 function find_page(Config $config, string $file): Payload
 {
-    $file = data\sanitize_one($file, [
+    $file = data\sanitize_value($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_one($file, 'file', [
+    $errors = data\validate_value($file, 'file', [
         ['required'],
         ['file_exists', 'dir' => $config->webDir],
         ['file_extension', 'allowedExtensions' => $config->pageExtensions],
@@ -87,11 +87,11 @@ function find_page(Config $config, string $file): Payload
 
 function delete_page(Config $config, string $file): Payload
 {
-    $file = data\sanitize_one($file, [
+    $file = data\sanitize_value($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_one($file, 'file', [
+    $errors = data\validate_value($file, 'file', [
         ['required'],
         ['file_exists', 'dir' => $config->webDir],
         ['file_writeable', 'dir' => $config->webDir],

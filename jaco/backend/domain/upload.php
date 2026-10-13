@@ -70,7 +70,7 @@ function create_upload(Config $config, array $file): Payload
     $error = $file['error'] ?? UPLOAD_ERR_NO_FILE;
 
     if ($error !== UPLOAD_ERR_OK) {
-        return Payload::invalid([['file', upload_error_message((int) $error)]]);
+        return Payload::invalid([['file', get_upload_error_message((int) $error)]]);
     }
 
     $tmpName = isset($file['tmp_name']) && is_string($file['tmp_name']) ? $file['tmp_name'] : '';
@@ -80,12 +80,12 @@ function create_upload(Config $config, array $file): Payload
         return Payload::invalid([['file', 'The file is empty.']]);
     }
 
-    $name = data\sanitize_one((string) ($file['name'] ?? ''), [
+    $name = data\sanitize_value((string) ($file['name'] ?? ''), [
         ['filename'],
     ]);
     $name = data\sanitize\normalize_filename($name);
 
-    $errors = data\validate_one($name, 'file', [
+    $errors = data\validate_value($name, 'file', [
         ['required'],
         ['file_extension', 'allowedExtensions' => $config->uploadExtensions],
         ['html_file_name'],
@@ -107,7 +107,7 @@ function create_upload(Config $config, array $file): Payload
     return Payload::success(['file' => $newFile]);
 }
 
-function upload_error_message(int $error): string
+function get_upload_error_message(int $error): string
 {
     return match ($error) {
         UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'The file exceeds the size limit.',
@@ -119,11 +119,11 @@ function upload_error_message(int $error): string
 
 function delete_upload(Config $config, string $file): Payload
 {
-    $file = data\sanitize_one($file, [
+    $file = data\sanitize_value($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_one($file, 'file', [
+    $errors = data\validate_value($file, 'file', [
         ['required'],
         ['file_exists', 'dir' => $config->webDir],
         ['file_writeable', 'dir' => $config->webDir],

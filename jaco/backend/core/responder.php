@@ -41,7 +41,7 @@ function api_errors(domain\Payload $payload, array $mapping = []): Response
     }
 
     return json_response(
-        invalid_service_status(),
+        INVALID_SERVICE_STATUS_ERRORS,
         Status::INTERNAL_SERVER_ERROR,
     );
 }
@@ -64,7 +64,7 @@ function cli_errors(string $serviceStatus, array $serviceOutput, array $inputMap
         exit(2);
     }
 
-    $cliOutput = invalid_service_status();
+    $cliOutput = INVALID_SERVICE_STATUS_ERRORS;
     render_errors($cliOutput);
     exit(3);
 }
@@ -111,7 +111,6 @@ function transform_server_errors(array $errors, array $mapping): array
     return transform_errors($errors, $mapping, 'Server Error');
 }
 
-function invalid_service_status(): array
-{
-    return [['title' => 'Server Error', 'detail' => 'Invalid service status']];
-}
+const INVALID_SERVICE_STATUS_ERRORS = [
+    ['title' => 'Server Error', 'detail' => 'Invalid service status'],
+];

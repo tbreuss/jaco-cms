@@ -65,11 +65,11 @@ function find_content_templates(Config $config): Payload
 
 function find_content_template(Config $config, string $file): Payload
 {
-    $file = data\sanitize_one($file, [
+    $file = data\sanitize_value($file, [
         ['filename'],
     ]);
 
-    $errors = data\validate_one($file, 'file', [
+    $errors = data\validate_value($file, 'file', [
         ['required'],
         ['file_exists', 'dir' => $config->templateContentDir],
         ['html_file_name'],

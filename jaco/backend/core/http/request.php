@@ -41,7 +41,7 @@ final class Request
             query: new Map($_GET),
             post: new Map(get_post_values()),
             server: new Map($_SERVER),
-            headers: new Map(request_headers()),
+            headers: new Map(get_request_headers()),
         );
     }
 }
@@ -52,7 +52,7 @@ final class Request
  *
  * @return array<string, string>
  */
-function request_headers(): array
+function get_request_headers(): array
 {
     if (function_exists('apache_request_headers')) {
         return apache_request_headers();

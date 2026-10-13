@@ -12,9 +12,9 @@ final class ValidateTest extends TestCase
 {
     public function testRequiredRule(): void
     {
-        $this->assertSame([['file', 'Value cannot be blank.']], data\validate_one('', 'file', [['required']]));
-        $this->assertSame([], data\validate_one('x.html', 'file', [['required']]));
-        $this->assertSame([], data\validate_one(0, 'file', [['required']]));
+        $this->assertSame([['file', 'Value cannot be blank.']], data\validate_value('', 'file', [['required']]));
+        $this->assertSame([], data\validate_value('x.html', 'file', [['required']]));
+        $this->assertSame([], data\validate_value(0, 'file', [['required']]));
     }
 
     public function testStringAndNumericRules(): void
@@ -109,7 +109,7 @@ final class ValidateTest extends TestCase
     {
         // "safe" is the explicit opt out of validation
         $this->assertSame([], data\validate(['f' => 'anything'], [['f', 'safe']]));
-        $this->assertSame([], data\validate_one('', 'file', [['safe']]));
+        $this->assertSame([], data\validate_value('', 'file', [['safe']]));
     }
 
     public function testUnknownValidatorIsRejectedWithItsName(): void

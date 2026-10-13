@@ -39,7 +39,7 @@ final readonly class Config
 /**
  * @param array<string, mixed> $settings
  */
-function default_config(string $appDir, array $settings = []): Config
+function create_default_config(string $appDir, array $settings = []): Config
 {
     return new Config(
         appVersion: '0.1.0',

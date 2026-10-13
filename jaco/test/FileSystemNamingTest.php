@@ -104,9 +104,9 @@ final class FileSystemNamingTest extends TestCase
 
     public function testFileInDirComparesTheFirstSegmentOnly(): void
     {
-        $this->assertTrue(filesystem\file_in_dir('jaco/x.html', 'jaco'));
-        $this->assertFalse(filesystem\file_in_dir('jaco.html', 'jaco'));
-        $this->assertFalse(filesystem\file_in_dir('x/jaco.html', 'jaco'));
+        $this->assertTrue(filesystem\is_file_in_dir('jaco/x.html', 'jaco'));
+        $this->assertFalse(filesystem\is_file_in_dir('jaco.html', 'jaco'));
+        $this->assertFalse(filesystem\is_file_in_dir('x/jaco.html', 'jaco'));
     }
 
     public function testTimestampIsReadFromTheBackupName(): void

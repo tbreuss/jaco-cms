@@ -52,15 +52,6 @@ final class Response
     }
 }
 
-function html_response(?string $body = null, Status $status = Status::OK, array $headers = []): Response
-{
-    return new Response(
-        status: $status,
-        headers: array_merge(['Content-Type' => 'text/html; charset=utf-8'], $headers),
-        body: $body,
-    );
-}
-
 function json_response(mixed $data = null, Status $status = Status::OK, array $headers = []): Response
 {
     return new Response(
