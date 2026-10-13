@@ -32,7 +32,8 @@
         "friendsofphp/php-cs-fixer": "^3.95",
         "phpstan/phpstan-phpunit": "^2.1",
         "phpstan/phpstan-strict-rules": "^2.1",
-        "deptrac/deptrac": "^4.7"
+        "deptrac/deptrac": "^4.7",
+        "phpstan/phpstan-deprecation-rules": "^2.0"
     },
     "scripts": {
         "test": "phpunit",
