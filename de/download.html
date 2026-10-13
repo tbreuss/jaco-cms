@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <base href="/">
+  <meta charset="utf-8">
+  <title>Jaco CMS – Download</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.css">
+</head>
+
+<body>
+  <ul class="navigation">
+    <li><a href="de/index.html">Startseite</a></li>
+    <li><a href="de/features.html">Funktionen</a></li>
+    <li><a href="de/docs.html">Doku</a></li>
+    <li class="active"><a href="de/download.html">Download</a></li>
+    <li><a href="index.html">EN</a></li>
+  </ul>
+  <h1 data-jaco-editable-line>Jaco CMS herunterladen</h1>
+  <div data-jaco-editable>
+    <p>Jaco CMS ist Freeware: gratis nutzbar, einschliesslich kommerzieller Websites, die Sie damit umsetzen. Die genauen Bedingungen stehen in der LICENSE-Datei im Release-Archiv.</p>
+    <h2>Voraussetzungen</h2>
+    <ul>
+      <li>PHP 8.2 oder neuer mit den Extensions <code>dom</code>, <code>libxml</code> und <code>openssl</code></li>
+      <li>Beliebiger Webserver mit PHP – keine Datenbank, keine Build-Tools, kein Composer auf dem Server</li>
+    </ul>
+    <h2>Installieren</h2>
+    <ol>
+      <li>Aktuelles <code>jaco-dist-*.zip</code> von der <a href="https://github.com/tbreuss/jaco-cms/releases">Release-Seite</a> laden.</li>
+      <li>Ins Webverzeichnis entpacken, neben die HTML-Dateien.</li>
+      <li><code>INSTALL.md</code> aus dem Archiv folgen: <code>settings.dist.php</code> nach <code>settings.php</code> kopieren, Login setzen, Schreibrechte vergeben.</li>
+      <li><code>/jaco/</code> öffnen und anmelden. Bearbeitbare Bereiche markieren wie in <code>INSTALL.md</code> Schritt 5.</li>
+    </ol>
+    <h2>Lokal ausprobieren</h2>
+    <p>Repository klonen, Docker-Image bauen und starten – Login <code>demo</code> / <code>demo</code>. Die drei Befehle stehen im README auf GitHub.</p>
+  </div>
+  <footer>
+    <a href="de/impressum.html">Impressum</a> · <a href="de/datenschutz.html">Datenschutz</a>
+  </footer>
+</body>
+
+</html>
