@@ -33,9 +33,9 @@ function find_backups(Config $config, string $filteredBy, string $sortedBy): Pay
             'sortedBy' => $sortedBy,
         ],
         [
-            ['filteredBy', 'string'],
-            ['sortedBy', 'string'],
-            ['sortedBy', 'sort_parameter', 'fields' => SORT_PARAMETERS],
+            ['filteredBy', 'is_string'],
+            ['sortedBy', 'is_string'],
+            ['sortedBy', 'is_sort_parameter', 'fields' => SORT_PARAMETERS],
         ],
     );
 
@@ -68,14 +68,14 @@ function find_backups(Config $config, string $filteredBy, string $sortedBy): Pay
 function find_backup(Config $config, string $file): Payload
 {
     $file = data\sanitize_value($file, [
-        ['filename'],
+        ['to_filename'],
     ]);
 
     $errors = data\validate_value($file, 'file', [
-        ['required'],
-        ['file_exists', 'dir' => $config->backupDir],
-        ['file_extension', 'allowedExtensions' => array_merge($config->pageExtensions, $config->uploadExtensions)],
-        ['html_file_name', 'isBackup' => true],
+        ['is_required'],
+        ['is_file_present', 'dir' => $config->backupDir],
+        ['has_file_extension', 'allowedExtensions' => array_merge($config->pageExtensions, $config->uploadExtensions)],
+        ['has_html_file_name', 'isBackup' => true],
     ]);
 
     if (count($errors) > 0) {
@@ -106,14 +106,14 @@ function find_backup(Config $config, string $file): Payload
 function restore_backup(Config $config, string $file): Payload
 {
     $file = data\sanitize_value($file, [
-        ['filename'],
+        ['to_filename'],
     ]);
 
     $errors = data\validate_value($file, 'file', [
-        ['required'],
-        ['file_exists', 'dir' => $config->backupDir],
-        ['file_extension', 'allowedExtensions' => array_merge($config->pageExtensions, $config->uploadExtensions)],
-        ['html_file_name', 'isBackup' => true],
+        ['is_required'],
+        ['is_file_present', 'dir' => $config->backupDir],
+        ['has_file_extension', 'allowedExtensions' => array_merge($config->pageExtensions, $config->uploadExtensions)],
+        ['has_html_file_name', 'isBackup' => true],
     ]);
 
     if (count($errors) > 0) {
@@ -132,12 +132,12 @@ function restore_backup(Config $config, string $file): Payload
 function delete_backup(Config $config, string $file): Payload
 {
     $file = data\sanitize_value($file, [
-        ['filename'],
+        ['to_filename'],
     ]);
 
     $errors = data\validate_value($file, 'file', [
-        ['required'],
-        ['file_exists', 'dir' => $config->backupDir],
+        ['is_required'],
+        ['is_file_present', 'dir' => $config->backupDir],
     ]);
 
     if (count($errors) > 0) {

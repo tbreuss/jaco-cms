@@ -66,14 +66,14 @@ function find_content_templates(Config $config): Payload
 function find_content_template(Config $config, string $file): Payload
 {
     $file = data\sanitize_value($file, [
-        ['filename'],
+        ['to_filename'],
     ]);
 
     $errors = data\validate_value($file, 'file', [
-        ['required'],
-        ['file_exists', 'dir' => $config->templateContentDir],
-        ['html_file_name'],
-        ['file_extension', 'allowedExtensions' => ['html']],
+        ['is_required'],
+        ['is_file_present', 'dir' => $config->templateContentDir],
+        ['has_html_file_name'],
+        ['has_file_extension', 'allowedExtensions' => ['html']],
     ]);
 
     if (count($errors) > 0) {

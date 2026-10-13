@@ -31,8 +31,8 @@ function sanitize(array $data, array $filters): array
     // in a value is a phpstan error, a typo in a rule is still caught by
     // the null coalescing at runtime
     $sanitizers = [
-        'filename' => sanitize\filename(...),
-        'string' => sanitize\string(...),
+        'to_filename' => sanitize\to_filename(...),
+        'to_string' => sanitize\to_string(...),
     ];
 
     $filtered = [];
@@ -83,17 +83,16 @@ function validate(array $data, array $rules): array
     // in a value is a phpstan error, a typo in a rule is still caught by
     // the null coalescing at runtime
     $validators = [
-        'file_exists' => validate\file_exists(...),
-        'file_extension' => validate\file_extension(...),
-        'file_in_dir' => validate\file_in_dir(...),
-        'file_writeable' => validate\file_writeable(...),
-        'html_file_extension' => validate\html_file_extension(...),
-        'html_file_name' => validate\html_file_name(...),
-        'numeric' => validate\numeric(...),
-        'required' => validate\required(...),
-        'safe' => validate\safe(...),
-        'sort_parameter' => validate\sort_parameter(...),
-        'string' => validate\string(...),
+        'is_file_present' => validate\is_file_present(...),
+        'has_file_extension' => validate\has_file_extension(...),
+        'is_file_in_dir' => validate\is_file_in_dir(...),
+        'is_file_writable' => validate\is_file_writable(...),
+        'has_html_file_name' => validate\has_html_file_name(...),
+        'is_numeric' => validate\is_numeric(...),
+        'is_required' => validate\is_required(...),
+        'is_safe' => validate\is_safe(...),
+        'is_sort_parameter' => validate\is_sort_parameter(...),
+        'is_string' => validate\is_string(...),
     ];
 
     $errors = [];

@@ -30,9 +30,9 @@ function find_pages(Config $config, string $filteredBy, string $sortedBy): Paylo
             'sortedBy' => $sortedBy,
         ],
         [
-            ['filteredBy', 'string'],
-            ['sortedBy', 'string'],
-            ['sortedBy', 'sort_parameter', 'fields' => SORT_PARAMETERS],
+            ['filteredBy', 'is_string'],
+            ['sortedBy', 'is_string'],
+            ['sortedBy', 'is_sort_parameter', 'fields' => SORT_PARAMETERS],
         ],
     );
 
@@ -57,14 +57,14 @@ function find_pages(Config $config, string $filteredBy, string $sortedBy): Paylo
 function find_page(Config $config, string $file): Payload
 {
     $file = data\sanitize_value($file, [
-        ['filename'],
+        ['to_filename'],
     ]);
 
     $errors = data\validate_value($file, 'file', [
-        ['required'],
-        ['file_exists', 'dir' => $config->webDir],
-        ['file_extension', 'allowedExtensions' => $config->pageExtensions],
-        ['file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
+        ['is_required'],
+        ['is_file_present', 'dir' => $config->webDir],
+        ['has_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['is_file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
     ]);
 
     if (count($errors) > 0) {
@@ -88,16 +88,16 @@ function find_page(Config $config, string $file): Payload
 function delete_page(Config $config, string $file): Payload
 {
     $file = data\sanitize_value($file, [
-        ['filename'],
+        ['to_filename'],
     ]);
 
     $errors = data\validate_value($file, 'file', [
-        ['required'],
-        ['file_exists', 'dir' => $config->webDir],
-        ['file_writeable', 'dir' => $config->webDir],
-        ['html_file_name'],
-        ['html_file_extension', 'allowedExtensions' => $config->pageExtensions],
-        ['file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
+        ['is_required'],
+        ['is_file_present', 'dir' => $config->webDir],
+        ['is_file_writable', 'dir' => $config->webDir],
+        ['has_html_file_name'],
+        ['has_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['is_file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
     ]);
 
     if (count($errors) > 0) {
@@ -128,22 +128,22 @@ function copy_page(Config $config, string $file, string $toFile, string $withTit
             'withTitle' => $withTitle,
         ],
         [
-            ['file', 'filename'],
-            ['toFile', 'filename'],
-            ['withTitle', 'string'],
+            ['file', 'to_filename'],
+            ['toFile', 'to_filename'],
+            ['withTitle', 'to_string'],
         ],
     );
 
     $errors = data\validate($data, [
-        ['file', 'required'],
-        ['file', 'file_exists', 'dir' => $config->webDir],
-        ['file', 'file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
-        ['toFile', 'required'],
-        ['toFile', 'html_file_name'],
-        ['toFile', 'html_file_extension', 'allowedExtensions' => $config->pageExtensions],
-        ['toFile', 'file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
-        ['toFile', 'file_exists', 'dir' => $config->webDir, 'negate' => true],
-        ['withTitle', 'required'],
+        ['file', 'is_required'],
+        ['file', 'is_file_present', 'dir' => $config->webDir],
+        ['file', 'is_file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
+        ['toFile', 'is_required'],
+        ['toFile', 'has_html_file_name'],
+        ['toFile', 'has_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['toFile', 'is_file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
+        ['toFile', 'is_file_present', 'dir' => $config->webDir, 'negate' => true],
+        ['withTitle', 'is_required'],
     ]);
 
     if (count($errors) > 0) {
@@ -187,20 +187,20 @@ function create_page(Config $config, string $file, string $fromTemplate, string 
             'withTitle' => $withTitle,
         ],
         [
-            ['fromTemplate', 'filename'],
-            ['file', 'filename'],
-            ['withTitle', 'string'],
+            ['fromTemplate', 'to_filename'],
+            ['file', 'to_filename'],
+            ['withTitle', 'to_string'],
         ],
     );
 
     $errors = data\validate($data, [
-        ['file', 'required'],
-        ['file', 'html_file_name'],
-        ['file', 'html_file_extension', 'allowedExtensions' => $config->pageExtensions],
-        ['file', 'file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
-        ['file', 'file_exists', 'dir' => $config->webDir, 'negate' => true],
-        ['fromTemplate', 'required'],
-        ['withTitle', 'required'],
+        ['file', 'is_required'],
+        ['file', 'has_html_file_name'],
+        ['file', 'has_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['file', 'is_file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
+        ['file', 'is_file_present', 'dir' => $config->webDir, 'negate' => true],
+        ['fromTemplate', 'is_required'],
+        ['withTitle', 'is_required'],
     ]);
 
     if (count($errors) > 0) {
@@ -232,19 +232,19 @@ function update_page(Config $config, string $file, string $withContent): Payload
             'withContent' => $withContent,
         ],
         [
-            ['file', 'string'],
-            ['file', 'filename'],
-            ['withContent', 'string'],
+            ['file', 'to_string'],
+            ['file', 'to_filename'],
+            ['withContent', 'to_string'],
         ],
     );
 
     $errors = data\validate($data, [
-        ['file', 'required'],
-        ['file', 'file_exists', 'dir' => $config->webDir],
-        ['file', 'html_file_name'],
-        ['file', 'html_file_extension', 'allowedExtensions' => $config->pageExtensions],
-        ['file', 'file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
-        ['withContent', 'required'],
+        ['file', 'is_required'],
+        ['file', 'is_file_present', 'dir' => $config->webDir],
+        ['file', 'has_html_file_name'],
+        ['file', 'has_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['file', 'is_file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
+        ['withContent', 'is_required'],
     ]);
 
     if (count($errors) > 0) {
@@ -288,19 +288,19 @@ function update_page_body(Config $config, string $file, string $withBody): Paylo
             'withBody' => $withBody,
         ],
         [
-            ['file', 'string'],
-            ['file', 'filename'],
-            ['withBody', 'string'],
+            ['file', 'to_string'],
+            ['file', 'to_filename'],
+            ['withBody', 'to_string'],
         ],
     );
 
     $errors = data\validate($data, [
-        ['file', 'required'],
-        ['file', 'file_exists', 'dir' => $config->webDir],
-        ['file', 'html_file_name'],
-        ['file', 'html_file_extension', 'allowedExtensions' => $config->pageExtensions],
-        ['file', 'file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
-        ['withBody', 'required'],
+        ['file', 'is_required'],
+        ['file', 'is_file_present', 'dir' => $config->webDir],
+        ['file', 'has_html_file_name'],
+        ['file', 'has_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['file', 'is_file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
+        ['withBody', 'is_required'],
     ]);
 
     if (count($errors) > 0) {

@@ -2,7 +2,7 @@
 
 namespace jaco\core\data\sanitize;
 
-function integer(mixed $value): int
+function to_integer(mixed $value): int
 {
     if (!is_scalar($value)) {
         return 0;
@@ -10,7 +10,7 @@ function integer(mixed $value): int
     return (int) $value;
 }
 
-function float(mixed $value): float
+function to_float(mixed $value): float
 {
     if (!is_scalar($value)) {
         return 0.0;
@@ -18,7 +18,7 @@ function float(mixed $value): float
     return (float) $value;
 }
 
-function string(mixed $value): string
+function to_string(mixed $value): string
 {
     if (!is_scalar($value)) {
         return '';
@@ -26,7 +26,7 @@ function string(mixed $value): string
     return (string) $value;
 }
 
-function html_specialchars(mixed $value): string
+function escape_html(mixed $value): string
 {
     if (!is_string($value)) {
         return '';
@@ -34,7 +34,7 @@ function html_specialchars(mixed $value): string
     return \htmlspecialchars($value);
 }
 
-function filename(mixed $value): string
+function to_filename(mixed $value): string
 {
     if (!is_string($value)) {
         return '';
@@ -57,12 +57,7 @@ function filename(mixed $value): string
     return implode(DIRECTORY_SEPARATOR, $absolutes);
 }
 
-function safe(mixed $value): mixed
-{
-    return $value;
-}
-
-function normalize_filename(mixed $value): string
+function transliterate_filename(mixed $value): string
 {
     if (!is_string($value)) {
         return '';

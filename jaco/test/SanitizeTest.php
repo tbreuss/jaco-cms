@@ -24,18 +24,18 @@ final class SanitizeTest extends TestCase
         ];
 
         foreach ($cases as $input => $expected) {
-            $this->assertSame($expected, sanitize\filename($input), $input);
+            $this->assertSame($expected, sanitize\to_filename($input), $input);
         }
     }
 
     public function testFileNameRejectsEverythingThatIsNotAString(): void
     {
-        $this->assertSame('', sanitize\filename(123));
-        $this->assertSame('', sanitize\filename(null));
-        $this->assertSame('', sanitize\filename(['a']));
+        $this->assertSame('', sanitize\to_filename(123));
+        $this->assertSame('', sanitize\to_filename(null));
+        $this->assertSame('', sanitize\to_filename(['a']));
     }
 
-    public function testNormalizeFileNameMakesNamesStorable(): void
+    public function testTransliterateFileNameMakesNamesStorable(): void
     {
         $cases = [
             'Bildschirmfoto 2026-07-21 um 06.51.53.png' => 'Bildschirmfoto-2026-07-21-um-06-51-53.png',
@@ -45,38 +45,38 @@ final class SanitizeTest extends TestCase
         ];
 
         foreach ($cases as $input => $expected) {
-            $this->assertSame($expected, sanitize\normalize_filename($input), $input);
+            $this->assertSame($expected, sanitize\transliterate_filename($input), $input);
         }
     }
 
-    public function testNormalizeFileNameKeepsSeparatorsForTheTraversalCheck(): void
+    public function testTransliterateFileNameKeepsSeparatorsForTheTraversalCheck(): void
     {
-        $this->assertSame('a/b.png', sanitize\normalize_filename('a/b.png'));
-        $this->assertSame('', sanitize\normalize_filename(123));
-        $this->assertSame('', sanitize\normalize_filename('...'));
+        $this->assertSame('a/b.png', sanitize\transliterate_filename('a/b.png'));
+        $this->assertSame('', sanitize\transliterate_filename(123));
+        $this->assertSame('', sanitize\transliterate_filename('...'));
     }
 
     public function testScalarSanitizers(): void
     {
-        $this->assertSame(7, sanitize\integer('7abc'));
-        $this->assertSame(0, sanitize\integer(['x']));
-        $this->assertSame(1.5, sanitize\float('1.5'));
-        $this->assertSame(0.0, sanitize\float(null));
-        $this->assertSame('x', sanitize\string('x'));
-        $this->assertSame('', sanitize\string(['x']));
+        $this->assertSame(7, sanitize\to_integer('7abc'));
+        $this->assertSame(0, sanitize\to_integer(['x']));
+        $this->assertSame(1.5, sanitize\to_float('1.5'));
+        $this->assertSame(0.0, sanitize\to_float(null));
+        $this->assertSame('x', sanitize\to_string('x'));
+        $this->assertSame('', sanitize\to_string(['x']));
     }
 
-    public function testHtmlSpecialcharsEscapesMarkup(): void
+    public function testEscapeHtmlEscapesMarkup(): void
     {
-        $this->assertSame('&lt;b&gt;', sanitize\html_specialchars('<b>'));
-        $this->assertSame('', sanitize\html_specialchars(123));
+        $this->assertSame('&lt;b&gt;', sanitize\escape_html('<b>'));
+        $this->assertSame('', sanitize\escape_html(123));
     }
 
     public function testSanitizeValueAppliesTheSameRulesAndKeepsTheRest(): void
     {
-        $this->assertSame('', data\sanitize_value(123, [['filename']]));
-        $this->assertSame('a/b.html', data\sanitize_value('../../a/b.html', [['filename']]));
-        $this->assertSame(' a/b.html ', data\sanitize_value(' a/b.html ', [['filename']]));
+        $this->assertSame('', data\sanitize_value(123, [['to_filename']]));
+        $this->assertSame('a/b.html', data\sanitize_value('../../a/b.html', [['to_filename']]));
+        $this->assertSame(' a/b.html ', data\sanitize_value(' a/b.html ', [['to_filename']]));
     }
 
     public function testUnknownSanitizerIsRejectedWithItsName(): void

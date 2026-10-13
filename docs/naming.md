@@ -33,7 +33,7 @@ A boolean answer carries its prefix, a bare adjective never stands alone:
 - `is_authenticated`, `is_allowed_attribute`
 
 The reverse holds as well: no `is_` prefix without a boolean. A function
-returning seconds is `login_block_remaining`, not `is_login_blocked`.
+returning seconds is `get_login_block_remaining`, not `is_login_blocked`.
 
 ## Factories: `create_` constructs, `Payload` signals effects
 
@@ -61,11 +61,31 @@ Fixed error data is not a function at all but a namespaced constant:
 A leading underscore marks module private helpers that are only called
 inside their own file, for example `_rrmdir`.
 
+## Rule vocabulary: validators ask, sanitizers convert
+
+Rule names travel as strings in rule arrays, so they form their own
+closed vocabulary – but it follows the same system. Validators return
+a result object and read as predicates: `is_required`, `is_numeric`,
+`is_string`, `has_file_extension`, `is_file_writable`. Sanitizers
+return the converted value and read as transformers: `to_integer`,
+`to_float`, `to_string`, `to_filename`, `transliterate_filename`,
+`escape_html`. The dispatch maps in
+`core/data/_index_.php` are the full list of supported names on both
+sides; an unknown name is rejected at runtime and covered by tests.
+
+Pipeline order is sanitize first, then validate, and `is_required`
+belongs in front: the dispatcher reports only the first failure per
+field, so a blank value answers `cannot be blank` instead of a
+length complaint. Traversal rejection lives on three levels on
+purpose (`to_filename`, the `_traversal_error` guard in the
+validators, the filesystem functions): defense in depth, do not
+"simplify" one of them away.
+
+Kept out of the scheme on purpose: the filesystem `file_exists`
+mirrors the native function exactly.
+
 ## Explicitly out of scope
 
-- **Rule names** (`required`, `safe`, `file_exists`) are a closed
-  vocabulary used as strings in rule arrays, not calls. Their
-  consistency inside the ruleset matters, not this guide.
 - **PHP mirrors** (`file_exists`, `dir_exists`, `random_string`) keep
   the native names for least surprise, even where this guide would pick
   another form. `random_string` mirrors the native `random_bytes` and
@@ -80,3 +100,7 @@ inside their own file, for example `_rrmdir`.
   grandfathered, not a template.
 - **No namespace stutter**: inside `jaco\domain\page` it is
   `find_pages`, never `page_find_pages`.
+- **Qualify natives on collision**: a function named after a native
+  (`is_string`, `is_numeric`) shadows it inside its namespace, so the
+  bodies call `\is_string` and `\is_numeric` explicitly. Unqualified,
+  the names resolve to the function itself – infinite recursion.

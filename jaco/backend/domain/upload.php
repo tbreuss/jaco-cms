@@ -30,9 +30,9 @@ function find_uploads(Config $config, string $filteredBy, string $sortedBy): Pay
             'sortedBy' => $sortedBy,
         ],
         [
-            ['filteredBy', 'string'],
-            ['sortedBy', 'string'],
-            ['sortedBy', 'sort_parameter', 'fields' => SORT_PARAMETERS],
+            ['filteredBy', 'is_string'],
+            ['sortedBy', 'is_string'],
+            ['sortedBy', 'is_sort_parameter', 'fields' => SORT_PARAMETERS],
         ],
     );
 
@@ -81,14 +81,14 @@ function create_upload(Config $config, array $file): Payload
     }
 
     $name = data\sanitize_value((string) ($file['name'] ?? ''), [
-        ['filename'],
+        ['to_filename'],
     ]);
-    $name = data\sanitize\normalize_filename($name);
+    $name = data\sanitize\transliterate_filename($name);
 
     $errors = data\validate_value($name, 'file', [
-        ['required'],
-        ['file_extension', 'allowedExtensions' => $config->uploadExtensions],
-        ['html_file_name'],
+        ['is_required'],
+        ['has_file_extension', 'allowedExtensions' => $config->uploadExtensions],
+        ['has_html_file_name'],
     ]);
 
     if (count($errors) > 0) {
@@ -120,15 +120,15 @@ function get_upload_error_message(int $error): string
 function delete_upload(Config $config, string $file): Payload
 {
     $file = data\sanitize_value($file, [
-        ['filename'],
+        ['to_filename'],
     ]);
 
     $errors = data\validate_value($file, 'file', [
-        ['required'],
-        ['file_exists', 'dir' => $config->webDir],
-        ['file_writeable', 'dir' => $config->webDir],
-        ['html_file_name'],
-        ['file_extension', 'allowedExtensions' => $config->uploadExtensions],
+        ['is_required'],
+        ['is_file_present', 'dir' => $config->webDir],
+        ['is_file_writable', 'dir' => $config->webDir],
+        ['has_html_file_name'],
+        ['has_file_extension', 'allowedExtensions' => $config->uploadExtensions],
     ]);
 
     if (count($errors) > 0) {

@@ -38,14 +38,14 @@ function find_css_files(Config $config): Payload
 function validated_file(Config $config, string $file): array
 {
     $file = data\sanitize_value($file, [
-        ['filename'],
+        ['to_filename'],
     ]);
 
     $errors = data\validate_value($file, 'file', [
-        ['required'],
-        ['file_exists', 'dir' => $config->webDir],
-        ['file_extension', 'allowedExtensions' => ['css']],
-        ['file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
+        ['is_required'],
+        ['is_file_present', 'dir' => $config->webDir],
+        ['has_file_extension', 'allowedExtensions' => ['css']],
+        ['is_file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
     ]);
 
     return [$file, $errors];
@@ -77,8 +77,8 @@ function update_css(Config $config, string $file, string $withContent): Payload
     [$file, $errors] = validated_file($config, $file);
 
     $errors = array_merge($errors, data\validate_value($withContent, 'withContent', [
-        ['required'],
-        ['string'],
+        ['is_required'],
+        ['is_string'],
     ]));
 
     if (count($errors) > 0) {

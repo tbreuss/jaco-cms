@@ -16,10 +16,10 @@ function authenticate_user(Config $config, string $username, string $withPasswor
             'withPassword' => $withPassword,
         ],
         [
-            ['username', 'required'],
-            ['username', 'string'],
-            ['withPassword', 'required'],
-            ['withPassword', 'string'],
+            ['username', 'is_required'],
+            ['username', 'is_string'],
+            ['withPassword', 'is_required'],
+            ['withPassword', 'is_string'],
         ],
     );
 

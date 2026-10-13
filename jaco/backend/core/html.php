@@ -260,7 +260,7 @@ function handle_embedded_data_url_images(Config $config, string $html): array
         }
 
         // normalize cosmetic issues (whitespace, umlauts), traversal is rejected loudly below
-        $imgFile = sanitize\normalize_filename($imgFile);
+        $imgFile = sanitize\transliterate_filename($imgFile);
 
         // only plain file names with an allowed extension may be written
         if (\str_contains($imgFile, DIRECTORY_SEPARATOR)
