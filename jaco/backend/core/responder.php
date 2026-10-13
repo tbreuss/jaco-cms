@@ -46,39 +46,44 @@ function api_errors(domain\Payload $payload, array $mapping = []): Response
     );
 }
 
-function cli_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): void
+/**
+ * Maps a domain status to cli output and exit code instead of exiting, so
+ * commands stay testable: the single exit lives in cli.php.
+ *
+ * @return array{string, int} output and exit code
+ */
+function cli_errors(string $serviceStatus, array $serviceOutput, array $inputMapping = []): array
 {
     if ($serviceStatus === Payload::SUCCESS) {
-        exit(0);
+        return ['', 0];
     }
 
     if ($serviceStatus === Payload::INVALID) {
         $cliOutput = transform_client_errors($serviceOutput, $inputMapping);
-        render_errors($cliOutput);
-        exit(1);
+        return [render_errors($cliOutput), 1];
     }
 
     if ($serviceStatus === Payload::ERROR) {
         $cliOutput = transform_server_errors($serviceOutput, $inputMapping);
-        render_errors($cliOutput);
-        exit(2);
+        return [render_errors($cliOutput), 2];
     }
 
     $cliOutput = INVALID_SERVICE_STATUS_ERRORS;
-    render_errors($cliOutput);
-    exit(3);
+    return [render_errors($cliOutput), 3];
 }
 
-function render_errors(array $errors): void
+function render_errors(array $errors): string
 {
+    $output = '';
     foreach ($errors as $error) {
-        fwrite(STDOUT, $error['title'] . ': ');
-        fwrite(STDOUT, $error['detail'] . ' ');
+        $output .= $error['title'] . ': ';
+        $output .= $error['detail'] . ' ';
         if (!empty($error['source']['pointer'])) {
-            fwrite(STDOUT, '(' . $error['source']['pointer'] . ')');
+            $output .= '(' . $error['source']['pointer'] . ')';
         }
-        fwrite(STDOUT, PHP_EOL);
+        $output .= PHP_EOL;
     }
+    return $output;
 }
 
 function transform_errors(array $errors, array|callable $mapping, string $title): array

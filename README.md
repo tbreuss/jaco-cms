@@ -38,6 +38,12 @@ Debug website using Xdebug
 
     docker run --rm -e XDEBUG_CONFIG="client_host=172.17.0.1" -e XDEBUG_MODE=debug -e XDEBUG_SESSION_START=true -v .:/app -p 8888:8888 jaco php -S 0.0.0.0:8888 -t /app
 
+Run CLI (`-w` is required, cli.php loads the autoloader relative to the working directory)
+
+    docker run --rm -v .:/app -w /app/jaco jaco php cli.php sys:version
+    docker run --rm -v .:/app -w /app/jaco jaco php cli.php sys:log -s 20
+    docker run --rm -v .:/app -w /app/jaco jaco php cli.php auth:token -u demo -p demo
+
 ### Static Code Analyses & Unit Tests
 
 The dev tools are Composer dev dependencies; inside Docker they run through

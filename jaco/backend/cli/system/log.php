@@ -7,19 +7,27 @@ use jaco\domain\Payload;
 
 use function jaco\domain\system\get_log_entries;
 
-function command(Config $config, int $size): void
+/**
+ * @return array{string, int} output and exit code, the caller prints and exits
+ */
+function command(Config $config, int $size): array
 {
     $payload = get_log_entries(
         $config,
         size: $size,
     );
 
-    responder($payload);
+    return responder($payload);
 }
 
-function responder(Payload $payload): void
+/**
+ * @return array{string, int} output and exit code
+ */
+function responder(Payload $payload): array
 {
+    $output = '';
     foreach ($payload->data as $line) {
-        echo $line . PHP_EOL;
+        $output .= $line . PHP_EOL;
     }
+    return [$output, 0];
 }

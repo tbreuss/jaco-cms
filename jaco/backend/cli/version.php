@@ -7,14 +7,20 @@ use jaco\domain\Payload;
 
 use function jaco\domain\system\get_version;
 
-function command(Config $config): void
+/**
+ * @return array{string, int} output and exit code, the caller prints and exits
+ */
+function command(Config $config): array
 {
     $payload = get_version($config);
 
-    responder($payload);
+    return responder($payload);
 }
 
-function responder(Payload $payload): void
+/**
+ * @return array{string, int} output and exit code
+ */
+function responder(Payload $payload): array
 {
-    fwrite(STDOUT, $payload->data['name'] . ' ' . $payload->data['version'] . PHP_EOL);
+    return [$payload->data['name'] . ' ' . $payload->data['version'] . PHP_EOL, 0];
 }
