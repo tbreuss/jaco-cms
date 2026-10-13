@@ -8,25 +8,33 @@ use jaco\core\data\validate\Result;
 /**
  * Sanitizes the given fields with the named filter functions.
  *
- * The parameter type lists the filters this helper supports, all of them
- * return a string or null. The sanitize namespace also holds sanitizers with
+ * The map below lists the filters this helper supports, all of them
+ * return a string. The sanitize namespace also holds sanitizers with
  * other return types (integer, float), they are not part of the contract here
- * because every sanitized value of the cms is a string.
+ * because every sanitized value of the cms is a string. Unknown names are
+ * rejected at runtime, the parameter type stays open on purpose so the
+ * guard remains reachable for analysis and tests.
  *
  * @param array<string, mixed> $data
- * @param list<array{0: string, 1: 'filename'|'string', ...}> $filters
+ * @param list<array{0: string, 1: string, ...}> $filters
  * @return array<string, string>
  */
 function sanitize(array $data, array $filters): array
 {
+    // first class callables instead of a concatenated function name: a typo
+    // in a value is a phpstan error, a typo in a rule is still caught by
+    // the null coalescing at runtime
+    $sanitizers = [
+        'filename' => sanitize\filename(...),
+        'string' => sanitize\string(...),
+    ];
+
     $filtered = [];
     foreach ($filters as $rule) {
         $name = $rule[0];
         $value = $data[$name] ?? null;
-        $callable = 'jaco\\core\\data\\sanitize\\' . $rule[1];
-        if (!function_exists($callable)) {
-            throw new InvalidArgumentException('Unknown sanitizer: ' . $callable);
-        }
+        $callable = $sanitizers[$rule[1]]
+            ?? throw new InvalidArgumentException('Unknown sanitizer: ' . $rule[1]);
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         $filteredValue = call_user_func_array($callable, $options);
@@ -39,7 +47,7 @@ function sanitize(array $data, array $filters): array
 }
 
 /**
- * @param list<array{0: 'filename'|'string', ...}> $filters
+ * @param list<array{0: string, ...}> $filters filter name and its options, the field name is added here
  */
 function sanitize_one(string|float|int|bool|null $var, array $filters): string
 {
@@ -65,6 +73,23 @@ function sanitize_one(string|float|int|bool|null $var, array $filters): string
  */
 function validate(array $data, array $rules): array
 {
+    // first class callables instead of a concatenated function name: a typo
+    // in a value is a phpstan error, a typo in a rule is still caught by
+    // the null coalescing at runtime
+    $validators = [
+        'file_exists' => validate\file_exists(...),
+        'file_extension' => validate\file_extension(...),
+        'file_in_dir' => validate\file_in_dir(...),
+        'file_writeable' => validate\file_writeable(...),
+        'html_file_extension' => validate\html_file_extension(...),
+        'html_file_name' => validate\html_file_name(...),
+        'numeric' => validate\numeric(...),
+        'required' => validate\required(...),
+        'safe' => validate\safe(...),
+        'sort_parameter' => validate\sort_parameter(...),
+        'string' => validate\string(...),
+    ];
+
     $errors = [];
     $failed = [];
     foreach ($rules as $rule) {
@@ -73,10 +98,8 @@ function validate(array $data, array $rules): array
             continue;
         }
         $value = $data[$name] ?? null;
-        $callable = 'jaco\\core\\data\\validate\\' . $rule[1];
-        if (!function_exists($callable)) {
-            throw new InvalidArgumentException('Unknown validator: ' . $callable);
-        }
+        $callable = $validators[$rule[1]]
+            ?? throw new InvalidArgumentException('Unknown validator: ' . $rule[1]);
         $options = array_slice($rule, 2);
         $options['value'] = $value;
         /** @var Result $result */

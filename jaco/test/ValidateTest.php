@@ -115,7 +115,7 @@ final class ValidateTest extends TestCase
     public function testUnknownValidatorIsRejectedWithItsName(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('jaco\core\data\validate\filed_exists');
+        $this->expectExceptionMessage('Unknown validator: filed_exists');
 
         data\validate(['f' => 'a.html'], [['f', 'filed_exists']]);
     }

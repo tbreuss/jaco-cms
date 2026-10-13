@@ -81,14 +81,9 @@ final class SanitizeTest extends TestCase
 
     public function testUnknownSanitizerIsRejectedWithItsName(): void
     {
-        // the parameter type of sanitize() admits only the supported filters,
-        // so the call has to go through reflection: the runtime guard has to
-        // hold on its own, without the type system in front of it
-        $sanitize = new \ReflectionFunction('jaco\core\data\sanitize');
-
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('jaco\core\data\sanitize\filenam');
+        $this->expectExceptionMessage('Unknown sanitizer: filenam');
 
-        $sanitize->invoke(['file' => 'a.html'], [['file', 'filenam']]);
+        data\sanitize(['file' => 'a.html'], [['file', 'filenam']]);
     }
 }
