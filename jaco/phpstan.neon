@@ -13,6 +13,7 @@ parameters:
         - api.php
         - autoload.php
         - cli.php
+        - install.php
         - routes.php
         - settings.dist.php
     reportUnmatchedIgnoredErrors: true

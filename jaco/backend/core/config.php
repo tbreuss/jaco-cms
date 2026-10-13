@@ -37,6 +37,28 @@ final readonly class Config
 }
 
 /**
+ * Writes the installer credentials to settings.php. Only the given
+ * keys are stored, everything else falls back to the defaults in
+ * create_default_config, exactly like a hand written settings file
+ * that sets nothing else. The output uses the project code style on
+ * purpose: generated code is still scanned by the cs check.
+ *
+ * @param array<string, string> $settings username, password and secretKey
+ */
+function write_settings(string $appDir, array $settings): bool
+{
+    $content = '<?php declare(strict_types=1);' . PHP_EOL . PHP_EOL . 'return [' . PHP_EOL;
+
+    foreach ($settings as $key => $value) {
+        $content .= "    '" . addcslashes($key, "'\\") . "' => '" . addcslashes($value, "'\\") . "'," . PHP_EOL;
+    }
+
+    $content .= '];' . PHP_EOL;
+
+    return file_put_contents($appDir . '/settings.php', $content) !== false;
+}
+
+/**
  * @param array<string, mixed> $settings
  */
 function create_default_config(string $appDir, array $settings = []): Config
