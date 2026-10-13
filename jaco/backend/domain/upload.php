@@ -46,7 +46,7 @@ function find_uploads(Config $config, string $filteredBy, string $sortedBy): Pay
 
     $files = filesystem\find_files_rec($config->webDir, $config->uploadExtensions, [$config->appDir]);
 
-    $sort = sort_field($sortedBy);
+    $sort = list\parse_sort($sortedBy, SORT_PARAMETERS);
     $uploads = create_list($files);
     $uploads = list\filter_list($uploads, $filteredBy);
     $uploads = list\sort_list($uploads, $sort);
@@ -167,17 +167,4 @@ function create_list(array $files): array
         );
     }
     return $list;
-}
-
-/**
- * @return array{string, string}
- */
-function sort_field(string $sort): array
-{
-    if (!in_array(ltrim($sort, '-'), SORT_PARAMETERS)) {
-        return ['created', 'desc'];
-    }
-    $sortDir = str_starts_with($sort, '-') ? 'desc' : 'asc';
-    $sortField = $sortDir === 'desc' ? substr($sort, 1) : $sort;
-    return [$sortField, $sortDir];
 }

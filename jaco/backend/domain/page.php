@@ -42,7 +42,7 @@ function find_pages(Config $config, string $filteredBy, string $sortedBy): Paylo
 
     $files = filesystem\find_files_rec($config->webDir, $config->pageExtensions, [$config->appDir]);
 
-    $sorted = sort_field($sortedBy);
+    $sorted = list\parse_sort($sortedBy, SORT_PARAMETERS);
     $pages = create_list($files, $config->webDir);
     $pages = list\filter_list($pages, $filteredBy);
     $pages = list\sort_list($pages, $sorted);
@@ -355,17 +355,4 @@ function create_one(string $dir, string $file, int $modified, ?string $content =
         $modified,
         $content,
     );
-}
-
-/**
- * @return array{string, string}
- */
-function sort_field(string $sort): array
-{
-    if (!in_array(ltrim($sort, '-'), SORT_PARAMETERS)) {
-        return ['created', 'desc'];
-    }
-    $sortDir = str_starts_with($sort, '-') ? 'desc' : 'asc';
-    $sortField = $sortDir === 'desc' ? substr($sort, 1) : $sort;
-    return [$sortField, $sortDir];
 }

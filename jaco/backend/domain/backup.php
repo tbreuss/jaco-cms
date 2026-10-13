@@ -53,7 +53,7 @@ function find_backups(Config $config, string $filteredBy, string $sortedBy): Pay
     // configured days, so no cron job is needed
     $files = prune_old_backups($config, $files);
 
-    $sort = sort_field($sortedBy);
+    $sort = list\parse_sort($sortedBy, SORT_PARAMETERS);
     $backups = create_list($files, $config->backupDir, $config->pageExtensions);
     $backups = list\filter_list($backups, $filteredBy);
     $backups = list\sort_list($backups, $sort);
@@ -197,14 +197,4 @@ function prune_old_backups(Config $config, array $files): array
     }
 
     return $kept;
-}
-
-function sort_field(string $sort): array
-{
-    if (!in_array(ltrim($sort, '-'), SORT_PARAMETERS)) {
-        return ['created', 'desc'];
-    }
-    $sortDir = str_starts_with($sort, '-') ? 'desc' : 'asc';
-    $sortField = $sortDir === 'desc' ? substr($sort, 1) : $sort;
-    return [$sortField, $sortDir];
 }

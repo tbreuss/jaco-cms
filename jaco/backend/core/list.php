@@ -37,3 +37,21 @@ function sort_list(array $list, array $sort): array
     });
     return $list;
 }
+
+/**
+ * Parses a sort string like "-created" into a field and direction tuple.
+ * Unknown fields fall back to the default, a leading dash means descending.
+ *
+ * @param list<string> $allowed
+ * @param array{string, string} $default
+ * @return array{string, string}
+ */
+function parse_sort(string $sort, array $allowed, array $default = ['created', 'desc']): array
+{
+    if (!in_array(ltrim($sort, '-'), $allowed)) {
+        return $default;
+    }
+    $sortDir = str_starts_with($sort, '-') ? 'desc' : 'asc';
+    $sortField = $sortDir === 'desc' ? substr($sort, 1) : $sort;
+    return [$sortField, $sortDir];
+}
