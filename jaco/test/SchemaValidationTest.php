@@ -4,19 +4,19 @@ namespace jaco\tests;
 
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
-use jaco\core\json\schema;
+use jaco\core\json;
 
 #[TestDox('JSON schema validation')]
 final class SchemaValidationTest extends TestCase
 {
     public function testValidRequestDataPasses(): void
     {
-        $this->assertSame([], schema\validate_data(['username' => 'a', 'password' => 'b'], 'login/request.json'));
+        $this->assertSame([], json\validate_data(['username' => 'a', 'password' => 'b'], 'login/request.json'));
     }
 
     public function testMissingRequiredPropertyIsReported(): void
     {
-        $errors = schema\validate_data(['username' => 'a'], 'login/request.json');
+        $errors = json\validate_data(['username' => 'a'], 'login/request.json');
 
         $this->assertCount(1, $errors);
         $this->assertSame('Invalid data', $errors[0]['title']);
@@ -25,7 +25,7 @@ final class SchemaValidationTest extends TestCase
 
     public function testWrongTypePointsAtTheProperty(): void
     {
-        $errors = schema\validate_data(['username' => 123, 'password' => 'b'], 'login/request.json');
+        $errors = json\validate_data(['username' => 123, 'password' => 'b'], 'login/request.json');
 
         $this->assertCount(1, $errors);
         $this->assertSame('username', $errors[0]['source']['pointer']);
@@ -34,7 +34,7 @@ final class SchemaValidationTest extends TestCase
 
     public function testAdditionalPropertiesAreRejected(): void
     {
-        $errors = schema\validate_data(
+        $errors = json\validate_data(
             ['username' => 'a', 'password' => 'b', 'extra' => 1],
             'login/request.json',
         );
@@ -47,10 +47,10 @@ final class SchemaValidationTest extends TestCase
     {
         $this->assertSame(
             [],
-            schema\validate_data(['fileName' => 'x.html', 'html' => '<p>x</p>'], 'page/update/request.json'),
+            json\validate_data(['fileName' => 'x.html', 'html' => '<p>x</p>'], 'page/update/request.json'),
         );
 
-        $errors = schema\validate_data(['fileName' => 'x.html'], 'page/update/request.json');
+        $errors = json\validate_data(['fileName' => 'x.html'], 'page/update/request.json');
 
         $this->assertCount(1, $errors);
         $this->assertStringContainsString('html', $errors[0]['detail']);
@@ -58,6 +58,6 @@ final class SchemaValidationTest extends TestCase
 
     public function testNullIsNotAValidRequest(): void
     {
-        $this->assertNotEmpty(schema\validate_data(null, 'login/request.json'));
+        $this->assertNotEmpty(json\validate_data(null, 'login/request.json'));
     }
 }

@@ -82,5 +82,5 @@ function encode_json(mixed $data): string
 
 function validate_response(array|string|null $data, string $schema): array
 {
-    return json\schema\validate_data($data, $schema);
+    return json\validate_data($data, $schema);
 }

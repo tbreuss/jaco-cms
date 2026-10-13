@@ -92,5 +92,5 @@ function get_post_values(): array
 
 function validate_request(array|string $data, string $schema): array
 {
-    return json\schema\validate_data($data, $schema);
+    return json\validate_data($data, $schema);
 }
