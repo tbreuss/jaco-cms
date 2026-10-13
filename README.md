@@ -67,9 +67,9 @@ Everything at once
 
     docker run --rm -v .:/app jaco composer check -d /app/jaco
 
-Code coverage (the image contains xdebug; in the pipeline pcov does the same job)
+Code coverage with the gate. Needs a coverage driver, so run it with the xdebug image or with pcov: the gate fails when lines or methods drop below the minimum in `jaco/test/coverage-gate.php`, the class ratio is not checked because the marker exceptions have no lines.
 
-    docker run --rm -e XDEBUG_MODE=coverage -v .:/app jaco composer test -d /app/jaco -- --coverage-text --only-summary-for-coverage-text
+    docker run --rm -e XDEBUG_MODE=coverage -v .:/app jaco composer coverage -d /app/jaco
 
 Composer audit (security advisories; one known php-jwt low is ignored in composer.json)
 

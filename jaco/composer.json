@@ -40,6 +40,11 @@
         "cs-check": "php-cs-fixer fix --dry-run --diff",
         "cs-fix": "php-cs-fixer fix",
         "deptrac": "deptrac analyse --config-file=deptrac.yaml --no-progress",
+        "coverage": [
+            "rm -f test/runtime/coverage.xml",
+            "phpunit --coverage-clover=test/runtime/coverage.xml --only-summary-for-coverage-text --do-not-fail-on-phpunit-warning",
+            "@php test/coverage-gate.php test/runtime/coverage.xml"
+        ],
         "check": [
             "@test",
             "@phpstan",

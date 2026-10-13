@@ -31,9 +31,9 @@ jobs:
               run: composer deptrac -d jaco
             - name: Run PHPUnit
               run: composer test -d jaco
-            - name: Report code coverage
+            - name: Check code coverage
               if: matrix.php-versions == '8.4'
-              run: composer test -d jaco -- --coverage-text --only-summary-for-coverage-text
+              run: composer coverage -d jaco
             - name: Set up Node
               uses: actions/setup-node@v5
               with:
