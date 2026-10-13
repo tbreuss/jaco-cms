@@ -1,5 +1,11 @@
 <?php declare(strict_types=1);
 
+/**
+ * Entry point of the data helpers. sanitize() and validate() dispatch to the
+ * filter functions in the sanitize/ and validate/ namespaces, the maps inside
+ * them are the full list of supported filters.
+ */
+
 namespace jaco\core\data;
 
 use InvalidArgumentException;

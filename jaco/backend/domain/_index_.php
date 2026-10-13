@@ -1,5 +1,10 @@
 <?php declare(strict_types=1);
 
+/**
+ * Entry point of the domain layer. Payload is the single return type every
+ * domain function uses, the sub namespaces hold one topic each.
+ */
+
 namespace jaco\domain;
 
 class Payload

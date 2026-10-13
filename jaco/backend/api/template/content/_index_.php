@@ -1,5 +1,11 @@
 <?php declare(strict_types=1);
 
+/**
+ * Entry point of the content template api. action() runs the domain function,
+ * responder() maps its payload to a response, the view/ namespace holds
+ * the single template endpoint.
+ */
+
 namespace jaco\api\template\content;
 
 use jaco\core\config\Config;

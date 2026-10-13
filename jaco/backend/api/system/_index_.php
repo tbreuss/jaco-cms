@@ -1,5 +1,11 @@
 <?php declare(strict_types=1);
 
+/**
+ * Entry point of the system api. action() runs the domain function,
+ * responder() maps its payload to a response, the sub namespaces hold
+ * one endpoint each.
+ */
+
 namespace jaco\api\system;
 
 use jaco\core\config\Config;
