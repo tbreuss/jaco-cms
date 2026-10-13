@@ -20,8 +20,9 @@ command -v zip >/dev/null || { echo "zip fehlt" >&2; exit 1; }
 # Logs und settings.php sind ignoriert und kommen nicht mit)
 git -C "$ROOT" archive HEAD jaco | tar -x -C "$WORK"
 
-# Installationsanleitung aus dem Arbeitsverzeichnis dazu (evtl. uncommitted)
+# Installationsanleitung und Lizenz aus dem Arbeitsverzeichnis dazu (evtl. uncommitted)
 cp "$ROOT/INSTALL.md" "$WORK/INSTALL.md"
+cp "$ROOT/LICENSE" "$WORK/LICENSE"
 
 # Dependencies für die Auslieferung installieren (braucht composer.json).
 # Plattform auf 8.2 pinnen, damit die Auflösung auch auf neueren
@@ -47,6 +48,6 @@ mkdir -p "$WORK/jaco/_backup" "$WORK/upload" "$WORK/jaco/runtime/log"
 
 OUT="$ROOT/jaco-dist-$VERSION.zip"
 rm -f "$OUT"
-(cd "$WORK" && zip -qr "$OUT" jaco upload INSTALL.md)
+(cd "$WORK" && zip -qr "$OUT" jaco upload INSTALL.md LICENSE)
 
 echo "gebaut: $OUT ($(du -h "$OUT" | cut -f1))"

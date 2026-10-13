@@ -1,0 +1,88 @@
+JACO CMS – FREEWARE LICENCE
+Version 1.0
+
+Copyright (c) 2026 Thomas Breuss. All rights reserved.
+
+0. DEFINITIONS
+   A "Development Installation" is an installation that is not
+   publicly accessible: your own computer, or a staging server that
+   only a restricted circle can reach (for example password
+   protected). A "Public Site" is any installation that is not a
+   Development Installation.
+
+1. GRANT
+   The licensor grants you a non-exclusive, non-transferable right to
+   use Jaco CMS free of charge on Development Installations and on
+   Public Sites, including the operation of commercial websites you
+   build with it, on your own servers or servers rented by you. Jaco
+   contains no licence validation and phones home never.
+
+2. FUTURE VERSIONS AND PAID LICENCES
+   Development Installations stay free. For Public Sites, future
+   versions may require a paid licence; any such version states its
+   own update window (the period during which it includes new
+   releases). Nothing in this licence promises that future versions
+   will be free of charge.
+
+3. ABANDONMENT
+   If no stable release is published for 365 consecutive days, Jaco
+   counts as no longer actively maintained. In that event the Source
+   Code, in its last published form, is automatically available under
+   the following MIT terms instead:
+
+   Permission is hereby granted, free of charge, to any person
+   obtaining a copy of the Jaco CMS Source Code, to deal in the
+   Source Code without restriction, including without limitation the
+   rights to use, copy, modify, merge, publish, distribute,
+   sublicense, and/or sell copies of the Source Code, and to permit
+   persons to whom the Source Code is furnished to do so, subject to
+   the following conditions:
+
+   The copyright notice to Thomas Breuss and this permission notice
+   shall be included in all copies or substantial portions of the
+   Source Code.
+
+   THE SOURCE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+   WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
+   AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+   HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOURCE CODE OR THE USE OR
+   OTHER DEALINGS IN THE SOURCE CODE.
+
+4. RESTRICTIONS
+   You may adapt the software as needed for your own websites. Beyond
+   that you may not, without prior written consent of the licensor:
+   (a) redistribute, resell, rent, lease, lend or sublicense the
+   software, in original or modified form, whether alone or bundled
+   with other products;
+   (b) remove or alter copyright notices, licence texts or version
+   information;
+   (c) present the software, in original or modified form, as your
+   own product.
+
+5. NO SUPPORT
+   This licence includes no claim to support, maintenance or updates.
+   Support, if any, is provided voluntarily through public channels
+   only.
+
+6. NO WARRANTY
+   The software is provided "as is", without warranty of any kind, to
+   the extent permitted by applicable law.
+
+7. LIABILITY
+   To the extent permitted by applicable law, the licensor is not
+   liable for indirect or consequential damages, loss of data or loss
+   of profit. Nothing in this licence limits liability that cannot be
+   limited by law.
+
+8. TERMINATION
+   This licence ends automatically if you breach its terms. Upon
+   termination you must stop using the software and delete all copies
+   in your possession, except copies required by law (for example
+   backups kept for tax purposes).
+
+9. APPLICABLE LAW
+   This licence is governed by the laws of Switzerland. Place of
+   jurisdiction is Basel/BS, Switzerland.
