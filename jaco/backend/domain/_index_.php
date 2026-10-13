@@ -2,8 +2,6 @@
 
 namespace jaco\domain;
 
-use jaco\core\json;
-
 class Payload
 {
     public const ERROR = 'ERROR';

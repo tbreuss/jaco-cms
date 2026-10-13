@@ -7,7 +7,6 @@ use PHPUnit\Framework\TestCase;
 use jaco\core\http\Status;
 use jaco\core\responder;
 use jaco\domain\Payload;
-use jaco\domain\page;
 
 #[TestDox('Error responses and field mapping')]
 final class ResponderMappingTest extends TestCase

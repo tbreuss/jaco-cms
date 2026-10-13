@@ -9,6 +9,7 @@ return (new PhpCsFixer\Config())
         '@PER-CS3.0' => true,
         'blank_line_after_opening_tag' => false,
         'declare_strict_types' => true,
+        'no_unused_imports' => true,
     ])
     ->setRiskyAllowed(true)
     ->setFinder($finder)
