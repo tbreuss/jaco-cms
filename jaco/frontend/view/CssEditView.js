@@ -146,6 +146,7 @@ export const CssEditView = {
           wrap: 'div.row',
           label: t('Created at'),
           value: CssEditModel.item.created ? CssEditModel.item.created.toDateTime() : '',
+          title: CssEditModel.item.created ? CssEditModel.item.created.toDateTimeFull() : '',
           disabled: true
         }),
         m('.row',

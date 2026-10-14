@@ -7,23 +7,7 @@ import {Icon} from '../../component/Icon.js'
 import {api} from '../../service/api.js'
 import {addDanger, addSuccess} from '../../state/actions.js'
 import {app} from '../../lib/app.js'
-
-const dateTime = (timestamp) => {
-  const date = new Date(timestamp * 1000)
-  let parts = []
-  parts.push(date.getDate().pad(2))
-  parts.push('.')
-  parts.push((date.getMonth() + 1).pad(2))
-  parts.push('.')
-  parts.push(date.getFullYear())
-  parts.push(' ')
-  parts.push(date.getHours().pad(2))
-  parts.push(':')
-  parts.push(date.getMinutes().pad(2))
-  parts.push(':')
-  parts.push(date.getSeconds().pad(2))
-  return parts.join('')
-}
+import {formatDateTimeCompact, formatDateTimeFull} from '../../lib/format.js'
 
 const restoreBackup = (backup) => {
   if (confirm(t('Do you want to restore this page?', {name: backup.name}))) {
@@ -149,12 +133,12 @@ export const BackupListView = {
       BackupListModel.items.length > 0
         ? m('table.table',
           m('colgroup',
-            m('col', {width: '30%'}),
-            m('col', {width: '30%'}),
-            m('col', {width: '20%'}),
-            m('col', {width: '20%'}),
-            m('col', {width: '10%'}),
-            m('col', {width: '1%'})
+            m('col.col-30'),
+            m('col'),
+            m('col.col-shrink'),
+            m('col.col-shrink'),
+            m('col.col-shrink'),
+            m('col.col-shrink')
           ),
           m('thead', m('tr',
             sortableHead(headings, loadList)
@@ -162,9 +146,9 @@ export const BackupListView = {
           m('tbody', BackupListModel.items.map((backup) => m('tr',
               m('td', backup.name),
               m('td', backup.title),
-              m('td', dateTime(backup.created)),
-              m('td', dateTime(backup.backedUp)),
-              m('td', backup.type),
+              m('td.text-nowrap', {title: formatDateTimeFull(backup.created)}, formatDateTimeCompact(backup.created)),
+              m('td.text-nowrap', {title: formatDateTimeFull(backup.backedUp)}, formatDateTimeCompact(backup.backedUp)),
+              m('td.text-nowrap', backup.type),
               m('td.text-right.text-nowrap',
                 m(ButtonSecondary, {
                   onclick: () => {

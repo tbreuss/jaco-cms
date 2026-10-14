@@ -2,6 +2,7 @@ import {DefaultLayout} from './layout/Default.js'
 import {Notifications} from './service/Notifications.js'
 import {addDanger} from './state/actions.js'
 import {initTheme} from './lib/theme.js'
+import {formatDateTimeCompact, formatDateTimeFull} from './lib/format.js'
 
 initTheme()
 
@@ -14,20 +15,11 @@ Number.prototype.pad = function (size) {
 }
 
 Number.prototype.toDateTime = function () {
-  const date = new Date(this * 1000)
-  let parts = []
-  parts.push(date.getDate().pad(2))
-  parts.push('.')
-  parts.push((date.getMonth() + 1).pad(2))
-  parts.push('.')
-  parts.push(date.getFullYear())
-  parts.push(' ')
-  parts.push(date.getHours().pad(2))
-  parts.push(':')
-  parts.push(date.getMinutes().pad(2))
-  parts.push(':')
-  parts.push(date.getSeconds().pad(2))
-  return parts.join('')
+  return formatDateTimeCompact(this)
+}
+
+Number.prototype.toDateTimeFull = function () {
+  return formatDateTimeFull(this)
 }
 
 const loadComponent = async (path) => {

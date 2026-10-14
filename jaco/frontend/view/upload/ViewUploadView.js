@@ -5,24 +5,7 @@ import {Fieldset} from '../../component/Fieldset.js'
 import {InputText} from '../../component/InputText.js'
 import {ButtonGroup} from '../../component/ButtonGroup.js'
 import {app} from '../../lib/app.js'
-
-const dateTime = (timestamp) => {
-  const date = new Date(timestamp * 1000)
-  const pad = (n) => String(n).padStart(2, '0')
-  let parts = []
-  parts.push(pad(date.getDate()))
-  parts.push('.')
-  parts.push(pad(date.getMonth() + 1))
-  parts.push('.')
-  parts.push(date.getFullYear())
-  parts.push(' ')
-  parts.push(pad(date.getHours()))
-  parts.push(':')
-  parts.push(pad(date.getMinutes()))
-  parts.push(':')
-  parts.push(pad(date.getSeconds()))
-  return parts.join('')
-}
+import {formatDateTimeCompact, formatDateTimeFull} from '../../lib/format.js'
 
 const isImage = (extension) => ['png', 'gif', 'jpg', 'jpeg', 'svg'].includes((extension ?? '').toLowerCase())
 
@@ -74,7 +57,8 @@ export const ViewUploadView = {
           m(InputText, {
             wrap: 'div.row',
             label: t('Created at'),
-            value: item.created ? dateTime(item.created) : '',
+            value: formatDateTimeCompact(item.created),
+            title: formatDateTimeFull(item.created),
             disabled: true
           }),
           m('.row',

@@ -607,6 +607,19 @@ fieldset .row.text-right button {
     border-collapse: collapse;
 }
 
+/* Column widths for list tables; columns without a class take the rest */
+.col-30 {
+    width: 30%;
+}
+
+.col-50 {
+    width: 50%;
+}
+
+.col-shrink {
+    width: 1%;
+}
+
 .table th {
     text-align: left;
     white-space: nowrap;

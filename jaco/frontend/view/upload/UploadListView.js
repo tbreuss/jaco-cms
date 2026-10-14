@@ -7,24 +7,7 @@ import {Icon} from '../../component/Icon.js'
 import {api} from '../../service/api.js'
 import {addDanger, addSuccess} from '../../state/actions.js'
 import {app} from '../../lib/app.js'
-
-const dateTime = (timestamp) => {
-  const date = new Date(timestamp * 1000)
-  const pad = (n) => String(n).padStart(2, '0')
-  let parts = []
-  parts.push(pad(date.getDate()))
-  parts.push('.')
-  parts.push(pad(date.getMonth() + 1))
-  parts.push('.')
-  parts.push(date.getFullYear())
-  parts.push(' ')
-  parts.push(pad(date.getHours()))
-  parts.push(':')
-  parts.push(pad(date.getMinutes()))
-  parts.push(':')
-  parts.push(pad(date.getSeconds()))
-  return parts.join('')
-}
+import {formatDateTimeCompact, formatDateTimeFull} from '../../lib/format.js'
 
 const viewUpload = (file) => {
   m.route.set('/uploads/view/:file...', {file: file})
@@ -178,19 +161,19 @@ export const UploadListView = {
           ? m('table.table',
             m('colgroup',
               m('col'),
-              m('col', {width: '10%'}),
-              m('col', {width: '10%'}),
-              m('col', {width: '15%'}),
-              m('col', {width: '10%'}),
+              m('col'),
+              m('col.col-shrink'),
+              m('col.col-shrink'),
+              m('col.col-shrink'),
             ),
             m('thead', m('tr',
               sortableHead(headings, loadList)
             )),
             m('tbody', UploadListModel.items.map((page) => m('tr',
                 m('td', page.file),
-                m('td', page.extension),
-                m('td.text-right', formatSize(page.size)),
-                m('td', dateTime(page.created)),
+                m('td.text-nowrap', page.extension),
+                m('td.text-right.text-nowrap', formatSize(page.size)),
+                m('td.text-nowrap', {title: formatDateTimeFull(page.created)}, formatDateTimeCompact(page.created)),
                 m('td.text-right.text-nowrap',
                   m(ButtonSecondary, {
                     onclick: () => {

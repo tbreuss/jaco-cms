@@ -7,23 +7,7 @@ import {addDanger, addSuccess} from '../../state/actions.js'
 import {api} from '../../service/api.js'
 import {t} from '../../model/i18n.js'
 import {app} from '../../lib/app.js'
-
-const dateTime = (timestamp) => {
-  const date = new Date(timestamp * 1000)
-  let parts = []
-  parts.push(date.getDate().pad(2))
-  parts.push('.')
-  parts.push((date.getMonth() + 1).pad(2))
-  parts.push('.')
-  parts.push(date.getFullYear())
-  parts.push(' ')
-  parts.push(date.getHours().pad(2))
-  parts.push(':')
-  parts.push(date.getMinutes().pad(2))
-  parts.push(':')
-  parts.push(date.getSeconds().pad(2))
-  return parts.join('')
-}
+import {formatDateTimeCompact, formatDateTimeFull} from '../../lib/format.js'
 
 const editPage = (file) => {
   m.route.set('/pages/edit/:file...', {file: file})
@@ -129,18 +113,18 @@ export const PageListView = {
         : PageListModel.items.length
           ? m('table.table',
             m('colgroup',
-              m('col', {width: '30%'}),
-              m('col', {width: '30%'}),
-              m('col', {width: '30%'}),
-              m('col', {width: '10%'})
+              m('col.col-30'),
+              m('col'),
+              m('col.col-shrink'),
+              m('col.col-shrink')
             ),
             m('thead', m('tr',
               sortableHead(headings, loadList)
             )),
             m('tbody', PageListModel.items.map((page) => m('tr',
-                m('td', page.file),
+                m('td.text-nowrap', page.file),
                 m('td', page.title),
-                m('td', dateTime(page.created)),
+                m('td.text-nowrap', {title: formatDateTimeFull(page.created)}, formatDateTimeCompact(page.created)),
                 m('td.text-right.text-nowrap',
                   m(ButtonSecondary, {
                     onclick: () => {

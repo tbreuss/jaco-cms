@@ -52,12 +52,14 @@ export const BackupEditView = {
           wrap: 'div.row',
           label: t('Created at'),
           value: BackupViewModel.item.created ? BackupViewModel.item.created.toDateTime() : '',
+          title: BackupViewModel.item.created ? BackupViewModel.item.created.toDateTimeFull() : '',
           disabled: true
         }),
         m(InputText, {
           wrap: 'div.row',
           label: t('Backed up'),
           value: BackupViewModel.item.backedUp ? BackupViewModel.item.backedUp.toDateTime() : '',
+          title: BackupViewModel.item.backedUp ? BackupViewModel.item.backedUp.toDateTimeFull() : '',
           disabled: true
         }),
         BackupViewModel.item.type === 'page'

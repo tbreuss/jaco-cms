@@ -4,6 +4,10 @@ import {app} from '../lib/app.js'
 
 const logTable = (data) => m('div',
   m('table.table.table-log-view',
+    m('colgroup',
+      m('col.col-shrink'),
+      m('col')
+    ),
     m('thead', m('tr', m('th', t('Timestamp')), m('th', t('Message')))),
     m('tbody', data.map((value) => m('tr',
         m('td', value.substring(1, 24)),

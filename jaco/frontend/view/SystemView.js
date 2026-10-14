@@ -6,6 +6,10 @@ const keyValueTable = (title, object) => object
   ? m('div',
     m('h2', title),
     m('table.table.table-system-view',
+      m('colgroup',
+        m('col.col-50'),
+        m('col')
+      ),
       m('thead', m('tr', m('th', t('Name')), m('th', t('Value')))),
       m('tbody', Object.entries(object).map((constant) => m('tr',
           m('td', constant[0]),

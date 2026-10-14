@@ -14,6 +14,7 @@ import {api} from '/jaco/frontend/service/api.js'
 import {tError} from '/jaco/frontend/model/i18n.js'
 import {isSaveShortcut, isSaveAndCloseShortcut, bindSaveShortcut, saveShortcutLabel, saveAndCloseShortcutLabel} from '/jaco/frontend/lib/shortcuts.js'
 import {getTheme, setTheme, applyTheme} from '/jaco/frontend/lib/theme.js'
+import {formatDateTimeCompact, formatDateTimeFull} from '/jaco/frontend/lib/format.js'
 import {state} from '/jaco/frontend/state/state.js'
 const fixture = () => document.getElementById('qunit-fixture')
 
@@ -311,6 +312,40 @@ QUnit.test('size shows thousands separators and is right aligned', (assert) => {
   const style = window.getComputedStyle(head)
   assert.strictEqual(style.display, 'flex', 'header row is flex')
   assert.strictEqual(style.justifyContent, 'space-between', 'button is right aligned')
+})
+
+QUnit.test('created cell shows the compact time with the full time as tooltip', (assert) => {
+  UploadListModel.items = [{file: 'a.png', extension: 'png', size: 1, created: 1700000000}]
+  UploadListModel.isLoading = false
+  m.render(fixture(), m(UploadListView))
+
+  const cell = [...fixture().querySelectorAll('tbody td')].find((td) => td.hasAttribute('title'))
+  assert.ok(cell, 'a cell with a tooltip is rendered')
+  assert.ok(/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2}$/.test(cell.getAttribute('title')), 'tooltip holds the full time')
+  assert.ok(/^\d{2}\.\d{2}\.\d{2} \d{2}:\d{2}$/.test(cell.textContent), 'cell shows the compact time')
+  assert.ok(cell.classList.contains('text-nowrap'), 'no wrapping inside the cell')
+})
+
+QUnit.module('datetime format')
+
+QUnit.test('full and compact share day, month, year suffix and time', (assert) => {
+  const full = formatDateTimeFull(1700000000)
+  const compact = formatDateTimeCompact(1700000000)
+
+  assert.ok(/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2}$/.test(full), `full shape, got ${full}`)
+  assert.ok(/^\d{2}\.\d{2}\.\d{2} \d{2}:\d{2}$/.test(compact), `compact shape, got ${compact}`)
+  assert.strictEqual(compact.slice(0, 6), full.slice(0, 6), 'day and month match')
+  assert.strictEqual(compact.slice(6, 8), full.slice(8, 10), 'two-digit year matches the full year')
+  assert.strictEqual(compact.slice(-5), full.slice(11, 16), 'hours and minutes match, seconds dropped')
+  assert.strictEqual(full.length, 19, 'full length')
+  assert.strictEqual(compact.length, 14, 'compact length')
+})
+
+QUnit.test('missing timestamps format as empty strings', (assert) => {
+  assert.strictEqual(formatDateTimeFull(null), '', 'null full')
+  assert.strictEqual(formatDateTimeFull(undefined), '', 'undefined full')
+  assert.strictEqual(formatDateTimeCompact(null), '', 'null compact')
+  assert.strictEqual(formatDateTimeCompact(undefined), '', 'undefined compact')
 })
 
 QUnit.module('content lists', {
@@ -697,7 +732,7 @@ QUnit.test('chrome is stripped but content markers survive', (assert) => {
 })
 
 QUnit.test('Icon renders decorative svg paths', (assert) => {
-  for (const name of ['edit', 'delete', 'view', 'restore']) {
+  for (const name of ['edit', 'delete', 'view', 'restore', 'clear']) {
     m.render(fixture(), m(Icon, {name}))
     const svg = fixture().querySelector('svg.icon')
     assert.ok(svg, `${name} renders an svg`)

@@ -128,6 +128,7 @@ export const PageEditView = {
           wrap: 'div.row',
           label: t('Created at'),
           value: PageEditModel.item.created ? PageEditModel.item.created.toDateTime() : '',
+          title: PageEditModel.item.created ? PageEditModel.item.created.toDateTimeFull() : '',
           disabled: true
         }),
         m('.row',
