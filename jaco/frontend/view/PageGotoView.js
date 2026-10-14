@@ -4,6 +4,7 @@ import {ModalMedium} from '../component/ModalMedium.js'
 import {Fieldset} from '../component/Fieldset.js'
 import {ButtonGroup} from '../component/ButtonGroup.js'
 import {ButtonSecondary} from '../component/ButtonSecondary.js'
+import {Icon} from '../component/Icon.js'
 import {PageListModel} from '../model/PageListModel.js'
 import {app} from '../lib/app.js'
 
@@ -45,7 +46,7 @@ export const PageGotoView = {
         ? m('p', t('Loading') + '...')
         : pageList(PageListModel.items || []),
       m(ButtonGroup, {wrap: 'div.row.text-right'},
-        m(ButtonSecondary, {onclick: cancel}, t('Cancel'))
+        m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('Cancel')))
       )
     )
   )

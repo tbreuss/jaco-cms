@@ -808,7 +808,7 @@ QUnit.test('chrome is stripped but content markers survive', (assert) => {
 })
 
 QUnit.test('Icon renders decorative svg paths', (assert) => {
-  for (const name of ['edit', 'delete', 'view', 'restore', 'clear']) {
+  for (const name of ['edit', 'delete', 'view', 'restore', 'clear', 'save', 'check', 'back', 'upload', 'login']) {
     m.render(fixture(), m(Icon, {name}))
     const svg = fixture().querySelector('svg.icon')
     assert.ok(svg, `${name} renders an svg`)

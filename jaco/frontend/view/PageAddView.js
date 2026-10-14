@@ -7,6 +7,7 @@ import {Fieldset} from '../component/Fieldset.js'
 import {ButtonGroup} from '../component/ButtonGroup.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../component/ButtonSecondary.js'
+import {Icon} from '../component/Icon.js'
 import {InputText} from '../component/InputText.js'
 import {Select} from '../component/Select.js'
 import {FormErrors, errorFor} from '../component/FormErrors.js'
@@ -102,8 +103,8 @@ export const PageAddView = {
         }
       }),
       m(ButtonGroup, {wrap: 'div.row.text-right'},
-        m(ButtonSecondary, {onclick: onCancelButtonClicked}, t('Cancel')),
-        m(ButtonPrimary, {onclick: onSaveButtonClicked}, t('OK'))
+        m(ButtonSecondary, {onclick: onCancelButtonClicked}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
+        m(ButtonPrimary, {onclick: onSaveButtonClicked}, m(Icon, {name: 'check'}), m('span', t('OK')))
       ),
     ),
     m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))})

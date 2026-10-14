@@ -1,5 +1,6 @@
 import {ButtonGroup} from '../component/ButtonGroup.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
+import {Icon} from '../component/Icon.js'
 import {FormErrors, errorFor} from '../component/FormErrors.js'
 import {InputPassword} from '../component/InputPassword.js'
 import {InputText} from '../component/InputText.js'
@@ -92,7 +93,7 @@ export const LoginView = {
         }
       }),
       m(ButtonGroup, {wrap: 'div.row.text-right'},
-        m(ButtonPrimary, {}, t('Login'))
+        m(ButtonPrimary, {}, m(Icon, {name: 'login'}), m('span', t('Login')))
       ),
       m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))})
     )

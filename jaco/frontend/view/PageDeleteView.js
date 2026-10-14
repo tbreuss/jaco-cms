@@ -6,6 +6,7 @@ import {ModalMedium} from '../component/ModalMedium.js'
 import {ButtonGroup} from '../component/ButtonGroup.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../component/ButtonSecondary.js'
+import {Icon} from '../component/Icon.js'
 import {Fieldset} from '../component/Fieldset.js'
 import {FormErrors} from '../component/FormErrors.js'
 import {app} from '../lib/app.js'
@@ -53,8 +54,8 @@ export const PageDeleteView = {
         name: state.fileName
       })),
       m(ButtonGroup, {wrap: 'div.row.text-right'},
-        m(ButtonSecondary, {onclick: cancel}, t('No')),
-        m(ButtonPrimary, {onclick: save}, t('Yes'))
+        m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('No'))),
+        m(ButtonPrimary, {onclick: save}, m(Icon, {name: 'check'}), m('span', t('Yes')))
       )
     ),
     m(FormErrors, {errors: state.errors})

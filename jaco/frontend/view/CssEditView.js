@@ -5,6 +5,7 @@ import {Fieldset} from '../component/Fieldset.js'
 import {InputText} from '../component/InputText.js'
 import {Select} from '../component/Select.js'
 import {ButtonGroup} from '../component/ButtonGroup.js'
+import {Icon} from '../component/Icon.js'
 import {addSuccess} from '../state/actions.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {FormErrors, errorFor} from '../component/FormErrors.js'
@@ -157,9 +158,9 @@ export const CssEditView = {
           m('div#ace', {style: {width: '100%'}})
         ),
         m(ButtonGroup, {wrap: 'div.row.text-right'},
-          m(ButtonPrimary, {onclick: onSaveButtonClicked, title: t('Save') + ' (' + saveShortcutLabel() + ')'}, t('Save')),
-          m(ButtonPrimary, {onclick: onSaveAndCloseButtonClicked, title: t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')'}, t('Save & Close')),
-          m(ButtonSecondary, {onclick: onCancelButtonClicked}, t('Cancel'))
+          m(ButtonPrimary, {onclick: onSaveButtonClicked, title: t('Save') + ' (' + saveShortcutLabel() + ')'}, m(Icon, {name: 'save'}), m('span', t('Save'))),
+          m(ButtonPrimary, {onclick: onSaveAndCloseButtonClicked, title: t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')'}, m(Icon, {name: 'check'}), m('span', t('Save & Close'))),
+          m(ButtonSecondary, {onclick: onCancelButtonClicked}, m(Icon, {name: 'clear'}), m('span', t('Cancel')))
         )
       ),
       m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),

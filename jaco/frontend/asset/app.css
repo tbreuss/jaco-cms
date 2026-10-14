@@ -528,6 +528,25 @@ table .secondary {
     vertical-align: -0.125em;
 }
 
+/* Gap between icon and label in text buttons; icon-only buttons stay untouched */
+.primary .icon + span,
+.secondary .icon + span {
+    margin-left: 0.5em;
+}
+
+/* Icons in text buttons are slightly larger than standalone icons,
+   button content is flex-centered for exact vertical alignment */
+button:has(> span) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button:has(> span) > .icon {
+    width: 1.35em;
+    height: 1.35em;
+}
+
 /* Style the container */
 /*.container {
   border-radius: 5px;

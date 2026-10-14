@@ -1,6 +1,7 @@
 import {t} from '../../model/i18n.js'
 import {UploadListModel} from '../../model/UploadListModel.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
+import {Icon} from '../../component/Icon.js'
 import {Fieldset} from '../../component/Fieldset.js'
 import {InputText} from '../../component/InputText.js'
 import {ButtonGroup} from '../../component/ButtonGroup.js'
@@ -74,7 +75,7 @@ export const ViewUploadView = {
               onclick: () => {
                 m.route.set('/uploads')
               }
-            }, t('Back'))
+            }, m(Icon, {name: 'back'}), m('span', t('Back')))
           )
         )
       )

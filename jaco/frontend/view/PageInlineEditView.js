@@ -5,6 +5,7 @@ import {t, tError} from '../model/i18n.js'
 import {ButtonGroup} from '../component/ButtonGroup.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../component/ButtonSecondary.js'
+import {Icon} from '../component/Icon.js'
 import {app} from '../lib/app.js'
 import {bindSaveShortcut, saveShortcutLabel} from '../lib/shortcuts.js'
 
@@ -75,7 +76,7 @@ export const PageInlineEditView = {
     iframe.getElement().onload = null
   },
   view: () => m(ButtonGroup, {wrap: 'div.dialog'},
-    m(ButtonPrimary, {onclick: save, title: t('Save') + ' (' + saveShortcutLabel() + ')'}, t('Save')),
-    m(ButtonSecondary, {onclick: cancel}, t('Cancel')),
+    m(ButtonPrimary, {onclick: save, title: t('Save') + ' (' + saveShortcutLabel() + ')'}, m(Icon, {name: 'save'}), m('span', t('Save'))),
+    m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
   )
 }

@@ -144,7 +144,7 @@ export const UploadListView = {
                 input.click()
               }
             }
-          }, t('Upload files')),
+          }, m(Icon, {name: 'upload'}), m('span', t('Upload files'))),
           m('input#uploadFiles[type=file][multiple]', {
             style: {display: 'none'},
             onchange: ({target}) => {

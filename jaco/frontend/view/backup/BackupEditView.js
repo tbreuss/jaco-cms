@@ -1,6 +1,7 @@
 import {t} from '../../model/i18n.js'
 import {BackupViewModel} from '../../model/BackupViewModel.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
+import {Icon} from '../../component/Icon.js'
 import {Fieldset} from '../../component/Fieldset.js'
 import {InputText} from '../../component/InputText.js'
 import {ButtonGroup} from '../../component/ButtonGroup.js'
@@ -76,7 +77,7 @@ export const BackupEditView = {
             onclick: () => {
               m.route.set('/backups')
             }
-          }, t('Back'))
+          }, m(Icon, {name: 'back'}), m('span', t('Back')))
         )
       )
     )
