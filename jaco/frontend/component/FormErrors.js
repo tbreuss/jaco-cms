@@ -17,3 +17,10 @@ export const FormErrors = {
       ))
     )
 }
+
+// Translated detail of the first error for the given field pointer,
+// or undefined when no error belongs to that field.
+export const errorFor = (errors, pointer) => {
+  const found = (errors ?? []).find((error) => error.source.pointer === pointer)
+  return found ? tError(found.detail) : undefined
+}

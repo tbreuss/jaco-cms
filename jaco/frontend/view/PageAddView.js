@@ -9,7 +9,7 @@ import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../component/ButtonSecondary.js'
 import {InputText} from '../component/InputText.js'
 import {Select} from '../component/Select.js'
-import {FormErrors} from '../component/FormErrors.js'
+import {FormErrors, errorFor} from '../component/FormErrors.js'
 import {PageTemplateModel} from '../model/PageTemplateModel.js'
 import {app} from '../lib/app.js'
 
@@ -19,6 +19,8 @@ const state = {
   pageTemplate: '',
   errors: []
 }
+
+const fieldPointers = ['fileName', 'pageTemplate', 'pageTitle']
 
 const onSaveButtonClicked = (e) => {
   e.redraw = false
@@ -74,6 +76,7 @@ export const PageAddView = {
           return {value: item.file, label: item.title}
         }),
         prompt: t('Select an option'),
+        error: errorFor(state.errors, 'pageTemplate'),
         onchange: (selectedItem) => {
           state.pageTemplate = selectedItem
         }
@@ -83,6 +86,7 @@ export const PageAddView = {
         wrap: 'div.row',
         label: t('Filename'),
         value: state.fileName,
+        error: errorFor(state.errors, 'fileName'),
         oninput: (value) => {
           state.fileName = value
         }
@@ -92,6 +96,7 @@ export const PageAddView = {
         wrap: 'div.row',
         label: t('Page title'),
         value: state.pageTitle,
+        error: errorFor(state.errors, 'pageTitle'),
         oninput: (value) => {
           state.pageTitle = value
         }
@@ -101,6 +106,6 @@ export const PageAddView = {
         m(ButtonPrimary, {onclick: onSaveButtonClicked}, t('OK'))
       ),
     ),
-    m(FormErrors, {errors: state.errors})
+    m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))})
   )
 }

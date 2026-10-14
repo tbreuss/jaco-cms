@@ -12,7 +12,7 @@ export const Input = {
       window.addEventListener('load', () => dom.focus(), {once: true})
     }
   },
-  view: ({attrs: {disabled, type, id, value, placeholder, title, oninput}}) =>
+  view: ({attrs: {disabled, type, id, value, placeholder, title, invalid, describedby, oninput}}) =>
     m('input', {
       type: type,
       id: id,
@@ -20,6 +20,8 @@ export const Input = {
       placeholder: placeholder,
       title: title,
       disabled: disabled,
+      'aria-invalid': invalid ? 'true' : null,
+      'aria-describedby': describedby || null,
       oninput: ({target: {value}}) => oninput(value),
     })
 }

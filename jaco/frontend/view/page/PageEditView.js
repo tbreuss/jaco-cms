@@ -6,7 +6,7 @@ import {InputText} from '../../component/InputText.js'
 import {ButtonGroup} from '../../component/ButtonGroup.js'
 import {addSuccess} from '../../state/actions.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
-import {FormErrors} from '../../component/FormErrors.js'
+import {FormErrors, errorFor} from '../../component/FormErrors.js'
 import {app} from '../../lib/app.js'
 import {bindSaveShortcut, saveAndCloseShortcutLabel, saveShortcutLabel} from '../../lib/shortcuts.js'
 
@@ -17,6 +17,8 @@ const state = {
   errors: [],
   initialized: false
 }
+
+const fieldPointers = ['fileName']
 
 const onCancelButtonClicked = () => {
   m.route.set('/pages')
@@ -113,9 +115,11 @@ export const PageEditView = {
       m('h1', t('Edit page'), ': ', PageEditModel.item.title ?? ''),
       m(Fieldset, {legend: t('Current page')},
         m(InputText, {
+          id: 'fileName',
           wrap: 'div.row',
           label: t('Filename'),
           value: PageEditModel.item.file ?? '',
+          error: errorFor(state.errors, 'fileName'),
           disabled: true
         }),
         m(InputText, {
@@ -141,7 +145,7 @@ export const PageEditView = {
           m(ButtonSecondary, {onclick: onCancelButtonClicked}, t('Cancel'))
         )
       ),
-      m(FormErrors, {errors: state.errors}),
+      m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),
     )
   )
 }

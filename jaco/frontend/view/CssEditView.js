@@ -7,7 +7,7 @@ import {Select} from '../component/Select.js'
 import {ButtonGroup} from '../component/ButtonGroup.js'
 import {addSuccess} from '../state/actions.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
-import {FormErrors} from '../component/FormErrors.js'
+import {FormErrors, errorFor} from '../component/FormErrors.js'
 import {app} from '../lib/app.js'
 import {bindSaveShortcut, saveAndCloseShortcutLabel, saveShortcutLabel} from '../lib/shortcuts.js'
 
@@ -19,6 +19,8 @@ const state = {
   loadedFile: null,
   file: ''
 }
+
+const fieldPointers = ['fileName']
 
 const onCancelButtonClicked = () => {
   m.route.set('/')
@@ -138,6 +140,7 @@ export const CssEditView = {
           options: CssEditModel.list.map((item) => {
             return {value: item.file, label: item.file}
           }),
+          error: errorFor(state.errors, 'fileName'),
           onchange: (selectedItem) => {
             selectFile(selectedItem)
           }
@@ -159,7 +162,7 @@ export const CssEditView = {
           m(ButtonSecondary, {onclick: onCancelButtonClicked}, t('Cancel'))
         )
       ),
-      m(FormErrors, {errors: state.errors}),
+      m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),
     )
   )
 }

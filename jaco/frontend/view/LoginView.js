@@ -1,6 +1,6 @@
 import {ButtonGroup} from '../component/ButtonGroup.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
-import {FormErrors} from '../component/FormErrors.js'
+import {FormErrors, errorFor} from '../component/FormErrors.js'
 import {InputPassword} from '../component/InputPassword.js'
 import {InputText} from '../component/InputText.js'
 import {ModalSmall} from '../component/ModalSmall.js'
@@ -13,6 +13,8 @@ const state = {
   password: '',
   errors: [],
 }
+
+const fieldPointers = ['username', 'password']
 
 const login = () => {
   const credentials = {
@@ -71,6 +73,7 @@ export const LoginView = {
         label: t('Username'),
         value: state.username,
         placeholder: t('Username'),
+        error: errorFor(state.errors, 'username'),
         oninput: (value) => {
           state.username = value
           state.errors = []
@@ -82,6 +85,7 @@ export const LoginView = {
         label: t('Password'),
         value: state.password,
         placeholder: t('Password'),
+        error: errorFor(state.errors, 'password'),
         oninput: (value) => {
           state.password = value
           state.errors = []
@@ -90,7 +94,7 @@ export const LoginView = {
       m(ButtonGroup, {wrap: 'div.row.text-right'},
         m(ButtonPrimary, {}, t('Login'))
       ),
-      m(FormErrors, {errors: state.errors})
+      m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))})
     )
   )
 }

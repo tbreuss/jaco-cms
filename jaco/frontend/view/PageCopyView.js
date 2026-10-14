@@ -8,7 +8,7 @@ import {ButtonGroup} from '../component/ButtonGroup.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../component/ButtonSecondary.js'
 import {InputText} from '../component/InputText.js'
-import {FormErrors} from '../component/FormErrors.js'
+import {FormErrors, errorFor} from '../component/FormErrors.js'
 import {app} from '../lib/app.js'
 
 const state = {
@@ -18,6 +18,8 @@ const state = {
   dstPageTitle: '',
   errors: []
 }
+
+const fieldPointers = ['srcFileName', 'dstFileName', 'dstPageTitle']
 
 const save = (e) => {
   e.redraw = false
@@ -68,6 +70,7 @@ export const PageCopyView = {
           wrap: 'div.row',
           label: t('Filename'),
           value: state.srcFileName,
+          error: errorFor(state.errors, 'srcFileName'),
           disabled: true
         }),
         m(InputText, {
@@ -83,6 +86,7 @@ export const PageCopyView = {
           wrap: 'div.row',
           label: t('Filename'),
           value: state.dstFileName,
+          error: errorFor(state.errors, 'dstFileName'),
           oninput: (value) => {
             state.dstFileName = value
           }
@@ -92,6 +96,7 @@ export const PageCopyView = {
           wrap: 'div.row',
           label: t('Page title'),
           value: state.dstPageTitle,
+          error: errorFor(state.errors, 'dstPageTitle'),
           oninput: (value) => {
             state.dstPageTitle = value
           }
@@ -101,7 +106,7 @@ export const PageCopyView = {
           m(ButtonPrimary, {onclick: save}, t('OK'))
         )
       ),
-      m(FormErrors, {errors: state.errors})
+      m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))})
     )
   }
 }

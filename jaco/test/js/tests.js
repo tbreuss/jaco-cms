@@ -1,7 +1,7 @@
 import {Input} from '/jaco/frontend/component/Input.js'
 import {InputPassword} from '/jaco/frontend/component/InputPassword.js'
 import {InputText} from '/jaco/frontend/component/InputText.js'
-import {FormErrors} from '/jaco/frontend/component/FormErrors.js'
+import {FormErrors, errorFor} from '/jaco/frontend/component/FormErrors.js'
 import {ButtonPrimary} from '/jaco/frontend/component/ButtonPrimary.js'
 import {Icon} from '/jaco/frontend/component/Icon.js'
 import {Select} from '/jaco/frontend/component/Select.js'
@@ -65,6 +65,55 @@ QUnit.test('Input reports what was typed', (assert) => {
   assert.strictEqual(reported, 'hallo')
 })
 
+QUnit.test('InputText shows its error with accessible wiring', (assert) => {
+  m.render(fixture(), m(InputText, {id: 'fileName', label: 'Filename', value: '', wrap: 'div.row', error: 'Is required.', oninput: () => {}}))
+
+  const input = fixture().querySelector('input#fileName')
+  assert.strictEqual(input.getAttribute('aria-invalid'), 'true', 'field is marked invalid')
+  assert.strictEqual(input.getAttribute('aria-describedby'), 'fileName-error', 'message is linked')
+  const message = fixture().querySelector('#fileName-error')
+  assert.ok(message, 'error element is rendered')
+  assert.ok(message.classList.contains('field-error'), 'error styling hook')
+  assert.strictEqual(message.textContent, 'Is required.')
+})
+
+QUnit.test('InputText without error has no error wiring', (assert) => {
+  m.render(fixture(), m(InputText, {id: 'clean', label: 'Clean', value: '', oninput: () => {}}))
+
+  assert.strictEqual(fixture().querySelector('input').getAttribute('aria-invalid'), null, 'no invalid flag')
+  assert.strictEqual(fixture().querySelector('.field-error'), null, 'no error element')
+})
+
+QUnit.test('InputPassword shows its error', (assert) => {
+  m.render(fixture(), m(InputPassword, {id: 'password', label: 'Password', value: '', wrap: 'div.row', error: 'Too short.', oninput: () => {}}))
+
+  const input = fixture().querySelector('input#password')
+  assert.strictEqual(input.getAttribute('type'), 'password', 'stays a password field')
+  assert.strictEqual(input.getAttribute('aria-invalid'), 'true', 'field is marked invalid')
+  assert.strictEqual(fixture().querySelector('#password-error').textContent, 'Too short.')
+})
+
+QUnit.test('Select shows its error', (assert) => {
+  const options = [{value: 'a.css', label: 'a.css'}]
+  m.render(fixture(), m(Select, {id: 'pageTemplate', label: 'Template', value: '', options, prompt: 'Select an option', error: 'Pick one.', onchange: () => {}}))
+
+  const select = fixture().querySelector('select#pageTemplate')
+  assert.strictEqual(select.getAttribute('aria-invalid'), 'true', 'field is marked invalid')
+  assert.strictEqual(select.getAttribute('aria-describedby'), 'pageTemplate-error', 'message is linked')
+  assert.strictEqual(fixture().querySelector('#pageTemplate-error').textContent, 'Pick one.')
+})
+
+QUnit.test('errorFor picks the translated detail by pointer', (assert) => {
+  const errors = [
+    {source: {pointer: 'fileName'}, title: 'Validation Error', detail: 'Is required.'},
+    {source: {pointer: ''}, title: 'Validation Error', detail: 'Authentication failed.'},
+  ]
+
+  assert.strictEqual(errorFor(errors, 'fileName'), tError('Is required.'), 'field error found')
+  assert.strictEqual(errorFor(errors, 'other'), undefined, 'no error for other fields')
+  assert.strictEqual(errorFor([], 'fileName'), undefined, 'no errors at all')
+})
+
 QUnit.test('FormErrors renders nothing without errors and the details with errors', (assert) => {
   m.render(fixture(), m(FormErrors, {errors: []}))
   assert.strictEqual(fixture().querySelector('fieldset.errors'), null)
@@ -93,6 +142,21 @@ QUnit.test('Select shows the value when options arrive later', (assert) => {
 
   render([{value: 'style.css', label: 'style.css'}], 'style.css')
   assert.strictEqual(fixture().querySelector('select').value, 'style.css', 'loaded file is shown, not the prompt')
+})
+
+QUnit.test('Select falls back to the prompt when the selection gets lost', (assert) => {
+  const render = (options, value) => {
+    m.render(fixture(), m(Select, {id: 'lost', prompt: 'Select an option', options, value, onchange: () => {}}))
+  }
+  render([{value: 'a.css', label: 'a.css'}], 'a.css')
+  assert.strictEqual(fixture().querySelector('select').value, 'a.css', 'option is selected first')
+
+  // the selected option disappears while the value is stale, e.g. templates
+  // reload between renders: the field must show the prompt, never blank
+  render([], 'a.css')
+  const select = fixture().querySelector('select')
+  assert.strictEqual(select.selectedIndex, 0, 'prompt is selected again')
+  assert.strictEqual(select.value, '', 'empty value shown')
 })
 
 QUnit.module('PageEditModel')
