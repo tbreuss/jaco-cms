@@ -1,0 +1,7 @@
+# Editor uploads (images, PDFs): serve as static files, never execute.
+# Uploads are already limited server-side to png/gif/jpg/jpeg/svg/pdf,
+# this is defense in depth against double-extension and handler tricks.
+<FilesMatch "\.ph(p|ar|tml|t|ps)$">
+    Require all denied
+</FilesMatch>
+Options -Indexes
