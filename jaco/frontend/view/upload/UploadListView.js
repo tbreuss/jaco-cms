@@ -2,6 +2,7 @@ import {t} from '../../model/i18n.js'
 import {UploadListModel} from '../../model/UploadListModel.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
+import {FilterInput} from '../../component/FilterInput.js'
 import {Icon} from '../../component/Icon.js'
 import {api} from '../../service/api.js'
 import {addDanger, addSuccess} from '../../state/actions.js'
@@ -113,17 +114,20 @@ const sortableHead = (headings, onclick) => {
 }
 
 const dataFilter = (oninput) => {
-  return m('.list-filter',
-    m('input[type=text]', {
-      placeholder: t('Filter upload files'),
-      value: UploadListModel.filter,
-      oninput: (e) => {
-        e.redraw = false
-        UploadListModel.filter = e.target.value
-        oninput()
-      }
-    })
-  )
+  return m(FilterInput, {
+    placeholder: t('Filter upload files'),
+    value: UploadListModel.filter,
+    oninput: (e) => {
+      e.redraw = false
+      UploadListModel.filter = e.target.value
+      oninput()
+    },
+    onclear: () => {
+      UploadListModel.filter = ''
+      oninput()
+    },
+    clearLabel: t('Clear filter'),
+  })
 }
 
 const loadList = () => {

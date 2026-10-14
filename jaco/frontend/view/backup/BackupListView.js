@@ -2,6 +2,7 @@ import {t} from '../../model/i18n.js'
 import {BackupListModel} from '../../model/BackupListModel.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
+import {FilterInput} from '../../component/FilterInput.js'
 import {Icon} from '../../component/Icon.js'
 import {api} from '../../service/api.js'
 import {addDanger, addSuccess} from '../../state/actions.js'
@@ -108,17 +109,20 @@ const sortableHead = (headings, onclick) => {
 }
 
 const dataFilter = (oninput) => {
-  return m('.list-filter',
-    m('input[type=text]', {
-      placeholder: t('Filter backup files'),
-      value: BackupListModel.filter,
-      oninput: (e) => {
-        e.redraw = false
-        BackupListModel.filter = e.target.value
-        oninput()
-      }
-    })
-  )
+  return m(FilterInput, {
+    placeholder: t('Filter backup files'),
+    value: BackupListModel.filter,
+    oninput: (e) => {
+      e.redraw = false
+      BackupListModel.filter = e.target.value
+      oninput()
+    },
+    onclear: () => {
+      BackupListModel.filter = ''
+      oninput()
+    },
+    clearLabel: t('Clear filter'),
+  })
 }
 
 const loadList = () => {

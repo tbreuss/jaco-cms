@@ -1,5 +1,6 @@
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
+import {FilterInput} from '../../component/FilterInput.js'
 import {Icon} from '../../component/Icon.js'
 import {PageListModel as PageListModel} from '../../model/PageListModel.js'
 import {addDanger, addSuccess} from '../../state/actions.js'
@@ -86,17 +87,20 @@ const sortableHead = (headings, onclick) => {
 }
 
 const dataFilter = (oninput) => {
-  return m('.list-filter',
-    m('input[type=text]', {
-      placeholder: t('Filter page files'),
-      value: PageListModel.filter,
-      oninput: (e) => {
-        e.redraw = false
-        PageListModel.filter = e.target.value
-        oninput()
-      }
-    })
-  )
+  return m(FilterInput, {
+    placeholder: t('Filter page files'),
+    value: PageListModel.filter,
+    oninput: (e) => {
+      e.redraw = false
+      PageListModel.filter = e.target.value
+      oninput()
+    },
+    onclear: () => {
+      PageListModel.filter = ''
+      oninput()
+    },
+    clearLabel: t('Clear filter'),
+  })
 }
 
 const loadList = () => {
