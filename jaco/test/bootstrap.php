@@ -33,6 +33,7 @@ function test_config(): Config
         secretKey: 'test_1234',
         username: 'test_user',
         password: 'test_pass',
+        totpSecret: '',
         phpErrorReporting: E_ALL,
         phpDisplayErrors: 0,
         phpDisplayStartupErrors: 0,

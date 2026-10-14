@@ -1,6 +1,7 @@
 {
     "About": "About",
     "Add page": "Add page",
+    "Authentication code": "Authentication code",
     "Auto": "Auto",
     "Back": "Back",
     "Backed up": "Backed up",
@@ -92,6 +93,7 @@
     "Uploads": "Uploads",
     "Username": "Username",
     "Value": "Value",
+    "Verify": "Verify",
     "View backup": "View backup",
     "View upload": "View upload",
     "View": "View",
@@ -114,6 +116,7 @@
     "Could not write file content.": "Could not write file content.",
     "Could not write file: {file}": "Could not write file: {file}",
     "Dir does not exist.": "Dir does not exist.",
+    "Invalid authentication code.": "Invalid authentication code.",
     "Invalid service status": "Invalid service status",
     "Login blocked. Contact the administrator.": "Login blocked. Contact the administrator.",
     "Maintenance mode: changes are disabled": "Maintenance mode: changes are disabled",

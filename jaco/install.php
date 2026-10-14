@@ -59,6 +59,9 @@ use function jaco\core\config\create_default_config;
 use function jaco\core\config\write_settings;
 use function jaco\core\filesystem\make_dir_rec;
 use function jaco\core\system\install_checks;
+use function jaco\core\totp\generate_secret;
+use function jaco\core\totp\provisioning_uri;
+use function jaco\core\totp\qr_svg;
 
 if (is_file($appDir . '/settings.php')) {
     install_page(
@@ -93,6 +96,8 @@ $checksTable = '<table><tr><th>Check</th><th></th><th>Detail</th></tr>' . $check
 $isPost = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST';
 $username = isset($_POST['username']) && is_string($_POST['username']) ? trim($_POST['username']) : '';
 $password = isset($_POST['password']) && is_string($_POST['password']) ? (string) $_POST['password'] : '';
+$language = isset($_POST['language']) && is_string($_POST['language']) ? $_POST['language'] : 'en';
+$totp = !$isPost || (isset($_POST['totp']) && $_POST['totp'] === '1');
 $errors = [];
 
 if ($isPost && !$checksFailed) {
@@ -102,6 +107,9 @@ if ($isPost && !$checksFailed) {
     if (strlen($password) < 8) {
         $errors[] = 'Password needs at least 8 characters.';
     }
+    if ($language !== 'de' && $language !== 'en' && $language !== 'fr' && $language !== 'it') {
+        $errors[] = 'Please select a language.';
+    }
 
     if (count($errors) === 0) {
         try {
@@ -110,9 +118,23 @@ if ($isPost && !$checksFailed) {
             $secret = null;
         }
 
+        $totpSecret = null;
+        if ($totp) {
+            try {
+                $totpSecret = generate_secret();
+            } catch (Throwable $e) {
+                $totpSecret = null;
+            }
+        }
+
         if (!is_string($secret)) {
             $errors[] = 'Could not generate a secret key, please reload and try again.';
-        } elseif (!write_settings($appDir, ['username' => $username, 'password' => $password, 'secretKey' => $secret])) {
+        } elseif ($totp && !is_string($totpSecret)) {
+            $errors[] = 'Could not generate a two-factor secret, please reload and try again.';
+        } elseif (!write_settings($appDir, array_merge(
+            ['username' => $username, 'password' => $password, 'secretKey' => $secret, 'defaultLanguage' => $language],
+            is_string($totpSecret) ? ['totpSecret' => $totpSecret] : [],
+        ))) {
             $errors[] = 'Could not write jaco/settings.php, please check write permissions.';
         } else {
             $written = require $appDir . '/settings.php';
@@ -124,9 +146,19 @@ if ($isPost && !$checksFailed) {
             } else {
                 @unlink(__FILE__);
                 $deleted = !is_file(__FILE__);
+                $totpBlock = '';
+                if (is_string($totpSecret)) {
+                    $totpBlock = '<p class="ok">Two-factor authentication is enabled for login <strong>'
+                        . install_escape($username) . '</strong>.</p>'
+                        . '<p>Scan this code with the authenticator app, or enter the secret manually (it is also stored in <code>jaco/settings.php</code>):</p>'
+                        . '<div style="max-width:220px">' . qr_svg(provisioning_uri($totpSecret, $username)) . '</div>'
+                        . '<p><code>' . install_escape($totpSecret) . '</code></p>'
+                        . '<p><code>' . install_escape(provisioning_uri($totpSecret, $username)) . '</code></p>';
+                }
                 install_page(
                     'Jaco CMS installed',
                     '<p class="ok">Login <strong>' . install_escape($username) . '</strong> works.</p>'
+                        . $totpBlock
                         . ($deleted
                             ? '<p>The installer deleted itself as expected.</p>'
                             : '<p class="fail">The installer could NOT delete itself, please remove <code>jaco/install.php</code> by hand right now.</p>')
@@ -150,6 +182,13 @@ if ($checksFailed) {
         . '<form method="post">'
         . '<label>Username<input name="username" value="' . install_escape($username) . '" autocomplete="username"></label>'
         . '<label>Password (at least 8 characters)<input type="password" name="password" autocomplete="new-password"></label>'
+        . '<label>Language<select name="language">'
+        . '<option value="de"' . ($language === 'de' ? ' selected' : '') . '>Deutsch</option>'
+        . '<option value="en"' . ($language === 'en' ? ' selected' : '') . '>English</option>'
+        . '<option value="fr"' . ($language === 'fr' ? ' selected' : '') . '>Français</option>'
+        . '<option value="it"' . ($language === 'it' ? ' selected' : '') . '>Italiano</option>'
+        . '</select></label>'
+        . '<label><input type="checkbox" name="totp" value="1"' . ($totp ? ' checked' : '') . '> Enable two-factor authentication (needs an authenticator app)</label>'
         . '<button type="submit">Install</button></form>'
         . '<p>The secret key is generated for you and stored in <code>jaco/settings.php</code>.</p>';
 }

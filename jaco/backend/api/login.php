@@ -17,6 +17,7 @@ function action(Config $config, Request $request): Response
         $config,
         username: $request->post->strVal('username'),
         withPassword: $request->post->strVal('password'),
+        withTotpCode: $request->post->strVal('totpCode'),
     );
 
     return responder($payload);
@@ -25,6 +26,10 @@ function action(Config $config, Request $request): Response
 function responder(Payload $payload): Response
 {
     if ($payload->isSuccess) {
+        if (isset($payload->data['totpRequired'])) {
+            return json_response(['totpRequired' => true]);
+        }
+
         return json_response([
             'token' => $payload->data['token'],
         ]);
@@ -33,5 +38,6 @@ function responder(Payload $payload): Response
     return api_errors($payload, [
         'username' => 'username',
         'withPassword' => 'password',
+        'totpCode' => 'totpCode',
     ]);
 }

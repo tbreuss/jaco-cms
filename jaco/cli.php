@@ -46,6 +46,20 @@ $app->command('auth:token', 'Get token for credential.')
         exit($exitCode);
     });
 
+$app->command('auth:totp-setup', 'Require two-factor authentication.')
+    ->action(function () use ($config): void {
+        [$output, $exitCode] = \jaco\cli\auth\totp\setup_command($config);
+        echo $output;
+        exit($exitCode);
+    });
+
+$app->command('auth:totp-disable', 'Remove two-factor authentication.')
+    ->action(function () use ($config): void {
+        [$output, $exitCode] = \jaco\cli\auth\totp\disable_command($config);
+        echo $output;
+        exit($exitCode);
+    });
+
 $app->onException(function (Throwable $e, int $exitCode) {
     echo $e->getMessage();
     exit($exitCode);

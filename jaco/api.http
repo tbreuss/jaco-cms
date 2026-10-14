@@ -15,6 +15,16 @@ Accept: application/json
     "password": "demo"
 }
 
+### Authenticate with two-factor code
+POST http://127.0.0.1:9999/jaco/api.php?action=login&XDEBUG_SESSION_START
+Accept: application/json
+
+{
+    "username": "demo",
+    "password": "demo",
+    "totpCode": "123456"
+}
+
 ### System/Environment
 GET http://127.0.0.1:9999/jaco/api.php?action=system&XDEBUG_SESSION_START
 Accept: application/json

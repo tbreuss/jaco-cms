@@ -4,10 +4,22 @@
     "properties": {
         "token": {
             "type": "string"
+        },
+        "totpRequired": {
+            "type": "boolean"
         }
     },
-    "required": [
-        "token"
+    "anyOf": [
+        {
+            "required": [
+                "token"
+            ]
+        },
+        {
+            "required": [
+                "totpRequired"
+            ]
+        }
     ],
     "additionalProperties": false
 }

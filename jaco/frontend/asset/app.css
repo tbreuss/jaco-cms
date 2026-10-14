@@ -599,7 +599,7 @@ fieldset .row button {
     margin-right: 0.5rem;
 }
 
-fieldset .row.text-right button {
+.row.text-right button {
     margin-right: 0;
     margin-left: 0.5rem;
 }

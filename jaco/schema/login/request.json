@@ -7,6 +7,9 @@
         },
         "password": {
             "type": "string"
+        },
+        "totpCode": {
+            "type": "string"
         }
     },
     "required": [

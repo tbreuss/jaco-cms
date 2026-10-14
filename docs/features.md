@@ -27,6 +27,7 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | Domain payload | Return value of a `jaco\domain\*` function: `success`, `invalid` (HTTP 422 with an error list) or `error` (HTTP 500). |
 | API action | A route registered in `jaco/routes.php` (`action=page/update`). |
 | Session token | JWT signed with HS256, issued by `POST action=login`, sent as `Authorization: Bearer <token>`. |
+| Two-factor authentication | Optional TOTP second login step (RFC 6238, `jaco/backend/core/totp.php`). Offline by design: no SMS, mail or network. The secret lives in `jaco/settings.php` next to the password, enrollment runs through `auth:totp-setup` or the installer checkbox. |
 | API vs. domain names | The page manager speaks `fileName` + `html`, the inline editor `fileName` + `body`; the domain functions speak `file` + `withContent` and `file` + `withBody`. |
 
 ## Constraints that are easy to break
@@ -72,6 +73,10 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   `jaco/runtime/log/loginhistory.json` is deleted. Every failure counts into one global
   bucket, so rotating usernames does not help, and the response never reveals whether the
   username exists (`jaco/backend/core/auth.php`).
+- **Two-factor codes count as attempts.** A wrong TOTP code records a failure like a
+  wrong password, and a correct password without a code only reveals that a second
+  step is required (`totpRequired`), never a token. There are no backup codes:
+  a lost secret is replaced through `auth:totp-setup`, which needs server access.
 - **Uploads are never overwritten.** A name collision gets `-1` appended
   (`filesystem\file_name_to_write()`), and `upload/create` validates the extension before
   the uploaded file is moved into place.
@@ -137,6 +142,8 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | --- | --- |
 | Auth tokens: issue and validation | `jaco/test/AuthTest.php` |
 | Login throttling: block, permanent block, reset | `jaco/test/LoginThrottleTest.php` |
+| Two-factor codes (RFC vectors) and login flow with secret | `jaco/test/TotpTest.php`, `jaco/test/ApiLoginTotpTest.php` |
+| System environment and log clearing | `jaco/test/ApiSystemTest.php`, `jaco/test/ApiSystemLogClearTest.php` |
 | Route table: public/private, methods | `jaco/test/ApiRoutesTest.php` |
 | HTTP: request headers, query handling | `jaco/test/HttpRequestTest.php` |
 | Pages: list, view, copy, create, update (document and body), delete | `jaco/test/ApiPage*Test.php` |

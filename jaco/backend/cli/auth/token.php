@@ -28,6 +28,9 @@ function command(Config $config, string $user, string $pass): array
 function responder(Payload $payload, string $user): array
 {
     if ($payload->isSuccess) {
+        if (isset($payload->data['totpRequired'])) {
+            return ["Two-factor authentication is enabled, provide the code.\n", 1];
+        }
         $output = sprintf('The token for user "%s" is:', $user) . PHP_EOL;
         $output .= $payload->data['token'] . PHP_EOL;
         return [$output, 0];

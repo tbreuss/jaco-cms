@@ -3,6 +3,7 @@ import {InputPassword} from '/jaco/frontend/component/InputPassword.js'
 import {InputText} from '/jaco/frontend/component/InputText.js'
 import {FormErrors, errorFor} from '/jaco/frontend/component/FormErrors.js'
 import {ButtonPrimary} from '/jaco/frontend/component/ButtonPrimary.js'
+import {ButtonSecondary} from '/jaco/frontend/component/ButtonSecondary.js'
 import {Icon} from '/jaco/frontend/component/Icon.js'
 import {Select} from '/jaco/frontend/component/Select.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
@@ -304,6 +305,150 @@ QUnit.test('the form sends one request and shows the message from the api', (ass
     setTimeout(poll, 50)
   }
   setTimeout(poll, 50)
+})
+
+QUnit.module('login two-factor step', {
+  beforeEach: () => {
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+const mountLogin = () => {
+  const host = document.createElement('div')
+  fixture().appendChild(host)
+  m.mount(host, LoginView)
+  return host
+}
+
+const fill = (id, value) => {
+  const input = fixture().querySelector('#' + id)
+  input.value = value
+  input.dispatchEvent(new Event('input', {bubbles: true}))
+}
+
+QUnit.test('login asks for the authentication code when required', (assert) => {
+  const done = assert.async()
+  const stub = stubRequest(() => Promise.resolve({totpRequired: true}))
+  const host = mountLogin()
+
+  try {
+    fill('username', 'qunit-user')
+    fill('password', 'secret')
+    fixture().querySelector('form').requestSubmit()
+
+    setTimeout(() => {
+      try {
+        assert.strictEqual(stub.calls.length, 1, 'one login request')
+        assert.ok(fixture().querySelector('input#totpCode'), 'code field is shown')
+        assert.strictEqual(fixture().querySelector('input#username'), null, 'credentials are hidden')
+        assert.strictEqual(document.activeElement.id, 'totpCode', 'focus is on the code field')
+      } finally {
+        stub.restore()
+        m.mount(host, null)
+        done()
+      }
+    }, 50)
+  } catch (error) {
+    stub.restore()
+    m.mount(host, null)
+    done()
+    throw error
+  }
+})
+
+QUnit.test('login sends the code with the credentials', (assert) => {
+  const done = assert.async()
+  let calls = 0
+  const stub = stubRequest(() => {
+    calls++
+    return calls === 1
+      ? Promise.resolve({totpRequired: true})
+      : new Promise(() => {}) // success path navigates away, not under test
+  })
+  const host = mountLogin()
+
+  try {
+    fill('username', 'qunit-user')
+    fill('password', 'secret')
+    fixture().querySelector('form').requestSubmit()
+
+    setTimeout(() => {
+      fill('totpCode', '123456')
+      fixture().querySelector('form').requestSubmit()
+
+      setTimeout(() => {
+        try {
+          assert.strictEqual(stub.calls.length, 2, 'two login requests')
+          assert.deepEqual(
+            stub.calls[1].body,
+            {username: 'qunit-user', password: 'secret', totpCode: '123456'},
+            'code sent with the credentials'
+          )
+        } finally {
+          stub.restore()
+          m.mount(host, null)
+          done()
+        }
+      }, 50)
+    }, 50)
+  } catch (error) {
+    stub.restore()
+    m.mount(host, null)
+    done()
+    throw error
+  }
+})
+
+QUnit.test('ButtonSecondary renders the type only when given', (assert) => {
+  m.render(fixture(), m(ButtonSecondary, {onclick: () => {}, type: 'button'}, 'Back'))
+  assert.strictEqual(fixture().querySelector('button').getAttribute('type'), 'button', 'type is set')
+
+  // fresh container: updating would keep the stale attribute, because
+  // mithril assigns dom.type = null instead of removing it
+  const fresh = document.createElement('div')
+  fixture().appendChild(fresh)
+  m.render(fresh, m(ButtonSecondary, {onclick: () => {}}, 'Back'))
+  assert.strictEqual(fresh.querySelector('button').getAttribute('type'), null, 'no type by default')
+})
+
+QUnit.test('back button neither submits nor sticks to verify', (assert) => {
+  const done = assert.async()
+  const stub = stubRequest(() => Promise.resolve({totpRequired: true}))
+  const host = mountLogin()
+
+  try {
+    fill('username', 'qunit-user')
+    fill('password', 'secret')
+    fixture().querySelector('form').requestSubmit()
+
+    setTimeout(() => {
+      const buttons = [...fixture().querySelectorAll('.row.text-right button')]
+      assert.strictEqual(buttons.length, 2, 'back and verify')
+      assert.notStrictEqual(window.getComputedStyle(buttons[1]).marginLeft, '0px', 'gap before verify')
+
+      buttons[0].click()
+
+      setTimeout(() => {
+        try {
+          assert.strictEqual(stub.calls.length, 1, 'no second request from back')
+          assert.ok(fixture().querySelector('input#username'), 'back on the login step')
+        } finally {
+          stub.restore()
+          m.mount(host, null)
+          done()
+        }
+      }, 50)
+    }, 50)
+  } catch (error) {
+    stub.restore()
+    m.mount(host, null)
+    done()
+    throw error
+  }
 })
 
 QUnit.module('ViewUploadView preview', {

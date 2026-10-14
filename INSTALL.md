@@ -50,6 +50,15 @@ return [
 Without `settings.php`, username and password fall back to random values
 and logging in is not possible.
 
+Optional second login step (TOTP, no external service needed):
+
+    php jaco/cli.php auth:totp-setup
+
+Enter the printed secret in an authenticator app. The login then asks for
+the password first and the six-digit code second. `auth:totp-disable`
+removes it again; a lost secret is replaced the same way, which needs
+server access, so keep the secret safe.
+
 ## 4. Grant write permissions
 
 The PHP process must be allowed to write:

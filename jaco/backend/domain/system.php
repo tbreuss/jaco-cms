@@ -7,9 +7,10 @@ use jaco\core\config\Config;
 use jaco\core\data;
 use jaco\core\filesystem;
 use jaco\core\system;
+use jaco\core\totp;
 use jaco\domain\Payload;
 
-function authenticate_user(Config $config, string $username, string $withPassword): Payload
+function authenticate_user(Config $config, string $username, string $withPassword, string $withTotpCode = ''): Payload
 {
     $errors = data\validate(
         [
@@ -51,6 +52,20 @@ function authenticate_user(Config $config, string $username, string $withPasswor
         return Payload::invalid([['', 'Authentication failed.']]);
     }
 
+    if ($config->totpSecret === '') {
+        auth\record_login_success($config);
+        return Payload::success(['token' => $token]);
+    }
+
+    if ($withTotpCode === '') {
+        return Payload::success(['totpRequired' => true]);
+    }
+
+    if (!totp\verify_code($config->totpSecret, $withTotpCode)) {
+        auth\record_login_failure($config);
+        return Payload::invalid([['totpCode', 'Invalid authentication code.']]);
+    }
+
     auth\record_login_success($config);
 
     return Payload::success(['token' => $token]);
@@ -73,6 +88,7 @@ function display_config(Config $config): array
     $values = get_object_vars($config);
     $values['secretKey'] = '********';
     $values['password'] = '********';
+    $values['totpSecret'] = $values['totpSecret'] === '' ? '' : '********';
     $values['directoryPermissions'] = sprintf('0%o', $config->directoryPermissions);
     $values['filePermissions'] = sprintf('0%o', $config->filePermissions);
     $values['maintenanceMode'] = $config->maintenanceMode ? 'true' : 'false';

@@ -1,6 +1,7 @@
 {
     "About": "Über",
     "Add page": "Seite hinzufügen",
+    "Authentication code": "Bestätigungscode",
     "Auto": "Auto",
     "Back": "Zurück",
     "Backed up": "Gesichert",
@@ -92,6 +93,7 @@
     "Uploads": "Uploads",
     "Username": "Benutzername",
     "Value": "Wert",
+    "Verify": "Verifizieren",
     "View backup": "Backup ansehen",
     "View upload": "Upload ansehen",
     "View": "Ansehen",
@@ -114,6 +116,7 @@
     "Could not write file content.": "Dateiinhalt konnte nicht geschrieben werden.",
     "Could not write file: {file}": "Datei konnte nicht geschrieben werden: {file}",
     "Dir does not exist.": "Verzeichnis existiert nicht.",
+    "Invalid authentication code.": "Ungültiger Bestätigungscode.",
     "Invalid service status": "Ungültiger Servicestatus",
     "Login blocked. Contact the administrator.": "Anmeldung blockiert. Bitte Administrator kontaktieren.",
     "Maintenance mode: changes are disabled": "Wartungsmodus: Änderungen sind deaktiviert",
