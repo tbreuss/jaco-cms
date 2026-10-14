@@ -1,0 +1,11 @@
+# Jaco application directory: only the entry points and public assets stay
+# reachable, everything else is blocked. This file must not enable the rewrite
+# engine: the Authorization forwarding for /jaco/api.php lives in the root
+# .htaccess and child rewrite rules would override it.
+Options -Indexes
+
+# Credentials, installer, CLI entry and build metadata. api.php and index.html
+# in this directory stay public, jaco/frontend/ is served normally.
+<FilesMatch "^(settings\.php|install\.php|cli\.php|routes\.php|autoload\.php|composer\.(json|lock)|phpunit\.xml|api\.http|.*\.(neon|yaml|dist|md))$">
+    Require all denied
+</FilesMatch>

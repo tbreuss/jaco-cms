@@ -74,7 +74,7 @@ function authenticate_user(
 function get_environment(Config $config): Payload
 {
     return Payload::success([
-        'checks' => system\install_checks($config),
+        'checks' => array_merge(system\install_checks($config), system\security_checks($config)),
         'config' => display_config($config),
         'overview' => get_overview($config),
     ]);

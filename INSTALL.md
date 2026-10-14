@@ -68,6 +68,43 @@ The PHP process must be allowed to write:
 - `upload/` in the root directory (images from the editor)
 - `jaco/runtime/log/` (error log)
 
+## Protect the internals
+
+Jaco lives entirely in the web root, so the web server must deny direct
+access to the internals. On Apache this ships with the project: `jaco/`
+and every sensitive subdirectory (`_backup/`, `runtime/`, `vendor/`,
+`backend/`, `test/`, `schema/`, `language/`, `_template/`) contain an
+`.htaccess` with `Require all denied`, and `upload/` never executes PHP.
+Verify that hidden files are deployed (some SCP clients skip dotfiles).
+
+On Nginx `.htaccess` files are ignored: copy the location blocks from
+`nginx-jaco.conf.example` (project root, also in the dist archive) into the
+server context, and add `fastcgi_param HTTP_AUTHORIZATION $http_authorization;`
+to the PHP location, otherwise every authenticated API call answers 403.
+
+On Apache with a dist archive (`jaco/` + `upload/` extracted into an existing
+site) one rule must live in the *site root* `.htaccess`, because the shipped
+`jaco/.htaccess` deliberately enables no rewrite engine (it would override
+this): without it PHP never sees the `Authorization` header and every
+authenticated API call answers 403.
+
+```apache
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP:Authorization} ^(.+)$
+    RewriteRule ^ - [E=HTTP_AUTHORIZATION:%1]
+</IfModule>
+```
+
+The admin panel reports the state under System environment: the four
+`.htaccess` checks (app, backup, log, vendor) verify that the protection
+files exist. On Nginx they stay green once the files are deployed; the
+location blocks themselves cannot be verified from PHP and must be
+checked once by hand:
+
+    curl -I https://example.com/jaco/settings.php  # expect 403
+    curl -I https://example.com/jaco/_backup/      # expect 403
+
 ## File upload limits
 
 Uploads are limited by PHP, not by Jaco:

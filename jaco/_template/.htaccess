@@ -1,0 +1,2 @@
+# Page and content templates: never serve directly.
+Require all denied

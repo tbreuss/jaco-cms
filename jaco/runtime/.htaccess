@@ -1,0 +1,2 @@
+# Error log and login history: never serve directly.
+Require all denied

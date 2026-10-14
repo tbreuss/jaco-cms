@@ -1,0 +1,2 @@
+# Translations are served through action=translations, never directly.
+Require all denied

@@ -23,6 +23,7 @@ git -C "$ROOT" archive HEAD jaco | tar -x -C "$WORK"
 # Installationsanleitung und Lizenz aus dem Arbeitsverzeichnis dazu (evtl. uncommitted)
 cp "$ROOT/INSTALL.md" "$WORK/INSTALL.md"
 cp "$ROOT/LICENSE" "$WORK/LICENSE"
+cp "$ROOT/nginx-jaco.conf.example" "$WORK/nginx-jaco.conf.example"
 
 # Dependencies für die Auslieferung installieren (braucht composer.json).
 # Plattform auf 8.2 pinnen, damit die Auflösung auch auf neueren
@@ -46,8 +47,20 @@ find "$WORK" -name ".DS_Store" -delete
 # leere Laufzeitverzeichnisse sicherstellen (braucht die App zum Schreiben)
 mkdir -p "$WORK/jaco/_backup" "$WORK/upload" "$WORK/jaco/runtime/log"
 
+# Schutzdateien für Verzeichnisse, die nicht aus git kommen: vendor/ wird per
+# composer installiert, upload/ nur angelegt. Inhalt wie im Repo
+# (jaco/vendor/.htaccess und upload/.htaccess sind git-ignoriert).
+printf '%s\n' '# Third-party code: never serve directly.' 'Require all denied' \
+    > "$WORK/jaco/vendor/.htaccess"
+printf '%s\n' '# Editor uploads (images, PDFs): serve as static files, never execute.' \
+    '# Uploads are already limited server-side to png/gif/jpg/jpeg/svg/pdf,' \
+    '# this is defense in depth against double-extension and handler tricks.' \
+    '<FilesMatch "\.ph(p|ar|tml|t|ps)$">' '    Require all denied' '</FilesMatch>' \
+    'Options -Indexes' \
+    > "$WORK/upload/.htaccess"
+
 OUT="$ROOT/jaco-dist-$VERSION.zip"
 rm -f "$OUT"
-(cd "$WORK" && zip -qr "$OUT" jaco upload INSTALL.md LICENSE)
+(cd "$WORK" && zip -qr "$OUT" jaco upload INSTALL.md LICENSE nginx-jaco.conf.example)
 
 echo "gebaut: $OUT ($(du -h "$OUT" | cut -f1))"

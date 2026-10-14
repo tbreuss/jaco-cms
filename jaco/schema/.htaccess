@@ -1,0 +1,2 @@
+# Request/response schemas for internal validation: never serve directly.
+Require all denied

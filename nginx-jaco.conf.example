@@ -1,0 +1,37 @@
+# Example Nginx configuration for Jaco CMS. Nginx ignores .htaccess files,
+# so the Apache hardening shipped in jaco/ does nothing here: copy the
+# location blocks below into the server context of the site.
+#
+# Jaco lives entirely in the web root: static .html pages next to jaco/
+# (admin panel + api.php) and upload/ (editor images and PDFs).
+
+server {
+    # ... server_name, root, listen directives ...
+
+    # The API authenticates via "Authorization: Bearer <jwt>": without this
+    # line PHP never sees the header and every authenticated call answers 403.
+    location ~ \.php$ {
+        # ... fastcgi_pass, fastcgi_index, include fastcgi_params ...
+        fastcgi_param HTTP_AUTHORIZATION $http_authorization;
+    }
+
+    # Everything except the entry points and public assets is internal.
+    # Order matters: specific denies first, the frontend regex last.
+    location = /jaco/settings.php { deny all; }
+    location = /jaco/install.php  { deny all; }
+    location = /jaco/cli.php      { deny all; }
+    location ^~ /jaco/_backup/   { deny all; }
+    location ^~ /jaco/runtime/   { deny all; }
+    location ^~ /jaco/vendor/    { deny all; }
+    location ^~ /jaco/backend/   { deny all; }
+    location ^~ /jaco/test/      { deny all; }
+    location ^~ /jaco/schema/    { deny all; }
+    location ^~ /jaco/language/  { deny all; }
+    location ^~ /jaco/_template/ { deny all; }
+
+    # Editor uploads: serve, never execute PHP through them.
+    location ~ ^/upload/.*\.ph(p|ar|tml|t|ps)$ { deny all; }
+
+    # Behind a reverse proxy also forward the header:
+    # proxy_set_header Authorization $http_authorization;
+}

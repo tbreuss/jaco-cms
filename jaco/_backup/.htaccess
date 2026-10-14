@@ -1,0 +1,2 @@
+# Backups of pages, stylesheets and uploads: never serve directly.
+Require all denied

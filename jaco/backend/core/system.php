@@ -79,3 +79,32 @@ function install_checks(Config $config): array
 
     return $checks;
 }
+
+/**
+ * Hardening checks for the system page (not the installer): every entry
+ * verifies that one .htaccess protection file exists. On Apache these files
+ * block direct access to credentials, backups, logs and vendor code; on
+ * nginx they are inert and the location blocks from nginx-jaco.conf.example
+ * apply instead, so a missing file is a warning for the owner, never a
+ * broken installation.
+ *
+ * @return list<array{label: string, ok: bool, detail: string}>
+ */
+function security_checks(Config $config): array
+{
+    $logDir = \dirname($config->loginHistoryFile);
+
+    $files = [
+        'App protection (.htaccess)' => $config->appDir . '/.htaccess',
+        'Backup protection (.htaccess)' => $config->backupDir . '/.htaccess',
+        'Log protection (.htaccess)' => \dirname($logDir) . '/.htaccess',
+        'Vendor protection (.htaccess)' => $config->appDir . '/vendor/.htaccess',
+    ];
+
+    $checks = [];
+    foreach ($files as $label => $file) {
+        $checks[] = ['label' => $label, 'ok' => \is_file($file), 'detail' => $file];
+    }
+
+    return $checks;
+}

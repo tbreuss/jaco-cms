@@ -1,0 +1,2 @@
+# Tests and fixtures: never serve directly.
+Require all denied
