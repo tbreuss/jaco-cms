@@ -136,6 +136,12 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   dynamic message additionally needs its English template in `errorTemplates`,
   otherwise it falls back to English.
 
+- **The cli entry point is command line only.** `jaco/cli.php` answers a web request with
+  403 before it loads anything (a `PHP_SAPI` guard): it prints version and log output and
+  would hand that to anyone asking. `install.php` is the deliberate opposite – it is meant
+  to be opened in the browser once, refuses to run as soon as `settings.php` exists and
+  deletes itself on success.
+
 ## Where the rules live
 
 | Area | Test |
@@ -143,6 +149,7 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | Auth tokens: issue and validation | `jaco/test/AuthTest.php` |
 | Login throttling: block, permanent block, reset | `jaco/test/LoginThrottleTest.php` |
 | Two-factor codes (RFC vectors) and login flow with secret | `jaco/test/TotpTest.php`, `jaco/test/ApiLoginTotpTest.php` |
+| CLI entry point: web requests are refused | `jaco/test/CliEntryPointTest.php` |
 | System environment and log clearing | `jaco/test/ApiSystemTest.php`, `jaco/test/ApiSystemLogClearTest.php` |
 | Route table: public/private, methods | `jaco/test/ApiRoutesTest.php` |
 | HTTP: request headers, query handling | `jaco/test/HttpRequestTest.php` |

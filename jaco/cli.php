@@ -1,5 +1,12 @@
 <?php declare(strict_types=1);
 
+// Command line only: in a web request this file would print version and log output to
+// anyone asking for it. The guard sits before the autoloader, so nothing runs at all.
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit;
+}
+
 // adhocore/cli looks up unknown commands with a null array offset, which
 // is deprecated on PHP 8.5 (upstream stale since 1.9.4). Our own code is
 // verified deprecation free by phpstan-deprecation-rules, and the same
