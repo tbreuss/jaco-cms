@@ -28,9 +28,11 @@ const request = method => (action, params = {}, options = {}) => {
     }
   }, 400)
 
+  const query = m.buildQueryString(params)
+
   return m.request({
     method,
-    url: 'api.php?action=' + action + '&' + m.buildQueryString(params),
+    url: 'api.php?action=' + action + (query ? '&' + query : ''),
     ...options // might need Object.assign for Edge
   })
     .catch(err => {

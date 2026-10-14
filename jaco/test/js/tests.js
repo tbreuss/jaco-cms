@@ -222,6 +222,24 @@ QUnit.test('network failure shows a toast instead of crashing', async (assert) =
   }
 })
 
+QUnit.test('request urls have no trailing ampersand without parameters', async (assert) => {
+  const stub = stubRequest(() => Promise.resolve({}))
+
+  try {
+    await api.get('css/list').catch(() => {})
+
+    assert.strictEqual(stub.calls.length, 1)
+    assert.strictEqual(stub.calls[0].url, 'api.php?action=css/list', 'no trailing ampersand')
+
+    await api.get('page/list', {filter: 'x', sort: 'file'}).catch(() => {})
+
+    assert.strictEqual(stub.calls.length, 2)
+    assert.strictEqual(stub.calls[1].url, 'api.php?action=page/list&filter=x&sort=file', 'parameters appended')
+  } finally {
+    stub.restore()
+  }
+})
+
 QUnit.module('login against the real api')
 
 QUnit.test('the form sends one request and shows the message from the api', (assert) => {
