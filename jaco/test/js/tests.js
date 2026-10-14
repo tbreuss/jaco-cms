@@ -116,12 +116,24 @@ QUnit.test('errorFor picks the translated detail by pointer', (assert) => {
 
 QUnit.test('FormErrors renders nothing without errors and the details with errors', (assert) => {
   m.render(fixture(), m(FormErrors, {errors: []}))
-  assert.strictEqual(fixture().querySelector('fieldset.errors'), null)
+  assert.strictEqual(fixture().querySelector('.form-errors'), null)
 
   const errors = [{source: {pointer: ''}, title: 'Validation Error', detail: 'Authentication failed.'}]
   m.render(fixture(), m(FormErrors, {errors}))
 
   assert.ok(fixture().textContent.includes(tError('Authentication failed.')), 'the translated detail is rendered')
+})
+
+QUnit.test('FormErrors lists multiple errors with bullets', (assert) => {
+  const errors = [
+    {source: {pointer: 'fileName'}, title: 'Validation Error', detail: 'Is required.'},
+    {source: {pointer: 'pageTitle'}, title: 'Validation Error', detail: 'Is required.'},
+  ]
+  m.render(fixture(), m(FormErrors, {errors}))
+
+  const list = fixture().querySelector('ul.form-errors')
+  assert.ok(list, 'a list is rendered')
+  assert.strictEqual(list.querySelectorAll('li').length, 2, 'one item per error')
 })
 
 QUnit.test('Select follows the value attribute', (assert) => {
@@ -253,7 +265,7 @@ QUnit.test('the form sends one request and shows the message from the api', (ass
 
   const deadline = Date.now() + 5000
   const poll = () => {
-    const errors = fixture().querySelector('fieldset.errors')
+    const errors = fixture().querySelector('.form-errors')
     if (errors) {
       assert.strictEqual(calls.length, 1, 'exactly one login request')
       assert.ok(errors.textContent.includes(tError('Authentication failed.')), 'the api message is shown translated')

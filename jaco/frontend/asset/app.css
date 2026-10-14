@@ -689,11 +689,6 @@ fieldset .row.text-right button {
     padding-right: 1rem;
 }
 
-.errors {
-    color: var(--color-error);
-    border: 1px solid var(--color-error-border);
-}
-
 .field-error {
     color: var(--color-error);
     font-size: 0.875rem;
@@ -701,17 +696,20 @@ fieldset .row.text-right button {
     margin-left: 25%;
 }
 
+.form-errors,
+ul.form-errors {
+    color: var(--color-error);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+ul.form-errors {
+    margin-left: 1.1rem;
+    padding: 0;
+}
+
 .modal-sm-login .field-error {
     margin-left: 0;
-}
-
-.errors legend {
-    color: var(--color-error-legend);
-}
-
-.errors ul {
-    margin: 0.5rem 0 0.5rem 1rem;
-    padding: 0;
 }
 
 .modal-sm-login label {
@@ -720,10 +718,6 @@ fieldset .row.text-right button {
 
 .modal-sm-login input {
     width: 100% !important;
-}
-
-.modal-sm-login .errors {
-    margin-top: 1rem;
 }
 
 

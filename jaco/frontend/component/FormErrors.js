@@ -1,4 +1,4 @@
-import {t, tError} from '../model/i18n.js'
+import {tError} from '../model/i18n.js'
 
 const selectLabel = (label) => {
   const el = (document.querySelector('[for=' + label + ']'))
@@ -8,14 +8,14 @@ const selectLabel = (label) => {
   return ''
 }
 
+const errorText = (error) =>
+  error.source.pointer ? selectLabel(error.source.pointer) + tError(error.detail) : tError(error.detail)
+
 export const FormErrors = {
   view: ({attrs: {errors}}) =>
-    errors.length > 0 && m('fieldset.errors',
-      m('legend', t('The following errors occurred')),
-      m('ul', errors.map((error) =>
-        m('li', error.source.pointer ? selectLabel(error.source.pointer) + tError(error.detail) : tError(error.detail))
-      ))
-    )
+    errors.length > 0 && (errors.length === 1
+      ? m('.form-errors', errorText(errors[0]))
+      : m('ul.form-errors', errors.map((error) => m('li', errorText(error)))))
 }
 
 // Translated detail of the first error for the given field pointer,
