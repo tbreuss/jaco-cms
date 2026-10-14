@@ -5,14 +5,16 @@ no build step. This guide describes the installation on an already existing HTML
 
 ## Requirements
 
-- PHP `^8.2` with the `dom` and `libxml` extensions
-- Composer
+- PHP `^8.2` with the `dom`, `libxml` and `openssl` extensions
 - A web server with PHP (Apache/nginx + php-fpm; `php -S` for development only)
+- Composer, only for the alternative install from git (option B)
 
-## 1. Place the files
+## A. Recommended: install from the ZIP archive
 
-Copy the `jaco/` directory of this repository into the root of the existing
-site (next to `index.html`):
+1. Download the ready-made `jaco-dist-<version>.zip` from the
+   [releases page](https://github.com/tbreuss/jaco-cms/releases).
+   It already contains the dependencies, so nothing has to be installed.
+2. Extract the archive into the root of the existing site (next to `index.html`):
 
     /var/www/my-site/
     ├── index.html
@@ -24,20 +26,30 @@ site (next to `index.html`):
         ├── frontend/
         └── ...
 
-The admin panel is then available at `/jaco/`, the page preview points to `/`.
+3. Open the installer in the browser: `https://example.com/jaco/install.php`.
+   Enter username (anything you like) and password (at least 8 characters),
+   pick a language, and leave two-factor authentication enabled unless you
+   deliberately want password-only login. Submitting writes `jaco/settings.php`
+   (with a generated secret key) and the installer deletes itself afterwards.
+   If it cannot delete itself, remove `jaco/install.php` by hand right away.
+4. Log in at `/jaco/` with the credentials you just created. Jaco automatically
+   creates a backup under `jaco/_backup/` before every save.
 
-> Tip: download the ready-made `jaco-dist-<version>.zip` from the
-> [releases page](https://github.com/tbreuss/jaco-cms/releases) instead.
-> It already contains the dependencies, so step 2 is not needed:
-> extract the archive into the site root and continue with step 3.
+The installer refuses to run once `jaco/settings.php` exists, so nobody else
+can claim the installation afterwards. A lost TOTP secret is replaced through
+`php jaco/cli.php auth:totp-setup` (needs server access), so keep the secret
+from the installer screen in your authenticator app.
 
-## 2. Install dependencies
+## B. Alternative: install from git
+
+1. Copy the `jaco/` directory of this repository into the root of the existing
+   site (next to `index.html`, same layout as above).
+2. Install dependencies:
 
     composer install -d jaco/ --no-dev
 
-## 3. Create the login
-
-Copy `jaco/settings.dist.php` to `jaco/settings.php` and fill it in:
+3. Either run the browser installer as in step A3, or create the login by hand:
+   copy `jaco/settings.dist.php` to `jaco/settings.php` and fill it in:
 
 ```php
 return [
@@ -48,18 +60,15 @@ return [
 ```
 
 Without `settings.php`, username and password fall back to random values
-and logging in is not possible.
-
-Optional second login step (TOTP, no external service needed):
+and logging in is not possible. For two-factor login without the installer:
 
     php jaco/cli.php auth:totp-setup
 
 Enter the printed secret in an authenticator app. The login then asks for
 the password first and the six-digit code second. `auth:totp-disable`
-removes it again; a lost secret is replaced the same way, which needs
-server access, so keep the secret safe.
+removes it again.
 
-## 4. Grant write permissions
+## Grant write permissions
 
 The PHP process must be allowed to write:
 
@@ -120,7 +129,7 @@ upload_max_filesize = 20M
 post_max_size = 24M
 ```
 
-## 5. Mark editable regions
+## Mark editable regions
 
 Without markers there is nothing to edit inline (only source via Ace).
 These attributes designate editable spots in the existing HTML:
@@ -196,8 +205,8 @@ In the edit views, `Cmd/Ctrl+S` saves and `Cmd/Ctrl+Shift+S` saves and
 closes (where a Save & Close button exists: page, CSS and JS editor). The
 browser's own save dialog is suppressed while an edit view is open.
 
-## 6. Log in
+## Log in
 
-Open `/jaco/` in the browser and log in with the username and password from
-`settings.php`. Jaco automatically creates a backup under `jaco/_backup/`
-before every save.
+Open `/jaco/` in the browser and log in with the credentials you created in
+the installer (or in `settings.php` for a manual install). Jaco automatically
+creates a backup under `jaco/_backup/` before every save.
