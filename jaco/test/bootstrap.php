@@ -26,7 +26,6 @@ function test_config(): Config
         uploadExtensions: ['png', 'gif', 'jpg', 'jpeg', 'svg', 'pdf'],
         uploadUrl: 'upload',
         pageExtensions: ['htm', 'html'],
-        defaultPage: 'index.html',
         defaultLanguage: 'en',
         directoryPermissions: 0755,
         filePermissions: 0644,

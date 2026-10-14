@@ -18,7 +18,6 @@ final readonly class Config
         public string $uploadUrl,
         /** @var list<string> */
         public array $pageExtensions,
-        public string $defaultPage,
         public string $defaultLanguage,
         public int $directoryPermissions,
         public int $filePermissions,
@@ -76,7 +75,6 @@ function create_default_config(string $appDir, array $settings = []): Config
         uploadExtensions: ['png', 'gif', 'jpg', 'jpeg', 'svg', 'pdf'],
         uploadUrl: 'upload',
         pageExtensions: ['htm', 'html'],
-        defaultPage: 'index.html',
         defaultLanguage: (string) ($settings['defaultLanguage'] ?? 'en'),
         directoryPermissions: 0755,
         filePermissions: 0644,
