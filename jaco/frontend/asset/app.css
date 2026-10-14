@@ -591,6 +591,10 @@ fieldset .row:first-of-type {
     text-align: right;
 }
 
+.text-center {
+    text-align: center;
+}
+
 fieldset .row button {
     margin-right: 0.5rem;
 }
@@ -634,10 +638,6 @@ fieldset .row.text-right button {
 /* Column widths for list tables; columns without a class take the rest */
 .col-30 {
     width: 30%;
-}
-
-.col-50 {
-    width: 50%;
 }
 
 .col-shrink {
@@ -706,6 +706,16 @@ fieldset .row.text-right button {
 .table-system-view td:first-child {
     white-space: nowrap;
     padding-right: 1rem;
+}
+
+.check-ok {
+    color: var(--color-primary);
+    font-weight: bold;
+}
+
+.check-fail {
+    color: var(--color-error);
+    font-weight: bold;
 }
 
 .field-error {

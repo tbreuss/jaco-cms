@@ -10,13 +10,15 @@ import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
 import {ViewUploadView} from '/jaco/frontend/view/upload/ViewUploadView.js'
 import {PhpLogView} from '/jaco/frontend/view/PhpLogView.js'
 import {PhpLogModel} from '/jaco/frontend/model/PhpLogModel.js'
+import {SystemView} from '/jaco/frontend/view/SystemView.js'
+import {SystemModel} from '/jaco/frontend/model/SystemModel.js'
 import {UploadListModel} from '/jaco/frontend/model/UploadListModel.js'
 import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
 import {api} from '/jaco/frontend/service/api.js'
 import {t, tError} from '/jaco/frontend/model/i18n.js'
 import {isSaveShortcut, isSaveAndCloseShortcut, bindSaveShortcut, saveShortcutLabel, saveAndCloseShortcutLabel} from '/jaco/frontend/lib/shortcuts.js'
 import {getTheme, setTheme, applyTheme} from '/jaco/frontend/lib/theme.js'
-import {formatDateTimeCompact, formatDateTimeFull} from '/jaco/frontend/lib/format.js'
+import {formatDateTimeCompact, formatDateTimeFull, formatBytes} from '/jaco/frontend/lib/format.js'
 import {state} from '/jaco/frontend/state/state.js'
 const fixture = () => document.getElementById('qunit-fixture')
 
@@ -476,6 +478,57 @@ QUnit.test('confirming clear reloads the list, cancelling does nothing', (assert
   }
 })
 
+QUnit.module('SystemView requirements', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    SystemModel.load = () => Promise.resolve()
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    SystemModel.info = {}
+    document.getElementById('app')?.remove()
+  }
+})
+
+QUnit.test('checks render with status, label and detail', (assert) => {
+  SystemModel.info = {
+    checks: [
+      {label: 'PHP version', ok: true, detail: '8.2.0'},
+      {label: 'PHP extension dom', ok: false, detail: 'missing'},
+    ],
+    config: {appVersion: '0.1.0'},
+    overview: {pages: 12, uploads: 3, backups: 1, projectSize: 2048, logSize: 512, logLines: 7},
+  }
+  m.render(fixture(), m(SystemView))
+
+  const rows = [...fixture().querySelectorAll('tbody tr')]
+  assert.strictEqual(rows.length, 8, 'two checks plus five overview entries plus one config entry')
+  assert.strictEqual(rows[0].cells[0].textContent, 'PHP version', 'label shown')
+  assert.strictEqual(rows[0].cells[1].textContent, '8.2.0', 'detail shown')
+  assert.ok(rows[0].querySelector('.check-ok'), 'passing check is marked')
+  assert.strictEqual(rows[0].cells[2].textContent, '✓', 'passing status shown last')
+  assert.ok(rows[1].querySelector('.check-fail'), 'failing check is marked')
+  assert.strictEqual(rows[1].cells[2].textContent, '✗', 'failing status shown last')
+  assert.strictEqual(rows[2].cells[0].textContent, t('Pages'), 'pages label shown')
+  assert.strictEqual(rows[2].cells[1].textContent, '12', 'pages counted')
+  assert.strictEqual(rows[5].cells[1].textContent, '2 KB', 'project size formatted')
+  assert.strictEqual(rows[6].cells[0].textContent, t('PHP error log'), 'log label shown')
+  assert.strictEqual(rows[6].cells[1].textContent, '512 B / 7', 'log size and lines')
+
+  SystemModel.info.overview.logSize = 0
+  SystemModel.info.overview.logLines = 0
+  m.render(fixture(), m(SystemView))
+  assert.strictEqual(
+    [...fixture().querySelectorAll('tbody tr')][6].cells[1].textContent,
+    `0 B / ${t('Empty')}`,
+    'empty log shows size and marker'
+  )
+})
+
 QUnit.module('datetime format')
 
 QUnit.test('full and compact share day, month, year suffix and time', (assert) => {
@@ -496,6 +549,16 @@ QUnit.test('missing timestamps format as empty strings', (assert) => {
   assert.strictEqual(formatDateTimeFull(undefined), '', 'undefined full')
   assert.strictEqual(formatDateTimeCompact(null), '', 'null compact')
   assert.strictEqual(formatDateTimeCompact(undefined), '', 'undefined compact')
+})
+
+QUnit.test('bytes format with units and stay empty without input', (assert) => {
+  assert.strictEqual(formatBytes(null), '', 'null')
+  assert.strictEqual(formatBytes(undefined), '', 'undefined')
+  assert.strictEqual(formatBytes(0), '0 B', 'zero')
+  assert.strictEqual(formatBytes(512), '512 B', 'bytes')
+  assert.strictEqual(formatBytes(2048), '2 KB', 'kilobytes')
+  assert.ok(/MB$/.test(formatBytes(5 * 1024 * 1024)), 'megabytes')
+  assert.strictEqual(formatBytes(1536), '1.5 KB', 'fraction uses the point')
 })
 
 QUnit.module('content lists', {

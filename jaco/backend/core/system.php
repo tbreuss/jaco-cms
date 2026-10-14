@@ -4,17 +4,6 @@ namespace jaco\core\system;
 
 use jaco\core\config\Config;
 
-function defined_classes(): array
-{
-    $classes = array_filter(
-        get_declared_classes(),
-        fn($class) => str_starts_with($class, 'jaco\\'),
-    );
-    sort($classes);
-
-    return $classes;
-}
-
 function defined_constants(Config $config): array
 {
     $constants = [];
@@ -37,17 +26,6 @@ function display_value(mixed $value, Config $config): mixed
         $value = substr($value, strlen($config->webDir));
     }
     return $value;
-}
-
-function defined_functions(): array
-{
-    $functions = array_filter(
-        get_defined_functions()['user'],
-        fn($class) => str_starts_with($class, 'jaco\\'),
-    );
-    sort($functions);
-
-    return $functions;
 }
 
 /**

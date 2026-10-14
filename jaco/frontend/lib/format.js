@@ -19,3 +19,19 @@ export const formatDateTimeCompact = (timestamp) => {
   const date = toDate(timestamp)
   return `${pad2(date.getDate())}.${pad2(date.getMonth() + 1)}.${String(date.getFullYear()).slice(-2)} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`
 }
+
+// Human-readable bytes in the browser locale: 1536 -> "1.5 KB"
+export const formatBytes = (bytes) => {
+  if (bytes == null) {
+    return ''
+  }
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let size = bytes
+  let unit = 0
+  while (size >= 1024 && unit < units.length - 1) {
+    size /= 1024
+    unit++
+  }
+  const rounded = size.toLocaleString('de-CH', {maximumFractionDigits: 1})
+  return `${rounded} ${units[unit]}`
+}

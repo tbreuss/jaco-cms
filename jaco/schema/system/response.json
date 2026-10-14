@@ -2,30 +2,69 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
-        "classes": {
+        "checks": {
             "type": "array",
             "items": {
-                "type": "string"
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "ok": {
+                        "type": "boolean"
+                    },
+                    "detail": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "label",
+                    "ok",
+                    "detail"
+                ],
+                "additionalProperties": false
             }
         },
         "config": {
             "type": "object"
         },
-        "constants": {
-            "type": "object"
-        },
-        "functions": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
+        "overview": {
+            "type": "object",
+            "properties": {
+                "pages": {
+                    "type": "integer"
+                },
+                "uploads": {
+                    "type": "integer"
+                },
+                "backups": {
+                    "type": "integer"
+                },
+                "projectSize": {
+                    "type": "integer"
+                },
+                "logSize": {
+                    "type": "integer"
+                },
+                "logLines": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "pages",
+                "uploads",
+                "backups",
+                "projectSize",
+                "logSize",
+                "logLines"
+            ],
+            "additionalProperties": false
         }
     },
     "required": [
-        "classes",
+        "checks",
         "config",
-        "constants",
-        "functions"
+        "overview"
     ],
     "additionalProperties": false
 }

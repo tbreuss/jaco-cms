@@ -6,14 +6,6 @@ import {formatDateTimeCompact, formatDateTimeFull} from './lib/format.js'
 
 initTheme()
 
-Number.prototype.pad = function (size) {
-  let s = String(this)
-  while (s.length < (size || 2)) {
-    s = '0' + s
-  }
-  return s
-}
-
 Number.prototype.toDateTime = function () {
   return formatDateTimeCompact(this)
 }

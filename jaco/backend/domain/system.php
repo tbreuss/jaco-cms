@@ -5,6 +5,7 @@ namespace jaco\domain\system;
 use jaco\core\auth;
 use jaco\core\config\Config;
 use jaco\core\data;
+use jaco\core\filesystem;
 use jaco\core\system;
 use jaco\domain\Payload;
 
@@ -58,10 +59,9 @@ function authenticate_user(Config $config, string $username, string $withPasswor
 function get_environment(Config $config): Payload
 {
     return Payload::success([
-        'classes' => system\defined_classes(),
-        'constants' => system\defined_constants($config),
-        'functions' => system\defined_functions(),
+        'checks' => system\install_checks($config),
         'config' => display_config($config),
+        'overview' => get_overview($config),
     ]);
 }
 
@@ -78,6 +78,69 @@ function display_config(Config $config): array
     $values['maintenanceMode'] = $config->maintenanceMode ? 'true' : 'false';
 
     return $values;
+}
+
+/**
+ * Operational overview for the system page. Read-only: unlike the
+ * backup listing this does not prune expired backups.
+ *
+ * @return array{pages: int, uploads: int, backups: int, projectSize: int, logSize: int, logLines: int}
+ */
+function get_overview(Config $config): array
+{
+    [$logSize, $logLines] = log_stats($config->phpErrorLog);
+
+    return [
+        'pages' => count(filesystem\find_files_rec($config->webDir, $config->pageExtensions, [$config->appDir])),
+        'uploads' => count(filesystem\find_files_rec($config->webDir, $config->uploadExtensions, [$config->appDir])),
+        'backups' => count(filesystem\find_files($config->backupDir, array_merge($config->uploadExtensions, $config->pageExtensions))),
+        'projectSize' => dir_size($config->webDir),
+        'logSize' => $logSize,
+        'logLines' => $logLines,
+    ];
+}
+
+function dir_size(string $dir): int
+{
+    if (!\is_dir($dir) || !\is_readable($dir)) {
+        return 0;
+    }
+    $size = 0;
+    try {
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+        );
+        foreach ($files as $file) {
+            if ($file->isFile()) {
+                $size += $file->getSize();
+            }
+        }
+    } catch (\UnexpectedValueException) {
+        // unreadable subdirectory: count what was reachable
+    }
+
+    return $size;
+}
+
+function log_stats(string $file): array
+{
+    if (!\is_file($file)) {
+        return [0, 0];
+    }
+    $size = \filesize($file);
+    $lines = 0;
+    $handle = \fopen($file, 'r');
+    if ($handle !== false) {
+        while (!\feof($handle)) {
+            $chunk = \fread($handle, 8192);
+            if ($chunk !== false) {
+                $lines += substr_count($chunk, "\n");
+            }
+        }
+        \fclose($handle);
+    }
+
+    return [$size === false ? 0 : $size, $lines];
 }
 
 function get_log_entries(Config $config, int $size = 100): Payload
