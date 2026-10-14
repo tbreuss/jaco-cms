@@ -46,7 +46,7 @@ function dispatch(Request $request, Config $config): Response
 {
     $actionQuery = (string) $request->query->val('action', '');
     $requestMethod = (string) $request->server->val('REQUEST_METHOD', '');
-    $authorizationHeader = (string) $request->server->val('HTTP_AUTHORIZATION', '');
+    $authorizationHeader = get_authorization_header($request);
 
     $routes = routes();
 
@@ -137,6 +137,29 @@ function check_authorization(Config $config, string $authorizationHeader): bool
     $token = trim(substr($authorizationHeader, strlen($bearer)));
 
     return auth\is_authenticated($config, $token);
+}
+
+/**
+ * Reads the Authorization header wherever the SAPI puts it: php -S and mod_php
+ * expose HTTP_AUTHORIZATION, Apache with the .htaccess rewrite lands in
+ * REDIRECT_HTTP_AUTHORIZATION, nginx/php-fpm only survive in the parsed headers.
+ */
+function get_authorization_header(Request $request): string
+{
+    foreach (['HTTP_AUTHORIZATION', 'REDIRECT_HTTP_AUTHORIZATION'] as $key) {
+        $value = (string) $request->server->val($key, '');
+        if ($value !== '') {
+            return $value;
+        }
+    }
+
+    foreach ($request->headers->values as $name => $value) {
+        if (\strtolower((string) $name) === 'authorization' && \is_string($value) && $value !== '') {
+            return $value;
+        }
+    }
+
+    return '';
 }
 
 function filter_routes(array $routes, string $column, string $search): array

@@ -10,3 +10,13 @@
 <IfModule mod_headers.c>
     Header always set X-Robots-Tag "noindex, nofollow"
 </IfModule>
+
+# The API authenticates via "Authorization: Bearer <jwt>". Apache drops that header
+# for php-fpm/CGI unless it is passed through explicitly; php -S and mod_php are
+# unaffected. The router also reads REDIRECT_HTTP_AUTHORIZATION and the parsed
+# headers, so every SAPI is covered.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP:Authorization} ^(.+)$
+    RewriteRule ^ - [E=HTTP_AUTHORIZATION:%1]
+</IfModule>

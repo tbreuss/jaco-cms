@@ -74,6 +74,12 @@ function get_request_headers(): array
         $headers['Content-Length'] = $_SERVER['CONTENT_LENGTH'];
     }
 
+    // Apache exposes a rewritten Authorization header as REDIRECT_HTTP_AUTHORIZATION,
+    // keep the parsed map consistent so callers can rely on the 'Authorization' key.
+    if (!isset($headers['Authorization']) && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) && is_string($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+        $headers['Authorization'] = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+    }
+
     return $headers;
 }
 
