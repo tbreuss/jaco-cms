@@ -1,8 +1,8 @@
-// Mobile navigation: below 30rem the links move behind a hamburger button.
+// Mobile navigation: below 40rem the links move behind a hamburger button.
 //
-// The button is built here because the CMS sanitizer drops <button> and <svg> from a page
-// body, and the open state lives as a class on <html>, which no save touches. Without
-// java script the plain navigation row stays visible.
+// The button sits in the html, the script only wires it up. The open state lives
+// as a class on <html>. Without java script the plain navigation row stays visible
+// and the toggle stays hidden (see assets/site.css).
 (() => {
   document.documentElement.classList.add('js')
 
@@ -14,22 +14,13 @@
   const burger = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>'
   const cross = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const navigation = document.querySelector('.navigation')
-    if (!navigation) {
+  const wire = () => {
+    const button = document.querySelector('.nav-toggle')
+    if (!button) {
       return
     }
 
     const text = labels[(document.documentElement.lang || 'en').slice(0, 2)] || labels.en
-
-    const item = document.createElement('li')
-    item.className = 'nav-toggle-item'
-
-    const button = document.createElement('button')
-    button.type = 'button'
-    button.className = 'nav-toggle'
-    item.appendChild(button)
-    navigation.prepend(item)
 
     const setOpen = (open) => {
       document.documentElement.classList.toggle('nav-open', open)
@@ -50,5 +41,13 @@
     })
 
     setOpen(false)
-  })
+  }
+
+  // The script runs in the head, the button exists only after parsing:
+  // wiring on DOMContentLoaded changes no layout, the button keeps its size.
+  if (document.querySelector('.nav-toggle')) {
+    wire()
+  } else {
+    document.addEventListener('DOMContentLoaded', wire)
+  }
 })()

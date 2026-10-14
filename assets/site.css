@@ -106,12 +106,14 @@ li {
 .navigation {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 0.5rem;
     list-style: none;
     padding: 0;
     margin: 1.5rem 0;
     border-bottom: 1px solid var(--border);
     padding-bottom: 0.75rem;
+    min-height: 3.25rem;
 }
 
 .navigation a {
@@ -140,7 +142,7 @@ li {
     border-left: 1px solid var(--border);
 }
 
-/* Theme switch: built by assets/theme.js, because the sanitizer drops button and svg */
+/* Theme switch: sits in the html, assets/theme.js only wires it up */
 .theme-switch {
     display: inline-flex;
     align-items: center;
@@ -367,10 +369,15 @@ th {
     padding: 0;
 }
 
-/* Mobile menu: below 40rem and only with java script – the button is built by
-   assets/nav.js, without it the plain row below stays visible. The page row needs
+/* Mobile menu: below 40rem and only with java script – without it the plain row
+   below stays visible. The page row needs
    500px content plus 32px page padding in german, so 640px leaves room for the wider
-   system fonts of other platforms. */
+   system fonts of other platforms. The toggle item stays hidden without js and on
+   desktop, so it never adds gap to the row. */
+.nav-toggle-item {
+    display: none;
+}
+
 .nav-toggle {
     display: none;
     align-items: center;
