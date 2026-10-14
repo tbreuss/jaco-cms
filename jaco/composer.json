@@ -41,6 +41,9 @@
         "phpstan": "phpstan analyse --no-progress",
         "cs-check": "php-cs-fixer fix --dry-run --diff",
         "cs-fix": "php-cs-fixer fix",
+        "protect-vendor": "printf '%s\\n' '# Third-party code: never serve directly.' 'Require all denied' > vendor/.htaccess",
+        "post-install-cmd": "@protect-vendor",
+        "post-update-cmd": "@protect-vendor",
         "deptrac": "deptrac analyse --config-file=deptrac.yaml --no-progress",
         "coverage": [
             "rm -f test/runtime/coverage.xml",
