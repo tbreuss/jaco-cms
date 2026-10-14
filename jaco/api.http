@@ -97,6 +97,11 @@ GET http://localhost:9999/jaco/api.php?action=system/log&XDEBUG_SESSION_START
 Accept: application/json
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
 
+### Clear system log
+POST http://localhost:9999/jaco/api.php?action=system/log/clear&XDEBUG_SESSION_START
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+
 ### PHP info
 GET http://localhost:9999/jaco/api.php?action=system/php-info&XDEBUG_SESSION_START
 Accept: application/json

@@ -133,6 +133,19 @@ function get_phpinfo(): Payload
     return Payload::success($matches[1]);
 }
 
+function clear_error_log(Config $config): Payload
+{
+    if (!\file_exists($config->phpErrorLog)) {
+        return Payload::success([]);
+    }
+
+    if (\file_put_contents($config->phpErrorLog, '') === false) {
+        return Payload::error([['', 'Could not clear file.']]);
+    }
+
+    return Payload::success([]);
+}
+
 function get_version(Config $config): Payload
 {
     return Payload::success([

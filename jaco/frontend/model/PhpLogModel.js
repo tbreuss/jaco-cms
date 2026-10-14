@@ -10,5 +10,15 @@ export const PhpLogModel = {
         PhpLogModel.data = data
         PhpLogModel.isLoading = false
       })
+  },
+  clear: () => {
+    return api.post('system/log/clear', {}, {
+      background: true, // no redraw
+      body: {},
+      withCredentials: false
+    })
+      .then(() => {
+        PhpLogModel.load()
+      })
   }
 }

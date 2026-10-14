@@ -8,10 +8,12 @@ import {Select} from '/jaco/frontend/component/Select.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
 import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
 import {ViewUploadView} from '/jaco/frontend/view/upload/ViewUploadView.js'
+import {PhpLogView} from '/jaco/frontend/view/PhpLogView.js'
+import {PhpLogModel} from '/jaco/frontend/model/PhpLogModel.js'
 import {UploadListModel} from '/jaco/frontend/model/UploadListModel.js'
 import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
 import {api} from '/jaco/frontend/service/api.js'
-import {tError} from '/jaco/frontend/model/i18n.js'
+import {t, tError} from '/jaco/frontend/model/i18n.js'
 import {isSaveShortcut, isSaveAndCloseShortcut, bindSaveShortcut, saveShortcutLabel, saveAndCloseShortcutLabel} from '/jaco/frontend/lib/shortcuts.js'
 import {getTheme, setTheme, applyTheme} from '/jaco/frontend/lib/theme.js'
 import {formatDateTimeCompact, formatDateTimeFull} from '/jaco/frontend/lib/format.js'
@@ -400,6 +402,60 @@ QUnit.test('created cell shows the compact time with the full time as tooltip', 
   assert.ok(/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2}$/.test(cell.getAttribute('title')), 'tooltip holds the full time')
   assert.ok(/^\d{2}\.\d{2}\.\d{2} \d{2}:\d{2}$/.test(cell.textContent), 'cell shows the compact time')
   assert.ok(cell.classList.contains('text-nowrap'), 'no wrapping inside the cell')
+})
+
+QUnit.module('PhpLogView clear button', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    PhpLogModel.load = () => Promise.resolve()
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    PhpLogModel.data = []
+    document.getElementById('app')?.remove()
+  }
+})
+
+QUnit.test('clear button renders with icon and label', (assert) => {
+  PhpLogModel.data = []
+  PhpLogModel.isLoading = false
+  m.render(fixture(), m(PhpLogView))
+
+  const button = fixture().querySelector('.content button')
+  assert.ok(button, 'a button is rendered')
+  assert.ok(button.querySelector('svg.icon'), 'icon replaces the text label')
+  assert.strictEqual(button.querySelector('span')?.textContent, t('Clear log'), 'label is shown')
+})
+
+QUnit.test('confirming clear reloads the list, cancelling does nothing', (assert) => {
+  const realConfirm = window.confirm
+  const realClear = PhpLogModel.clear
+  let cleared = 0
+  PhpLogModel.clear = () => {
+    cleared++
+    return Promise.resolve()
+  }
+
+  try {
+    PhpLogModel.data = []
+    PhpLogModel.isLoading = false
+    m.render(fixture(), m(PhpLogView))
+
+    window.confirm = () => true
+    fixture().querySelector('.content button').click()
+    assert.strictEqual(cleared, 1, 'confirmed clear reloads the list')
+
+    window.confirm = () => false
+    fixture().querySelector('.content button').click()
+    assert.strictEqual(cleared, 1, 'cancelled clear does nothing')
+  } finally {
+    window.confirm = realConfirm
+    PhpLogModel.clear = realClear
+  }
 })
 
 QUnit.module('datetime format')

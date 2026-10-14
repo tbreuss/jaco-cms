@@ -126,6 +126,13 @@ router\get(
     responseSchema: 'diagnostics/log/response.json',
 );
 
+router\post(
+    route: 'system/log/clear',
+    callback: jaco\api\system\log\clear\action(...),
+    authenticated: true,
+    responseSchema: 'null.json',
+);
+
 router\get(
     route: 'system/php-info',
     callback: jaco\api\system\phpinfo\action(...),

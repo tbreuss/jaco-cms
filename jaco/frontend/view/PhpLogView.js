@@ -1,6 +1,25 @@
 import {PhpLogModel} from '../model/PhpLogModel.js'
-import {t} from '../model/i18n.js'
+import {ButtonPrimary} from '../component/ButtonPrimary.js'
+import {Icon} from '../component/Icon.js'
+import {t, tError} from '../model/i18n.js'
+import {addDanger, addSuccess} from '../state/actions.js'
 import {app} from '../lib/app.js'
+
+const clearLog = () => {
+  if (confirm(t('Do you want to clear the log?'))) {
+    PhpLogModel.clear()
+      .then(() => {
+        addSuccess(t('Log was successfully cleared.'))
+      })
+      .catch(({response}) => {
+        const error = (response ?? [])[0]
+        if (error) {
+          addDanger(error.detail ? tError(error.detail) : t(error.title, null, error.title))
+        }
+        m.redraw()
+      })
+  }
+}
 
 const logTable = (data) => m('div',
   m('table.table.table-log-view',
@@ -32,7 +51,17 @@ export const PhpLogView = {
   },
   view: () => m('div.main',
     m('.content',
-      m('h1', t('PHP error log')),
+      m('div', {style: {display: 'flex', justifyContent: 'space-between', alignItems: 'center'}},
+        m('h1', t('PHP error log')),
+        m('div',
+          m(ButtonPrimary, {
+            onclick: (e) => {
+              e.redraw = false
+              clearLog()
+            }
+          }, m(Icon, {name: 'delete'}), m('span', t('Clear log')))
+        )
+      ),
       PhpLogModel.data.length > 0
         ? logTable(PhpLogModel.data)
         : PhpLogModel.isLoading
