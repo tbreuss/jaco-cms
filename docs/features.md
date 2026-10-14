@@ -68,11 +68,15 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   route (page create, update, update body, delete, copy, `css/update`, `upload/create`,
   `upload/delete`, `backup/restore`, `backup/delete`) answers with the maintenance
   response, while lists and views keep working.
-- **Login attempts are throttled.** Three failures within ten minutes block the login for
-  ten minutes; fifteen failures in total block it until
-  `jaco/runtime/log/loginhistory.json` is deleted. Every failure counts into one global
-  bucket, so rotating usernames does not help, and the response never reveals whether the
-  username exists (`jaco/backend/core/auth.php`).
+- **Login attempts are throttled per address, never globally.** Three failures from one
+  address within ten minutes block that address for ten minutes; a blocked attempt counts
+  again, so hammering keeps its own block alive. Rotating usernames does not help (the
+  bucket is the address, not the name) and the response never reveals whether a name
+  exists. There is no permanent block, so nobody can lock the owner out, and a successful
+  login clears that address; `cli.php auth:unblock` clears all of them. Command line
+  callers have no address and are not throttled. The history keeps at most
+  `LOGIN_MAX_ADDRESSES` addresses and drops everything outside the window
+  (`jaco/backend/core/auth.php`).
 - **Two-factor codes count as attempts.** A wrong TOTP code records a failure like a
   wrong password, and a correct password without a code only reveals that a second
   step is required (`totpRequired`), never a token. There are no backup codes:
@@ -147,7 +151,7 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | Area | Test |
 | --- | --- |
 | Auth tokens: issue and validation | `jaco/test/AuthTest.php` |
-| Login throttling: block, permanent block, reset | `jaco/test/LoginThrottleTest.php` |
+| Login throttling: per address, unblock, bounded history | `jaco/test/LoginThrottleTest.php` |
 | Two-factor codes (RFC vectors) and login flow with secret | `jaco/test/TotpTest.php`, `jaco/test/ApiLoginTotpTest.php` |
 | CLI entry point: web requests are refused | `jaco/test/CliEntryPointTest.php` |
 | System environment and log clearing | `jaco/test/ApiSystemTest.php`, `jaco/test/ApiSystemLogClearTest.php` |

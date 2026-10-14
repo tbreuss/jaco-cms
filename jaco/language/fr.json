@@ -118,7 +118,6 @@
     "Dir does not exist.": "Le répertoire n'existe pas.",
     "Invalid authentication code.": "Code de vérification invalide.",
     "Invalid service status": "Statut de service invalide",
-    "Login blocked. Contact the administrator.": "Connexion bloquée. Contactez l'administrateur.",
     "Maintenance mode: changes are disabled": "Mode maintenance : les modifications sont désactivées",
     "No file was uploaded.": "Aucun fichier n'a été téléchargé.",
     "Request failed": "La requête a échoué",

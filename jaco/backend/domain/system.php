@@ -10,8 +10,13 @@ use jaco\core\system;
 use jaco\core\totp;
 use jaco\domain\Payload;
 
-function authenticate_user(Config $config, string $username, string $withPassword, string $withTotpCode = ''): Payload
-{
+function authenticate_user(
+    Config $config,
+    string $username,
+    string $withPassword,
+    string $withTotpCode = '',
+    string $address = '',
+): Payload {
     $errors = data\validate(
         [
             'username' => $username,
@@ -29,18 +34,13 @@ function authenticate_user(Config $config, string $username, string $withPasswor
         return Payload::invalid($errors);
     }
 
-    // strict: a block rejects everything without looking at credentials.
-    // blocked attempts still count, so persistent guessing reaches the
-    // permanent block instead of stalling the counter at the temp limit.
-    $blocked = auth\get_login_block_remaining($config);
-
-    if ($blocked === PHP_INT_MAX) {
-        auth\record_login_failure($config);
-        return Payload::invalid([['', 'Login blocked. Contact the administrator.']]);
-    }
+    // strict: a blocked address is rejected without looking at credentials, and the
+    // attempt counts again – so hammering keeps its own block alive, while every other
+    // address (the owner's included) stays unaffected
+    $blocked = auth\get_login_block_remaining($config, $address);
 
     if ($blocked > 0) {
-        auth\record_login_failure($config);
+        auth\record_login_failure($config, $address);
         $minutes = (int) ceil($blocked / 60);
         return Payload::invalid([['', 'Too many attempts. Try again in ' . $minutes . ' minute(s).']]);
     }
@@ -48,12 +48,12 @@ function authenticate_user(Config $config, string $username, string $withPasswor
     $token = auth\authenticate($config, $username, $withPassword);
 
     if ($token === null) {
-        auth\record_login_failure($config);
+        auth\record_login_failure($config, $address);
         return Payload::invalid([['', 'Authentication failed.']]);
     }
 
     if ($config->totpSecret === '') {
-        auth\record_login_success($config);
+        auth\record_login_success($config, $address);
         return Payload::success(['token' => $token]);
     }
 
@@ -62,11 +62,11 @@ function authenticate_user(Config $config, string $username, string $withPasswor
     }
 
     if (!totp\verify_code($config->totpSecret, $withTotpCode)) {
-        auth\record_login_failure($config);
+        auth\record_login_failure($config, $address);
         return Payload::invalid([['totpCode', 'Invalid authentication code.']]);
     }
 
-    auth\record_login_success($config);
+    auth\record_login_success($config, $address);
 
     return Payload::success(['token' => $token]);
 }

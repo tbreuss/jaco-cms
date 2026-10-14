@@ -7,11 +7,13 @@ const TOKEN_ISSUER = 'ch.tebe.jaco';
 const TOKEN_TTL = 86400; // tokens are valid for 24 hours
 const TOKEN_ALGORITHM = 'HS256';
 
-// login throttle: 3 fails within 10 minutes block the login for 10 minutes,
-// 15 fails in total block it permanently until the history file is deleted
+// login throttle: three failures from one address within ten minutes block that address
+// for ten minutes. The bucket is the address, not the username, so rotating names does
+// not help; there is no permanent block, so nobody can lock the owner out. The address
+// map is capped, so a distributed attack cannot grow the history file.
 const LOGIN_MAX_ATTEMPTS = 3;
 const LOGIN_BLOCK_SECONDS = 600;
-const LOGIN_MAX_TOTAL = 15;
+const LOGIN_MAX_ADDRESSES = 1000;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -70,27 +72,19 @@ function create_token(Config $config, string $username): string
 }
 
 /**
- * Seconds until the login is allowed again, 0 when not blocked.
- * The throttle counts every failed attempt in one global bucket:
- * rotating usernames neither avoids the block nor reveals whether
- * a name exists, since the response never depends on the name.
- * A permanent block never expires and must be lifted by deleting
- * the login history file.
+ * Seconds until this address may try again, 0 when it may.
  *
  * @return int<0, max>
  */
-function get_login_block_remaining(Config $config): int
+function get_login_block_remaining(Config $config, string $address): int
 {
-    $history = read_login_history($config);
-
-    if ($history['total'] >= LOGIN_MAX_TOTAL) {
-        return PHP_INT_MAX;
+    // a command line caller has no address and is not throttled: whoever runs the
+    // command already has file access
+    if ($address === '') {
+        return 0;
     }
 
-    $window = array_filter(
-        $history['fails'],
-        fn(int $timestamp): bool => $timestamp > time() - LOGIN_BLOCK_SECONDS,
-    );
+    $window = recent_failures(read_login_history($config), $address);
 
     if (count($window) < LOGIN_MAX_ATTEMPTS) {
         return 0;
@@ -101,60 +95,123 @@ function get_login_block_remaining(Config $config): int
     return max(max($window) + LOGIN_BLOCK_SECONDS - time(), 0);
 }
 
-function record_login_failure(Config $config): void
+function record_login_failure(Config $config, string $address): void
 {
+    if ($address === '') {
+        return;
+    }
+
     $history = read_login_history($config);
-    // prune expired entries and cap the list: only the count within the
-    // window and the latest timestamp matter, so sustained brute force
-    // cannot grow the file beyond a few entries
-    $history['fails'] = array_values(array_filter(
-        $history['fails'],
-        fn(int $timestamp): bool => $timestamp > time() - LOGIN_BLOCK_SECONDS,
-    ));
-    $history['fails'][] = time();
-    $history['fails'] = array_slice($history['fails'], -LOGIN_MAX_ATTEMPTS);
-    $history['total'] = $history['total'] + 1;
+    $fails = recent_failures($history, $address);
+    $fails[] = time();
+    // only the count within the window and the latest timestamp matter
+    $history['addresses'][$address] = array_slice($fails, -LOGIN_MAX_ATTEMPTS);
 
     write_login_history($config, $history);
 }
 
-function record_login_success(Config $config): void
+function record_login_success(Config $config, string $address): void
 {
-    if (read_login_history($config) !== ['fails' => [], 'total' => 0]) {
-        write_login_history($config, ['fails' => [], 'total' => 0]);
+    if ($address === '') {
+        return;
     }
+
+    $history = read_login_history($config);
+
+    if (!isset($history['addresses'][$address])) {
+        return;
+    }
+
+    unset($history['addresses'][$address]);
+
+    write_login_history($config, $history);
 }
 
 function clear_login_history(Config $config): void
 {
-    record_login_success($config);
+    write_login_history($config, ['addresses' => []]);
 }
 
-/** @return array{fails: list<int>, total: int} */
+/**
+ * @param array{addresses: array<string, list<int>>} $history
+ * @return list<int> timestamps of this address within the block window
+ */
+function recent_failures(array $history, string $address): array
+{
+    $window = array_filter(
+        $history['addresses'][$address] ?? [],
+        fn(int $timestamp): bool => $timestamp > time() - LOGIN_BLOCK_SECONDS,
+    );
+
+    return array_slice(array_values($window), -LOGIN_MAX_ATTEMPTS);
+}
+
+/** @return array{addresses: array<string, list<int>>} */
 function read_login_history(Config $config): array
 {
     $content = @file_get_contents($config->loginHistoryFile);
 
     if (!is_string($content)) {
-        return ['fails' => [], 'total' => 0];
+        return ['addresses' => []];
     }
 
     $decoded = json_decode($content, true);
 
-    if (!is_array($decoded)) {
-        return ['fails' => [], 'total' => 0];
+    if (!is_array($decoded) || !is_array($decoded['addresses'] ?? null)) {
+        return ['addresses' => []];
     }
 
     // the file content is untrusted, coerce it into shape
-    $fails = array_values(array_filter($decoded['fails'] ?? [], 'is_int'));
-    $total = $decoded['total'] ?? 0;
+    $addresses = [];
+    foreach ($decoded['addresses'] as $address => $times) {
+        if (!is_string($address) || !is_array($times)) {
+            continue;
+        }
+        $clean = array_values(array_filter($times, 'is_int'));
+        if (count($clean) > 0) {
+            $addresses[$address] = $clean;
+        }
+    }
 
-    return ['fails' => $fails, 'total' => is_int($total) ? $total : 0];
+    return ['addresses' => $addresses];
 }
 
-/** @param array{fails: list<int>, total: int} $history */
+/**
+ * Keeps only what can still block: entries outside the window are dropped and the number
+ * of addresses is capped, so an address that stopped failing loses its entry and a
+ * distributed attack cannot grow the file without bound.
+ *
+ * @param array{addresses: array<string, list<int>>} $history
+ * @return array{addresses: array<string, list<int>>}
+ */
+function prune_login_history(array $history): array
+{
+    $kept = [];
+
+    foreach ($history['addresses'] as $address => $times) {
+        $window = array_values(array_filter(
+            $times,
+            fn(int $timestamp): bool => $timestamp > time() - LOGIN_BLOCK_SECONDS,
+        ));
+        if (count($window) > 0) {
+            $kept[$address] = $window;
+        }
+    }
+
+    if (count($kept) > LOGIN_MAX_ADDRESSES) {
+        // newest first: the most recently active addresses survive
+        uasort($kept, fn(array $a, array $b): int => max($b) <=> max($a));
+        $kept = array_slice($kept, 0, LOGIN_MAX_ADDRESSES, true);
+    }
+
+    return ['addresses' => $kept];
+}
+
+/** @param array{addresses: array<string, list<int>>} $history */
 function write_login_history(Config $config, array $history): void
 {
+    $history = prune_login_history($history);
+
     $dir = \dirname($config->loginHistoryFile);
 
     if (!\is_dir($dir)) {

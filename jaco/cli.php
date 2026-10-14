@@ -53,6 +53,13 @@ $app->command('auth:token', 'Get token for credential.')
         exit($exitCode);
     });
 
+$app->command('auth:unblock', 'Clear the login blocks of all addresses.')
+    ->action(function () use ($config): void {
+        [$output, $exitCode] = \jaco\cli\auth\unblock\command($config);
+        echo $output;
+        exit($exitCode);
+    });
+
 $app->command('auth:totp-setup', 'Require two-factor authentication.')
     ->action(function () use ($config): void {
         [$output, $exitCode] = \jaco\cli\auth\totp\setup_command($config);

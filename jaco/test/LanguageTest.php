@@ -66,7 +66,6 @@ final class LanguageTest extends TestCase
             '{value} must not be in the {dir} folder.',
             '{value} is an invalid sort parameter.',
             'Authentication failed.',
-            'Login blocked. Contact the administrator.',
             'Too many attempts. Try again in {minutes} minute(s).',
             'Could not read file.',
             'The file is empty.',

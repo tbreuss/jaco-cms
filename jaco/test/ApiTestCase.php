@@ -58,6 +58,7 @@ abstract class ApiTestCase extends TestCase
     /**
      * @param array<string, mixed> $post
      * @param array<string, string> $query additional query parameters besides "action"
+     * @param array<string, string> $server additional server variables, e.g. REMOTE_ADDR
      */
     protected function api(
         string $action,
@@ -66,8 +67,9 @@ abstract class ApiTestCase extends TestCase
         bool $authenticated = true,
         array $query = [],
         ?Config $config = null,
+        array $server = [],
     ): Response {
-        $server = ['REQUEST_METHOD' => $method];
+        $server = array_merge(['REQUEST_METHOD' => $method], $server);
 
         if ($authenticated) {
             $server['HTTP_AUTHORIZATION'] = 'Bearer ' . $this->token();
