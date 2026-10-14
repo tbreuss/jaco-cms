@@ -998,3 +998,77 @@ QUnit.test('auto resolves through the OS setting', (assert) => {
     window.matchMedia = realMatchMedia
   }
 })
+
+QUnit.module('import audit')
+
+// Every module that renders mithril components. A <Capitalized> name used
+// inside m(...) or m.mount(...) must be imported or defined in the same
+// file, otherwise the view crashes at runtime with "X is not defined" -
+// and neither node --check nor the render tests catch that (PageEditView
+// shipped without its Icon import). New view/component/lib files must be
+// added to auditFiles.
+const auditFiles = [
+  '/jaco/frontend/app.js',
+  '/jaco/frontend/lib/app.js',
+  '/jaco/frontend/lib/format.js',
+  '/jaco/frontend/lib/helpers.js',
+  '/jaco/frontend/lib/iframe.js',
+  '/jaco/frontend/lib/shortcuts.js',
+  '/jaco/frontend/lib/theme.js',
+  '/jaco/frontend/component/ButtonGroup.js',
+  '/jaco/frontend/component/ButtonPrimary.js',
+  '/jaco/frontend/component/ButtonSecondary.js',
+  '/jaco/frontend/component/ErrorModal.js',
+  '/jaco/frontend/component/Fieldset.js',
+  '/jaco/frontend/component/FilterInput.js',
+  '/jaco/frontend/component/FormErrors.js',
+  '/jaco/frontend/component/Icon.js',
+  '/jaco/frontend/component/Input.js',
+  '/jaco/frontend/component/InputPassword.js',
+  '/jaco/frontend/component/InputText.js',
+  '/jaco/frontend/component/Label.js',
+  '/jaco/frontend/component/ModalMedium.js',
+  '/jaco/frontend/component/ModalSmall.js',
+  '/jaco/frontend/component/Select.js',
+  '/jaco/frontend/view/CssEditView.js',
+  '/jaco/frontend/view/LoginView.js',
+  '/jaco/frontend/view/LogoutView.js',
+  '/jaco/frontend/view/PageAddView.js',
+  '/jaco/frontend/view/PageCopyView.js',
+  '/jaco/frontend/view/PageDeleteView.js',
+  '/jaco/frontend/view/PageGotoView.js',
+  '/jaco/frontend/view/PageInlineEditView.js',
+  '/jaco/frontend/view/PhpInfoView.js',
+  '/jaco/frontend/view/PhpLogView.js',
+  '/jaco/frontend/view/StartView.js',
+  '/jaco/frontend/view/SystemView.js',
+  '/jaco/frontend/view/backup/BackupEditView.js',
+  '/jaco/frontend/view/backup/BackupListView.js',
+  '/jaco/frontend/view/page/PageEditView.js',
+  '/jaco/frontend/view/page/PageListView.js',
+  '/jaco/frontend/view/upload/UploadListView.js',
+  '/jaco/frontend/view/upload/ViewUploadView.js',
+]
+
+QUnit.test('every used component is imported or defined locally', async (assert) => {
+  for (const file of auditFiles) {
+    const source = await (await fetch(file)).text()
+    assert.ok(source.length > 0, `${file} loads`)
+
+    const imported = new Set()
+    for (const match of source.matchAll(/import\s*\{([^}]*)\}\s*from/g)) {
+      match[1].split(',').forEach((name) => imported.add(name.trim().split(/\s+as\s+/)[0]))
+    }
+    const defined = new Set(
+      [...source.matchAll(/(?:const|let|var|function)\s+([A-Za-z_$][A-Za-z0-9_$]*)/g)].map((match) => match[1])
+    )
+    const used = new Set([
+      ...[...source.matchAll(/(?<![A-Za-z0-9_$])m\(\s*([A-Z][A-Za-z0-9]*)/g)].map((match) => match[1]),
+      ...[...source.matchAll(/(?<![A-Za-z0-9_$])m\.mount\(\s*[A-Za-z_$][A-Za-z0-9_$]*\s*,\s*([A-Z][A-Za-z0-9]*)/g)].map((match) => match[1]),
+    ])
+
+    for (const name of used) {
+      assert.ok(imported.has(name) || defined.has(name), `${file} provides ${name}`)
+    }
+  }
+})
