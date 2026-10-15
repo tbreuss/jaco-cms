@@ -195,6 +195,12 @@ function is_allowed_attribute(string $tag, string $name, string $value): bool
     // browsers strip tabs and new lines from urls, so they cannot separate a scheme
     $value = \str_replace(["\t", "\n", "\r", "\0"], '', \trim($value));
 
+    // protocol-relative urls inherit the page scheme and can point anywhere;
+    // browsers also treat leading backslashes as slashes in web addresses
+    if (\str_starts_with($value, '//') || \str_starts_with($value, '\\')) {
+        return false;
+    }
+
     // relative urls are fine
     if (!\preg_match('/^[a-z][a-z0-9+.-]*:/i', $value)) {
         return true;
