@@ -16,13 +16,14 @@ class HttpUnauthorizedException extends Exception {}
 // errors see https://jsonapi.org/format/#error-objects
 function exception_handler(\Throwable $t): void
 {
-    $message = format_error($t->getMessage(), $t->getFile(), $t->getLine());
-
-    error_log($message);
+    // full detail goes to the server log only: the client gets a reference,
+    // never paths or internals (the frontend shows the title anyway)
+    $id = generate_reference();
+    error_log($id . ' ' . format_error($t->getMessage(), $t->getFile(), $t->getLine()));
 
     $response = json_response([
         'title' => get_error_type($t->getCode()),
-        'detail' => $message,
+        'detail' => 'An unexpected error occurred (reference ' . $id . ').',
     ], Status::INTERNAL_SERVER_ERROR);
 
     http\emit($response);
@@ -62,11 +63,12 @@ function fatal_handler(): void
 
     $message = format_error($error['message'], $error['file'], $error['line']);
 
-    error_log($message);
+    $id = generate_reference();
+    error_log($id . ' ' . $message);
 
     $response = json_response([
         'title' => get_error_type($error['type']),
-        'detail' => $message,
+        'detail' => 'An unexpected error occurred (reference ' . $id . ').',
     ], Status::INTERNAL_SERVER_ERROR);
 
     http\emit($response);
@@ -97,4 +99,17 @@ function get_error_type(int $number): string
 function format_error(string $message, string $file, int $line): string
 {
     return sprintf('%s in %s on line %s', $message, $file, $line);
+}
+
+/**
+ * Short random reference linking a client response to its log entry,
+ * so the admin finds the full detail in the error log by the reported id.
+ */
+function generate_reference(): string
+{
+    try {
+        return substr(bin2hex(random_bytes(8)), 0, 12);
+    } catch (\Throwable) {
+        return (string) time();
+    }
 }
