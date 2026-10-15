@@ -71,6 +71,15 @@ function create_default_config(string $appDir, array $settings = []): Config
     $password = (string) ($settings['password'] ?? '');
     $secretKey = (string) ($settings['secretKey'] ?? '');
 
+    // the upload directory stays inside the web root: the value is checked
+    // untrimmed, so neither a leading slash nor a traversal segment can
+    // turn into a relative path by accident; both fall back to the default
+    // and keep listings, backups and the preview working
+    $uploadDirName = (string) ($settings['uploadDir'] ?? '');
+    if (!\preg_match('#^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$#', $uploadDirName)) {
+        $uploadDirName = 'upload';
+    }
+
     return new Config(
         appVersion: '0.1.0',
         appDir: $appDir,
@@ -79,9 +88,9 @@ function create_default_config(string $appDir, array $settings = []): Config
         templatePageDir: $appDir . '/_template/page',
         templateContentDir: $appDir . '/_template/content',
         webDir: dirname($appDir),
-        uploadDir: dirname($appDir) . '/upload',
+        uploadDir: dirname($appDir) . '/' . $uploadDirName,
         uploadExtensions: ['png', 'gif', 'jpg', 'jpeg', 'svg', 'pdf'],
-        uploadUrl: 'upload',
+        uploadUrl: $uploadDirName,
         pageExtensions: ['htm', 'html'],
         defaultLanguage: (string) ($settings['defaultLanguage'] ?? 'en'),
         directoryPermissions: 0755,

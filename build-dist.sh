@@ -23,7 +23,7 @@ git -C "$ROOT" archive HEAD jaco | tar -x -C "$WORK"
 # Installationsanleitung und Lizenz aus dem Arbeitsverzeichnis dazu (evtl. uncommitted)
 cp "$ROOT/INSTALL.md" "$WORK/INSTALL.md"
 cp "$ROOT/LICENSE" "$WORK/LICENSE"
-cp "$ROOT/nginx-jaco.conf.example" "$WORK/nginx-jaco.conf.example"
+cp "$ROOT/docs/nginx-jaco.conf.example" "$WORK/nginx-jaco.conf.example"
 
 # Dependencies für die Auslieferung installieren (braucht composer.json).
 # Plattform auf 8.2 pinnen, damit die Auflösung auch auf neueren
@@ -40,24 +40,17 @@ rm -f "$WORK/jaco/.deptrac.cache"
 rm -f "$WORK/jaco/phpunit.xml" "$WORK/jaco/.phpunit.cache" "$WORK/jaco/.phpunit.result.cache"
 rm -f "$WORK/jaco/composer.json" "$WORK/jaco/composer.lock"
 rm -f "$WORK/jaco/settings.php"
-rm -f "$WORK/jaco/api.http" "$WORK/jaco/phpstan.neon" "$WORK/jaco/rte-example.md"
-rm -f "$WORK/jaco/deptrac.yaml"
+rm -f "$WORK/jaco/api.http" "$WORK/jaco/phpstan.neon" "$WORK/jaco/deptrac.yaml"
 find "$WORK" -name ".DS_Store" -delete
 
 # leere Laufzeitverzeichnisse sicherstellen (braucht die App zum Schreiben)
-mkdir -p "$WORK/jaco/_backup" "$WORK/upload" "$WORK/jaco/runtime/log"
+mkdir -p "$WORK/jaco/_backup" "$WORK/jaco/runtime/log"
 
-# Schutzdatei für upload/ (nicht aus git, nur angelegt): Inhalt wie im Repo.
-printf '%s\n' '# Editor uploads (images, PDFs): serve as static files, never execute.' \
-    '# Uploads are already limited server-side to png/gif/jpg/jpeg/svg/pdf,' \
-    '# this is defense in depth against double-extension and handler tricks.' \
-    '<FilesMatch "\.ph(p|ar|tml|t|ps)$">' '    Require all denied' '</FilesMatch>' \
-    'Options -Indexes' \
-    > "$WORK/upload/.htaccess"
-# jaco/vendor/.htaccess entsteht per composer post-install-cmd, kein printf nötig.
+# upload/ ist Nutzerdaten-Verzeichnis und kommt nicht mit: der Installer legt
+# es samt Schutzdatei an, wo immer es fehlt.
 
 OUT="$ROOT/jaco-dist-$VERSION.zip"
 rm -f "$OUT"
-(cd "$WORK" && zip -qr "$OUT" jaco upload INSTALL.md LICENSE nginx-jaco.conf.example)
+(cd "$WORK" && zip -qr "$OUT" jaco INSTALL.md LICENSE nginx-jaco.conf.example)
 
 echo "gebaut: $OUT ($(du -h "$OUT" | cut -f1))"

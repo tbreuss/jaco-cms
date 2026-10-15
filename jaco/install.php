@@ -79,8 +79,31 @@ $config = create_default_config($appDir, []);
 // Runtime directories may not exist in a fresh upload, create what is
 // creatable before checking: the checks below verify the result.
 @make_dir_rec($config, $appDir, '_backup');
-@make_dir_rec($config, dirname($appDir), 'upload');
 @make_dir_rec($config, $appDir, 'runtime/log');
+
+// upload/ is user data, so no archive ships it: create and protect it here,
+// wherever the directory comes from. An existing file is never overwritten.
+function install_protect_upload(string $webDir, string $uploadDir): void
+{
+    if (!is_dir($webDir . '/' . $uploadDir)) {
+        @mkdir($webDir . '/' . $uploadDir, 0755, true);
+    }
+    if (!is_dir($webDir . '/' . $uploadDir) || is_file($webDir . '/' . $uploadDir . '/.htaccess')) {
+        return;
+    }
+    @file_put_contents(
+        $webDir . '/' . $uploadDir . '/.htaccess',
+        "# Editor uploads (images, PDFs): serve as static files, never execute.\n"
+        . "# Uploads are already limited server-side to png/gif/jpg/jpeg/svg/pdf,\n"
+        . "# this is defense in depth against double-extension and handler tricks.\n"
+        . "<FilesMatch \"\\.ph(p|ar|tml|t|ps)$\">\n"
+        . "    Require all denied\n"
+        . "</FilesMatch>\n"
+        . "Options -Indexes\n",
+    );
+}
+
+install_protect_upload(dirname($appDir), 'upload');
 
 $checks = install_checks($config);
 $checksFailed = false;
@@ -96,6 +119,7 @@ $checksTable = '<table><tr><th>Check</th><th></th><th>Detail</th></tr>' . $check
 $isPost = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST';
 $username = isset($_POST['username']) && is_string($_POST['username']) ? trim($_POST['username']) : '';
 $password = isset($_POST['password']) && is_string($_POST['password']) ? (string) $_POST['password'] : '';
+$uploadDir = isset($_POST['uploadDir']) && is_string($_POST['uploadDir']) ? $_POST['uploadDir'] : 'upload';
 $language = isset($_POST['language']) && is_string($_POST['language']) ? $_POST['language'] : 'en';
 $totp = !$isPost || (isset($_POST['totp']) && $_POST['totp'] === '1');
 $errors = [];
@@ -109,6 +133,11 @@ if ($isPost && !$checksFailed) {
     }
     if ($language !== 'de' && $language !== 'en' && $language !== 'fr' && $language !== 'it') {
         $errors[] = 'Please select a language.';
+    }
+    // same vocabulary as create_default_config: no leading slash, no traversal
+    if (!preg_match('#^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$#', $uploadDir)) {
+        $errors[] = 'Upload directory name may only contain letters, digits, hyphens, underscores and slashes, '
+            . 'and must be relative to the web root, for example "upload" or "bilder/2026".';
     }
 
     if (count($errors) === 0) {
@@ -127,12 +156,26 @@ if ($isPost && !$checksFailed) {
             }
         }
 
+        // the chosen directory is created and protected before the settings
+        // are written, so the app never starts without a usable upload folder
+        install_protect_upload(dirname($appDir), $uploadDir);
+
+        if (!is_dir(dirname($appDir) . '/' . $uploadDir)) {
+            $errors[] = 'Could not create the upload directory ' . $uploadDir . ', please create it by hand.';
+        }
+
         if (!is_string($secret)) {
             $errors[] = 'Could not generate a secret key, please reload and try again.';
         } elseif ($totp && !is_string($totpSecret)) {
             $errors[] = 'Could not generate a two-factor secret, please reload and try again.';
         } elseif (!write_settings($appDir, array_merge(
-            ['username' => $username, 'password' => $password, 'secretKey' => $secret, 'defaultLanguage' => $language],
+            [
+                'username' => $username,
+                'password' => $password,
+                'secretKey' => $secret,
+                'defaultLanguage' => $language,
+                'uploadDir' => $uploadDir,
+            ],
             is_string($totpSecret) ? ['totpSecret' => $totpSecret] : [],
         ))) {
             $errors[] = 'Could not write jaco/settings.php, please check write permissions.';
@@ -182,6 +225,8 @@ if ($checksFailed) {
         . '<form method="post">'
         . '<label>Username<input name="username" value="' . install_escape($username) . '" autocomplete="username"></label>'
         . '<label>Password (at least 8 characters)<input type="password" name="password" autocomplete="new-password"></label>'
+        . '<label>Upload directory (inside the web root)<input name="uploadDir" value="'
+        . install_escape($uploadDir) . '"></label>'
         . '<label>Language<select name="language">'
         . '<option value="de"' . ($language === 'de' ? ' selected' : '') . '>Deutsch</option>'
         . '<option value="en"' . ($language === 'en' ? ' selected' : '') . '>English</option>'
