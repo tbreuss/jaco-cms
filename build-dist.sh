@@ -23,7 +23,6 @@ git -C "$ROOT" archive HEAD jaco | tar -x -C "$WORK"
 # Installationsanleitung und Lizenz aus dem Arbeitsverzeichnis dazu (evtl. uncommitted)
 cp "$ROOT/INSTALL.md" "$WORK/INSTALL.md"
 cp "$ROOT/LICENSE" "$WORK/LICENSE"
-cp "$ROOT/docs/nginx-jaco.conf.example" "$WORK/nginx-jaco.conf.example"
 
 # Dependencies für die Auslieferung installieren (braucht composer.json).
 # Plattform auf 8.2 pinnen, damit die Auflösung auch auf neueren
@@ -51,6 +50,6 @@ mkdir -p "$WORK/jaco/_backup" "$WORK/jaco/runtime/log"
 
 OUT="$ROOT/jaco-dist-$VERSION.zip"
 rm -f "$OUT"
-(cd "$WORK" && zip -qr "$OUT" jaco INSTALL.md LICENSE nginx-jaco.conf.example)
+(cd "$WORK" && zip -qr "$OUT" jaco INSTALL.md LICENSE)
 
 echo "gebaut: $OUT ($(du -h "$OUT" | cut -f1))"

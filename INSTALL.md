@@ -97,12 +97,14 @@ and every sensitive subdirectory (`_backup/`, `runtime/`, `vendor/`,
 Verify that hidden files are deployed (some SCP clients skip dotfiles).
 
 On Nginx `.htaccess` files are ignored: copy the location blocks from
-`nginx-jaco.conf.example` (in `docs/`, also in the dist archive) into the
-server context, and add `fastcgi_param HTTP_AUTHORIZATION $http_authorization;`
+`docs/nginx-jaco.conf.example` of this repository
+(<https://github.com/tbreuss/jaco-cms/blob/main/docs/nginx-jaco.conf.example>)
+into the server context, and add
+`fastcgi_param HTTP_AUTHORIZATION $http_authorization;`
 to the PHP location, otherwise every authenticated API call answers 403.
 
-On Apache with a dist archive (`jaco/` + `upload/` extracted into an existing
-site) one rule must live in the *site root* `.htaccess`, because the shipped
+On Apache with a dist archive (`jaco/` extracted into an existing site) one
+rule must live in the *site root* `.htaccess`, because the shipped
 `jaco/.htaccess` deliberately enables no rewrite engine (it would override
 this): without it PHP never sees the `Authorization` header and every
 authenticated API call answers 403.

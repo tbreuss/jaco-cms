@@ -21,10 +21,25 @@ function install_page(string $title, string $body): void
     echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
         . '<meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>' . install_escape($title) . ' – Jaco CMS installer</title>'
-        . '<style>body{max-width:40rem;margin:2rem auto;padding:0 1rem;font-family:system-ui,sans-serif}'
-        . '.ok{color:green}.fail{color:red}table{border-collapse:collapse;width:100%}'
-        . 'td,th{border:1px solid #ccc;padding:.4rem;text-align:left}'
-        . 'input{display:block;width:100%;margin:.2rem 0 1rem;padding:.4rem;box-sizing:border-box}</style>'
+        . '<style>body{max-width:40rem;margin:2rem auto;padding:0 1rem;font-family:system-ui,sans-serif;line-height:1.6}'
+        . '.ok{color:green}.fail{color:red}table{border-collapse:collapse;width:100%;margin:1.5rem 0}'
+        . 'td,th{border:1px solid #ccc;padding:.5rem;text-align:left}'
+        . 'h1{margin:0 0 1.5rem}'
+        . 'form>label{display:block;margin:1.75rem 0 .4rem;font-weight:600}'
+        . 'form>label:first-of-type{margin-top:1.25rem}'
+        . 'input[type=text],input[type=password],select{display:block;width:100%;'
+        . 'padding:.55rem .6rem;box-sizing:border-box;font:inherit;border:1px solid #bbb;border-radius:4px}'
+        . 'input[type=checkbox]{margin:0 .5rem 0 0}'
+        . '.hint{color:#555;font-size:.9rem;margin:.4rem 0 0}'
+        . 'form>label.checkbox{margin:1.5rem 0 0;font-weight:400}'
+        . '.submit{display:block;width:100%;margin:2rem 0 0;padding:.8rem 1.6rem;font:inherit;font-weight:600;'
+        . 'color:#fff;background:#2563eb;border:0;border-radius:6px;cursor:pointer}'
+        . '.submit:hover{background:#1d4ed8}'
+        . 'ul{padding-left:1.25rem}'
+        . '.errorbox{margin:0 0 1rem;padding:.9rem 1.1rem;border:1px solid #f0b4b4;border-left:4px solid #dc2626;'
+        . 'border-radius:4px;background:#fef4f4}'
+        . '.errorbox p{margin:0 0 .4rem}'
+        . '.errorbox ul{margin:0}</style>'
         . '</head><body><h1>' . install_escape($title) . '</h1>' . $body . '</body></html>';
 }
 
@@ -193,10 +208,10 @@ if ($isPost && !$checksFailed) {
                 if (is_string($totpSecret)) {
                     $totpBlock = '<p class="ok">Two-factor authentication is enabled for login <strong>'
                         . install_escape($username) . '</strong>.</p>'
-                        . '<p>Scan this code with the authenticator app, or enter the secret manually (it is also stored in <code>jaco/settings.php</code>):</p>'
-                        . '<div style="max-width:220px">' . qr_svg(provisioning_uri($totpSecret, $username)) . '</div>'
-                        . '<p><code>' . install_escape($totpSecret) . '</code></p>'
-                        . '<p><code>' . install_escape(provisioning_uri($totpSecret, $username)) . '</code></p>';
+                        . '<p>Scan this code with the authenticator app. The secret is also stored in '
+                        . '<code>jaco/settings.php</code> and can be shown again with '
+                        . '<code>php jaco/cli.php auth:totp-setup</code>.</p>'
+                        . '<div style="max-width:220px">' . qr_svg(provisioning_uri($totpSecret, $username)) . '</div>';
                 }
                 install_page(
                     'Jaco CMS installed',
@@ -219,23 +234,40 @@ if ($checksFailed) {
 } else {
     $errorList = '';
     foreach ($errors as $error) {
-        $errorList .= '<li class="fail">' . install_escape($error) . '</li>';
+        $errorList .= '<li>' . install_escape($error) . '</li>';
     }
-    $form = ($errorList === '' ? '' : '<ul>' . $errorList . '</ul>')
+    // a summary line first, so the block reads as one error area and is not
+    // mistaken for part of the check table above
+    $errorBox = $errorList === ''
+        ? ''
+        : '<div class="errorbox" role="alert">'
+        . '<p class="fail"><strong>Installation not possible yet, '
+        . \count($errors) . ' ' . (\count($errors) === 1 ? 'problem' : 'problems') . ' to fix:</strong></p>'
+        . '<ul class="fail">' . $errorList . '</ul></div>';
+    $form = $errorBox
         . '<form method="post">'
-        . '<label>Username<input name="username" value="' . install_escape($username) . '" autocomplete="username"></label>'
-        . '<label>Password (at least 8 characters)<input type="password" name="password" autocomplete="new-password"></label>'
-        . '<label>Upload directory (inside the web root)<input name="uploadDir" value="'
-        . install_escape($uploadDir) . '"></label>'
-        . '<label>Language<select name="language">'
+        . '<label for="username">Username</label>'
+        . '<input type="text" id="username" name="username" value="' . install_escape($username) . '" autocomplete="username">'
+        . '<label for="password">Password</label>'
+        . '<input type="password" id="password" name="password" autocomplete="new-password">'
+        . '<p class="hint">At least 8 characters.</p>'
+        . '<label for="uploadDir">Upload directory</label>'
+        . '<input type="text" id="uploadDir" name="uploadDir" value="' . install_escape($uploadDir) . '">'
+        . '<p class="hint">Relative to the web root, created by the installer. '
+        . 'A subdirectory is allowed, e.g. <code>bilder/2026</code>.</p>'
+        . '<label for="language">Language</label>'
+        . '<select name="language" id="language">'
         . '<option value="de"' . ($language === 'de' ? ' selected' : '') . '>Deutsch</option>'
         . '<option value="en"' . ($language === 'en' ? ' selected' : '') . '>English</option>'
         . '<option value="fr"' . ($language === 'fr' ? ' selected' : '') . '>Français</option>'
         . '<option value="it"' . ($language === 'it' ? ' selected' : '') . '>Italiano</option>'
-        . '</select></label>'
-        . '<label><input type="checkbox" name="totp" value="1"' . ($totp ? ' checked' : '') . '> Enable two-factor authentication (needs an authenticator app)</label>'
-        . '<button type="submit">Install</button></form>'
-        . '<p>The secret key is generated for you and stored in <code>jaco/settings.php</code>.</p>';
+        . '</select>'
+        . '<label class="checkbox"><input type="checkbox" name="totp" value="1"' . ($totp ? ' checked' : '') . '> '
+        . 'Enable two-factor authentication (needs an authenticator app)</label>'
+        . '<button class="submit" type="submit">Install</button></form>'
+        . '<p class="hint">The installer writes <code>jaco/settings.php</code> with your credentials '
+        . 'and a generated secret key for the login tokens, creates the upload directory, '
+        . 'and then deletes itself.</p>';
 }
 
 install_page('Jaco CMS installer', $checksTable . $form);
