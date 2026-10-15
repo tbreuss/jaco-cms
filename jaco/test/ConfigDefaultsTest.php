@@ -58,6 +58,24 @@ final class ConfigDefaultsTest extends TestCase
         $this->assertIsString(auth\authenticate($config, 'admin', 'secure-password'));
     }
 
+    public function testUploadDirectoryIsConfigurable(): void
+    {
+        $config = config\create_default_config('/var/www/site/jaco', ['uploadDir' => 'bilder/2026']);
+
+        $this->assertSame('/var/www/site/bilder/2026', $config->uploadDir);
+        $this->assertSame('bilder/2026', $config->uploadUrl);
+    }
+
+    public function testUnsafeUploadDirectoryFallsBackToTheDefault(): void
+    {
+        foreach (['../etc', '/abs/path', 'up/../load', 'has space', 'a;b', ''] as $unsafe) {
+            $config = config\create_default_config('/var/www/site/jaco', ['uploadDir' => $unsafe]);
+
+            $this->assertSame('/var/www/site/upload', $config->uploadDir, $unsafe);
+            $this->assertSame('upload', $config->uploadUrl, $unsafe);
+        }
+    }
+
     public function testEmptyStoredCredentialsNeverAuthenticate(): void
     {
         $config = test_config_with(['username' => '', 'password' => '']);

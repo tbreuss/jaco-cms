@@ -11,6 +11,7 @@ return [
     'password' => '',
     'secretKey' => '',
     'totpSecret' => '',
+    'uploadDir' => 'upload',
     'backupRetentionDays' => 90,
     'maintenanceMode' => false,
     'defaultLanguage' => 'en',

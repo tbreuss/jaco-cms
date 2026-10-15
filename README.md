@@ -52,7 +52,7 @@ pages, nothing more.
 Full guide with markers reference: [`INSTALL.md`](INSTALL.md).
 
 1. Download `jaco-dist-<version>.zip` from the [releases page](https://github.com/tbreuss/jaco-cms/releases) (dependencies included) and extract it next to your `index.html`.
-2. Open `https://example.com/jaco/install.php` and create your login: username, password (≥ 8 characters), language, two-factor authentication on. The installer writes `jaco/settings.php` and deletes itself.
+2. Open `https://example.com/jaco/install.php` and create your login: username, password (≥ 8 characters), language, upload directory (`upload` by default), two-factor authentication on. The installer writes `jaco/settings.php` and deletes itself.
 3. Grant write permissions: editable `.html` files, `jaco/_backup/`, `upload/`, `jaco/runtime/log/`.
 4. Mark editable regions in your HTML and log in at `/jaco/`:
 
@@ -61,7 +61,7 @@ Full guide with markers reference: [`INSTALL.md`](INSTALL.md).
 <div data-jaco-editable><p>My paragraph.</p></div>
 ```
 
-Heads-up for servers: on Nginx copy the blocks from `nginx-jaco.conf.example`
+Heads-up for servers: on Nginx copy the blocks from `docs/nginx-jaco.conf.example`
 into the server context (`.htaccess` is Apache-only). With a dist archive on
 Apache, one `Authorization` forwarding rule belongs in the site root
 `.htaccess` — see “Protect the internals” in [`INSTALL.md`](INSTALL.md).

@@ -32,6 +32,11 @@ no build step. This guide describes the installation on an already existing HTML
    deliberately want password-only login. Submitting writes `jaco/settings.php`
    (with a generated secret key) and the installer deletes itself afterwards.
    If it cannot delete itself, remove `jaco/install.php` by hand right away.
+
+   The upload directory defaults to `upload` and may be changed, e.g. to
+   `bilder/2026` for a site that groups images by year. The path is relative
+   to the web root, may contain slashes, and the installer creates it (with
+   its `.htaccess`) before writing the settings.
 4. Log in at `/jaco/` with the credentials you just created. Jaco automatically
    creates a backup under `jaco/_backup/` before every save.
 
@@ -56,6 +61,8 @@ return [
     'username' => 'admin',
     'password' => 'secure-password',
     'secretKey' => 'at-least-32-random-characters',
+    // optional, default 'upload'
+    'uploadDir' => 'bilder/2026',
 ];
 ```
 
@@ -76,7 +83,7 @@ The PHP process must be allowed to write:
 
 - every `.html` file that should be editable
 - `jaco/_backup/` (created with the first backup, create it beforehand if needed)
-- `upload/` in the root directory (images from the editor)
+- the upload directory in the root directory (images from the editor), `upload/` by default
 - `jaco/runtime/log/` (error log)
 
 ## Protect the internals
@@ -85,16 +92,19 @@ Jaco lives entirely in the web root, so the web server must deny direct
 access to the internals. On Apache this ships with the project: `jaco/`
 and every sensitive subdirectory (`_backup/`, `runtime/`, `vendor/`,
 `backend/`, `test/`, `schema/`, `language/`, `_template/`) contain an
-`.htaccess` with `Require all denied`, and `upload/` never executes PHP.
+`.htaccess` with `Require all denied`, and `upload/` never executes PHP
+(the installer writes its `.htaccess` when creating the directory).
 Verify that hidden files are deployed (some SCP clients skip dotfiles).
 
 On Nginx `.htaccess` files are ignored: copy the location blocks from
-`nginx-jaco.conf.example` (project root, also in the dist archive) into the
-server context, and add `fastcgi_param HTTP_AUTHORIZATION $http_authorization;`
+`docs/nginx-jaco.conf.example` of this repository
+(<https://github.com/tbreuss/jaco-cms/blob/main/docs/nginx-jaco.conf.example>)
+into the server context, and add
+`fastcgi_param HTTP_AUTHORIZATION $http_authorization;`
 to the PHP location, otherwise every authenticated API call answers 403.
 
-On Apache with a dist archive (`jaco/` + `upload/` extracted into an existing
-site) one rule must live in the *site root* `.htaccess`, because the shipped
+On Apache with a dist archive (`jaco/` extracted into an existing site) one
+rule must live in the *site root* `.htaccess`, because the shipped
 `jaco/.htaccess` deliberately enables no rewrite engine (it would override
 this): without it PHP never sees the `Authorization` header and every
 authenticated API call answers 403.
