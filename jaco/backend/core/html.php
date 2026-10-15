@@ -219,6 +219,83 @@ function is_allowed_attribute(string $tag, string $name, string $value): bool
     return \preg_match('/^(https?|mailto|tel):/i', $value) === 1;
 }
 
+/**
+ * Strips active content from an SVG upload before it reaches upload/: script
+ * elements, foreign objects, event handler attributes and script urls are
+ * removed, shapes and styling pass through unchanged. Malformed markup is
+ * rejected instead of guessed. Returns [true, cleaned] or [false, errors].
+ */
+function sanitize_svg(string $bytes): array
+{
+    \libxml_use_internal_errors(true);
+
+    $dom = new \DOMDocument();
+
+    // no network for external entities, errors are collected, not printed
+    if ($bytes === '' || !$dom->loadXML($bytes, LIBXML_NONET)) {
+        \libxml_clear_errors();
+        return [false, ['Invalid SVG file.']];
+    }
+
+    $root = $dom->documentElement;
+
+    if (!$root instanceof \DOMElement || \strtolower($root->localName ?? '') !== 'svg') {
+        \libxml_clear_errors();
+        return [false, ['Invalid SVG file.']];
+    }
+
+    sanitize_svg_node($root);
+
+    \libxml_clear_errors();
+
+    $cleaned = $dom->saveXML();
+
+    if ($cleaned === false) {
+        return [false, ['Could not save SVG file.']];
+    }
+
+    return [true, $cleaned];
+}
+
+function sanitize_svg_node(\DOMElement $el): void
+{
+    foreach (\iterator_to_array($el->childNodes) as $child) {
+        if (!$child instanceof \DOMElement) {
+            continue;
+        }
+
+        $tag = \strtolower($child->localName ?? $child->nodeName);
+
+        // script runs, foreignObject embeds arbitrary HTML: neither belongs
+        // in an image file served from upload/
+        if ($tag === 'script' || $tag === 'foreignobject') {
+            $el->removeChild($child);
+            continue;
+        }
+
+        sanitize_svg_node($child);
+    }
+
+    foreach (\iterator_to_array($el->attributes) as $attr) {
+        $name = \strtolower($attr->nodeName);
+
+        if (\str_starts_with($name, 'on')) {
+            $el->removeAttribute($attr->nodeName);
+            continue;
+        }
+
+        if (\in_array($name, ['href', 'xlink:href', 'src'], true)) {
+            $value = \strtolower(\str_replace(["\t", "\n", "\r", "\0"], '', \trim((string) $attr->nodeValue)));
+
+            if (\str_starts_with($value, 'javascript:')
+                || \str_starts_with($value, 'vbscript:')
+                || (\str_starts_with($value, 'data:') && !\str_starts_with($value, 'data:image/'))) {
+                $el->removeAttribute($attr->nodeName);
+            }
+        }
+    }
+}
+
 function handle_embedded_data_url_images(Config $config, string $html): array
 {
     \libxml_use_internal_errors(true);
@@ -282,6 +359,16 @@ function handle_embedded_data_url_images(Config $config, string $html): array
         if ($decodedData === false) {
             $errors[] = 'Could not decode image data: ' . $imgFile;
             continue;
+        }
+
+        // svg uploads are scrubbed of active content on both write paths
+        if (\strtolower((string) \pathinfo($imgFile, PATHINFO_EXTENSION)) === 'svg') {
+            [$svgOk, $svgCleaned] = sanitize_svg($decodedData);
+            if ($svgOk !== true || !\is_string($svgCleaned)) {
+                $errors[] = 'Invalid SVG file: ' . $imgFile;
+                continue;
+            }
+            $decodedData = $svgCleaned;
         }
 
         [$status, $newFile] = filesystem\write_file_without_overwrite($config, $config->uploadDir, $imgFile, $decodedData);
@@ -365,6 +452,15 @@ function write_gallery_full(\DOMDocument $dom, Config $config, \DOMElement $el, 
 
     if ($fullData === false) {
         return 'Could not decode image data: ' . $fullFile;
+    }
+
+    // svg uploads are scrubbed of active content on both write paths
+    if (\strtolower((string) \pathinfo($fullFile, PATHINFO_EXTENSION)) === 'svg') {
+        [$svgOk, $svgCleaned] = sanitize_svg($fullData);
+        if ($svgOk !== true || !\is_string($svgCleaned)) {
+            return 'Invalid SVG file: ' . $fullFile;
+        }
+        $fullData = $svgCleaned;
     }
 
     if (\str_contains($fullFile, DIRECTORY_SEPARATOR)

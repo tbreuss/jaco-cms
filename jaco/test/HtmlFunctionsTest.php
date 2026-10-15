@@ -194,4 +194,47 @@ final class HtmlFunctionsTest extends TestCase
         $this->assertTrue($payload->isSuccess);
         $this->assertSame('<h1>Titel</h1><p>Text <strong>fett</strong></p><a>böser Link</a>', filesystem\read_file($config->webDir, $file));
     }
+
+    public function testSvgScriptIsRemoved(): void
+    {
+        [$ok, $cleaned] = html\sanitize_svg(
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><circle cx="1" cy="2" r="3"/></svg>',
+        );
+
+        $this->assertTrue($ok);
+        $this->assertStringNotContainsString('<script', $cleaned);
+        $this->assertStringContainsString('<circle', $cleaned);
+    }
+
+    public function testSvgHandlersAndScriptUrlsAreRemoved(): void
+    {
+        [$ok, $cleaned] = html\sanitize_svg(
+            '<svg xmlns="http://www.w3.org/2000/svg"><circle onload="steal()" cx="1"/>'
+            . '<a href="javascript:steal()"><rect width="1" height="2"/></a>'
+            . '<foreignObject><body xmlns="http://www.w3.org/1999/xhtml"><p>hi</p></body></foreignObject></svg>',
+        );
+
+        $this->assertTrue($ok);
+        $this->assertStringNotContainsString('onload', $cleaned);
+        $this->assertStringNotContainsString('javascript:', $cleaned);
+        $this->assertStringNotContainsString('foreignObject', $cleaned);
+        $this->assertStringContainsString('<circle', $cleaned);
+        $this->assertStringContainsString('<rect', $cleaned);
+    }
+
+    public function testCleanSvgPassesThrough(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg"><circle cx="1" cy="2" r="3"/></svg>';
+
+        [$ok, $cleaned] = html\sanitize_svg($svg);
+
+        $this->assertTrue($ok);
+        $this->assertStringContainsString('<circle cx="1" cy="2" r="3"/>', $cleaned);
+    }
+
+    public function testBrokenSvgIsRejected(): void
+    {
+        $this->assertSame([false, ['Invalid SVG file.']], html\sanitize_svg('not xml at all'));
+        $this->assertSame([false, ['Invalid SVG file.']], html\sanitize_svg('<html><p>no svg root</p></html>'));
+    }
 }

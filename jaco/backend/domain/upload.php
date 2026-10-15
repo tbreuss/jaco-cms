@@ -5,6 +5,7 @@ namespace jaco\domain\upload;
 use jaco\core\config\Config;
 use jaco\core\data;
 use jaco\core\filesystem;
+use jaco\core\html;
 use jaco\core\list;
 use jaco\domain\Payload;
 
@@ -96,6 +97,24 @@ function create_upload(Config $config, array $file): Payload
     }
 
     $newFile = filesystem\file_name_to_write($config->uploadDir, $name);
+
+    // svg uploads are scrubbed of active content on both write paths
+    if (\strtolower(\pathinfo($name, PATHINFO_EXTENSION)) === 'svg') {
+        $content = @\file_get_contents($tmpName);
+
+        [$svgOk, $svgCleaned] = $content === false ? [false, ['Could not read file.']] : html\sanitize_svg($content);
+
+        if (!$svgOk) {
+            return Payload::invalid(\array_map(fn(string $error): array => ['file', $error], $svgCleaned));
+        }
+
+        if (@\file_put_contents(filesystem\combine($config->uploadDir, $newFile), $svgCleaned) === false) {
+            return Payload::error([['file', 'Could not store file.']]);
+        }
+
+        return Payload::success(['file' => $newFile]);
+    }
+
     $moved = \is_uploaded_file($tmpName)
         ? \move_uploaded_file($tmpName, filesystem\combine($config->uploadDir, $newFile))
         : \rename($tmpName, filesystem\combine($config->uploadDir, $newFile));

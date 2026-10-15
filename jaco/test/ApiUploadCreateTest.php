@@ -85,6 +85,33 @@ final class ApiUploadCreateTest extends ApiTestCase
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
     }
 
+    public function testSvgUploadIsScrubbedOfActiveContent(): void
+    {
+        $tmp = tempnam(sys_get_temp_dir(), 'jaco-upload-test-');
+        file_put_contents(
+            $tmp,
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script>'
+            . '<circle onload="steal()" cx="1" cy="2" r="3"/></svg>',
+        );
+
+        $_FILES['file'] = [
+            'name' => 'api-upload-evil.svg',
+            'type' => 'image/svg+xml',
+            'tmp_name' => $tmp,
+            'error' => UPLOAD_ERR_OK,
+            'size' => filesize($tmp),
+        ];
+
+        $response = $this->api('upload/create', method: 'POST');
+
+        $this->assertSame(Status::OK, $response->status);
+
+        $stored = (string) file_get_contents($this->config->uploadDir . '/api-upload-evil.svg');
+        $this->assertStringNotContainsString('<script', $stored);
+        $this->assertStringNotContainsString('onload', $stored);
+        $this->assertStringContainsString('<circle', $stored);
+    }
+
     public function testOversizedUploadIsRejected(): void
     {
         $_FILES['file'] = [
