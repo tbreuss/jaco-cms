@@ -105,6 +105,8 @@ Run CLI (`-w` is required, cli.php loads the autoloader relative to the working 
     docker run --rm -v .:/app -w /app/jaco jaco php cli.php sys:log -s 20
     docker run --rm -v .:/app -w /app/jaco jaco php cli.php auth:token -u demo -p demo
 
+With two-factor login, append the current code: `php cli.php auth:token -u demo -p demo -c 123456`.
+
 ### Static Code Analyses & Unit Tests
 
 The dev tools are Composer dev dependencies; inside Docker they run through

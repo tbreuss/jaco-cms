@@ -41,6 +41,41 @@ final class CliResponderTest extends TestCase
         $this->assertStringContainsString('(pass)', $output);
     }
 
+    public function testTokenCommandWithTotpAsksForTheCode(): void
+    {
+        $config = test_config_with(['totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ']);
+
+        [$output, $code] = token\command($config, $config->username, $config->password);
+
+        $this->assertSame(1, $code);
+        $this->assertStringContainsString('--code', $output);
+    }
+
+    public function testTokenCommandWithTotpCodeSucceeds(): void
+    {
+        $secret = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
+        $config = test_config_with(['totpSecret' => $secret]);
+
+        [$output, $code] = token\command(
+            $config,
+            $config->username,
+            $config->password,
+            \jaco\core\totp\code_at($secret, time()),
+        );
+
+        $this->assertSame(0, $code);
+        $this->assertStringStartsWith('The token for user "test_user" is:' . PHP_EOL, $output);
+    }
+
+    public function testTokenCommandWithWrongTotpCodeFails(): void
+    {
+        $config = test_config_with(['totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ']);
+
+        [, $code] = token\command($config, $config->username, $config->password, '000000');
+
+        $this->assertSame(1, $code);
+    }
+
     public function testInvalidPayloadRendersMappedErrorsWithExitCodeOne(): void
     {
         [$output, $code] = token\responder(

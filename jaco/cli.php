@@ -47,8 +47,9 @@ $app->command('sys:log', 'Show log entries.')
 $app->command('auth:token', 'Get token for credential.')
     ->option('-u --user', 'The Username', 'strval', '')
     ->option('-p --pass', 'The Password', 'strval', '')
-    ->action(function (string $user, string $pass) use ($config): void {
-        [$output, $exitCode] = \jaco\cli\auth\token\command($config, $user, $pass);
+    ->option('-c --code', 'The two-factor code', 'strval', '')
+    ->action(function (string $user, string $pass, string $code) use ($config): void {
+        [$output, $exitCode] = \jaco\cli\auth\token\command($config, $user, $pass, $code);
         echo $output;
         exit($exitCode);
     });

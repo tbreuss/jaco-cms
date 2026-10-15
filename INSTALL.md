@@ -66,7 +66,9 @@ and logging in is not possible. For two-factor login without the installer:
 
 Enter the printed secret in an authenticator app. The login then asks for
 the password first and the six-digit code second. `auth:totp-disable`
-removes it again.
+removes it again. A token from the command line needs the code as well:
+
+    php jaco/cli.php auth:token -u admin -p secret -c 123456
 
 ## Grant write permissions
 
