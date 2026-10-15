@@ -1,0 +1,67 @@
+<?php declare(strict_types=1);
+
+namespace jaco\tests;
+
+use PHPUnit\Framework\Attributes\TestDox;
+use PHPUnit\Framework\TestCase;
+use jaco\core\auth;
+use jaco\core\config;
+
+#[TestDox('Credential defaults fail closed')]
+final class ConfigDefaultsTest extends TestCase
+{
+    public function testEmptySettingsCannotLogIn(): void
+    {
+        $config = config\create_default_config(sys_get_temp_dir(), [
+            'username' => '',
+            'password' => '',
+            'secretKey' => '',
+        ]);
+
+        $this->assertNull(auth\authenticate($config, '', ''));
+        $this->assertNull(auth\authenticate($config, 'admin', ''));
+    }
+
+    public function testEmptyValuesFallBackToRandom(): void
+    {
+        $config = config\create_default_config(sys_get_temp_dir(), [
+            'username' => '',
+            'password' => '',
+            'secretKey' => '',
+        ]);
+
+        $this->assertSame('admin', $config->username);
+        $this->assertNotSame('', $config->password);
+        $this->assertGreaterThanOrEqual(32, \strlen($config->secretKey));
+    }
+
+    public function testShortSecretKeyIsReplaced(): void
+    {
+        $config = config\create_default_config(sys_get_temp_dir(), ['secretKey' => 'z2MSdMsCEs8eQpZV']);
+
+        $this->assertNotSame('z2MSdMsCEs8eQpZV', $config->secretKey);
+        $this->assertGreaterThanOrEqual(32, \strlen($config->secretKey));
+    }
+
+    public function testValidValuesPassThrough(): void
+    {
+        $secret = str_repeat('a', 32);
+        $config = config\create_default_config(sys_get_temp_dir(), [
+            'username' => 'admin',
+            'password' => 'secure-password',
+            'secretKey' => $secret,
+        ]);
+
+        $this->assertSame('admin', $config->username);
+        $this->assertSame('secure-password', $config->password);
+        $this->assertSame($secret, $config->secretKey);
+        $this->assertIsString(auth\authenticate($config, 'admin', 'secure-password'));
+    }
+
+    public function testEmptyStoredCredentialsNeverAuthenticate(): void
+    {
+        $config = test_config_with(['username' => '', 'password' => '']);
+
+        $this->assertNull(auth\authenticate($config, '', ''));
+    }
+}

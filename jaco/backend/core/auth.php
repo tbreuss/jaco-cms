@@ -21,6 +21,14 @@ use jaco\core\config\Config;
 
 function authenticate(Config $config, string $username, string $password): ?string
 {
+    // fail closed: none of the security values may be empty, no matter how the
+    // Config was constructed. Without this, empty input would match empty
+    // settings via hash_equals, and tokens would be signed with an empty key.
+    // (An empty totpSecret is the exception: it means "no second factor".)
+    if ($config->username === '' || $config->password === '' || $config->secretKey === '') {
+        return null;
+    }
+
     // compare both values in constant time to prevent timing attacks
     $isUsernameValid = \hash_equals($config->username, $username);
     $isPasswordValid = \hash_equals($config->password, $password);

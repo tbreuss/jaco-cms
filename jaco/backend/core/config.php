@@ -63,6 +63,14 @@ function write_settings(string $appDir, array $settings): bool
  */
 function create_default_config(string $appDir, array $settings = []): Config
 {
+    // fail closed: empty values are treated like missing ones, so a verbatim
+    // copy of settings.dist.php can never log in with empty credentials or
+    // sign tokens with the public example key. Random fallbacks are
+    // unguessable, logging in stays impossible until real values are set.
+    $username = (string) ($settings['username'] ?? '');
+    $password = (string) ($settings['password'] ?? '');
+    $secretKey = (string) ($settings['secretKey'] ?? '');
+
     return new Config(
         appVersion: '0.1.0',
         appDir: $appDir,
@@ -78,9 +86,9 @@ function create_default_config(string $appDir, array $settings = []): Config
         defaultLanguage: (string) ($settings['defaultLanguage'] ?? 'en'),
         directoryPermissions: 0755,
         filePermissions: 0644,
-        secretKey: (string) ($settings['secretKey'] ?? openssl_random_pseudo_bytes(32)),
-        username: (string) ($settings['username'] ?? 'admin'),
-        password: (string) ($settings['password'] ?? openssl_random_pseudo_bytes(32)),
+        secretKey: \strlen($secretKey) >= 32 ? $secretKey : (string) openssl_random_pseudo_bytes(32),
+        username: $username !== '' ? $username : 'admin',
+        password: $password !== '' ? $password : (string) openssl_random_pseudo_bytes(32),
         totpSecret: (string) ($settings['totpSecret'] ?? ''),
         phpErrorReporting: (int) ($settings['phpErrorReporting'] ?? E_ALL),
         phpDisplayErrors: (int) ($settings['phpDisplayErrors'] ?? 0),
