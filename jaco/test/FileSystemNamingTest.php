@@ -109,6 +109,13 @@ final class FileSystemNamingTest extends TestCase
         $this->assertFalse(filesystem\is_file_in_dir('x/jaco.html', 'jaco'));
     }
 
+    public function testFileInDirIgnoresCase(): void
+    {
+        // on macOS and Windows "Jaco/..." resolves to the app directory
+        $this->assertTrue(filesystem\is_file_in_dir('Jaco/x.html', 'jaco'));
+        $this->assertTrue(filesystem\is_file_in_dir('JACO/x.html', 'jaco'));
+    }
+
     public function testTimestampIsReadFromTheBackupName(): void
     {
         $this->assertSame(

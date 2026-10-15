@@ -360,5 +360,7 @@ function filter_filename(string $file): string
 function is_file_in_dir(string $file, string $dir): bool
 {
     $parts = explode(DIRECTORY_SEPARATOR, $file);
-    return $parts[0] === $dir;
+    // case-insensitive: on macOS and Windows "Jaco/..." resolves to the same
+    // directory, so an exact match would let it slip through the guard
+    return \strtolower($parts[0]) === \strtolower($dir);
 }
