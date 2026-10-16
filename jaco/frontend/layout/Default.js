@@ -1,6 +1,7 @@
 import {closeDropdown} from '../lib/helpers.js'
 import {i18n, t} from '../model/i18n.js'
 import {app} from '../lib/app.js'
+import {iframe} from '../lib/iframe.js'
 import {getTheme, setTheme} from '../lib/theme.js'
 
 const themeLabel = (value) => t(value === 'light' ? 'Light' : value === 'dark' ? 'Dark' : 'Auto')
@@ -34,6 +35,22 @@ const showInfo = (e) => {
 }
 
 export const DefaultLayout = {
+  oncreate: () => {
+    iframe.fitBelowNavbar()
+    // navbar height depends on wrapping and fonts: re-fit only when it
+    // actually changes, not on every redraw
+    if (!DefaultLayout.fitObserved) {
+      DefaultLayout.fitObserved = true
+      const navbar = document.querySelector('.navbar')
+      if (navbar && typeof ResizeObserver !== 'undefined') {
+        new ResizeObserver(() => iframe.fitBelowNavbar()).observe(navbar)
+      }
+      window.addEventListener('resize', () => iframe.fitBelowNavbar())
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => iframe.fitBelowNavbar())
+      }
+    }
+  },
   view: (vnode) => {
     // see https://www.w3schools.com/howto/howto_css_dropdown_navbar.asp
     // the page waits for its translations: labels render from t() and would

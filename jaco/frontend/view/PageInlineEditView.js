@@ -76,6 +76,7 @@ export const PageInlineEditView = {
     iframe.makeEditable()
     bindShortcut()
     setEditLayout(true)
+    iframe.fitBelowNavbar()
     // the listener lives on the iframe document and dies with it on navigation
     iframe.getElement().onload = bindShortcut
   },
@@ -83,6 +84,7 @@ export const PageInlineEditView = {
     unbindSaveShortcuts.forEach((unbind) => unbind())
     unbindSaveShortcuts = []
     setEditLayout(false)
+    iframe.fitBelowNavbar()
     iframe.getElement().onload = null
   },
   view: () => m(ButtonGroup, {wrap: 'div.dialog'},

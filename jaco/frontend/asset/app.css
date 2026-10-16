@@ -297,11 +297,12 @@ iframe {
     background-color: var(--color-surface);
 }
 
-/* App shell on every page: admin chrome and preview share one column, so the
-   site never hides behind the panel. The chrome keeps its natural height
-   (capped, lists scroll inside their card), the preview fills the rest.
-   Inline editing narrows the chrome further below (body.page-edit). */
-body.app-layout {
+/* Inline editing: admin chrome and preview share one column instead of
+   floating above each other. The chrome keeps its natural height on top,
+   the iframe fills exactly the rest - no measuring, no page scrollbar.
+   Navigation stays out of the way while editing: every link would silently
+   discard unsaved changes, the dialog (cancel, save) is the only way out. */
+body.page-edit {
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -309,47 +310,34 @@ body.app-layout {
     overflow: hidden;
 }
 
-body.app-layout #app {
+body.page-edit #app {
     position: static;
     order: -1;
-    flex: 0 1 auto;
-    min-height: 0;
-    max-height: 75vh;
+    flex: none;
+    height: auto;
 }
 
-body.app-layout #app .main {
-    min-height: 0;
+body.page-edit .navbar {
+    display: none;
 }
 
-body.app-layout #iframe {
-    flex: 1 0 auto;
+body.page-edit #iframe {
+    flex: 1 1 auto;
     height: auto;
     min-height: 0;
 }
 
-body.app-layout .dialog {
+body.page-edit .dialog {
     position: static;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid var(--color-border);
 }
 
-body.app-layout .dialog button {
+body.page-edit .dialog button {
     margin: 0;
-}
-
-/* Inline editing: the chrome is compact (navbar, buttons), the preview is
-   the content and takes everything below it. Navigation stays out of the
-   way while editing: every link would silently discard unsaved changes,
-   the dialog (cancel, save) is the only way out. */
-body.page-edit #app {
-    flex: none;
-    max-height: none;
-}
-
-body.page-edit .navbar {
-    display: none;
 }
 
 .toolbar {

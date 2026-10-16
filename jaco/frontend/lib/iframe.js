@@ -44,6 +44,41 @@ export const iframe = {
       contentWindow.removeTempImageElements()
     }
   },
+  // Outside the inline editor the preview fills the viewport behind the fixed
+  // admin panel: shift it below the navbar by exactly its height, so the site
+  // never hides behind it. The height depends on wrapping and fonts, hence
+  // measured, not hardcoded; cached writes avoid layout work on redraws.
+  // In edit mode the flex column owns the layout, so any offset is cleared.
+  fitBelowNavbar: () => {
+    if (document.body.classList.contains('page-edit')) {
+      iframe.resetFit()
+      return
+    }
+    const navbar = document.querySelector('.navbar')
+    const frame = document.getElementById('iframe')
+    if (!navbar || !frame) {
+      return
+    }
+    const offset = Math.round(navbar.getBoundingClientRect().bottom)
+    if (frame.dataset.fitOffset !== String(offset)) {
+      frame.dataset.fitOffset = String(offset)
+      // relative positioning instead of a margin: margins collapse through
+      // the body and reintroduce a window scrollbar
+      frame.style.position = 'relative'
+      frame.style.top = offset + 'px'
+      frame.style.height = 'calc(100vh - ' + offset + 'px)'
+    }
+  },
+  resetFit: () => {
+    const frame = document.getElementById('iframe')
+    if (!frame) {
+      return
+    }
+    delete frame.dataset.fitOffset
+    frame.style.position = ''
+    frame.style.top = ''
+    frame.style.height = ''
+  },
   disableEditors: () => {
     const contentWindow = iframe.contentWindow()
     if (typeof contentWindow.disableRichTextEditor === 'function') {

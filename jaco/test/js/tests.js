@@ -21,6 +21,7 @@ import {CssEditModel} from '/jaco/frontend/model/CssEditModel.js'
 import {api} from '/jaco/frontend/service/api.js'
 import {t, tError} from '/jaco/frontend/model/i18n.js'
 import {isSaveShortcut, isSaveAndCloseShortcut, bindSaveShortcut, saveShortcutLabel, saveAndCloseShortcutLabel} from '/jaco/frontend/lib/shortcuts.js'
+import {iframe} from '/jaco/frontend/lib/iframe.js'
 import {getTheme, setTheme, applyTheme} from '/jaco/frontend/lib/theme.js'
 import {aceThemeName, watchAceTheme} from '/jaco/frontend/lib/aceTheme.js'
 import {formatDateTimeCompact, formatDateTimeFull, formatBytes} from '/jaco/frontend/lib/format.js'
@@ -1512,4 +1513,36 @@ QUnit.test('PageEditView stamps the editor only with the requested file', (asser
   window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
   appDiv.remove()
   delete window.ace
+})
+
+QUnit.test('fitBelowNavbar shifts the preview below the navbar', (assert) => {
+  // the fixed admin panel would otherwise cover the top of the site
+  window.scrollTo(0, 0)
+  const bar = document.createElement('div')
+  bar.className = 'navbar'
+  bar.style.height = '47px'
+  document.body.appendChild(bar)
+  const frame = document.createElement('iframe')
+  frame.id = 'iframe'
+  document.body.appendChild(frame)
+
+  iframe.fitBelowNavbar()
+  const bottom = Math.round(bar.getBoundingClientRect().bottom)
+  assert.strictEqual(frame.style.top, bottom + 'px', 'preview starts at the navbar bottom edge')
+  assert.ok(frame.style.height.includes('100vh'), 'preview height compensates the offset')
+
+  // second call with nothing changed writes nothing new
+  frame.style.top = 'tampered'
+  iframe.fitBelowNavbar()
+  assert.strictEqual(frame.style.top, bottom + 'px', 'cached offset is restored, not stacked')
+
+  // edit mode owns the layout through CSS: any offset is cleared
+  document.body.classList.add('page-edit')
+  iframe.fitBelowNavbar()
+  assert.strictEqual(frame.style.top, '', 'no offset in edit mode')
+  assert.strictEqual(frame.style.height, '', 'no forced height in edit mode')
+
+  document.body.classList.remove('page-edit')
+  bar.remove()
+  frame.remove()
 })
