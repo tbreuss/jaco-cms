@@ -181,6 +181,6 @@ m.route(document.getElementById('app'), '/', {
   }
 })
 
-window.addEventListener('load', (event) => {
+window.addEventListener('DOMContentLoaded', (event) => {
   document.documentElement.style.visibility = 'visible' // prevent flickering
 })

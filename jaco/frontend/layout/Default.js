@@ -36,12 +36,15 @@ const showInfo = (e) => {
 export const DefaultLayout = {
   view: (vnode) => {
     // see https://www.w3schools.com/howto/howto_css_dropdown_navbar.asp
+    // the page waits for its translations: labels render from t() and would
+    // flash "{keys}" until the translations arrive
     return [
       i18n.status === 'loading' ?
-        m('.toolbar', m('.navbar',
+        [m('.toolbar', m('.navbar',
           title(),
           m('a', 'Loading...')
-        )) :
+        )),
+        m('.main', m('.content', m('p', '…')))] :
         [
           m('.toolbar',
             m.trust('<span id="loader" class="is-stoped"></span>'),

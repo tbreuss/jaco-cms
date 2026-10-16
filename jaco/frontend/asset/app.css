@@ -292,6 +292,9 @@ iframe {
     overflow: hidden;
     width: 100%;
     height: 100%;
+    /* the previewed page arrives later: until then the box matches the
+       admin surface instead of flashing the default white */
+    background-color: var(--color-surface);
 }
 
 .toolbar {
