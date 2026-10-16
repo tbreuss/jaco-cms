@@ -907,6 +907,41 @@ a.list-group-item {
     cursor: default
 }
 
+/* phpinfo() ships its own light palette, map it onto the theme tokens */
+:root[data-theme="dark"] .system-php-info a:link {
+    color: var(--color-link);
+    background-color: transparent;
+}
+
+:root[data-theme="dark"] .system-php-info table {
+    box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="dark"] .system-php-info td,
+:root[data-theme="dark"] .system-php-info th {
+    border-color: var(--color-border);
+}
+
+:root[data-theme="dark"] .system-php-info .e {
+    background-color: #334155;
+}
+
+:root[data-theme="dark"] .system-php-info .h {
+    background-color: #1e293b;
+}
+
+:root[data-theme="dark"] .system-php-info .v {
+    background-color: var(--color-surface);
+}
+
+:root[data-theme="dark"] .system-php-info .v i {
+    color: #adb5bd;
+}
+
+:root[data-theme="dark"] .system-php-info a[name] {
+    color: inherit;
+}
+
 /* https://cssloaders.github.io/ */
 
 #loader {
