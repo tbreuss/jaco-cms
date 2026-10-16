@@ -17,6 +17,17 @@
     padding-bottom: 0;
 }
 
+/* the line editor wraps the text in a paragraph inside the host element: without
+   this a heading looks like body text while editing (and the page stylesheet
+   even recolors it, e.g. ".hero p"). Inheriting keeps the heading look, and the
+   save path unwraps the paragraph again, so nothing persists. */
+[data-jaco-editable-line] .ql-editor p {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+}
+
 [data-jaco-editable-image] {
     outline: 1px solid #ddd;
 }
