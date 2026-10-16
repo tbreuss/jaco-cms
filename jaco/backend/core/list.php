@@ -7,12 +7,16 @@ function filter_list(array $list, string $filter): array
     if (\strlen($filter) === 0) {
         return $list;
     }
-    return array_filter($list, function ($item) use ($filter) {
-        $filter = \str_replace('/', '|', $filter);
+    // backup names store "/" as "|", page and upload names keep it: match both
+    // spellings, so filtering by a directory path finds its files everywhere
+    $variants = [$filter, \str_replace('/', '|', $filter)];
+    return array_filter($list, function ($item) use ($variants) {
         $data = (array) $item;
         foreach ($data as $value) {
-            if (\stripos((string) $value, $filter) !== false) {
-                return true;
+            foreach ($variants as $variant) {
+                if (\stripos((string) $value, $variant) !== false) {
+                    return true;
+                }
             }
         }
         return false;
