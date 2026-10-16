@@ -297,6 +297,61 @@ iframe {
     background-color: var(--color-surface);
 }
 
+/* App shell on every page: admin chrome and preview share one column, so the
+   site never hides behind the panel. The chrome keeps its natural height
+   (capped, lists scroll inside their card), the preview fills the rest.
+   Inline editing narrows the chrome further below (body.page-edit). */
+body.app-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+body.app-layout #app {
+    position: static;
+    order: -1;
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: 75vh;
+}
+
+body.app-layout #app .main {
+    min-height: 0;
+}
+
+body.app-layout #iframe {
+    flex: 1 0 auto;
+    height: auto;
+    min-height: 0;
+}
+
+body.app-layout .dialog {
+    position: static;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+}
+
+body.app-layout .dialog button {
+    margin: 0;
+}
+
+/* Inline editing: the chrome is compact (navbar, buttons), the preview is
+   the content and takes everything below it. Navigation stays out of the
+   way while editing: every link would silently discard unsaved changes,
+   the dialog (cancel, save) is the only way out. */
+body.page-edit #app {
+    flex: none;
+    max-height: none;
+}
+
+body.page-edit .navbar {
+    display: none;
+}
+
 .toolbar {
     /*position: fixed;
     top: 0;

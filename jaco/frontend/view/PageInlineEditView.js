@@ -42,6 +42,14 @@ const cancel = (e) => {
 
 let unbindSaveShortcuts = []
 
+// In edit mode the admin chrome and the preview share one column: the chrome
+// keeps its natural height on top, the iframe fills exactly the rest, without
+// a page scrollbar. Pure CSS (see body.page-edit in asset/app.css), this only
+// switches the class.
+const setEditLayout = (on) => {
+  document.body.classList.toggle('page-edit', on)
+}
+
 const bindShortcut = () => {
   unbindSaveShortcuts.forEach((unbind) => unbind())
   // keydown does not cross document boundaries: listen in the parent
@@ -67,12 +75,14 @@ export const PageInlineEditView = {
     }
     iframe.makeEditable()
     bindShortcut()
+    setEditLayout(true)
     // the listener lives on the iframe document and dies with it on navigation
     iframe.getElement().onload = bindShortcut
   },
   onremove: () => {
     unbindSaveShortcuts.forEach((unbind) => unbind())
     unbindSaveShortcuts = []
+    setEditLayout(false)
     iframe.getElement().onload = null
   },
   view: () => m(ButtonGroup, {wrap: 'div.dialog'},

@@ -6,6 +6,9 @@ import {formatDateTimeCompact, formatDateTimeFull} from './lib/format.js'
 
 initTheme()
 
+// the shell layout (admin column above preview column) keys off this class
+document.body.classList.add('app-layout')
+
 Number.prototype.toDateTime = function () {
   return formatDateTimeCompact(this)
 }
