@@ -54,6 +54,8 @@
     "New page": "Neue Seite",
     "No backups found.": "Keine Backups gefunden.",
     "No pages found.": "Keine Seiten gefunden.",
+    "No stylesheets found.": "Keine Stylesheets gefunden.",
+    "Stylesheets are .css files in the web root.": "Stylesheets sind .css-Dateien im Webverzeichnis.",
     "No uploads found.": "Keine Uploads gefunden.",
     "No": "Nein",
     "Overview": "Überblick",

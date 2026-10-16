@@ -131,39 +131,42 @@ export const CssEditView = {
   onremove: onRemoveComponent,
   view: () => m('div.main',
     m('.content',
-      m('h1', t('Edit CSS'), ': ', CssEditModel.item.file ?? ''),
-      m(Fieldset, {legend: t('Current stylesheet')},
-        m(Select, {
-          id: 'cssFile',
-          wrap: 'div.row',
-          label: t('CSS file'),
-          value: state.file,
-          options: CssEditModel.list.map((item) => {
-            return {value: item.file, label: item.file}
+      m('h1', t('Edit CSS'), CssEditModel.item.file ? ': ' + CssEditModel.item.file : ''),
+      CssEditModel.list.length === 0
+        ? m('p', t('No stylesheets found.'), ' ', t('Stylesheets are .css files in the web root.'))
+        : [m(Fieldset, {legend: t('Current stylesheet')},
+          m(Select, {
+            id: 'cssFile',
+            wrap: 'div.row',
+            label: t('CSS file'),
+            value: state.file,
+            options: CssEditModel.list.map((item) => {
+              return {value: item.file, label: item.file}
+            }),
+            error: errorFor(state.errors, 'fileName'),
+            onchange: (selectedItem) => {
+              selectFile(selectedItem)
+            }
           }),
-          error: errorFor(state.errors, 'fileName'),
-          onchange: (selectedItem) => {
-            selectFile(selectedItem)
-          }
-        }),
-        m(InputText, {
-          wrap: 'div.row',
-          label: t('Created at'),
-          value: CssEditModel.item.created ? CssEditModel.item.created.toDateTime() : '',
-          title: CssEditModel.item.created ? CssEditModel.item.created.toDateTimeFull() : '',
-          disabled: true
-        }),
-        m('.row',
-          m('label', {style: {width: '100%'}}, t('CSS')),
-          m('div#ace', {style: {width: '100%'}})
-        ),
-        m(ButtonGroup, {wrap: 'div.row.text-right'},
-          m(ButtonSecondary, {onclick: onCancelButtonClicked}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
-          m(ButtonPrimary, {onclick: onSaveButtonClicked, title: t('Save') + ' (' + saveShortcutLabel() + ')'}, m(Icon, {name: 'save'}), m('span', t('Save'))),
-          m(ButtonPrimary, {onclick: onSaveAndCloseButtonClicked, title: t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')'}, m(Icon, {name: 'check'}), m('span', t('Save & Close')))
-        )
-      ),
-      m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),
+          m(InputText, {
+            wrap: 'div.row',
+            label: t('Created at'),
+            value: CssEditModel.item.created ? CssEditModel.item.created.toDateTime() : '',
+            title: CssEditModel.item.created ? CssEditModel.item.created.toDateTimeFull() : '',
+            disabled: true
+          }),
+          m('.row',
+            m('label', {style: {width: '100%'}}, t('CSS')),
+            m('div#ace', {style: {width: '100%'}})
+          ),
+          m(ButtonGroup, {wrap: 'div.row.text-right'},
+            m(ButtonSecondary, {onclick: onCancelButtonClicked}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
+            m(ButtonPrimary, {onclick: onSaveButtonClicked, title: t('Save') + ' (' + saveShortcutLabel() + ')'}, m(Icon, {name: 'save'}), m('span', t('Save'))),
+            m(ButtonPrimary, {onclick: onSaveAndCloseButtonClicked, title: t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')'}, m(Icon, {name: 'check'}), m('span', t('Save & Close')))
+          )
+          ),
+          m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),
+        ]
     )
   )
 }

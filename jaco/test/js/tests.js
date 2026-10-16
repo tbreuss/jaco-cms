@@ -15,6 +15,8 @@ import {SystemView} from '/jaco/frontend/view/SystemView.js'
 import {SystemModel} from '/jaco/frontend/model/SystemModel.js'
 import {UploadListModel} from '/jaco/frontend/model/UploadListModel.js'
 import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
+import {CssEditView} from '/jaco/frontend/view/CssEditView.js'
+import {CssEditModel} from '/jaco/frontend/model/CssEditModel.js'
 import {api} from '/jaco/frontend/service/api.js'
 import {t, tError} from '/jaco/frontend/model/i18n.js'
 import {isSaveShortcut, isSaveAndCloseShortcut, bindSaveShortcut, saveShortcutLabel, saveAndCloseShortcutLabel} from '/jaco/frontend/lib/shortcuts.js'
@@ -1354,3 +1356,25 @@ QUnit.test('every used component is imported or defined locally', async (assert)
     }
   }
 })
+
+QUnit.test('CssEditView shows a notice when no stylesheet exists', (assert) => {
+  // without a file the form has nothing to select or save; the empty
+  // select and editor from the screenshot must not render
+  CssEditModel.list = []
+  CssEditModel.item = {}
+  const text = JSON.stringify(CssEditView.view())
+
+  assert.ok(text.includes(t('No stylesheets found.')))
+  assert.ok(text.includes(t('Stylesheets are .css files in the web root.')))
+  assert.notOk(text.includes(t('Current stylesheet')))
+})
+
+QUnit.test('CssEditView shows the form when stylesheets exist', (assert) => {
+  CssEditModel.list = [{file: 'site.css'}]
+  CssEditModel.item = {}
+  const text = JSON.stringify(CssEditView.view())
+
+  assert.notOk(text.includes(t('No stylesheets found.')))
+  assert.ok(text.includes(t('Current stylesheet')))
+})
+
