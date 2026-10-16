@@ -21,6 +21,7 @@ import {api} from '/jaco/frontend/service/api.js'
 import {t, tError} from '/jaco/frontend/model/i18n.js'
 import {isSaveShortcut, isSaveAndCloseShortcut, bindSaveShortcut, saveShortcutLabel, saveAndCloseShortcutLabel} from '/jaco/frontend/lib/shortcuts.js'
 import {getTheme, setTheme, applyTheme} from '/jaco/frontend/lib/theme.js'
+import {aceThemeName, watchAceTheme} from '/jaco/frontend/lib/aceTheme.js'
 import {formatDateTimeCompact, formatDateTimeFull, formatBytes} from '/jaco/frontend/lib/format.js'
 import {state} from '/jaco/frontend/state/state.js'
 const fixture = () => document.getElementById('qunit-fixture')
@@ -1294,6 +1295,7 @@ QUnit.module('import audit')
 const auditFiles = [
   '/jaco/frontend/app.js',
   '/jaco/frontend/lib/app.js',
+  '/jaco/frontend/lib/aceTheme.js',
   '/jaco/frontend/lib/format.js',
   '/jaco/frontend/lib/helpers.js',
   '/jaco/frontend/lib/iframe.js',
@@ -1438,4 +1440,33 @@ QUnit.test('CssEditView survives an empty list without an editor', (assert) => {
   window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
   appDiv.remove()
   delete window.ace
+})
+
+QUnit.test('aceThemeName follows the data-theme attribute', (assert) => {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  assert.strictEqual(aceThemeName(), 'ace/theme/tomorrow_night')
+  document.documentElement.setAttribute('data-theme', 'light')
+  assert.strictEqual(aceThemeName(), 'ace/theme/github')
+  document.documentElement.removeAttribute('data-theme')
+  assert.strictEqual(aceThemeName(), 'ace/theme/github')
+})
+
+QUnit.test('watchAceTheme switches the editor and stops on disconnect', (assert) => {
+  const done = assert.async()
+  const applied = []
+  const editor = {setTheme: (name) => applied.push(name)}
+  document.documentElement.setAttribute('data-theme', 'light')
+
+  const stop = watchAceTheme(editor)
+  document.documentElement.setAttribute('data-theme', 'dark')
+  setTimeout(() => {
+    assert.deepEqual(applied, ['ace/theme/tomorrow_night'])
+    stop()
+    document.documentElement.setAttribute('data-theme', 'light')
+    setTimeout(() => {
+      assert.deepEqual(applied, ['ace/theme/tomorrow_night'], 'no switch after disconnect')
+      document.documentElement.removeAttribute('data-theme')
+      done()
+    }, 50)
+  }, 50)
 })

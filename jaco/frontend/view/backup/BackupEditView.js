@@ -6,6 +6,7 @@ import {Fieldset} from '../../component/Fieldset.js'
 import {InputText} from '../../component/InputText.js'
 import {ButtonGroup} from '../../component/ButtonGroup.js'
 import {app} from '../../lib/app.js'
+import {aceThemeName} from '../../lib/aceTheme.js'
 
 export const BackupEditView = {
   oninit: (vnode) => {
@@ -19,7 +20,7 @@ export const BackupEditView = {
   },
   onupdate: () => {
     const editor = ace.edit('ace', {
-      theme: 'ace/theme/github',
+      theme: aceThemeName(),
       mode: 'ace/mode/html',
       maxLines: Infinity,  // this is going to be very slow on large documents
       wrap: true,   // wrap text to view

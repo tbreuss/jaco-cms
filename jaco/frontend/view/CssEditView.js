@@ -11,9 +11,11 @@ import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {FormErrors, errorFor} from '../component/FormErrors.js'
 import {app} from '../lib/app.js'
 import {bindSaveShortcut, saveAndCloseShortcutLabel, saveShortcutLabel} from '../lib/shortcuts.js'
+import {aceThemeName, watchAceTheme} from '../lib/aceTheme.js'
 
 let editor = undefined
 let unbindSaveShortcut = null
+let unwatchAceTheme = null
 
 const state = {
   errors: [],
@@ -34,7 +36,7 @@ const ensureEditor = () => {
     return
   }
   editor = ace.edit('ace', {
-    theme: 'ace/theme/github',
+    theme: aceThemeName(),
     mode: 'ace/mode/css',
     maxLines: Infinity,  // this is going to be very slow on large documents
     wrap: true,   // wrap text to view
@@ -56,6 +58,7 @@ const ensureEditor = () => {
     bindKey: {win: 'Ctrl-Shift-S', mac: 'Command-Shift-S'},
     exec: () => onSaveAndCloseButtonClicked({redraw: false}),
   })
+  unwatchAceTheme = watchAceTheme(editor)
 }
 
 const onCreateComponent = () => {
@@ -132,6 +135,10 @@ const onRemoveComponent = () => {
   if (editor) {
     editor.destroy()
     editor = undefined
+  }
+  if (unwatchAceTheme) {
+    unwatchAceTheme()
+    unwatchAceTheme = null
   }
   app.makeIframeScrollable()
 }
