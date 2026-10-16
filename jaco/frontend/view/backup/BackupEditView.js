@@ -19,6 +19,11 @@ export const BackupEditView = {
     app.makeAppScrollable()
   },
   onupdate: () => {
+    // like the page editor, only the loaded file may stamp the editor:
+    // an earlier redraw must not render stale or empty content
+    if (!BackupViewModel.item.file) {
+      return
+    }
     const editor = ace.edit('ace', {
       theme: aceThemeName(),
       mode: 'ace/mode/html',

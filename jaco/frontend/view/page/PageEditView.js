@@ -18,7 +18,8 @@ let unwatchAceTheme = null
 
 const state = {
   errors: [],
-  initialized: false
+  initialized: false,
+  file: ''
 }
 
 const fieldPointers = ['fileName']
@@ -60,6 +61,9 @@ const onInitComponent = (vnode) => {
   if (!app.hasAuthToken()) {
     m.route.set('/logout')
   }
+  state.file = vnode.attrs.file
+  // drop the previous visit: stamping stale content below would lock it in
+  PageEditModel.item = {}
   PageEditModel.load(vnode.attrs.file)
   state.errors = []
   state.initialized = false
@@ -107,7 +111,11 @@ const onRemoveComponent = () => {
 }
 
 const onUpdateComponent = () => {
-  if (!state.initialized) {
+  const loaded = PageEditModel.item.file
+  // render only the requested file: an earlier redraw (translations, loader)
+  // must not stamp stale content, and late responses of a previous file selection
+  // are ignored
+  if (!state.initialized && loaded && loaded === state.file) {
     editor.setValue(PageEditModel.item.content, 1) // set cursor at the end
     state.initialized = true
   }

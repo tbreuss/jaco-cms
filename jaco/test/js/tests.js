@@ -8,6 +8,7 @@ import {Icon} from '/jaco/frontend/component/Icon.js'
 import {Select} from '/jaco/frontend/component/Select.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
 import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
+import {PageEditView} from '/jaco/frontend/view/page/PageEditView.js'
 import {ViewUploadView} from '/jaco/frontend/view/upload/ViewUploadView.js'
 import {PhpLogView} from '/jaco/frontend/view/PhpLogView.js'
 import {PhpLogModel} from '/jaco/frontend/model/PhpLogModel.js'
@@ -1469,4 +1470,46 @@ QUnit.test('watchAceTheme switches the editor and stops on disconnect', (assert)
       done()
     }, 50)
   }, 50)
+})
+
+QUnit.test('PageEditView stamps the editor only with the requested file', (assert) => {
+  // regression test: any redraw before page/view resolves (translations,
+  // loader) must not lock in stale content, and late responses of a previous
+  // file selection are ignored
+  const setValues = []
+  window.ace = {
+    edit: () => ({
+      resize() {}, commands: {addCommand() {}}, setValue: (value) => setValues.push(value),
+      getValue: () => '', destroy() {},
+    }),
+  }
+  let appDiv = document.getElementById('app')
+  if (!appDiv) {
+    appDiv = document.createElement('div')
+    appDiv.id = 'app'
+    document.body.appendChild(appDiv)
+  }
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'test-token')
+  const origLoad = PageEditModel.load
+  PageEditModel.load = () => Promise.resolve()
+  PageEditModel.item = {}
+
+  m.render(fixture(), m(PageEditView, {file: 'a.html'}))
+  m.render(fixture(), m(PageEditView, {file: 'a.html'}))
+  assert.deepEqual(setValues, [], 'no stamp before the file arrives')
+
+  PageEditModel.item = {file: 'a.html', content: '<p>a</p>'}
+  m.render(fixture(), m(PageEditView, {file: 'a.html'}))
+  assert.deepEqual(setValues, ['<p>a</p>'], 'stamps once the requested file arrives')
+
+  PageEditModel.item = {file: 'b.html', content: '<p>b</p>'}
+  m.render(fixture(), m(PageEditView, {file: 'a.html'}))
+  assert.deepEqual(setValues, ['<p>a</p>'], 'ignores the late response of another file')
+
+  m.render(fixture(), [])
+  PageEditModel.load = origLoad
+  PageEditModel.item = {}
+  window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  appDiv.remove()
+  delete window.ace
 })
