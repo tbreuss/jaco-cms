@@ -18,7 +18,7 @@ final class HtmlFunctionsTest extends TestCase
         'onclick handler' => ['<p onclick="alert(1)">ok</p>', '<p>ok</p>'],
         'javascript href' => ['<a href="javascript:alert(1)">x</a>', '<a>x</a>'],
         'iframe' => ['<p>a</p><iframe src="https://evil.example"></iframe><p>b</p>', '<p>a</p><p>b</p>'],
-        'svg onload' => ['<svg onload=alert(1)>x</svg><p>ok</p>', '<p>ok</p>'],
+        'svg onload' => ['<svg onload=alert(1)>x</svg><p>ok</p>', '<svg>x</svg><p>ok</p>'],
         'img onerror' => ['<img src="x" onerror="alert(1)">', '<img src="x">'],
         'style tag' => ['<style>body{display:none}</style><p>ok</p>', '<p>ok</p>'],
         'data href' => ['<a href="data:text/html,<script>alert(1)</script>">x</a>', '<a>x</a>'],
@@ -43,6 +43,34 @@ final class HtmlFunctionsTest extends TestCase
         'utf-8' => ['<p>Grüße — über</p>', '<p>Grüße — über</p>'],
         'heading list table' => ['<h1>T</h1><ul><li>a</li></ul><table><tr><td colspan="2">x</td></tr></table>', '<h1>T</h1><ul><li>a</li></ul><table><tr><td colspan="2">x</td></tr></table>'],
         'data-url image survives' => ['<img src="data:image/png;base64,iVBOR">', '<img src="data:image/png;base64,iVBOR">'],
+        'button survives with its attributes' => [
+            '<button type="button" class="nav-toggle" aria-expanded="false" aria-label="Open">x</button>',
+            '<button type="button" class="nav-toggle" aria-expanded="false" aria-label="Open">x</button>',
+        ],
+        'button loses script attributes' => [
+            '<button formaction="https://evil.example" onclick="steal()">x</button>',
+            '<button>x</button>',
+        ],
+        'svg icon survives' => [
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path></svg>',
+            '<svg viewbox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path></svg>',
+        ],
+        'svg circle survives with its geometry' => [
+            '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle></svg>',
+            '<svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle></svg>',
+        ],
+        'sanitizing a saved button changes nothing' => [
+            '<li class="nav-toggle-item"><button type="button" class="nav-toggle" aria-expanded="false" aria-label="Open the navigation" title="Open the navigation"><svg viewbox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button></li>',
+            '<li class="nav-toggle-item"><button type="button" class="nav-toggle" aria-expanded="false" aria-label="Open the navigation" title="Open the navigation"><svg viewbox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button></li>',
+        ],
+        'svg script is removed, shapes stay' => [
+            '<svg viewBox="0 0 24 24"><script>alert(1)</script><path d="M4 7h16"></path></svg>',
+            '<svg viewbox="0 0 24 24"><path d="M4 7h16"></path></svg>',
+        ],
+        'svg script url is removed' => [
+            '<svg viewBox="0 0 24 24"><a href="javascript:alert(1)"><path d="M4 7h16"></path></a></svg>',
+            '<svg viewbox="0 0 24 24"><a><path d="M4 7h16"></path></a></svg>',
+        ],
         'semantic sectioning survives' => [
             '<header><nav><a href="/x">x</a></nav></header><main><article><section><p>t</p></section></article><aside><p>a</p></aside></main><footer><p>f</p></footer>',
             '<header><nav><a href="/x">x</a></nav></header><main><article><section><p>t</p></section></article><aside><p>a</p></aside></main><footer><p>f</p></footer>',

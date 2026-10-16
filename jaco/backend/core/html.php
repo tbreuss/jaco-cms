@@ -38,16 +38,16 @@ function set_title(string $html, string $title): string
 }
 
 const ALLOWED_TAGS = [
-    'a', 'abbr', 'article', 'aside', 'b', 'blockquote', 'br', 'caption', 'cite', 'code', 'col', 'colgroup',
+    'a', 'abbr', 'article', 'aside', 'b', 'blockquote', 'br', 'button', 'caption', 'circle', 'cite', 'code', 'col', 'colgroup',
     'dd', 'del', 'details', 'div', 'dl', 'dt', 'em', 'figcaption', 'figure', 'footer', 'h1', 'h2',
     'h3', 'h4', 'h5', 'h6', 'header', 'hr', 'i', 'iframe', 'img', 'ins', 'kbd', 'li', 'main', 'mark', 'nav', 'ol', 'p',
-    'pre', 'q', 's', 'samp', 'section', 'small', 'span', 'strong', 'sub', 'summary', 'sup',
+    'path', 'pre', 'q', 's', 'samp', 'section', 'small', 'span', 'strong', 'sub', 'summary', 'sup', 'svg',
     'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'time', 'tr', 'u', 'ul', 'var',
 ];
 
 const REMOVE_TAGS = [
     'applet', 'base', 'embed', 'link', 'math', 'meta', 'noscript', 'object',
-    'script', 'style', 'svg', 'template',
+    'script', 'style', 'template',
 ];
 
 const ALLOWED_ATTRIBUTES = [
@@ -67,8 +67,12 @@ const ALLOWED_ATTRIBUTES = [
         'data-jaco-pos',
     ],
     'a' => ['href', 'rel', 'target', 'title'],
+    'button' => ['aria-expanded', 'aria-label', 'title', 'type'],
+    'circle' => ['cx', 'cy', 'r'],
     'iframe' => ['allowfullscreen', 'frameborder', 'height', 'src', 'title', 'width'],
     'img' => ['alt', 'height', 'src', 'title', 'width'],
+    'path' => ['d'],
+    'svg' => ['aria-hidden', 'viewbox'],
     'td' => ['colspan', 'rowspan'],
     'th' => ['colspan', 'rowspan'],
 ];
