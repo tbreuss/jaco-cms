@@ -17,6 +17,20 @@
     padding-bottom: 0;
 }
 
+/* the snow theme sizes editor boxes at height 100%: inside a stretched grid
+   or flex parent that turns a single line into a tall box. Editors size by
+   content instead; the block editor is unaffected in normal flow, where 100%
+   of an automatic height already means content height. */
+.ql-container[data-jaco-editable],
+.ql-container[data-jaco-editable-line] {
+    height: auto;
+}
+
+.ql-container[data-jaco-editable] .ql-editor,
+.ql-container[data-jaco-editable-line] .ql-editor {
+    height: auto;
+}
+
 /* the line editor wraps the text in a paragraph inside the host element: without
    this a heading looks like body text while editing (and the page stylesheet
    even recolors it, e.g. ".hero p"). Inheriting keeps the heading look, and the
