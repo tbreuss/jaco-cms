@@ -23,7 +23,7 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | Page template | A file in `jaco/_template/page`, used when a page is created. Listed through `template/pages`. |
 | Block template | A file in `jaco/_template/content`, a single reusable block (e.g. a news item). Listed through `template/content`, fetched through `template/content/view`. |
 | Block list | No file: `<div data-jaco-content-list>` markup on a page that references a block template and lets editors add/remove blocks inline. Blocks live in `<div data-jaco-content-item>`. |
-| Config | The injected `jaco\core\config\Config` value object: directories, extensions, credentials, `defaultLanguage`, `maintenanceMode` and the php error settings. It replaced the former `jaco\*` constants; `jaco/settings.php` overrides the defaults. |
+| Config | The injected `jaco\core\config\Config` value object: directories (including the configurable `uploadDir`, always inside the web root), extensions, credentials, `defaultLanguage`, `maintenanceMode` and the php error settings. It replaced the former `jaco\*` constants; `jaco/settings.php` overrides the defaults. Empty credentials and short secret keys fall back to random values, so logging in stays impossible until real values are set (fail closed, see below). |
 | Domain payload | Return value of a `jaco\domain\*` function: `success`, `invalid` (HTTP 422 with an error list) or `error` (HTTP 500). |
 | API action | A route registered in `jaco/routes.php` (`action=page/update`). |
 | Session token | JWT signed with HS256, issued by `POST action=login`, sent as `Authorization: Bearer <token>`. |
@@ -84,6 +84,23 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 - **Uploads are never overwritten.** A name collision gets `-1` appended
   (`filesystem\file_name_to_write()`), and `upload/create` validates the extension before
   the uploaded file is moved into place.
+- **Credentials fail closed, never open.** `create_default_config()` treats empty
+  `username`/`password`/`secretKey` like missing ones (random fallbacks) and
+  replaces a `secretKey` below 32 characters; `auth\authenticate()` additionally
+  refuses empty stored values. A verbatim copy of `settings.dist.php` can
+  therefore never log in and never signs tokens with the example key
+  (`jaco/backend/core/config.php`, `jaco/backend/core/auth.php`,
+  `jaco/test/ConfigDefaultsTest.php`).
+- **Uploads are scrubbed when they are SVG.** `svg` stays an allowed extension,
+  but `html\sanitize_svg()` strips script elements, foreign objects, event
+  handler attributes and script urls on every write path (direct upload,
+  editor data urls, gallery full versions) before the file reaches `upload/`.
+  Malformed markup is rejected instead of guessed
+  (`jaco/backend/core/html.php`).
+- **The app directory guard ignores case.** `filesystem\is_file_in_dir()`
+  compares the first path segment case-insensitively, because `Jaco/...`
+  resolves to the app directory on macOS and Windows
+  (`jaco/backend/core/filesystem.php`, `jaco/test/FileSystemNamingTest.php`).
 - **The editable markers are allowlisted.** `data-jaco-editable`, `-line`, `-link`, `-image`
   and `-image-extended` must stay in `ALLOWED_ATTRIBUTES`: dropping one silently makes the
   page uneditable in place, because the editor finds its blocks through these attributes.
@@ -124,12 +141,10 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   with `light-dark()`, so the automatic case follows the OS without a media query. The
   explicit `data-theme="dark"` block repeats the dark tokens on purpose: browsers without
   `light-dark()` (iOS < 17.5, Chrome < 123) would otherwise ignore a chosen dark theme.
-  The switch button is built by that script on purpose – the sanitizer removes `<button>`
-  and `<svg>` from a page body, so markup would be gone after the next save and only the
-  `<script src>` in the head survives both save paths. The mobile menu in
-  `assets/nav.js` follows the same rule: the button is built at runtime and the open state
-  is a class on `<html>`, which no save touches – injecting `<span>`s or classes into the
-  body instead would be baked into the page on the next save. It takes over below 40rem;
+  The switch button sits in the page markup; the script only wires it up, while the
+  theme itself is still applied synchronously before the first paint. The mobile menu in
+  `assets/nav.js` works the same way: its button sits in the markup and the open state
+  is a class on `<html>`, which no save touches. It takes over below 40rem;
   the plain row needs 500px of content plus the page padding in german, so a smaller
   breakpoint makes the row wrap on tablets.
 - **Server errors stay English on the wire and are translated in the frontend.**
@@ -169,6 +184,10 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | Schema validation, error responses and field mapping | `jaco/test/SchemaValidationTest.php`, `jaco/test/ResponderMappingTest.php` |
 | Json files: every `*.json` below `jaco/` parses | `jaco/test/JsonFilesTest.php` |
 | Config defaults and masked diagnostics | `jaco/test/DefinedConstantsTest.php` |
+| Credential defaults fail closed | `jaco/test/ConfigDefaultsTest.php` |
+| Hardening checks (`.htaccess` files exist) | `jaco/test/SecurityChecksTest.php` |
+| Authorization header on every SAPI | `jaco/test/ApiAuthHeaderTest.php` |
+| Error responses hide internals | `jaco/test/ErrorHandlerTest.php` |
 | Frontend components, page editor model, login form | `jaco/test/js/tests.js` |
 
 Run them from the repository root (dev tools come from `composer install`):
@@ -194,6 +213,7 @@ headless:
 
 Not tested on purpose: the diagnostics endpoints (`system`, `system/log`,
 `system/php-info`, all environment dependent; `system\defined_constants()` itself is
-covered by `DefinedConstantsTest`) and the global `error_handler`, `exception_handler`
-and `fatal_handler`. Still without a test: restoring a backup whose original page no
+covered by `DefinedConstantsTest`) and the global `error_handler` and `fatal_handler`
+(the `exception_handler` response shape is covered by `ErrorHandlerTest`).
+Still without a test: restoring a backup whose original page no
 longer exists.
