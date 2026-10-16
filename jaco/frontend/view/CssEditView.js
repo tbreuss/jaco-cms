@@ -27,9 +27,12 @@ const onCancelButtonClicked = () => {
   m.route.set('/')
 }
 
-const onCreateComponent = () => {
-  app.makeAppScrollable()
-
+const ensureEditor = () => {
+  // the editor div only exists once a file is listed: without this guard the
+  // first update after loading crashes on an editor that was never created
+  if (editor || !document.getElementById('ace')) {
+    return
+  }
   editor = ace.edit('ace', {
     theme: 'ace/theme/github',
     mode: 'ace/mode/css',
@@ -55,6 +58,11 @@ const onCreateComponent = () => {
   })
 }
 
+const onCreateComponent = () => {
+  app.makeAppScrollable()
+  ensureEditor()
+}
+
 const onInitComponent = () => {
   if (!app.hasAuthToken()) {
     m.route.set('/logout')
@@ -62,6 +70,9 @@ const onInitComponent = () => {
   state.errors = []
   state.loadedFile = null
   state.file = ''
+  // drop the previous visit: without this a stale file flashes until the
+  // fresh list arrives, and an empty list never clears a removed file
+  CssEditModel.item = {}
   if (unbindSaveShortcut) {
     unbindSaveShortcut()
   }
@@ -69,12 +80,13 @@ const onInitComponent = () => {
     onSave: () => onSaveButtonClicked({redraw: false}),
     onSaveAndClose: () => onSaveAndCloseButtonClicked({redraw: false}),
   })
-  CssEditModel.loadList().then(() => {
+  const onListLoaded = () => {
     if (CssEditModel.list.length > 0) {
       selectFile(CssEditModel.list[0].file)
     }
     m.redraw()
-  })
+  }
+  CssEditModel.loadList().then(onListLoaded, onListLoaded)
 }
 
 const selectFile = (file) => {
@@ -87,6 +99,9 @@ const selectFile = (file) => {
 
 const onSaveButtonClicked = (e) => {
   e.redraw = false
+  if (!editor) {
+    return Promise.resolve()
+  }
   CssEditModel.item.content = editor.getValue()
   return CssEditModel.save()
     .then(() => {
@@ -112,10 +127,17 @@ const onRemoveComponent = () => {
     unbindSaveShortcut()
     unbindSaveShortcut = null
   }
+  // the editor binds to its div: without this a later visit reuses an
+  // instance that hangs off detached DOM
+  if (editor) {
+    editor.destroy()
+    editor = undefined
+  }
   app.makeIframeScrollable()
 }
 
 const onUpdateComponent = () => {
+  ensureEditor()
   const loaded = CssEditModel.item.file
   // render only the selected file, late responses of earlier selections are ignored
   if (loaded && loaded !== state.loadedFile && loaded === state.file) {
@@ -132,9 +154,11 @@ export const CssEditView = {
   view: () => m('div.main',
     m('.content',
       m('h1', t('Edit CSS'), CssEditModel.item.file ? ': ' + CssEditModel.item.file : ''),
-      CssEditModel.list.length === 0
-        ? m('p', t('No stylesheets found.'), ' ', t('Stylesheets are .css files in the web root.'))
-        : [m(Fieldset, {legend: t('Current stylesheet')},
+      CssEditModel.isLoading
+        ? m('p', t('Loading') + '...')
+        : CssEditModel.list.length === 0
+          ? m('p', t('No stylesheets found.'), ' ', t('Stylesheets are .css files in the web root.'))
+          : [m(Fieldset, {legend: t('Current stylesheet')},
           m(Select, {
             id: 'cssFile',
             wrap: 'div.row',

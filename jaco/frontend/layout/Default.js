@@ -34,9 +34,6 @@ const showInfo = (e) => {
 }
 
 export const DefaultLayout = {
-  oncreate: () => {
-    i18n.loadAndSetLocale()
-  },
   view: (vnode) => {
     // see https://www.w3schools.com/howto/howto_css_dropdown_navbar.asp
     return [

@@ -1360,6 +1360,7 @@ QUnit.test('every used component is imported or defined locally', async (assert)
 QUnit.test('CssEditView shows a notice when no stylesheet exists', (assert) => {
   // without a file the form has nothing to select or save; the empty
   // select and editor from the screenshot must not render
+  CssEditModel.isLoading = false
   CssEditModel.list = []
   CssEditModel.item = {}
   const text = JSON.stringify(CssEditView.view())
@@ -1369,12 +1370,72 @@ QUnit.test('CssEditView shows a notice when no stylesheet exists', (assert) => {
   assert.notOk(text.includes(t('Current stylesheet')))
 })
 
+QUnit.test('CssEditView shows loading while the list arrives', (assert) => {
+  // without this the notice flashes on every visit until the response lands
+  CssEditModel.isLoading = true
+  CssEditModel.list = []
+  CssEditModel.item = {}
+  const text = JSON.stringify(CssEditView.view())
+
+  assert.ok(text.includes(t('Loading')))
+  assert.notOk(text.includes(t('No stylesheets found.')))
+  CssEditModel.isLoading = false
+})
+
 QUnit.test('CssEditView shows the form when stylesheets exist', (assert) => {
+  CssEditModel.isLoading = false
   CssEditModel.list = [{file: 'site.css'}]
   CssEditModel.item = {}
   const text = JSON.stringify(CssEditView.view())
 
   assert.notOk(text.includes(t('No stylesheets found.')))
   assert.ok(text.includes(t('Current stylesheet')))
+  CssEditModel.list = []
 })
 
+
+
+QUnit.test('CssEditView survives an empty list without an editor', (assert) => {
+  // regression test: the #ace div only exists once a file is listed, so the
+  // editor must be created lazily instead of crashing onupdate. A second
+  // synchronous render drives onupdate without any timer.
+  const created = []
+  window.ace = {
+    edit: (id) => {
+      created.push(id)
+      return {resize() {}, commands: {addCommand() {}}, setValue() {}, getValue: () => '', destroy() {}}
+    },
+  }
+  let appDiv = document.getElementById('app')
+  if (!appDiv) {
+    appDiv = document.createElement('div')
+    appDiv.id = 'app'
+    document.body.appendChild(appDiv)
+  }
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'test-token')
+  const origLoadList = CssEditModel.loadList
+  const origLoad = CssEditModel.load
+  CssEditModel.loadList = () => Promise.resolve()
+  CssEditModel.load = () => Promise.resolve()
+  CssEditModel.isLoading = false
+  CssEditModel.list = []
+  CssEditModel.item = {}
+
+  m.render(fixture(), m(CssEditView))
+  assert.step('empty list renders without an editor')
+
+  // files arrive later: the editor is created exactly once, on the live div
+  CssEditModel.list = [{file: 'site.css'}]
+  CssEditModel.item = {}
+  m.render(fixture(), m(CssEditView))
+  assert.deepEqual(created, ['ace'])
+  assert.verifySteps(['empty list renders without an editor'])
+
+  m.render(fixture(), [])
+  CssEditModel.loadList = origLoadList
+  CssEditModel.load = origLoad
+  CssEditModel.list = []
+  window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  appDiv.remove()
+  delete window.ace
+})

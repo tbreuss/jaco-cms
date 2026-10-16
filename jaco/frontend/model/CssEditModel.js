@@ -5,9 +5,13 @@ export const CssEditModel = {
   list: [],
   item: {},
   loadList: () => {
+    CssEditModel.isLoading = true
     return api.get('css/list')
       .then((data) => {
         CssEditModel.list = data
+        CssEditModel.isLoading = false
+      }, () => {
+        CssEditModel.isLoading = false
       })
   },
   load: (file) => {
