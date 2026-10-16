@@ -43,6 +43,14 @@ final class HtmlFunctionsTest extends TestCase
         'utf-8' => ['<p>Grüße — über</p>', '<p>Grüße — über</p>'],
         'heading list table' => ['<h1>T</h1><ul><li>a</li></ul><table><tr><td colspan="2">x</td></tr></table>', '<h1>T</h1><ul><li>a</li></ul><table><tr><td colspan="2">x</td></tr></table>'],
         'data-url image survives' => ['<img src="data:image/png;base64,iVBOR">', '<img src="data:image/png;base64,iVBOR">'],
+        'semantic sectioning survives' => [
+            '<header><nav><a href="/x">x</a></nav></header><main><article><section><p>t</p></section></article><aside><p>a</p></aside></main><footer><p>f</p></footer>',
+            '<header><nav><a href="/x">x</a></nav></header><main><article><section><p>t</p></section></article><aside><p>a</p></aside></main><footer><p>f</p></footer>',
+        ],
+        'leading header keeps its content' => [
+            '<header><p>f</p></header><div>rest</div>',
+            '<header><p>f</p></header><div>rest</div>',
+        ],
     ];
 
     protected function setUp(): void

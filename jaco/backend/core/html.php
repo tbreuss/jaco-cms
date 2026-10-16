@@ -38,10 +38,10 @@ function set_title(string $html, string $title): string
 }
 
 const ALLOWED_TAGS = [
-    'a', 'abbr', 'b', 'blockquote', 'br', 'caption', 'cite', 'code', 'col', 'colgroup',
-    'dd', 'del', 'details', 'div', 'dl', 'dt', 'em', 'figcaption', 'figure', 'h1', 'h2',
-    'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'iframe', 'img', 'ins', 'kbd', 'li', 'mark', 'ol', 'p',
-    'pre', 'q', 's', 'samp', 'small', 'span', 'strong', 'sub', 'summary', 'sup',
+    'a', 'abbr', 'article', 'aside', 'b', 'blockquote', 'br', 'caption', 'cite', 'code', 'col', 'colgroup',
+    'dd', 'del', 'details', 'div', 'dl', 'dt', 'em', 'figcaption', 'figure', 'footer', 'h1', 'h2',
+    'h3', 'h4', 'h5', 'h6', 'header', 'hr', 'i', 'iframe', 'img', 'ins', 'kbd', 'li', 'main', 'mark', 'nav', 'ol', 'p',
+    'pre', 'q', 's', 'samp', 'section', 'small', 'span', 'strong', 'sub', 'summary', 'sup',
     'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'time', 'tr', 'u', 'ul', 'var',
 ];
 
@@ -78,6 +78,15 @@ function sanitize_html(string $html): string
     \libxml_use_internal_errors(true);
 
     $dom = new \DOMDocument();
+
+    // libxml parses HTML 4: sectioning elements it does not know (header,
+    // main, footer and friends) land in <head> when they appear before any
+    // <body>, so a fragment starting with one would lose the whole block
+    // including its content. Fragments therefore parse as explicit body
+    // content; full documents pass through untouched.
+    if (\preg_match('#<body[\s>]#i', $html) !== 1) {
+        $html = '<body>' . $html . '</body>';
+    }
 
     if (!$dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">' . $html)) {
         \libxml_clear_errors();
