@@ -24,6 +24,31 @@
     --color-row-hover: rgba(0, 0, 0, 0.03);
     --color-menu-hover: #ddd;
     --color-nav-hover: #e9ecef;
+    --color-on-primary: #fff;
+    --shadow-dropdown: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    --shadow-toast-hover: 0 1px 3px rgba(0, 0, 0, 0.12);
+    --color-php-info-link: #009;
+    --color-php-info-link-bg: #fff;
+    --color-php-info-shadow: #ccc;
+    --color-php-info-border: #666;
+    --color-php-info-e-bg: #ccf;
+    --color-php-info-h-bg: #99c;
+    --color-php-info-v-bg: #ddd;
+    --color-php-info-v-italic: #999;
+    --color-php-info-anchor: #000;
+    --color-loader: #ff0000;
+    --color-toast-info-text: #1e40af;
+    --color-toast-info-bg: #eff6ff;
+    --color-toast-info-border: #bfdbfe;
+    --color-toast-warning-text: #92400e;
+    --color-toast-warning-bg: #fffbeb;
+    --color-toast-warning-border: #fde68a;
+    --color-toast-danger-text: #9f1239;
+    --color-toast-danger-bg: #fff1f2;
+    --color-toast-danger-border: #fecdd3;
+    --color-toast-success-text: #065f46;
+    --color-toast-success-bg: #ecfdf5;
+    --color-toast-success-border: #a7f3d0;
     --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
@@ -226,7 +251,7 @@ body {
     position: absolute;
     background-color: var(--color-surface);
     min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-dropdown);
     z-index: 1;
 }
 
@@ -397,7 +422,7 @@ button {
 }
 
 .m-notification:hover {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow-toast-hover);
 }
 
 .m-notification.destroy {
@@ -422,34 +447,34 @@ button {
 }
 
 .m-notification.info {
-    color: #1e40af;
-    background-color: #eff6ff;
+    color: var(--color-toast-info-text);
+    background-color: var(--color-toast-info-bg);
     padding: 0.75rem 1.25rem;
-    border: 1px solid #bfdbfe;
+    border: 1px solid var(--color-toast-info-border);
     border-radius: var(--radius);
 }
 
 .m-notification.warning {
-    color: #92400e;
-    background-color: #fffbeb;
+    color: var(--color-toast-warning-text);
+    background-color: var(--color-toast-warning-bg);
     padding: 0.75rem 1.25rem;
-    border: 1px solid #fde68a;
+    border: 1px solid var(--color-toast-warning-border);
     border-radius: var(--radius);
 }
 
 .m-notification.danger {
-    color: #9f1239;
-    background-color: #fff1f2;
+    color: var(--color-toast-danger-text);
+    background-color: var(--color-toast-danger-bg);
     padding: 0.75rem 1.25rem;
-    border: 1px solid #fecdd3;
+    border: 1px solid var(--color-toast-danger-border);
     border-radius: var(--radius);
 }
 
 .m-notification.success {
-    color: #065f46;
-    background-color: #ecfdf5;
+    color: var(--color-toast-success-text);
+    background-color: var(--color-toast-success-bg);
     padding: 0.75rem 1.25rem;
-    border: 1px solid #a7f3d0;
+    border: 1px solid var(--color-toast-success-border);
     border-radius: var(--radius);
 }
 
@@ -537,7 +562,7 @@ textarea[readonly] {
 /* Style the submit button */
 button.primary {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-on-primary);
     padding: 12px 20px;
     border: none;
     border-radius: var(--radius);
@@ -558,7 +583,7 @@ button.primary:active {
 
 button.secondary {
     background-color: var(--color-secondary);
-    color: white;
+    color: var(--color-on-primary);
     padding: 12px 20px;
     border: none;
     border-radius: var(--radius);
@@ -582,7 +607,7 @@ button.secondary:active {
    the .danger class (e.g. toasts) do not inherit button styling. */
 button.danger {
     background-color: var(--color-danger);
-    color: white;
+    color: var(--color-on-primary);
     padding: 12px 20px;
     border: none;
     border-radius: var(--radius);
@@ -933,9 +958,9 @@ a.list-group-item {
 }
 
 .system-php-info a:link {
-    color: #009;
+    color: var(--color-php-info-link);
     text-decoration: none;
-    background-color: #fff;
+    background-color: var(--color-php-info-link-bg);
 }
 
 .system-php-info a:hover {
@@ -946,11 +971,11 @@ a.list-group-item {
     border-collapse: collapse;
     border: 0;
     width: 934px;
-    box-shadow: 1px 2px 3px #ccc;
+    box-shadow: 1px 2px 3px var(--color-php-info-shadow);
 }
 
 .system-php-info td, .system-php-info th {
-    border: 1px solid #666;
+    border: 1px solid var(--color-php-info-border);
     font-size: 75%;
     vertical-align: baseline;
     padding: 4px 5px;
@@ -976,25 +1001,25 @@ a.list-group-item {
 }
 
 .system-php-info .e {
-    background-color: #ccf;
+    background-color: var(--color-php-info-e-bg);
     width: 300px;
     font-weight: bold;
 }
 
 .system-php-info .h {
-    background-color: #99c;
+    background-color: var(--color-php-info-h-bg);
     font-weight: bold;
 }
 
 .system-php-info .v {
-    background-color: #ddd;
+    background-color: var(--color-php-info-v-bg);
     max-width: 300px;
     overflow-x: auto;
     word-wrap: break-word;
 }
 
 .system-php-info .v i {
-    color: #999;
+    color: var(--color-php-info-v-italic);
 }
 
 .system-php-info img {
@@ -1007,7 +1032,7 @@ a.list-group-item {
 }
 
 .system-php-info a[name] {
-    color: black;
+    color: var(--color-php-info-anchor);
 }
 
 .system-php-info a[name]:hover {
@@ -1021,29 +1046,8 @@ a.list-group-item {
     background-color: transparent;
 }
 
-:root[data-theme="dark"] .system-php-info table {
-    box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.5);
-}
-
-:root[data-theme="dark"] .system-php-info td,
 :root[data-theme="dark"] .system-php-info th {
     border-color: var(--color-border);
-}
-
-:root[data-theme="dark"] .system-php-info .e {
-    background-color: #334155;
-}
-
-:root[data-theme="dark"] .system-php-info .h {
-    background-color: #1e293b;
-}
-
-:root[data-theme="dark"] .system-php-info .v {
-    background-color: var(--color-surface);
-}
-
-:root[data-theme="dark"] .system-php-info .v i {
-    color: #adb5bd;
 }
 
 :root[data-theme="dark"] .system-php-info a[name] {
@@ -1077,7 +1081,7 @@ a.list-group-item {
 }
 
 #loader.is-running::after {
-    background: #ff0000;
+    background: var(--color-loader);
     animation-play-state: running;
 }
 
@@ -1122,25 +1126,45 @@ a.list-group-item {
     --color-secondary-dark: #8b949e;
     --color-danger: #f43f5e;
     --color-danger-dark: #fb7185;
+    --color-toast-info-text: #93c5fd;
+    --color-toast-info-bg: #172554;
+    --color-toast-info-border: #1e40af;
+    --color-toast-warning-text: #fcd34d;
+    --color-toast-warning-bg: #451a03;
+    --color-toast-warning-border: #92400e;
+    --color-toast-danger-text: #fda4af;
+    --color-toast-danger-bg: #4c0519;
+    --color-toast-danger-border: #9f1239;
+    --color-toast-success-text: #6ee7b7;
+    --color-toast-success-bg: #022c22;
+    --color-toast-success-border: #065f46;
+    --color-php-info-link: var(--color-link);
+    --color-php-info-link-bg: transparent;
+    --color-php-info-shadow: rgba(0, 0, 0, 0.5);
+    --color-php-info-border: var(--color-border);
+    --color-php-info-e-bg: #334155;
+    --color-php-info-h-bg: #1e293b;
+    --color-php-info-v-bg: var(--color-surface);
+    --color-php-info-v-italic: #adb5bd;
     --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 :root[data-theme="dark"] .m-notification.info {
-    color: #93c5fd;
-    background-color: #172554;
-    border-color: #1e40af;
+    color: var(--color-toast-info-text);
+    background-color: var(--color-toast-info-bg);
+    border-color: var(--color-toast-info-border);
 }
 
 :root[data-theme="dark"] .m-notification.warning {
-    color: #fcd34d;
-    background-color: #451a03;
-    border-color: #92400e;
+    color: var(--color-toast-warning-text);
+    background-color: var(--color-toast-warning-bg);
+    border-color: var(--color-toast-warning-border);
 }
 
 :root[data-theme="dark"] .m-notification.danger {
-    color: #fda4af;
-    background-color: #4c0519;
-    border-color: #9f1239;
+    color: var(--color-toast-danger-text);
+    background-color: var(--color-toast-danger-bg);
+    border-color: var(--color-toast-danger-border);
 }
 
 :root[data-theme="dark"] button.danger {
@@ -1153,7 +1177,7 @@ a.list-group-item {
 }
 
 :root[data-theme="dark"] .m-notification.success {
-    color: #6ee7b7;
-    background-color: #022c22;
-    border-color: #065f46;
+    color: var(--color-toast-success-text);
+    background-color: var(--color-toast-success-bg);
+    border-color: var(--color-toast-success-border);
 }
