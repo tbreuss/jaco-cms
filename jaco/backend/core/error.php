@@ -19,7 +19,7 @@ function exception_handler(\Throwable $t): void
     // full detail goes to the server log only: the client gets a reference,
     // never paths or internals (the frontend shows the title anyway)
     $id = generate_reference();
-    error_log($id . ' ' . format_error($t->getMessage(), $t->getFile(), $t->getLine()));
+    error_log('[' . $id . '] ' . format_error($t->getMessage(), $t->getFile(), $t->getLine()));
 
     $response = json_response([
         'title' => get_error_type($t->getCode()),
@@ -64,7 +64,7 @@ function fatal_handler(): void
     $message = format_error($error['message'], $error['file'], $error['line']);
 
     $id = generate_reference();
-    error_log($id . ' ' . $message);
+    error_log('[' . $id . '] ' . $message);
 
     $response = json_response([
         'title' => get_error_type($error['type']),
