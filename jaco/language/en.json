@@ -153,5 +153,6 @@
     "Jaco CMS is a flat-file CMS that manages static HTML files directly in the web directory. No database, no build step — just PHP 8.2+ on any shared host.": "Jaco CMS is a flat-file CMS that manages static HTML files directly in the web directory. No database, no build step — just PHP 8.2+ on any shared host.",
     "License": "License",
     "Installation": "Installation",
-    "Freeware": "Freeware"
+    "Freeware": "Freeware",
+    "Close": "Close"
 }

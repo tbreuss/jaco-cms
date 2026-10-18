@@ -16,7 +16,7 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Upload progress and size feedback | `UploadListView` posts all files via one `Promise.all` with a single catch. Show per-file progress and pre-check sizes. | M |
 | open | Change password in the admin panel | No route and no menu entry; every change needs server access. Self-service for onboarding and rotation. | M |
 | open | Loading and not-found states in detail views | Page, upload and backup detail views render empty forms on slow networks and cannot be told apart from deleted entries. | S |
-| open | Sticky, accessible error toasts | Danger toasts vanish after 3s with no `role=alert` and no close button; modals lack Escape handling. Save and network errors go unread. | S |
+| open | Modals lack Escape handling | Only the toast dismiss is reachable by keyboard; modals (login, add/copy/delete page) have no Escape-to-close. | S |
 | open | Paginate lists, collapse admin navigation on mobile | Filter/sort only, no limit/offset; full navbar without a mobile menu. Lists slow down and the admin is barely usable on phones. | M |
 | open | Skeleton tables for list loading states | Lists pop in after loading instead of rendering in a stable frame. Build one `SkeletonTable` component (rows × columns matching each view) shown during `isLoading`, used by every list. Deliberately no route-level blocking on data (would trade shift for silence on slow connections). | M |
 | open | Choose uploaded images in the editor | Every image click opens the local file picker; the upload manager and the editor do not know each other. Reusing an image duplicates it with a `-1` suffix. Add a "choose from library" option. | M |
@@ -29,7 +29,6 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Semantic heading inside the line editor | The line editor wraps text in a `<p>` (Quill default block); a CSS override in `editor.css` keeps the heading look while editing. Alternative: a clipboard matcher (`P` → `header` level from the host tag) for real `<h1>`–`<h6>` during edit. Only worth it if DevTools-semantics while editing ever matter. | S |
 | open | Share one Ace editor helper across views | `PageEditView`, `CssEditView` and `BackupEditView` copy the same `ace.edit` setup with slightly different lifecycles (single instance twice, recreate-per-update once). Every lifecycle fix has to be thought through three times. Bundle creation, theme watching and destroy in one `lib/` helper; views keep only their save and content logic. | S |
 | open | Light theme flash on hard refresh | Briefly shows the light theme on hard refresh in dark mode. Not reproducible headless (admin boot, editors and preview are dark from the first frame); needs the exact spot (admin chrome, preview iframe, editor toolbar, window) plus theme setting and browser to narrow down. | S |
-| open | Toasts have a weird mouseover/click effect | Hovering or clicking a toast triggers an unexpected visual effect (likely a transform/transition inherited from button styles or the toast container). Investigate the toast component and its CSS; make hover/click either do nothing or an intentional dismiss. | S |
 | open | Restructure QUnit test suite | Single monolithic `tests.js` (~2300 lines): split into per-topic files, add `expect()` declarations, introduce a `mountView` setup helper, and tighten global-state cleanup (sessionStorage, ace, confirm, route) to avoid order-dependent leaks. | M |
 
 ## Done
@@ -40,3 +39,5 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | Redirect to login on expired token | `fix: redirect to login on expired session` |
 | Warn on unsaved changes | `fix: warn on unsaved changes` |
 | Readonly / disabled fields are not distinguishable from normal fields | `style: distinguish disabled/read-only inputs` |
+| Toasts have a weird mouseover/click effect | `feat: accessible, dismissible toasts with modern palette` |
+| Sticky, accessible error toasts | `feat: accessible, dismissible toasts with modern palette` |

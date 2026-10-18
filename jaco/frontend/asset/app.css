@@ -11,10 +11,12 @@
     --color-input: #fff;
     --color-text: #212529;
     --color-link: #2374d7;
-    --color-primary: #04AA6D;
-    --color-primary-dark: #038857;
-    --color-secondary: #6c757d;
-    --color-secondary-dark: #5a6268;
+    --color-primary: #1f883d;
+    --color-primary-dark: #1a7f37;
+    --color-secondary: #64748b;
+    --color-secondary-dark: #475569;
+    --color-danger: #e11d48;
+    --color-danger-dark: #be123c;
     --color-border: #ccc;
     --color-error: #cc3333;
     --color-error-border: #cc8888;
@@ -388,45 +390,66 @@ button {
     max-width: 400px;
     cursor: pointer;
     animation: toast-in 0.25s ease-out;
+    transition: box-shadow 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .m-notification:hover {
-    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .m-notification.destroy {
-    animation: fade-out 0;
+    animation: fade-out 0.4s ease-in forwards;
+}
+
+.m-notification-close {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+}
+
+.m-notification-close:hover {
+    opacity: 1;
 }
 
 .m-notification.info {
-    color: #0c5460;
-    background-color: #d1ecf1;
+    color: #1e40af;
+    background-color: #eff6ff;
     padding: 0.75rem 1.25rem;
-    border: 1px solid #bee5eb;
+    border: 1px solid #bfdbfe;
     border-radius: var(--radius);
 }
 
 .m-notification.warning {
-    color: #856404;
-    background-color: #fff3cd;
+    color: #92400e;
+    background-color: #fffbeb;
     padding: 0.75rem 1.25rem;
-    border: 1px solid #ffeeba;
+    border: 1px solid #fde68a;
     border-radius: var(--radius);
 }
 
 .m-notification.danger {
-    color: #721c24;
-    background-color: #f8d7da;
+    color: #9f1239;
+    background-color: #fff1f2;
     padding: 0.75rem 1.25rem;
-    border: 1px solid #f5c6cb;
+    border: 1px solid #fecdd3;
     border-radius: var(--radius);
 }
 
 .m-notification.success {
-    color: #155724;
-    background-color: #d4edda;
+    color: #065f46;
+    background-color: #ecfdf5;
     padding: 0.75rem 1.25rem;
-    border: 1px solid #c3e6cb;
+    border: 1px solid #a7f3d0;
     border-radius: var(--radius);
 }
 
@@ -512,7 +535,7 @@ textarea[readonly] {
 }*/
 
 /* Style the submit button */
-.primary {
+button.primary {
     background-color: var(--color-primary);
     color: white;
     padding: 12px 20px;
@@ -524,16 +547,16 @@ textarea[readonly] {
     transition: background-color 0.15s ease;
 }
 
-.primary:hover {
+button.primary:hover {
     background-color: var(--color-primary-dark);
 }
 
-.primary:active {
+button.primary:active {
     background-color: var(--color-primary-dark);
     transform: translateY(1px);
 }
 
-.secondary {
+button.secondary {
     background-color: var(--color-secondary);
     color: white;
     padding: 12px 20px;
@@ -545,19 +568,20 @@ textarea[readonly] {
     transition: background-color 0.15s ease;
 }
 
-.secondary:hover {
+button.secondary:hover {
     background-color: var(--color-secondary-dark);
 }
 
-.secondary:active {
+button.secondary:active {
     background-color: var(--color-secondary-dark);
     transform: translateY(1px);
 }
 
 /* Destructive actions (delete, clear): fixed reds with white text, readable
-   in both themes, hence no tokens. */
-.danger {
-    background-color: #c0392b;
+   in both themes, hence no tokens. Scoped to buttons so other elements with
+   the .danger class (e.g. toasts) do not inherit button styling. */
+button.danger {
+    background-color: var(--color-danger);
     color: white;
     padding: 12px 20px;
     border: none;
@@ -568,12 +592,12 @@ textarea[readonly] {
     transition: background-color 0.15s ease;
 }
 
-.danger:hover {
-    background-color: #a93226;
+button.danger:hover {
+    background-color: var(--color-danger-dark);
 }
 
-.danger:active {
-    background-color: #a93226;
+button.danger:active {
+    background-color: var(--color-danger-dark);
     transform: translateY(1px);
 }
 
@@ -593,9 +617,9 @@ textarea:focus-visible {
     outline-offset: -2px;
 }
 
-table .primary,
-table .secondary,
-table .danger {
+table button.primary,
+table button.secondary,
+table button.danger {
     padding: 8px 12px;
 }
 
@@ -612,9 +636,9 @@ table .danger {
 }
 
 /* Gap between icon and label in text buttons; icon-only buttons stay untouched */
-.primary .icon + span,
-.secondary .icon + span,
-.danger .icon + span {
+button.primary .icon + span,
+button.secondary .icon + span,
+button.danger .icon + span {
     margin-left: 0.5em;
 }
 
@@ -1092,29 +1116,44 @@ a.list-group-item {
     --color-row-hover: rgba(255, 255, 255, 0.06);
     --color-menu-hover: #343a40;
     --color-nav-hover: rgba(255, 255, 255, 0.08);
+    --color-primary: #238636;
+    --color-primary-dark: #2ea043;
+    --color-secondary: #6b7280;
+    --color-secondary-dark: #8b949e;
+    --color-danger: #f43f5e;
+    --color-danger-dark: #fb7185;
     --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 :root[data-theme="dark"] .m-notification.info {
-    color: #9eeaf9;
-    background-color: #03252b;
-    border-color: #087990;
+    color: #93c5fd;
+    background-color: #172554;
+    border-color: #1e40af;
 }
 
 :root[data-theme="dark"] .m-notification.warning {
-    color: #ffda6a;
-    background-color: #332701;
-    border-color: #997404;
+    color: #fcd34d;
+    background-color: #451a03;
+    border-color: #92400e;
 }
 
 :root[data-theme="dark"] .m-notification.danger {
-    color: #ea868f;
-    background-color: #2c0b0e;
-    border-color: #842029;
+    color: #fda4af;
+    background-color: #4c0519;
+    border-color: #9f1239;
+}
+
+:root[data-theme="dark"] button.danger {
+    background-color: var(--color-danger);
+}
+
+:root[data-theme="dark"] button.danger:hover,
+:root[data-theme="dark"] button.danger:active {
+    background-color: var(--color-danger-dark);
 }
 
 :root[data-theme="dark"] .m-notification.success {
-    color: #75b798;
-    background-color: #051b11;
-    border-color: #0f5132;
+    color: #6ee7b7;
+    background-color: #022c22;
+    border-color: #065f46;
 }
