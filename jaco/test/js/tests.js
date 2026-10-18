@@ -5,10 +5,11 @@ import {FormErrors, errorFor} from '/jaco/frontend/component/FormErrors.js'
 import {ButtonPrimary} from '/jaco/frontend/component/ButtonPrimary.js'
 import {ButtonSecondary} from '/jaco/frontend/component/ButtonSecondary.js'
 import {Icon} from '/jaco/frontend/component/Icon.js'
+import {app} from '/jaco/frontend/lib/app.js'
 import {Select} from '/jaco/frontend/component/Select.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
 import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
-import {PageEditView} from '/jaco/frontend/view/page/PageEditView.js'
+import {PageEditView, onSaveButtonClicked, onSaveAndCloseButtonClicked, setEditor} from '/jaco/frontend/view/page/PageEditView.js'
 import {ViewUploadView} from '/jaco/frontend/view/upload/ViewUploadView.js'
 import {PhpLogView} from '/jaco/frontend/view/PhpLogView.js'
 import {PhpLogModel} from '/jaco/frontend/model/PhpLogModel.js'
@@ -1509,6 +1510,34 @@ QUnit.test('watchAceTheme switches the editor and stops on disconnect', (assert)
       done()
     }, 50)
   }, 50)
+})
+
+QUnit.test('Save & Close does not navigate on a validation error', (assert) => {
+  const done = assert.async()
+  const mockEditor = {getValue: () => '<p>x</p>'}
+  setEditor(mockEditor)
+  PageEditModel.item = {file: 'a.html', content: '<p>a</p>'}
+  state.errors = []
+
+  const origSave = PageEditModel.save
+  PageEditModel.save = () => Promise.reject({code: 422, response: [{title: 'bad', source: {pointer: ''}}]})
+
+  const routeCalls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => routeCalls.push(path)
+
+  onSaveAndCloseButtonClicked({redraw: false}).then(() => {
+    assert.deepEqual(routeCalls, [], 'no navigation on a validation error')
+  }).catch(() => {
+    assert.ok(false, 'handler should not reject')
+  }).finally(() => {
+    PageEditModel.save = origSave
+    PageEditModel.item = {}
+    state.errors = []
+    m.route.set = originalSet
+    setEditor(undefined)
+    done()
+  })
 })
 
 QUnit.test('PageEditView stamps the editor only with the requested file', (assert) => {

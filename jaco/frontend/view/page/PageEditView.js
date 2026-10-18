@@ -13,6 +13,7 @@ import {bindSaveShortcut, saveAndCloseShortcutLabel, saveShortcutLabel} from '..
 import {aceThemeName, watchAceTheme} from '../../lib/aceTheme.js'
 
 let editor = undefined
+export const setEditor = (value) => { editor = value }
 let unbindSaveShortcut = null
 let unwatchAceTheme = null
 
@@ -76,7 +77,7 @@ const onInitComponent = (vnode) => {
   })
 }
 
-const onSaveButtonClicked = (e) => {
+export const onSaveButtonClicked = (e) => {
   e.redraw = false
   PageEditModel.item.content = editor.getValue()
   return PageEditModel.save()
@@ -93,8 +94,8 @@ const onSaveButtonClicked = (e) => {
     })
 }
 
-const onSaveAndCloseButtonClicked = (e) => {
-  onSaveButtonClicked(e)
+export const onSaveAndCloseButtonClicked = (e) => {
+  return onSaveButtonClicked(e)
     .then(() => {
       m.route.set('/pages')
     })

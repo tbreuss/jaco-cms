@@ -121,7 +121,7 @@ const onSaveButtonClicked = (e) => {
 }
 
 const onSaveAndCloseButtonClicked = (e) => {
-  onSaveButtonClicked(e)
+  return onSaveButtonClicked(e)
     .then(() => {
       m.route.set('/')
     })
