@@ -230,6 +230,44 @@ QUnit.test('network failure shows a toast instead of crashing', async (assert) =
   }
 })
 
+QUnit.test('expired token clears the session and redirects to login', async (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'stale-token')
+  const stub = stubRequest(() => Promise.reject({code: 401}))
+  const routeCalls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => routeCalls.push(path)
+  const before = state.list.length
+
+  try {
+    await api.get('page/list').catch(() => {})
+
+    assert.strictEqual(window.sessionStorage.getItem('AUTHORIZATION_TOKEN'), null, 'token cleared')
+    assert.ok(state.list.length > before, 'a danger toast was added')
+    assert.deepEqual(routeCalls, ['/login'], 'redirected to login')
+  } finally {
+    stub.restore()
+    m.route.set = originalSet
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('expired token on the login endpoint does not redirect', async (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'stale-token')
+  const stub = stubRequest(() => Promise.reject({code: 401}))
+  const routeCalls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => routeCalls.push(path)
+
+  try {
+    await api.post('login', {}, {body: {}}).catch(() => {})
+
+    assert.deepEqual(routeCalls, [], 'no redirect on login endpoint')
+  } finally {
+    stub.restore()
+    m.route.set = originalSet
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
 QUnit.test('request urls have no trailing ampersand without parameters', async (assert) => {
   const stub = stubRequest(() => Promise.resolve({}))
 

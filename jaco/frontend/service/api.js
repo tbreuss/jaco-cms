@@ -10,6 +10,10 @@ const handlers = {
   },
 }
 
+// 401/403 are handled inline (action-aware) rather than via the table above,
+// because the login endpoint legitimately returns 401-ish statuses that must
+// not trigger a logout/redirect.
+
 const request = method => (action, params = {}, options = {}) => {
   const token = app.getAuthToken()
   if (token) {
@@ -37,6 +41,20 @@ const request = method => (action, params = {}, options = {}) => {
   })
     .catch(err => {
       const code = err.code || 0
+      // expired/invalid session: drop the token, tell the user, and send them
+      // to the login screen so they can re-authenticate instead of keeping a
+      // stale editor open. The login endpoint itself is excluded (401 there
+      // means bad credentials, handled by LoginView).
+      if ((code === 401 || code === 403) && action !== 'login' && app.hasAuthToken()) {
+        app.removeAuthToken()
+        addDanger(t('Session expired', null, 'Session expired. Please log in again.'))
+        try {
+          m.route.set('/login')
+        } catch (e) {
+          // no router in this context (e.g. unit tests): ignore
+        }
+        throw err
+      }
       if (code in handlers) {
         handlers[code](err)
       } else {

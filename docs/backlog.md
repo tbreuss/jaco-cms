@@ -12,7 +12,6 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Maintenance toggle in the admin panel | `maintenanceMode` works but is `settings.php`-only. Add an API route plus a switch on the system page. | S |
 | open | Prune old backups on write, not only on list | `prune_old_backups()` runs in the backup listing only. Also prune when a backup is written (or via CLI), so the retention rule holds without opening the page. | S |
 | open | Warn on deleting referenced files | `upload/delete` and `page/delete` do not check references from other pages. List referencing pages and ask for confirmation. | M |
-| open | Redirect to login on expired token | `service/api.js` handles only 422; 401/403 show a generic "Request failed" with no logout and no redirect. Editors keep typing and lose work after 24h instead of logging in once. | S |
 | open | Warn on unsaved changes | No dirty check and no `beforeunload` in the page, CSS and inline editors; cancel and navigation discard silently. | M |
 | open | Start page after login is empty | `StartView` renders nothing. Show what can be done here (edit pages, uploads, backups) instead of a dead page. | S |
 | open | Upload progress and size feedback | `UploadListView` posts all files via one `Promise.all` with a single catch. Show per-file progress and pre-check sizes. | M |
@@ -37,3 +36,4 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | Item | Commit |
 | --- | --- |
 | Save & Close must not close on validation error | `fix: do not close editor on validation error` |
+| Redirect to login on expired token | `fix: redirect to login on expired session` |
