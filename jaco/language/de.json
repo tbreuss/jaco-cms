@@ -1,5 +1,5 @@
 {
-    "About": "Über",
+    "About": "Über Jaco CMS",
     "Add page": "Seite hinzufügen",
     "Authentication code": "Bestätigungscode",
     "Auto": "Auto",
@@ -144,5 +144,14 @@
     "{value} must be in the {dir} folder.": "{value} muss im Ordner {dir} liegen.",
     "{value} must not be in the {dir} folder.": "{value} darf nicht im Ordner {dir} liegen.",
     "{value} must not exist.": "{value} darf nicht existieren.",
-    "Discard unsaved changes?": "Ungespeicherte Änderungen verwerfen?"
+    "Discard unsaved changes?": "Ungespeicherte Änderungen verwerfen?",
+    "System": "System",
+    "Version": "Version",
+    "Project": "Projekt",
+    "Releases": "Releases",
+    "Download": "Download",
+    "Jaco CMS is a flat-file CMS that manages static HTML files directly in the web directory. No database, no build step — just PHP 8.2+ on any shared host.": "Jaco CMS ist ein Flat-File-CMS, das statische HTML-Dateien direkt im Webverzeichnis verwaltet. Keine Datenbank, kein Build-Schritt — nur PHP 8.2+ auf einem beliebigen Shared Host.",
+    "License": "Lizenz",
+    "Installation": "Installation",
+    "Freeware": "Freeware"
 }

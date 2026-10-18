@@ -144,5 +144,14 @@
     "{value} must be in the {dir} folder.": "{value} doit se trouver dans le dossier {dir}.",
     "{value} must not be in the {dir} folder.": "{value} ne doit pas se trouver dans le dossier {dir}.",
     "{value} must not exist.": "{value} ne doit pas exister.",
-    "Discard unsaved changes?": "Abandonner les modifications non enregistrées ?"
+    "Discard unsaved changes?": "Abandonner les modifications non enregistrées ?",
+    "System": "Système",
+    "Version": "Version",
+    "Project": "Projet",
+    "Releases": "Versions",
+    "Download": "Télécharger",
+    "Jaco CMS is a flat-file CMS that manages static HTML files directly in the web directory. No database, no build step — just PHP 8.2+ on any shared host.": "Jaco CMS est un CMS flat-file qui gère les fichiers HTML statiques directement dans le répertoire web. Pas de base de données, pas d'étape de build — juste PHP 8.2+ sur n'importe quel hébergement partagé.",
+    "License": "Licence",
+    "Installation": "Installation",
+    "Freeware": "Freeware"
 }

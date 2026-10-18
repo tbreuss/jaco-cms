@@ -178,6 +178,14 @@ m.route(document.getElementById('app'), '/', {
     render: (vnode) => {
       return m(DefaultLayout, m(vnode.tag))
     }
+  },
+  '/system/about': {
+    onmatch:  () => {
+      return loadComponent('AboutView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
+    }
   }
 })
 

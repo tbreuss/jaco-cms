@@ -14,6 +14,7 @@ import {ViewUploadView} from '/jaco/frontend/view/upload/ViewUploadView.js'
 import {PhpLogView} from '/jaco/frontend/view/PhpLogView.js'
 import {PhpLogModel} from '/jaco/frontend/model/PhpLogModel.js'
 import {SystemView} from '/jaco/frontend/view/SystemView.js'
+import {AboutView} from '/jaco/frontend/view/AboutView.js'
 import {SystemModel} from '/jaco/frontend/model/SystemModel.js'
 import {UploadListModel} from '/jaco/frontend/model/UploadListModel.js'
 import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
@@ -717,6 +718,40 @@ QUnit.test('checks render with status, label and detail', (assert) => {
     `0 B / ${t('Empty')}`,
     'empty log shows size and marker'
   )
+})
+
+QUnit.module('AboutView', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    SystemModel.load = () => Promise.resolve()
+    SystemModel.info = {}
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    SystemModel.info = {}
+    document.getElementById('app')?.remove()
+  }
+})
+
+QUnit.test('AboutView renders version, php version, license and project link', (assert) => {
+  SystemModel.info = {
+    checks: [{label: 'PHP version', ok: true, detail: '8.2.0'}],
+    config: {appVersion: '0.1.0'},
+    overview: {pages: 1, uploads: 2, backups: 3, projectSize: 1024, logSize: 0, logLines: 0},
+  }
+  m.render(fixture(), m(AboutView))
+
+  const text = fixture().textContent
+  assert.ok(text.includes('0.1.0'), 'version shown')
+  assert.ok(text.includes('8.2.0'), 'php version shown')
+  assert.ok(text.includes('Freeware'), 'license shown')
+  const links = [...fixture().querySelectorAll('a')]
+  assert.ok(links.some((a) => a.getAttribute('href') === 'https://github.com/tbreuss/jaco-cms'), 'project link shown')
+  assert.ok(links.some((a) => a.getAttribute('href') === 'https://github.com/tbreuss/jaco-cms/releases'), 'releases link shown')
 })
 
 QUnit.module('datetime format')
