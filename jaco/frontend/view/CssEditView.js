@@ -108,6 +108,7 @@ const onSaveButtonClicked = (e) => {
   CssEditModel.item.content = editor.getValue()
   return CssEditModel.save()
     .then(() => {
+      state.errors = []
       addSuccess(t('CSS was successfully saved.'))
     })
     .catch(({code, response}) => {
@@ -115,6 +116,7 @@ const onSaveButtonClicked = (e) => {
         state.errors = response
         m.redraw()
       }
+      throw {code, response}
     })
 }
 
@@ -122,6 +124,10 @@ const onSaveAndCloseButtonClicked = (e) => {
   onSaveButtonClicked(e)
     .then(() => {
       m.route.set('/')
+    })
+    .catch(() => {
+      // validation/server errors are already surfaced by onSaveButtonClicked;
+      // do not navigate away on a failed save
     })
 }
 

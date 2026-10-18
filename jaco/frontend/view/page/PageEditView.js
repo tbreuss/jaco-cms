@@ -81,6 +81,7 @@ const onSaveButtonClicked = (e) => {
   PageEditModel.item.content = editor.getValue()
   return PageEditModel.save()
     .then(() => {
+      state.errors = []
       addSuccess(t('Page was successfully saved.'))
     })
     .catch(({code, response}) => {
@@ -88,6 +89,7 @@ const onSaveButtonClicked = (e) => {
         state.errors = response
         m.redraw()
       }
+      throw {code, response}
     })
 }
 
@@ -95,6 +97,10 @@ const onSaveAndCloseButtonClicked = (e) => {
   onSaveButtonClicked(e)
     .then(() => {
       m.route.set('/pages')
+    })
+    .catch(() => {
+      // validation/server errors are already surfaced by onSaveButtonClicked;
+      // do not navigate away on a failed save
     })
 }
 
