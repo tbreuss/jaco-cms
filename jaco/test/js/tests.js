@@ -10,6 +10,11 @@ import {Select} from '/jaco/frontend/component/Select.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
 import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
 import {PageListView} from '/jaco/frontend/view/page/PageListView.js'
+import {PageAddView} from '/jaco/frontend/view/PageAddView.js'
+import {PageCopyView} from '/jaco/frontend/view/PageCopyView.js'
+import {PageDeleteView} from '/jaco/frontend/view/PageDeleteView.js'
+import {PageGotoView} from '/jaco/frontend/view/PageGotoView.js'
+import {PageTemplateModel} from '/jaco/frontend/model/PageTemplateModel.js'
 import {PageEditView, onSaveButtonClicked, onSaveAndCloseButtonClicked, setEditor} from '/jaco/frontend/view/page/PageEditView.js'
 import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
 import {PageListModel} from '/jaco/frontend/model/PageListModel.js'
@@ -1525,6 +1530,126 @@ QUnit.test('shows loading and empty states', (assert) => {
   BackupListModel.isLoading = false
   m.render(fixture(), m(BackupListView))
   assert.ok(fixture().textContent.includes(t('No backups found.')), 'empty state shown')
+})
+
+QUnit.module('PageAddView', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    PageTemplateModel.loadList = () => Promise.resolve()
+    const origHasElement = iframe.hasElement
+    const origFileName = iframe.fileName
+    const origPageTitle = iframe.pageTitle
+    iframe.hasElement = () => true
+    iframe.fileName = () => 'index.html'
+    iframe.pageTitle = () => 'Home'
+    window._iframeRestore = () => {
+      iframe.hasElement = origHasElement
+      iframe.fileName = origFileName
+      iframe.pageTitle = origPageTitle
+    }
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    document.getElementById('app')?.remove()
+    if (window._iframeRestore) { window._iframeRestore(); delete window._iframeRestore }
+  }
+})
+
+QUnit.test('renders the add page dialog', (assert) => {
+  PageTemplateModel.list = [{file: 'default.html', title: 'Default'}]
+  m.render(fixture(), m(PageAddView))
+  assert.ok(fixture().textContent.includes(t('Add page')), 'title shown')
+})
+
+QUnit.module('PageCopyView', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    const origHasElement = iframe.hasElement
+    const origFileName = iframe.fileName
+    const origPageTitle = iframe.pageTitle
+    iframe.hasElement = () => true
+    iframe.fileName = () => 'index.html'
+    iframe.pageTitle = () => 'Home'
+    window._iframeRestore = () => {
+      iframe.hasElement = origHasElement
+      iframe.fileName = origFileName
+      iframe.pageTitle = origPageTitle
+    }
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    document.getElementById('app')?.remove()
+    if (window._iframeRestore) { window._iframeRestore(); delete window._iframeRestore }
+  }
+})
+
+QUnit.test('renders the copy page dialog', (assert) => {
+  m.render(fixture(), m(PageCopyView))
+  assert.ok(fixture().textContent.includes(t('Copy page')), 'title shown')
+})
+
+QUnit.module('PageDeleteView', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    const origFileName = iframe.fileName
+    iframe.fileName = () => 'index.html'
+    window._iframeRestore = () => { iframe.fileName = origFileName }
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    document.getElementById('app')?.remove()
+    if (window._iframeRestore) { window._iframeRestore(); delete window._iframeRestore }
+  }
+})
+
+QUnit.test('renders the delete confirmation', (assert) => {
+  m.render(fixture(), m(PageDeleteView))
+  assert.ok(fixture().textContent.includes(t('Delete page')), 'title shown')
+})
+
+QUnit.module('PageGotoView', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    PageListModel.load = () => Promise.resolve()
+    const origHasElement = iframe.hasElement
+    const origFileName = iframe.fileName
+    iframe.hasElement = () => true
+    iframe.fileName = () => 'index.html'
+    window._iframeRestore = () => {
+      iframe.hasElement = origHasElement
+      iframe.fileName = origFileName
+    }
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    PageListModel.items = []
+    PageListModel.isLoading = false
+    document.getElementById('app')?.remove()
+    if (window._iframeRestore) { window._iframeRestore(); delete window._iframeRestore }
+  }
+})
+
+QUnit.test('renders the goto page dialog', (assert) => {
+  PageListModel.items = [{file: 'a.html', title: 'Page A'}]
+  PageListModel.isLoading = false
+  m.render(fixture(), m(PageGotoView))
+  assert.ok(fixture().textContent.length > 0, 'renders without crashing')
 })
 
 QUnit.module('import audit')
