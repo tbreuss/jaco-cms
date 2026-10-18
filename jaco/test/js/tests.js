@@ -9,15 +9,25 @@ import {app} from '/jaco/frontend/lib/app.js'
 import {Select} from '/jaco/frontend/component/Select.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
 import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
+import {PageListView} from '/jaco/frontend/view/page/PageListView.js'
 import {PageEditView, onSaveButtonClicked, onSaveAndCloseButtonClicked, setEditor} from '/jaco/frontend/view/page/PageEditView.js'
+import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
+import {PageListModel} from '/jaco/frontend/model/PageListModel.js'
 import {ViewUploadView} from '/jaco/frontend/view/upload/ViewUploadView.js'
 import {PhpLogView} from '/jaco/frontend/view/PhpLogView.js'
 import {PhpLogModel} from '/jaco/frontend/model/PhpLogModel.js'
+import {PhpInfoView} from '/jaco/frontend/view/PhpInfoView.js'
+import {PhpInfoModel} from '/jaco/frontend/model/PhpInfoModel.js'
+import {LogoutView} from '/jaco/frontend/view/LogoutView.js'
+import {StartView} from '/jaco/frontend/view/StartView.js'
+import {BackupEditView} from '/jaco/frontend/view/backup/BackupEditView.js'
+import {BackupViewModel} from '/jaco/frontend/model/BackupViewModel.js'
 import {SystemView} from '/jaco/frontend/view/SystemView.js'
 import {AboutView} from '/jaco/frontend/view/AboutView.js'
 import {SystemModel} from '/jaco/frontend/model/SystemModel.js'
 import {UploadListModel} from '/jaco/frontend/model/UploadListModel.js'
-import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
+import {BackupListView} from '/jaco/frontend/view/backup/BackupListView.js'
+import {BackupListModel} from '/jaco/frontend/model/BackupListModel.js'
 import {CssEditView} from '/jaco/frontend/view/CssEditView.js'
 import {CssEditModel} from '/jaco/frontend/model/CssEditModel.js'
 import {api} from '/jaco/frontend/service/api.js'
@@ -754,6 +764,81 @@ QUnit.test('AboutView renders version, php version, license and project link', (
   assert.ok(links.some((a) => a.getAttribute('href') === 'https://github.com/tbreuss/jaco-cms/releases'), 'releases link shown')
 })
 
+QUnit.module('PhpInfoView', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    PhpInfoModel.load = () => Promise.resolve()
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    PhpInfoModel.data = []
+    document.getElementById('app')?.remove()
+  }
+})
+
+QUnit.test('shows loading then content', (assert) => {
+  PhpInfoModel.data = []
+  m.render(fixture(), m(PhpInfoView))
+  assert.ok(fixture().textContent.includes(t('Loading')), 'loading shown')
+
+  PhpInfoModel.data = {content: '<p>PHP 8.5</p>'}
+  m.render(fixture(), m(PhpInfoView))
+  assert.ok(fixture().textContent.includes('PHP 8.5'), 'content shown')
+})
+
+QUnit.module('LogoutView', {
+  afterEach: () => {
+    m.render(fixture(), null)
+  }
+})
+
+QUnit.test('renders logged-out modal', (assert) => {
+  m.render(fixture(), m(LogoutView))
+  assert.ok(fixture().textContent.length > 0, 'renders without crashing')
+})
+
+QUnit.module('StartView', {
+  afterEach: () => {
+    m.render(fixture(), null)
+  }
+})
+
+QUnit.test('renders without crashing', (assert) => {
+  m.render(fixture(), m(StartView))
+  assert.ok(true, 'empty view renders')
+})
+
+QUnit.module('BackupEditView', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    BackupViewModel.load = () => Promise.resolve()
+    BackupViewModel.item = {}
+    window.ace = {
+      edit: () => ({resize() {}, setValue() {}, getValue: () => '', destroy() {}, commands: {addCommand() {}}}),
+    }
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    BackupViewModel.item = {}
+    document.getElementById('app')?.remove()
+    delete window.ace
+  }
+})
+
+QUnit.test('renders a backup title', (assert) => {
+  BackupViewModel.item = {file: 'a.html', name: 'a.html', title: 'Backup A', created: {toDateTime: () => '01.01.24 00:00', toDateTimeFull: () => '01.01.2024 00:00:00'}, backedUp: {toDateTime: () => '01.01.24 00:01', toDateTimeFull: () => '01.01.2024 00:01:00'}, type: 'page', content: '<p>x</p>'}
+  m.render(fixture(), m(BackupEditView, {file: 'a.html'}))
+  assert.ok(fixture().textContent.includes('Backup A'), 'backup title shown')
+})
+
 QUnit.module('datetime format')
 
 QUnit.test('full and compact share day, month, year suffix and time', (assert) => {
@@ -1359,6 +1444,87 @@ QUnit.test('auto resolves through the OS setting', (assert) => {
   } finally {
     window.matchMedia = realMatchMedia
   }
+})
+
+QUnit.module('PageListView', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    PageListModel.load = () => Promise.resolve()
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    PageListModel.items = []
+    PageListModel.isLoading = false
+    document.getElementById('app')?.remove()
+  }
+})
+
+QUnit.test('renders pages with edit and delete buttons', (assert) => {
+  PageListModel.items = [{file: 'a.html', title: 'Page A', created: 1700000000}]
+  PageListModel.isLoading = false
+  m.render(fixture(), m(PageListView))
+
+  assert.ok(fixture().textContent.includes('Page A'), 'page title shown')
+  const buttons = [...fixture().querySelectorAll('tbody td.text-right button')]
+  assert.strictEqual(buttons.length, 2, 'edit and delete buttons')
+  assert.ok(buttons[0].classList.contains('secondary'), 'edit is secondary')
+  assert.ok(buttons[1].classList.contains('danger'), 'delete is danger')
+})
+
+QUnit.test('shows loading and empty states', (assert) => {
+  PageListModel.isLoading = true
+  PageListModel.items = []
+  m.render(fixture(), m(PageListView))
+  assert.ok(fixture().textContent.includes(t('Loading')), 'loading shown')
+
+  PageListModel.isLoading = false
+  m.render(fixture(), m(PageListView))
+  assert.ok(fixture().textContent.includes(t('No pages found.')), 'empty state shown')
+})
+
+QUnit.module('BackupListView', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    BackupListModel.loadList = () => Promise.resolve()
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    BackupListModel.items = []
+    BackupListModel.isLoading = false
+    document.getElementById('app')?.remove()
+  }
+})
+
+QUnit.test('renders backups with view, delete and restore buttons', (assert) => {
+  BackupListModel.items = [{file: 'a.html', name: 'a.html', title: 'Page A', created: 1700000000, backedUp: 1700000100, type: 'page'}]
+  BackupListModel.isLoading = false
+  m.render(fixture(), m(BackupListView))
+
+  assert.ok(fixture().textContent.includes('Page A'), 'backup title shown')
+  const buttons = [...fixture().querySelectorAll('tbody td.text-right button')]
+  assert.strictEqual(buttons.length, 3, 'view, delete and restore buttons')
+  assert.ok(buttons[0].classList.contains('secondary'), 'view is secondary')
+  assert.ok(buttons[1].classList.contains('danger'), 'delete is danger')
+  assert.ok(buttons[2].classList.contains('primary'), 'restore is primary')
+})
+
+QUnit.test('shows loading and empty states', (assert) => {
+  BackupListModel.isLoading = true
+  BackupListModel.items = []
+  m.render(fixture(), m(BackupListView))
+  assert.ok(fixture().textContent.includes(t('Loading')), 'loading shown')
+
+  BackupListModel.isLoading = false
+  m.render(fixture(), m(BackupListView))
+  assert.ok(fixture().textContent.includes(t('No backups found.')), 'empty state shown')
 })
 
 QUnit.module('import audit')
