@@ -10,14 +10,26 @@ import {app} from '../lib/app.js'
 import {bindSaveShortcut, saveShortcutLabel} from '../lib/shortcuts.js'
 import {dirty} from '../lib/dirty.js'
 
+// Content as it was when the view opened. Captured from makeEditable's ready
+// hook, never lazily: a lazy capture runs on the first navigation attempt, by
+// which time the user has already typed, and that edit would pass for the clean
+// baseline and be lost. null means "not captured yet" (editors still loading),
+// which counts as clean rather than blocking the user on a half-built editor.
 let savedBody = null
+
+// keepEditorScripts: reading must not unhook the editor. Plain getHTML() removes
+// the editor scripts and chrome, which would disable editing mid-session.
+const readBody = () => iframe.getHTML({keepEditorScripts: true})
+
+const captureSavedBody = () => {
+  try { savedBody = readBody() } catch (e) { savedBody = null }
+}
 
 const isDirty = () => {
   if (savedBody === null) {
-    try { savedBody = iframe.getHTML() } catch (e) { savedBody = '' }
     return false
   }
-  try { return iframe.getHTML() !== savedBody } catch (e) { return false }
+  try { return readBody() !== savedBody } catch (e) { return false }
 }
 
 const beforeUnloadHandler = (e) => {
@@ -90,6 +102,9 @@ const bindShortcut = () => {
 export const PageInlineEditView = {
   oninit: () => {
     window.addEventListener('beforeunload', beforeUnloadHandler)
+    // drop a baseline left over from a previous visit, so an unchanged preview
+    // is not compared against it
+    savedBody = null
     dirty.set(isDirty)
     if (!app.hasAuthToken()) {
       m.route.set('/logout')
@@ -98,7 +113,7 @@ export const PageInlineEditView = {
     if (!iframe.hasElement()) {
       m.route.set('/')
     }
-    iframe.makeEditable()
+    iframe.makeEditable(captureSavedBody)
     bindShortcut()
     setEditLayout(true)
     iframe.fitBelowNavbar()

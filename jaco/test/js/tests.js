@@ -2218,6 +2218,114 @@ QUnit.test('clear button resets filter and triggers load', (assert) => {
   UploadListModel.load = origLoad
 })
 
+QUnit.module('PageInlineEditView dirty baseline')
+
+QUnit.test('an unedited preview is not dirty', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+  const orig = {}
+  const keys = ['hasElement', 'makeEditable', 'contentDocument', 'contentWindow', 'fitBelowNavbar', 'getHTML', 'fileName', 'reload', 'getElement']
+  keys.forEach((k) => { orig[k] = iframe[k] })
+  iframe.hasElement = () => true
+  iframe.makeEditable = (onReady) => { if (onReady) { onReady() } }
+  iframe.contentDocument = () => document
+  iframe.contentWindow = () => window
+  iframe.fitBelowNavbar = () => {}
+  iframe.getHTML = () => window.__iframeHtml ?? '<p>body</p>'
+  iframe.fileName = () => 'index.html'
+  iframe.reload = () => {}
+  iframe.getElement = () => ({onload: null})
+  window.confirm = () => true
+
+  try {
+    window.__iframeHtml = '<p>original</p>'
+    m.render(fixture(), m(PageInlineEditView))
+    assert.notOk(dirty.isDirty(), 'fresh view without edits is clean')
+  } finally {
+    m.render(fixture(), null)
+    dirty.clear()
+    delete window.__iframeHtml
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    Object.keys(orig).forEach((k) => { iframe[k] = orig[k] })
+  }
+})
+
+QUnit.test('the first edit is detected instead of becoming the baseline', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+  const orig = {}
+  const keys = ['hasElement', 'makeEditable', 'contentDocument', 'contentWindow', 'fitBelowNavbar', 'getHTML', 'fileName', 'reload', 'getElement']
+  keys.forEach((k) => { orig[k] = iframe[k] })
+  iframe.hasElement = () => true
+  iframe.makeEditable = (onReady) => { if (onReady) { onReady() } }
+  iframe.contentDocument = () => document
+  iframe.contentWindow = () => window
+  iframe.fitBelowNavbar = () => {}
+  iframe.getHTML = () => window.__iframeHtml ?? '<p>body</p>'
+  iframe.fileName = () => 'index.html'
+  iframe.reload = () => {}
+  iframe.getElement = () => ({onload: null})
+  window.confirm = () => true
+
+  try {
+    // the baseline is captured on mount, so an edit made afterwards must be
+    // reported rather than silently absorbed into a new baseline
+    window.__iframeHtml = '<p>original</p>'
+    m.render(fixture(), m(PageInlineEditView))
+    assert.notOk(dirty.isDirty(), 'clean right after mounting')
+
+    window.__iframeHtml = '<p>edited</p>'
+    assert.ok(dirty.isDirty(), 'the very first edit is detected')
+
+    window.__iframeHtml = '<p>original</p>'
+    assert.notOk(dirty.isDirty(), 'reverting the content clears dirty again')
+  } finally {
+    m.render(fixture(), null)
+    dirty.clear()
+    delete window.__iframeHtml
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    Object.keys(orig).forEach((k) => { iframe[k] = orig[k] })
+  }
+})
+
+QUnit.test('checking for changes does not unhook the editor', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+  const orig = {}
+  const keys = ['hasElement', 'makeEditable', 'contentDocument', 'contentWindow', 'fitBelowNavbar', 'getHTML', 'fileName', 'reload', 'getElement']
+  keys.forEach((k) => { orig[k] = iframe[k] })
+  window.__removed = []
+  iframe.hasElement = () => true
+  iframe.makeEditable = (onReady) => { if (onReady) { onReady() } }
+  iframe.contentDocument = () => document
+  iframe.contentWindow = () => window
+  iframe.fitBelowNavbar = () => {}
+  // record whether the destructive teardown was requested
+  iframe.getHTML = (options) => {
+    if (!options || options.keepEditorScripts !== true) {
+      window.__removed.push('scripts')
+    }
+    return window.__iframeHtml ?? '<p>body</p>'
+  }
+  iframe.fileName = () => 'index.html'
+  iframe.reload = () => {}
+  iframe.getElement = () => ({onload: null})
+  window.confirm = () => true
+
+  try {
+    window.__iframeHtml = '<p>original</p>'
+    m.render(fixture(), m(PageInlineEditView))
+    window.__iframeHtml = '<p>edited</p>'
+    dirty.isDirty()
+
+    assert.deepEqual(window.__removed, [], 'the dirty check never tears the editor down')
+  } finally {
+    m.render(fixture(), null)
+    dirty.clear()
+    delete window.__iframeHtml
+    delete window.__removed
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    Object.keys(orig).forEach((k) => { iframe[k] = orig[k] })
+  }
+})
+
 QUnit.module('dirty registry')
 
 QUnit.test('dirty.set registers a predicate and dirty.clear removes it', (assert) => {
@@ -2293,11 +2401,13 @@ QUnit.module('PageInlineEditView', {
     const keys = ['hasElement', 'makeEditable', 'contentDocument', 'contentWindow', 'fitBelowNavbar', 'getHTML', 'fileName', 'reload', 'getElement']
     keys.forEach((k) => { window._iframeOrig[k] = iframe[k] })
     iframe.hasElement = () => true
-    iframe.makeEditable = () => {}
+    // honour the ready callback like the real makeEditable: the view captures
+    // its dirty baseline from it
+    iframe.makeEditable = (onReady) => { if (onReady) { onReady() } }
     iframe.contentDocument = () => document
     iframe.contentWindow = () => window
     iframe.fitBelowNavbar = () => {}
-    iframe.getHTML = () => '<p>body</p>'
+    iframe.getHTML = () => window.__iframeHtml ?? '<p>body</p>'
     iframe.fileName = () => 'index.html'
     iframe.reload = () => {}
     iframe.getElement = () => ({onload: null})

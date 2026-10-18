@@ -7,7 +7,11 @@ export const iframe = {
     const pathname = iframe.removeLeadingSlash(contentDocument.location.pathname)
     return pathname === '' ? 'index.html' : pathname
   },
-  makeEditable: () => {
+  // onReady runs once the editor scripts are loaded and the editors are
+  // initialized, on the already-loaded path as well as after the async script
+  // load. Callers that read the content need it: getHTML() relies on the
+  // remove* helpers the scripts install.
+  makeEditable: (onReady) => {
     const contentDocument = iframe.contentDocument()
     const contentWindow = iframe.contentWindow()
     const initEditors = () => {
@@ -15,6 +19,9 @@ export const iframe = {
       contentWindow.initImages()
       if (contentWindow.JacoContentLists) {
         contentWindow.JacoContentLists.initContentLists()
+      }
+      if (onReady) {
+        onReady()
       }
     }
     if (contentDocument.getElementById('editorInstanceJavascript')) {
@@ -91,12 +98,19 @@ export const iframe = {
   reload: () => {
     iframe.contentWindow().location.reload()
   },
-  getHTML: () => {
+  // keepEditorScripts serializes without unhooking the editor. The remove*
+  // helpers below tear down live editor chrome (and removeRichTextEditor()
+  // drops the editor scripts entirely), which is what save() wants but not what
+  // an observer may do: reading would disable editing mid-session. Callers that
+  // only compare content pass true and keep the editors usable.
+  getHTML: ({keepEditorScripts = false} = {}) => {
     const contentWindow = iframe.contentWindow()
     contentWindow.removeRichTextEditorElements()
     contentWindow.removeExtendedImages()
     contentWindow.removeLinks()
-    contentWindow.removeRichTextEditor()
+    if (!keepEditorScripts) {
+      contentWindow.removeRichTextEditor()
+    }
     contentWindow.removeTempImageElements()
     if (contentWindow.JacoContentLists) {
       contentWindow.JacoContentLists.removeContentListChrome()

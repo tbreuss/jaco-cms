@@ -16,7 +16,7 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Upload progress and size feedback | `UploadListView` posts all files via one `Promise.all` with a single catch. Show per-file progress and pre-check sizes. | M |
 | open | Change password in the admin panel | No route and no menu entry; every change needs server access. Self-service for onboarding and rotation. | M |
 | open | Loading and not-found states in detail views | Page, upload and backup detail views render empty forms on slow networks and cannot be told apart from deleted entries. | S |
-| Remove dead ErrorModal component | `remove: dead ErrorModal component` | S |
+| open | Make `iframe.getHTML()` non-destructive for observers | `getHTML()` reads by rebuilding the preview: it calls `removeRichTextEditorElements()`, `removeExtendedImages()`, `removeLinks()` and `removeTempImageElements()`. So every read tears down live editor chrome — an open block loses its `.ql-editor`, its toolbar and the caret (pre-existing, measured on HEAD). `keepEditorScripts` stops only the worst case (script removal, fixed together with the first-edit detection); the teardown still runs. Serialize from a cloned `body` so observers leave the live preview alone; `save()` keeps the destructive path, which is what it wants. | M |
 | open | Consolidate component CSS under a `.j-` prefix | Component classes (`.modal`, `.field-error`, `.form-errors`, `.list-filter`, `.m-notification`) have no namespace while Quill (`.ql-*`), Ace (`.ace_*`) and QUnit (`.qunit-*`) all do. Rename component-owned classes to `.j-*` to avoid collisions if a third-party library ever ships the same class. Note: `.m-*` was likely meant as "message", not a namespace — do not extend it. | M |
 | open | Paginate lists, collapse admin navigation on mobile | Filter/sort only, no limit/offset; full navbar without a mobile menu. Lists slow down and the admin is barely usable on phones. | M |
 | open | Skeleton tables for list loading states | Lists pop in after loading instead of rendering in a stable frame. Build one `SkeletonTable` component (rows × columns matching each view) shown during `isLoading`, used by every list. Deliberately no route-level blocking on data (would trade shift for silence on slow connections). | M |
@@ -48,3 +48,6 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | Dark mode broken (unclosed brace swallowed theme block) | `style: convert all hardcoded colors to CSS variables` |
 | No CSS syntax check in tests | `test: add CSS syntax check via styleSheet rules` |
 | Modals lack Escape handling | `feat: close modals with Escape key` |
+| Dead ErrorModal component | `remove: dead ErrorModal component` |
+| Inline editor loses the first unsaved change | `fix: detect the first unsaved change in the inline editor` |
+| Dirty check in the inline editor disabled editing | `fix: detect the first unsaved change in the inline editor` |
