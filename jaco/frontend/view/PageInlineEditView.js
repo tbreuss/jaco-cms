@@ -27,7 +27,7 @@ const beforeUnloadHandler = (e) => {
   }
 }
 
-const save = (e) => {
+export const save = (e) => {
   e.redraw = false
   api.post('page/update-body', {}, {
     background: true, // no redraw

@@ -10,12 +10,14 @@ import {Select} from '/jaco/frontend/component/Select.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
 import {login as doLogin, verify as doVerify, state as loginState} from '/jaco/frontend/view/LoginView.js'
 import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
-import {PageListView} from '/jaco/frontend/view/page/PageListView.js'
 import {PageAddView} from '/jaco/frontend/view/PageAddView.js'
 import {PageCopyView} from '/jaco/frontend/view/PageCopyView.js'
 import {PageDeleteView} from '/jaco/frontend/view/PageDeleteView.js'
 import {PageGotoView} from '/jaco/frontend/view/PageGotoView.js'
+import {PageInlineEditView} from '/jaco/frontend/view/PageInlineEditView.js'
+import {save as inlineSave} from '/jaco/frontend/view/PageInlineEditView.js'
 import {PageTemplateModel} from '/jaco/frontend/model/PageTemplateModel.js'
+import {PageListView} from '/jaco/frontend/view/page/PageListView.js'
 import {PageEditView, onSaveButtonClicked as onSavePageButtonClicked, onSaveAndCloseButtonClicked, setEditor, state as pageEditState} from '/jaco/frontend/view/page/PageEditView.js'
 import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
 import {PageListModel} from '/jaco/frontend/model/PageListModel.js'
@@ -2194,4 +2196,79 @@ QUnit.test('dirty guard does not interfere when not dirty', (assert) => {
     window.confirm = originalConfirm
     dirty.clear()
   }
+})
+
+QUnit.module('PageInlineEditView', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+    window._iframeOrig = {}
+    const keys = ['hasElement', 'makeEditable', 'contentDocument', 'contentWindow', 'fitBelowNavbar', 'getHTML', 'fileName', 'reload', 'getElement']
+    keys.forEach((k) => { window._iframeOrig[k] = iframe[k] })
+    iframe.hasElement = () => true
+    iframe.makeEditable = () => {}
+    iframe.contentDocument = () => document
+    iframe.contentWindow = () => window
+    iframe.fitBelowNavbar = () => {}
+    iframe.getHTML = () => '<p>body</p>'
+    iframe.fileName = () => 'index.html'
+    iframe.reload = () => {}
+    iframe.getElement = () => ({onload: null})
+    window.confirm = () => true
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    document.getElementById('app')?.remove()
+    if (window._iframeOrig) {
+      Object.keys(window._iframeOrig).forEach((k) => { iframe[k] = window._iframeOrig[k] })
+      delete window._iframeOrig
+    }
+  }
+})
+
+QUnit.test('renders cancel and save buttons', (assert) => {
+  m.render(fixture(), m(PageInlineEditView))
+  const buttons = [...fixture().querySelectorAll('button')]
+  assert.ok(buttons.length >= 2, 'cancel and save buttons rendered')
+})
+
+QUnit.test('save success navigates to home', async (assert) => {
+  const origPost = api.post
+  const routeCalls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => routeCalls.push(path)
+  const reloadCalls = []
+  iframe.reload = () => reloadCalls.push('reload')
+
+  api.post = (action, params, options) => Promise.resolve({})
+
+  m.render(fixture(), m(PageInlineEditView))
+  inlineSave({redraw: false})
+
+  await new Promise((r) => setTimeout(r, 50))
+
+  api.post = origPost
+  m.route.set = originalSet
+  assert.ok(routeCalls.includes('/'), 'navigates home on success')
+})
+
+QUnit.test('save validation error does not navigate', async (assert) => {
+  const origPost = api.post
+  const routeCalls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => routeCalls.push(path)
+
+  api.post = (action, params, options) => Promise.reject({code: 422, response: [{title: 'bad', detail: 'bad detail'}]})
+
+  m.render(fixture(), m(PageInlineEditView))
+  inlineSave({redraw: false})
+
+  await new Promise((r) => setTimeout(r, 50))
+
+  api.post = origPost
+  m.route.set = originalSet
+  assert.ok(!routeCalls.includes('/'), 'no navigation on validation error')
 })
