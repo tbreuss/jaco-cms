@@ -41,3 +41,8 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | Readonly / disabled fields are not distinguishable from normal fields | `style: distinguish disabled/read-only inputs` |
 | Toasts have a weird mouseover/click effect | `feat: accessible, dismissible toasts with modern palette` |
 | Sticky, accessible error toasts | `feat: accessible, dismissible toasts with modern palette` |
+| About page missing | `feat: add About page with version and project link` |
+| Generic OK button labels on add/copy page | `fix: use specific labels instead of generic OK on add/copy page buttons` |
+| Hardcoded colors scattered through app.css | `style: convert all hardcoded colors to CSS variables` |
+| Dark mode broken (unclosed brace swallowed theme block) | `style: convert all hardcoded colors to CSS variables` |
+| No CSS syntax check in tests | `test: add CSS syntax check via styleSheet rules` |
