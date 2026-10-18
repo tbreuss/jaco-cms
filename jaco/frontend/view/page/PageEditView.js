@@ -18,7 +18,7 @@ export const setEditor = (value) => { editor = value }
 let unbindSaveShortcut = null
 let unwatchAceTheme = null
 
-const state = {
+export const state = {
   errors: [],
   initialized: false,
   file: '',

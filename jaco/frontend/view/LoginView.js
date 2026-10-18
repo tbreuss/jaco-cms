@@ -10,7 +10,7 @@ import {api} from '../service/api.js'
 import {app} from '../lib/app.js'
 import {t} from '../model/i18n.js'
 
-const state = {
+export const state = {
   step: 'login',
   username: '',
   password: '',
@@ -20,8 +20,8 @@ const state = {
 
 const fieldPointers = ['username', 'password', 'totpCode']
 
-const login = () => {
-  api.post('login', {}, {
+export const login = () => {
+  return api.post('login', {}, {
     background: true, // no redraw
     body: {
       username: state.username,
@@ -52,8 +52,8 @@ const login = () => {
     })
 }
 
-const verify = () => {
-  api.post('login', {}, {
+export const verify = () => {
+  return api.post('login', {}, {
     background: true, // no redraw
     body: {
       username: state.username,

@@ -15,10 +15,11 @@ import {aceThemeName, watchAceTheme} from '../lib/aceTheme.js'
 import {dirty} from '../lib/dirty.js'
 
 let editor = undefined
+export const setEditor = (value) => { editor = value }
 let unbindSaveShortcut = null
 let unwatchAceTheme = null
 
-const state = {
+export const state = {
   errors: [],
   loadedFile: null,
   file: '',
@@ -122,7 +123,7 @@ const selectFile = (file) => {
   CssEditModel.load(file)
 }
 
-const onSaveButtonClicked = (e) => {
+export const onSaveButtonClicked = (e) => {
   e.redraw = false
   if (!editor) {
     return Promise.resolve()

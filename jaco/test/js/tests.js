@@ -8,6 +8,7 @@ import {Icon} from '/jaco/frontend/component/Icon.js'
 import {app} from '/jaco/frontend/lib/app.js'
 import {Select} from '/jaco/frontend/component/Select.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
+import {login as doLogin, verify as doVerify, state as loginState} from '/jaco/frontend/view/LoginView.js'
 import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
 import {PageListView} from '/jaco/frontend/view/page/PageListView.js'
 import {PageAddView} from '/jaco/frontend/view/PageAddView.js'
@@ -15,7 +16,7 @@ import {PageCopyView} from '/jaco/frontend/view/PageCopyView.js'
 import {PageDeleteView} from '/jaco/frontend/view/PageDeleteView.js'
 import {PageGotoView} from '/jaco/frontend/view/PageGotoView.js'
 import {PageTemplateModel} from '/jaco/frontend/model/PageTemplateModel.js'
-import {PageEditView, onSaveButtonClicked, onSaveAndCloseButtonClicked, setEditor} from '/jaco/frontend/view/page/PageEditView.js'
+import {PageEditView, onSaveButtonClicked as onSavePageButtonClicked, onSaveAndCloseButtonClicked, setEditor, state as pageEditState} from '/jaco/frontend/view/page/PageEditView.js'
 import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
 import {PageListModel} from '/jaco/frontend/model/PageListModel.js'
 import {ViewUploadView} from '/jaco/frontend/view/upload/ViewUploadView.js'
@@ -33,7 +34,7 @@ import {SystemModel} from '/jaco/frontend/model/SystemModel.js'
 import {UploadListModel} from '/jaco/frontend/model/UploadListModel.js'
 import {BackupListView} from '/jaco/frontend/view/backup/BackupListView.js'
 import {BackupListModel} from '/jaco/frontend/model/BackupListModel.js'
-import {CssEditView} from '/jaco/frontend/view/CssEditView.js'
+import {CssEditView, setEditor as setCssEditor, onSaveButtonClicked as onSaveCssButtonClicked, state as cssEditState} from '/jaco/frontend/view/CssEditView.js'
 import {CssEditModel} from '/jaco/frontend/model/CssEditModel.js'
 import {api} from '/jaco/frontend/service/api.js'
 import {t, tError} from '/jaco/frontend/model/i18n.js'
@@ -1939,6 +1940,195 @@ QUnit.test('fitBelowNavbar shifts the preview below the navbar', (assert) => {
   document.body.classList.remove('page-edit')
   bar.remove()
   frame.remove()
+})
+
+QUnit.test('PageEditView save succeeds and clears errors', (assert) => {
+  const done = assert.async()
+  const mockEditor = {getValue: () => '<p>x</p>'}
+  setEditor(mockEditor)
+  PageEditModel.item = {file: 'a.html', content: '<p>a</p>'}
+  pageEditState.errors = [{title: 'old'}]
+  const before = state.list.length
+
+  const origSave = PageEditModel.save
+  PageEditModel.save = () => Promise.resolve({})
+
+  onSavePageButtonClicked({redraw: false}).then(() => {
+    assert.strictEqual(pageEditState.errors.length, 0, 'errors cleared on success')
+    assert.ok(state.list.length > before, 'success toast added')
+  }).catch(() => {
+    assert.ok(false, 'should not reject')
+  }).finally(() => {
+    PageEditModel.save = origSave
+    PageEditModel.item = {}
+    pageEditState.errors = []
+    setEditor(undefined)
+    done()
+  })
+})
+
+QUnit.test('PageEditView save validation error sets FormErrors', async (assert) => {
+  const mockEditor = {getValue: () => '<p>x</p>'}
+  setEditor(mockEditor)
+  PageEditModel.item = {file: 'a.html', content: '<p>a</p>'}
+  pageEditState.errors = []
+
+  const origSave = PageEditModel.save
+  PageEditModel.save = () => Promise.reject({code: 422, response: [{title: 'bad', source: {pointer: ''}}]})
+
+  try {
+    await onSavePageButtonClicked({redraw: false})
+  } catch (e) {
+    // re-thrown; expected
+  }
+  assert.ok(pageEditState.errors.length > 0, 'errors set on 422')
+
+  PageEditModel.save = origSave
+  PageEditModel.item = {}
+  pageEditState.errors = []
+  setEditor(undefined)
+})
+
+QUnit.test('CssEditView save succeeds and clears errors', (assert) => {
+  const done = assert.async()
+  const mockEditor = {getValue: () => 'body{}'}
+  setCssEditor(mockEditor)
+  CssEditModel.item = {file: 'site.css', content: 'body{}'}
+  cssEditState.errors = [{title: 'old'}]
+  const before = state.list.length
+
+  const origSave = CssEditModel.save
+  CssEditModel.save = () => Promise.resolve({})
+
+  onSaveCssButtonClicked({redraw: false}).then(() => {
+    assert.strictEqual(cssEditState.errors.length, 0, 'errors cleared on success')
+    assert.ok(state.list.length > before, 'success toast added')
+  }).catch(() => {
+    assert.ok(false, 'should not reject')
+  }).finally(() => {
+    CssEditModel.save = origSave
+    CssEditModel.item = {}
+    cssEditState.errors = []
+    setCssEditor(undefined)
+    done()
+  })
+})
+
+QUnit.test('CssEditView save validation error sets FormErrors', async (assert) => {
+  const mockEditor = {getValue: () => 'body{}'}
+  setCssEditor(mockEditor)
+  CssEditModel.item = {file: 'site.css', content: 'body{}'}
+  cssEditState.errors = []
+
+  const origSave = CssEditModel.save
+  CssEditModel.save = () => Promise.reject({code: 422, response: [{title: 'bad', source: {pointer: ''}}]})
+
+  try {
+    await onSaveCssButtonClicked({redraw: false})
+  } catch (e) {
+    // re-thrown; expected
+  }
+  assert.ok(cssEditState.errors.length > 0, 'errors set on 422')
+
+  CssEditModel.save = origSave
+  CssEditModel.item = {}
+  cssEditState.errors = []
+  setCssEditor(undefined)
+})
+
+QUnit.module('LoginView', {
+  beforeEach: () => {
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    loginState.step = 'login'
+    loginState.username = ''
+    loginState.password = ''
+    loginState.totpCode = ''
+    loginState.errors = []
+  },
+  afterEach: () => {
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('422 shows an error and stays on login step', async (assert) => {
+  const stub = stubRequest(() => Promise.reject({code: 422, response: [{title: 'Invalid credentials'}]}))
+  try {
+    loginState.username = 'u'
+    loginState.password = 'p'
+    await doLogin().catch(() => {})
+    assert.strictEqual(loginState.step, 'login', 'stays on login step')
+    assert.ok(loginState.errors.length > 0, 'error shown')
+  } finally {
+    stub.restore()
+  }
+})
+
+QUnit.test('successful login with TOTP switches to totp step', async (assert) => {
+  const stub = stubRequest(() => Promise.resolve({totpRequired: true}))
+  try {
+    loginState.username = 'u'
+    loginState.password = 'p'
+    await doLogin()
+    assert.strictEqual(loginState.step, 'totp', 'switches to totp step')
+  } finally {
+    stub.restore()
+  }
+})
+
+QUnit.module('UploadListView filter', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    UploadListModel.load = () => Promise.resolve()
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    UploadListModel.items = []
+    UploadListModel.isLoading = false
+    UploadListModel.filter = ''
+    document.getElementById('app')?.remove()
+  }
+})
+
+QUnit.test('filter input updates model and triggers load', (assert) => {
+  const calls = []
+  const origLoad = UploadListModel.load
+  UploadListModel.load = () => { calls.push(UploadListModel.filter); return Promise.resolve() }
+  UploadListModel.items = []
+  UploadListModel.isLoading = false
+  UploadListModel.filter = ''
+  m.render(fixture(), m(UploadListView))
+
+  const input = fixture().querySelector('.list-filter-input input')
+  assert.ok(input, 'filter input rendered')
+
+  input.value = 'foo'
+  input.dispatchEvent(new Event('input', {bubbles: true}))
+  assert.strictEqual(UploadListModel.filter, 'foo', 'filter updated')
+  assert.ok(calls.includes('foo'), 'load triggered with new filter')
+
+  UploadListModel.load = origLoad
+})
+
+QUnit.test('clear button resets filter and triggers load', (assert) => {
+  const calls = []
+  const origLoad = UploadListModel.load
+  UploadListModel.load = () => { calls.push(UploadListModel.filter); return Promise.resolve() }
+  UploadListModel.items = [{file: 'a.png', extension: 'png', size: 1, created: 1700000000}]
+  UploadListModel.isLoading = false
+  UploadListModel.filter = 'foo'
+  m.render(fixture(), m(UploadListView))
+
+  const clearBtn = fixture().querySelector('.list-filter-clear')
+  assert.ok(clearBtn, 'clear button shown when filter active')
+  clearBtn.click()
+  assert.strictEqual(UploadListModel.filter, '', 'filter cleared')
+  assert.ok(calls.includes(''), 'load triggered with empty filter')
+
+  UploadListModel.load = origLoad
 })
 
 QUnit.module('dirty registry')
