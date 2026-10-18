@@ -1,6 +1,7 @@
 import {t} from '../../model/i18n.js'
 import {BackupListModel} from '../../model/BackupListModel.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
+import {ButtonDanger} from '../../component/ButtonDanger.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
 import {FilterInput} from '../../component/FilterInput.js'
 import {Icon} from '../../component/Icon.js'
@@ -157,7 +158,7 @@ export const BackupListView = {
                   title: t('View'),
                   'aria-label': t('View'),
                 }, m(Icon, {name: 'view'})),
-                m(ButtonPrimary, {
+                m(ButtonDanger, {
                   onclick: (e) => {
                     e.redraw = false
                     deleteAction(backup)

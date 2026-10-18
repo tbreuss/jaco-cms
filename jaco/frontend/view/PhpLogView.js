@@ -1,5 +1,5 @@
 import {PhpLogModel} from '../model/PhpLogModel.js'
-import {ButtonPrimary} from '../component/ButtonPrimary.js'
+import {ButtonDanger} from '../component/ButtonDanger.js'
 import {Icon} from '../component/Icon.js'
 import {t, tError} from '../model/i18n.js'
 import {addDanger, addSuccess} from '../state/actions.js'
@@ -54,7 +54,7 @@ export const PhpLogView = {
       m('div', {style: {display: 'flex', justifyContent: 'space-between', alignItems: 'center'}},
         m('h1', t('PHP error log')),
         m('div',
-          m(ButtonPrimary, {
+          m(ButtonDanger, {
             onclick: (e) => {
               e.redraw = false
               clearLog()

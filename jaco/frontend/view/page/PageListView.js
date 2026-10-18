@@ -1,4 +1,4 @@
-import {ButtonPrimary} from '../../component/ButtonPrimary.js'
+import {ButtonDanger} from '../../component/ButtonDanger.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
 import {FilterInput} from '../../component/FilterInput.js'
 import {Icon} from '../../component/Icon.js'
@@ -133,7 +133,7 @@ export const PageListView = {
                     title: t('Edit'),
                     'aria-label': t('Edit'),
                   }, m(Icon, {name: 'edit'})),
-                  m(ButtonPrimary, {
+                  m(ButtonDanger, {
                     onclick: (e) => {
                       e.redraw = false
                       deleteAction(page)

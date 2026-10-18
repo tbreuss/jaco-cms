@@ -541,6 +541,29 @@ textarea {
     transform: translateY(1px);
 }
 
+/* Destructive actions (delete, clear): fixed reds with white text, readable
+   in both themes, hence no tokens. */
+.danger {
+    background-color: #c0392b;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: bold;
+    margin: 0;
+    transition: background-color 0.15s ease;
+}
+
+.danger:hover {
+    background-color: #a93226;
+}
+
+.danger:active {
+    background-color: #a93226;
+    transform: translateY(1px);
+}
+
 /* Visible keyboard focus everywhere; the navbar button removes the
    outline for mouse users, so it needs an explicit override */
 button:focus-visible,
@@ -558,7 +581,8 @@ textarea:focus-visible {
 }
 
 table .primary,
-table .secondary {
+table .secondary,
+table .danger {
     padding: 8px 12px;
 }
 
@@ -576,7 +600,8 @@ table .secondary {
 
 /* Gap between icon and label in text buttons; icon-only buttons stay untouched */
 .primary .icon + span,
-.secondary .icon + span {
+.secondary .icon + span,
+.danger .icon + span {
     margin-left: 0.5em;
 }
 
