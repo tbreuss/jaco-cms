@@ -11,6 +11,7 @@ import {FormErrors, errorFor} from '../../component/FormErrors.js'
 import {app} from '../../lib/app.js'
 import {bindSaveShortcut, saveAndCloseShortcutLabel, saveShortcutLabel} from '../../lib/shortcuts.js'
 import {aceThemeName, watchAceTheme} from '../../lib/aceTheme.js'
+import {dirty} from '../../lib/dirty.js'
 
 let editor = undefined
 export const setEditor = (value) => { editor = value }
@@ -20,12 +21,31 @@ let unwatchAceTheme = null
 const state = {
   errors: [],
   initialized: false,
-  file: ''
+  file: '',
+  savedContent: null,
 }
 
 const fieldPointers = ['fileName']
 
+const isDirty = () => {
+  if (!editor || state.savedContent === null) {
+    return false
+  }
+  return editor.getValue() !== state.savedContent
+}
+
+const beforeUnloadHandler = (e) => {
+  if (isDirty()) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
+}
+
 const onCancelButtonClicked = () => {
+  if (isDirty() && !confirm(t('Discard unsaved changes?', null, 'Discard unsaved changes?'))) {
+    return
+  }
+  dirty.clear()
   m.route.set('/pages')
 }
 
@@ -59,6 +79,8 @@ const onCreateComponent = () => {
 }
 
 const onInitComponent = (vnode) => {
+  window.addEventListener('beforeunload', beforeUnloadHandler)
+  dirty.set(isDirty)
   if (!app.hasAuthToken()) {
     m.route.set('/logout')
   }
@@ -83,6 +105,7 @@ export const onSaveButtonClicked = (e) => {
   return PageEditModel.save()
     .then(() => {
       state.errors = []
+      state.savedContent = editor.getValue()
       addSuccess(t('Page was successfully saved.'))
     })
     .catch(({code, response}) => {
@@ -106,6 +129,8 @@ export const onSaveAndCloseButtonClicked = (e) => {
 }
 
 const onRemoveComponent = () => {
+  window.removeEventListener('beforeunload', beforeUnloadHandler)
+  dirty.clear()
   if (unbindSaveShortcut) {
     unbindSaveShortcut()
     unbindSaveShortcut = null
@@ -124,6 +149,7 @@ const onUpdateComponent = () => {
   // are ignored
   if (!state.initialized && loaded && loaded === state.file) {
     editor.setValue(PageEditModel.item.content, 1) // set cursor at the end
+    state.savedContent = PageEditModel.item.content
     state.initialized = true
   }
 }

@@ -12,7 +12,6 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Maintenance toggle in the admin panel | `maintenanceMode` works but is `settings.php`-only. Add an API route plus a switch on the system page. | S |
 | open | Prune old backups on write, not only on list | `prune_old_backups()` runs in the backup listing only. Also prune when a backup is written (or via CLI), so the retention rule holds without opening the page. | S |
 | open | Warn on deleting referenced files | `upload/delete` and `page/delete` do not check references from other pages. List referencing pages and ask for confirmation. | M |
-| open | Warn on unsaved changes | No dirty check and no `beforeunload` in the page, CSS and inline editors; cancel and navigation discard silently. | M |
 | open | Start page after login is empty | `StartView` renders nothing. Show what can be done here (edit pages, uploads, backups) instead of a dead page. | S |
 | open | Upload progress and size feedback | `UploadListView` posts all files via one `Promise.all` with a single catch. Show per-file progress and pre-check sizes. | M |
 | open | Change password in the admin panel | No route and no menu entry; every change needs server access. Self-service for onboarding and rotation. | M |
@@ -30,6 +29,8 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Semantic heading inside the line editor | The line editor wraps text in a `<p>` (Quill default block); a CSS override in `editor.css` keeps the heading look while editing. Alternative: a clipboard matcher (`P` → `header` level from the host tag) for real `<h1>`–`<h6>` during edit. Only worth it if DevTools-semantics while editing ever matter. | S |
 | open | Share one Ace editor helper across views | `PageEditView`, `CssEditView` and `BackupEditView` copy the same `ace.edit` setup with slightly different lifecycles (single instance twice, recreate-per-update once). Every lifecycle fix has to be thought through three times. Bundle creation, theme watching and destroy in one `lib/` helper; views keep only their save and content logic. | S |
 | open | Light theme flash on hard refresh | Briefly shows the light theme on hard refresh in dark mode. Not reproducible headless (admin boot, editors and preview are dark from the first frame); needs the exact spot (admin chrome, preview iframe, editor toolbar, window) plus theme setting and browser to narrow down. | S |
+| open | Readonly / disabled fields are not distinguishable from normal fields | Disabled inputs (e.g. filename, title, created-at in the page editor) look identical to editable ones; only the cursor changes. Needs a visual cue (muted background, reduced opacity or a lock icon) so editors do not try to type into them. | S |
+| open | Toasts have a weird mouseover/click effect | Hovering or clicking a toast triggers an unexpected visual effect (likely a transform/transition inherited from button styles or the toast container). Investigate the toast component and its CSS; make hover/click either do nothing or an intentional dismiss. | S |
 
 ## Done
 
@@ -37,3 +38,4 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | --- | --- |
 | Save & Close must not close on validation error | `fix: do not close editor on validation error` |
 | Redirect to login on expired token | `fix: redirect to login on expired session` |
+| Warn on unsaved changes | `fix: warn on unsaved changes` |

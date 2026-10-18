@@ -143,5 +143,6 @@
     "{value} must be a string.": "{value} doit être une chaîne.",
     "{value} must be in the {dir} folder.": "{value} doit se trouver dans le dossier {dir}.",
     "{value} must not be in the {dir} folder.": "{value} ne doit pas se trouver dans le dossier {dir}.",
-    "{value} must not exist.": "{value} ne doit pas exister."
+    "{value} must not exist.": "{value} ne doit pas exister.",
+    "Discard unsaved changes?": "Abandonner les modifications non enregistrées ?"
 }

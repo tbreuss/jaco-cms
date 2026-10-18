@@ -143,5 +143,6 @@
     "{value} must be a string.": "{value} deve essere una stringa.",
     "{value} must be in the {dir} folder.": "{value} deve trovarsi nella cartella {dir}.",
     "{value} must not be in the {dir} folder.": "{value} non deve trovarsi nella cartella {dir}.",
-    "{value} must not exist.": "{value} non deve esistere."
+    "{value} must not exist.": "{value} non deve esistere.",
+    "Discard unsaved changes?": "Scartare le modifiche non salvate?"
 }

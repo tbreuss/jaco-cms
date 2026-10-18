@@ -8,6 +8,24 @@ import {ButtonSecondary} from '../component/ButtonSecondary.js'
 import {Icon} from '../component/Icon.js'
 import {app} from '../lib/app.js'
 import {bindSaveShortcut, saveShortcutLabel} from '../lib/shortcuts.js'
+import {dirty} from '../lib/dirty.js'
+
+let savedBody = null
+
+const isDirty = () => {
+  if (savedBody === null) {
+    try { savedBody = iframe.getHTML() } catch (e) { savedBody = '' }
+    return false
+  }
+  try { return iframe.getHTML() !== savedBody } catch (e) { return false }
+}
+
+const beforeUnloadHandler = (e) => {
+  if (isDirty()) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
+}
 
 const save = (e) => {
   e.redraw = false
@@ -20,6 +38,7 @@ const save = (e) => {
     withCredentials: false
   })
     .then(() => {
+      savedBody = iframe.getHTML()
       iframe.reload()
       addSuccess(t('Page was successfully saved.'))
       m.route.set('/')
@@ -36,6 +55,10 @@ const save = (e) => {
 
 const cancel = (e) => {
   e.redraw = false
+  if (isDirty() && !confirm(t('Discard unsaved changes?', null, 'Discard unsaved changes?'))) {
+    return
+  }
+  dirty.clear()
   iframe.reload()
   m.route.set('/')
 }
@@ -66,6 +89,8 @@ const bindShortcut = () => {
 
 export const PageInlineEditView = {
   oninit: () => {
+    window.addEventListener('beforeunload', beforeUnloadHandler)
+    dirty.set(isDirty)
     if (!app.hasAuthToken()) {
       m.route.set('/logout')
     }
@@ -81,6 +106,8 @@ export const PageInlineEditView = {
     iframe.getElement().onload = bindShortcut
   },
   onremove: () => {
+    window.removeEventListener('beforeunload', beforeUnloadHandler)
+    dirty.clear()
     unbindSaveShortcuts.forEach((unbind) => unbind())
     unbindSaveShortcuts = []
     setEditLayout(false)

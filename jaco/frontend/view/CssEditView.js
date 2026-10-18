@@ -12,6 +12,7 @@ import {FormErrors, errorFor} from '../component/FormErrors.js'
 import {app} from '../lib/app.js'
 import {bindSaveShortcut, saveAndCloseShortcutLabel, saveShortcutLabel} from '../lib/shortcuts.js'
 import {aceThemeName, watchAceTheme} from '../lib/aceTheme.js'
+import {dirty} from '../lib/dirty.js'
 
 let editor = undefined
 let unbindSaveShortcut = null
@@ -20,13 +21,32 @@ let unwatchAceTheme = null
 const state = {
   errors: [],
   loadedFile: null,
-  file: ''
+  file: '',
+  savedContent: null,
 }
 
 const fieldPointers = ['fileName']
 
 const onCancelButtonClicked = () => {
+  if (isDirty() && !confirm(t('Discard unsaved changes?', null, 'Discard unsaved changes?'))) {
+    return
+  }
+  dirty.clear()
   m.route.set('/')
+}
+
+const isDirty = () => {
+  if (!editor || state.savedContent === null) {
+    return false
+  }
+  return editor.getValue() !== state.savedContent
+}
+
+const beforeUnloadHandler = (e) => {
+  if (isDirty()) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
 }
 
 const ensureEditor = () => {
@@ -67,6 +87,8 @@ const onCreateComponent = () => {
 }
 
 const onInitComponent = () => {
+  window.addEventListener('beforeunload', beforeUnloadHandler)
+  dirty.set(isDirty)
   if (!app.hasAuthToken()) {
     m.route.set('/logout')
   }
@@ -109,6 +131,7 @@ const onSaveButtonClicked = (e) => {
   return CssEditModel.save()
     .then(() => {
       state.errors = []
+      state.savedContent = editor.getValue()
       addSuccess(t('CSS was successfully saved.'))
     })
     .catch(({code, response}) => {
@@ -132,6 +155,8 @@ const onSaveAndCloseButtonClicked = (e) => {
 }
 
 const onRemoveComponent = () => {
+  window.removeEventListener('beforeunload', beforeUnloadHandler)
+  dirty.clear()
   if (unbindSaveShortcut) {
     unbindSaveShortcut()
     unbindSaveShortcut = null
@@ -155,6 +180,7 @@ const onUpdateComponent = () => {
   // render only the selected file, late responses of earlier selections are ignored
   if (loaded && loaded !== state.loadedFile && loaded === state.file) {
     editor.setValue(CssEditModel.item.content, 1) // set cursor at the end
+    state.savedContent = CssEditModel.item.content
     state.loadedFile = loaded
   }
 }

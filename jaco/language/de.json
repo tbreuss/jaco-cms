@@ -143,5 +143,6 @@
     "{value} must be a string.": "{value} muss eine Zeichenkette sein.",
     "{value} must be in the {dir} folder.": "{value} muss im Ordner {dir} liegen.",
     "{value} must not be in the {dir} folder.": "{value} darf nicht im Ordner {dir} liegen.",
-    "{value} must not exist.": "{value} darf nicht existieren."
+    "{value} must not exist.": "{value} darf nicht existieren.",
+    "Discard unsaved changes?": "Ungespeicherte Änderungen verwerfen?"
 }

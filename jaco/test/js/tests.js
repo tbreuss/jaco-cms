@@ -25,6 +25,7 @@ import {isSaveShortcut, isSaveAndCloseShortcut, bindSaveShortcut, saveShortcutLa
 import {iframe} from '/jaco/frontend/lib/iframe.js'
 import {getTheme, setTheme, applyTheme} from '/jaco/frontend/lib/theme.js'
 import {aceThemeName, watchAceTheme} from '/jaco/frontend/lib/aceTheme.js'
+import {dirty} from '/jaco/frontend/lib/dirty.js'
 import {formatDateTimeCompact, formatDateTimeFull, formatBytes} from '/jaco/frontend/lib/format.js'
 import {state} from '/jaco/frontend/state/state.js'
 const fixture = () => document.getElementById('qunit-fixture')
@@ -1612,4 +1613,69 @@ QUnit.test('fitBelowNavbar shifts the preview below the navbar', (assert) => {
   document.body.classList.remove('page-edit')
   bar.remove()
   frame.remove()
+})
+
+QUnit.module('dirty registry')
+
+QUnit.test('dirty.set registers a predicate and dirty.clear removes it', (assert) => {
+  dirty.clear()
+  assert.notOk(dirty.isDirty(), 'nothing dirty by default')
+
+  dirty.set(() => true)
+  assert.ok(dirty.isDirty(), 'predicate returning true marks dirty')
+
+  dirty.set(() => false)
+  assert.notOk(dirty.isDirty(), 'predicate returning false marks clean')
+
+  dirty.clear()
+  assert.notOk(dirty.isDirty(), 'clear removes the predicate')
+})
+
+QUnit.test('dirty guard blocks in-app navigation while dirty (confirm denied)', (assert) => {
+  dirty.clear()
+  const originalConfirm = window.confirm
+  window.confirm = () => false
+  dirty.set(() => true)
+
+  try {
+    const proceed = dirty._guard()
+    assert.notOk(proceed, 'navigation aborted when confirm denied')
+    assert.ok(dirty.isDirty(), 'still dirty after denied navigation')
+  } finally {
+    window.confirm = originalConfirm
+    dirty.clear()
+  }
+})
+
+QUnit.test('dirty guard allows in-app navigation while dirty (confirm accepted)', (assert) => {
+  dirty.clear()
+  const originalConfirm = window.confirm
+  window.confirm = () => true
+  dirty.set(() => true)
+
+  try {
+    const proceed = dirty._guard()
+    assert.ok(proceed, 'navigation proceeds when confirm accepted')
+    assert.notOk(dirty.isDirty(), 'dirty cleared after accepted navigation')
+  } finally {
+    window.confirm = originalConfirm
+    dirty.clear()
+  }
+})
+
+QUnit.test('dirty guard does not interfere when not dirty', (assert) => {
+  dirty.clear()
+  const originalConfirm = window.confirm
+  let confirmCalled = false
+  window.confirm = () => { confirmCalled = true; return true }
+  dirty.set(() => false)
+
+  try {
+    const proceed = dirty._guard()
+    assert.ok(proceed, 'navigation proceeds')
+    assert.notOk(confirmCalled, 'confirm not called when not dirty')
+  } finally {
+    window.confirm = originalConfirm
+    dirty.clear()
+  }
 })

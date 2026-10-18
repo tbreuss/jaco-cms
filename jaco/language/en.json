@@ -143,5 +143,6 @@
     "{value} must be a string.": "{value} must be a string.",
     "{value} must be in the {dir} folder.": "{value} must be in the {dir} folder.",
     "{value} must not be in the {dir} folder.": "{value} must not be in the {dir} folder.",
-    "{value} must not exist.": "{value} must not exist."
+    "{value} must not exist.": "{value} must not exist.",
+    "Discard unsaved changes?": "Discard unsaved changes?"
 }
