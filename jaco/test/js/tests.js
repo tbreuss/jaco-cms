@@ -2272,3 +2272,31 @@ QUnit.test('save validation error does not navigate', async (assert) => {
   m.route.set = originalSet
   assert.ok(!routeCalls.includes('/'), 'no navigation on validation error')
 })
+
+QUnit.module('CSS')
+
+QUnit.test('app.css parses without syntax errors', (assert) => {
+  const sheets = [...document.styleSheets].filter((s) => s.href && s.href.includes('/jaco/frontend/asset/app.css'))
+  assert.ok(sheets.length > 0, 'app.css is loaded')
+
+  const sheet = sheets[0]
+  let ruleCount = 0
+  try {
+    ruleCount = sheet.cssRules.length
+  } catch (e) {
+    assert.ok(false, 'cssRules not readable: ' + e.message)
+    return
+  }
+
+  // cssRules is empty when a syntax error (e.g. unbalanced brace) truncates the sheet
+  assert.ok(ruleCount > 50, 'sheet has rules (got ' + ruleCount + ')')
+
+  // walk top-level rules: @media blocks need recursive access
+  const walk = (rules, depth = 0) => {
+    for (const rule of rules) {
+      if (rule.cssRules) walk(rule.cssRules, depth + 1)
+    }
+  }
+  walk(sheet.cssRules)
+  assert.ok(true, 'all rules walkable')
+})
