@@ -31,6 +31,7 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Light theme flash on hard refresh | Briefly shows the light theme on hard refresh in dark mode. Not reproducible headless (admin boot, editors and preview are dark from the first frame); needs the exact spot (admin chrome, preview iframe, editor toolbar, window) plus theme setting and browser to narrow down. | S |
 | open | Readonly / disabled fields are not distinguishable from normal fields | Disabled inputs (e.g. filename, title, created-at in the page editor) look identical to editable ones; only the cursor changes. Needs a visual cue (muted background, reduced opacity or a lock icon) so editors do not try to type into them. | S |
 | open | Toasts have a weird mouseover/click effect | Hovering or clicking a toast triggers an unexpected visual effect (likely a transform/transition inherited from button styles or the toast container). Investigate the toast component and its CSS; make hover/click either do nothing or an intentional dismiss. | S |
+| open | Restructure QUnit test suite | Single monolithic `tests.js` (~2300 lines): split into per-topic files, add `expect()` declarations, introduce a `mountView` setup helper, and tighten global-state cleanup (sessionStorage, ace, confirm, route) to avoid order-dependent leaks. | M |
 
 ## Done
 
