@@ -287,6 +287,12 @@ body {
     z-index: 3;
 }
 
+/* The overlay takes programmatic focus for Escape handling; it should not
+   show a focus ring, but children keep their normal focus styles. */
+.modal:focus {
+    outline: none;
+}
+
 .modal-inner {
     text-align: left;
     padding: 2rem;

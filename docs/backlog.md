@@ -16,7 +16,7 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Upload progress and size feedback | `UploadListView` posts all files via one `Promise.all` with a single catch. Show per-file progress and pre-check sizes. | M |
 | open | Change password in the admin panel | No route and no menu entry; every change needs server access. Self-service for onboarding and rotation. | M |
 | open | Loading and not-found states in detail views | Page, upload and backup detail views render empty forms on slow networks and cannot be told apart from deleted entries. | S |
-| open | Modals lack Escape handling | Only the toast dismiss is reachable by keyboard; modals (login, add/copy/delete page) have no Escape-to-close. | S |
+| open | Remove dead ErrorModal component | `ErrorModal.js` is imported nowhere (no view uses `openErrorModal`/`ErrorModal`). The active modals are `ModalSmall` and `ModalMedium`. Either delete it or wire it up for real error dialogs. | S |
 | open | Paginate lists, collapse admin navigation on mobile | Filter/sort only, no limit/offset; full navbar without a mobile menu. Lists slow down and the admin is barely usable on phones. | M |
 | open | Skeleton tables for list loading states | Lists pop in after loading instead of rendering in a stable frame. Build one `SkeletonTable` component (rows × columns matching each view) shown during `isLoading`, used by every list. Deliberately no route-level blocking on data (would trade shift for silence on slow connections). | M |
 | open | Choose uploaded images in the editor | Every image click opens the local file picker; the upload manager and the editor do not know each other. Reusing an image duplicates it with a `-1` suffix. Add a "choose from library" option. | M |
@@ -46,3 +46,4 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | Hardcoded colors scattered through app.css | `style: convert all hardcoded colors to CSS variables` |
 | Dark mode broken (unclosed brace swallowed theme block) | `style: convert all hardcoded colors to CSS variables` |
 | No CSS syntax check in tests | `test: add CSS syntax check via styleSheet rules` |
+| Modals lack Escape handling | `feat: close modals with Escape key` |

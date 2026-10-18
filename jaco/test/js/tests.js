@@ -13,6 +13,7 @@ import {PageEditModel} from '/jaco/frontend/model/PageEditModel.js'
 import {PageAddView} from '/jaco/frontend/view/PageAddView.js'
 import {PageCopyView} from '/jaco/frontend/view/PageCopyView.js'
 import {PageDeleteView} from '/jaco/frontend/view/PageDeleteView.js'
+import {ModalSmall} from '/jaco/frontend/component/ModalSmall.js'
 import {PageGotoView} from '/jaco/frontend/view/PageGotoView.js'
 import {PageInlineEditView} from '/jaco/frontend/view/PageInlineEditView.js'
 import {save as inlineSave} from '/jaco/frontend/view/PageInlineEditView.js'
@@ -1566,6 +1567,72 @@ QUnit.test('renders the add page dialog', (assert) => {
   PageTemplateModel.list = [{file: 'default.html', title: 'Default'}]
   m.render(fixture(), m(PageAddView))
   assert.ok(fixture().textContent.includes(t('Add page')), 'title shown')
+})
+
+QUnit.module('Modal Escape handling', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    PageTemplateModel.loadList = () => Promise.resolve()
+    const origHasElement = iframe.hasElement
+    const origFileName = iframe.fileName
+    const origPageTitle = iframe.pageTitle
+    iframe.hasElement = () => true
+    iframe.fileName = () => 'index.html'
+    iframe.pageTitle = () => 'Home'
+    window._iframeRestore = () => {
+      iframe.hasElement = origHasElement
+      iframe.fileName = origFileName
+      iframe.pageTitle = origPageTitle
+    }
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    if (window._iframeRestore) { window._iframeRestore(); delete window._iframeRestore }
+  }
+})
+
+QUnit.test('ModalMedium closes on Escape', (assert) => {
+  const originalSet = m.route.set
+  const routeCalls = []
+  m.route.set = (path) => routeCalls.push(path)
+
+  PageTemplateModel.list = [{file: 'default.html', title: 'Default'}]
+  m.render(fixture(), m(PageAddView))
+  const modal = fixture().querySelector('.modal')
+  assert.ok(modal, 'modal rendered')
+  assert.strictEqual(modal.tabIndex, -1, 'modal is focusable')
+
+  modal.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', bubbles: true}))
+  m.route.set = originalSet
+  assert.ok(routeCalls.includes('/'), 'Escape navigates home')
+})
+
+QUnit.test('ModalSmall closes on Escape', (assert) => {
+  const originalSet = m.route.set
+  const routeCalls = []
+  m.route.set = (path) => routeCalls.push(path)
+
+  m.render(fixture(), m(LogoutView))
+  const modal = fixture().querySelector('.modal')
+  assert.ok(modal, 'modal rendered')
+
+  modal.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', bubbles: true}))
+  m.route.set = originalSet
+  assert.ok(routeCalls.includes('/'), 'Escape navigates home')
+})
+
+QUnit.test('Escape on modal with other key does nothing', (assert) => {
+  const originalSet = m.route.set
+  const routeCalls = []
+  m.route.set = (path) => routeCalls.push(path)
+
+  // render ModalSmall directly to avoid LogoutView's oninit token check
+  m.render(fixture(), m(ModalSmall, {title: 'Test'}))
+  const modal = fixture().querySelector('.modal')
+  modal.dispatchEvent(new KeyboardEvent('keydown', {key: 'a', bubbles: true}))
+  m.route.set = originalSet
+  assert.strictEqual(routeCalls.length, 0, 'other keys do not navigate')
 })
 
 QUnit.module('PageCopyView', {
