@@ -29,7 +29,6 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Semantic heading inside the line editor | The line editor wraps text in a `<p>` (Quill default block); a CSS override in `editor.css` keeps the heading look while editing. Alternative: a clipboard matcher (`P` → `header` level from the host tag) for real `<h1>`–`<h6>` during edit. Only worth it if DevTools-semantics while editing ever matter. | S |
 | open | Share one Ace editor helper across views | `PageEditView`, `CssEditView` and `BackupEditView` copy the same `ace.edit` setup with slightly different lifecycles (single instance twice, recreate-per-update once). Every lifecycle fix has to be thought through three times. Bundle creation, theme watching and destroy in one `lib/` helper; views keep only their save and content logic. | S |
 | open | Light theme flash on hard refresh | Briefly shows the light theme on hard refresh in dark mode. Not reproducible headless (admin boot, editors and preview are dark from the first frame); needs the exact spot (admin chrome, preview iframe, editor toolbar, window) plus theme setting and browser to narrow down. | S |
-| open | Readonly / disabled fields are not distinguishable from normal fields | Disabled inputs (e.g. filename, title, created-at in the page editor) look identical to editable ones; only the cursor changes. Needs a visual cue (muted background, reduced opacity or a lock icon) so editors do not try to type into them. | S |
 | open | Toasts have a weird mouseover/click effect | Hovering or clicking a toast triggers an unexpected visual effect (likely a transform/transition inherited from button styles or the toast container). Investigate the toast component and its CSS; make hover/click either do nothing or an intentional dismiss. | S |
 | open | Restructure QUnit test suite | Single monolithic `tests.js` (~2300 lines): split into per-topic files, add `expect()` declarations, introduce a `mountView` setup helper, and tighten global-state cleanup (sessionStorage, ace, confirm, route) to avoid order-dependent leaks. | M |
 
@@ -40,3 +39,4 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | Save & Close must not close on validation error | `fix: do not close editor on validation error` |
 | Redirect to login on expired token | `fix: redirect to login on expired session` |
 | Warn on unsaved changes | `fix: warn on unsaved changes` |
+| Readonly / disabled fields are not distinguishable from normal fields | `style: distinguish disabled/read-only inputs` |

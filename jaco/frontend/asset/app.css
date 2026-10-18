@@ -492,6 +492,19 @@ textarea {
     color: var(--color-text);
 }
 
+/* Disabled/read-only fields must not look editable: muted background and a
+   not-allowed cursor, so editors do not try to type into them. */
+input[disabled],
+select[disabled],
+textarea[disabled],
+input[readonly],
+textarea[readonly] {
+    background-color: var(--color-surface);
+    color: var(--color-secondary);
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
 /* Style the label to display next to the inputs */
 /*label {
   padding: 12px 12px 12px 0;
