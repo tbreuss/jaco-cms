@@ -104,7 +104,7 @@ export const PageAddView = {
       }),
       m(ButtonGroup, {wrap: 'div.row.text-right'},
         m(ButtonSecondary, {onclick: onCancelButtonClicked}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
-        m(ButtonPrimary, {onclick: onSaveButtonClicked}, m(Icon, {name: 'check'}), m('span', t('OK')))
+        m(ButtonPrimary, {onclick: onSaveButtonClicked}, m(Icon, {name: 'check'}), m('span', t('Add page')))
       ),
     ),
     m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))})

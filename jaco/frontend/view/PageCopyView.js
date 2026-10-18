@@ -104,7 +104,7 @@ export const PageCopyView = {
         }),
         m(ButtonGroup, {wrap: 'div.row.text-right'},
           m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
-          m(ButtonPrimary, {onclick: save}, m(Icon, {name: 'check'}), m('span', t('OK')))
+          m(ButtonPrimary, {onclick: save}, m(Icon, {name: 'check'}), m('span', t('Copy page')))
         )
       ),
       m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))})
