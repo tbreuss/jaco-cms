@@ -308,6 +308,25 @@ QUnit.test('request urls have no trailing ampersand without parameters', async (
   }
 })
 
+QUnit.test('500 error includes detail and reference in toast', async (assert) => {
+  const stub = stubRequest(() => Promise.reject({
+    code: 500,
+    response: {title: 'PHP Error', detail: 'An unexpected error occurred (reference abc123).'}
+  }))
+  const before = state.list.length
+
+  try {
+    await api.get('page/list').catch(() => {})
+
+    assert.ok(state.list.length > before, 'a danger message was added')
+    const msg = state.list[state.list.length - 1]
+    assert.ok(msg.text.includes('PHP Error'), 'toast contains error title')
+    assert.ok(msg.text.includes('reference abc123'), 'toast contains log reference')
+  } finally {
+    stub.restore()
+  }
+})
+
 QUnit.module('login against the real api')
 
 QUnit.test('the form sends one request and shows the message from the api', (assert) => {
@@ -1742,7 +1761,6 @@ const auditFiles = [
   '/jaco/frontend/component/ButtonGroup.js',
   '/jaco/frontend/component/ButtonPrimary.js',
   '/jaco/frontend/component/ButtonSecondary.js',
-  '/jaco/frontend/component/ErrorModal.js',
   '/jaco/frontend/component/Fieldset.js',
   '/jaco/frontend/component/FilterInput.js',
   '/jaco/frontend/component/FormErrors.js',

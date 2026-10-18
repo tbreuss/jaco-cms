@@ -60,9 +60,10 @@ const request = method => (action, params = {}, options = {}) => {
       } else {
         // without a response body (network failure, timeout) there is
         // nothing to map, show a generic message instead of crashing
-        const errors = Array.isArray(err.response) ? err.response : [{title: 'Request failed'}]
+        const errors = Array.isArray(err.response) ? err.response : [err.response ?? {title: 'Request failed'}]
         errors.forEach((error) => {
-          addDanger(t(error.title, null, error.title))
+          const msg = error.detail ? `${error.title}: ${error.detail}` : error.title
+          addDanger(t(msg, null, msg))
         })
         throw err
       }
