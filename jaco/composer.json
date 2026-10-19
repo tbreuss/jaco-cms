@@ -51,10 +51,10 @@
             "@php test/coverage-gate.php test/runtime/coverage.xml"
         ],
         "check": [
-            "@test",
-            "@phpstan",
             "@cs-check",
-            "@deptrac"
+            "@phpstan",
+            "@deptrac",
+            "@test"
         ]
     }
 }
