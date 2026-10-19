@@ -48,6 +48,10 @@ const claims = () => {
 }
 
 export const auth = {
+  username: () => {
+    const user = claims()?.user
+    return typeof user === 'string' ? user : ''
+  },
   role: () => {
     const role = claims()?.role
     return typeof role === 'string' && rank(role) > 0 ? role : ROLE_VIEWER

@@ -175,5 +175,7 @@
     "Delete upload": "Supprimer le téléchargement",
     "Delete backup": "Supprimer la sauvegarde",
     "Restore backup": "Restaurer la sauvegarde",
-    "Edit content": "Modifier le contenu"
+    "Edit content": "Modifier le contenu",
+    "Editor": "Rédacteur",
+    "Viewer": "Lecteur"
 }

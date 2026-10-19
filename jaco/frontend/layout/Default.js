@@ -71,13 +71,30 @@ const disabledNav = (label) =>
     tabindex: '0',
   }, label)
 
+const roleLabel = (role) => {
+  if (role === 'admin') {
+    return t('Admin')
+  }
+  if (role === 'editor') {
+    return t('Editor')
+  }
+  return t('Viewer')
+}
+
+const accountInfo = () => {
+  const username = auth.username()
+  const role = roleLabel(auth.role())
+  const roleNode = m('span.nav-account-role', username ? `(${role})` : role)
+  return m('span.nav-account-info', {role: 'presentation'},
+    username ? [username, ' ', roleNode] : roleNode)
+}
+
 const menuLink = (href, label) => m(m.route.Link, {
   href: href,
   role: 'menuitem',
   onclick: () => {
     closeMenu()
-  }
-}, label)
+  }}, label)
 
 // Hybrid dropdown: a mouse hover opens it on fine pointers, a click/tap toggles
 // it on touch, and keyboard users get the same click path. The open menu stays
@@ -260,6 +277,7 @@ export const DefaultLayout = {
                 disabledNav(t('PHP info')),
               ]),
               dropdown('account', t('Account'), [
+                accountInfo(),
                 menuLink('/system/about', t('About')),
                 auth.canChangePassword() ? menuLink('/password', t('Change password')) : disabledNav(t('Change password')),
                 menuLink('/logout', t('Logout')),

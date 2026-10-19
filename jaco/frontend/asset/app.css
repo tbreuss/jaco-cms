@@ -209,6 +209,7 @@ body {
 .account-menu .dropdown-content {
     right: 0;
     left: auto;
+    max-width: calc(100vw - 1rem);
 }
 
 .navbar a.jump-to-page {
@@ -302,6 +303,25 @@ body {
     min-width: 160px;
     box-shadow: var(--shadow-dropdown);
     z-index: 1;
+}
+
+/* Logged-in user label at the top of the account menu (not a link) */
+.dropdown-content .nav-account-info {
+    display: block;
+    padding: 12px 16px;
+    font-weight: bold;
+    /* A long name or translated role wraps inside the menu instead of widening
+       it past the viewport. */
+    white-space: normal;
+    overflow-wrap: anywhere;
+    max-width: min(20rem, calc(100vw - 1rem));
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 0.25rem;
+}
+
+.dropdown-content .nav-account-role {
+    font-weight: normal;
+    opacity: 0.75;
 }
 
 /* Links inside the dropdown */

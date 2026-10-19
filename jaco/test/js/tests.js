@@ -59,8 +59,8 @@ const fixture = () => document.getElementById('qunit-fixture')
 
 // The ui only reads the token payload; the signature is checked by the api. A
 // syntactically valid payload is enough to steer the role-aware controls.
-const tokenWithRole = (role, language = '', passwordChange = true) => {
-  const payload = btoa(JSON.stringify({role, language, passwordChange}))
+const tokenWithRole = (role, language = '', passwordChange = true, username = '') => {
+  const payload = btoa(JSON.stringify({user: username, role, language, passwordChange}))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '')
@@ -729,6 +729,47 @@ QUnit.test('an admin sees every menu entry active', (assert) => {
       [...dropdowns[2].querySelectorAll('a')].map((link) => link.textContent),
       [t('Environment'), t('PHP error log'), t('PHP info')],
     )
+  } finally {
+    i18n.status = savedStatus
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('the account menu shows the logged-in user and role', (assert) => {
+  const savedStatus = i18n.status
+  i18n.status = 'idle'
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin', '', true, 'alice'))
+
+  try {
+    m.render(fixture(), m(DefaultLayout, m('div')))
+
+    const info = fixture().querySelector('.nav-account-info')
+    assert.ok(info, 'the account label is rendered')
+    assert.strictEqual(info.tagName, 'SPAN', 'the label is not an action')
+    assert.strictEqual(info.getAttribute('role'), 'presentation', 'a static label inside the menu')
+    assert.strictEqual(info.textContent, `alice (${t('Admin')})`)
+    assert.strictEqual(getComputedStyle(info).whiteSpace, 'normal', 'long labels can wrap')
+
+    const role = info.querySelector('.nav-account-role')
+    assert.ok(role, 'the role has its own span')
+    assert.strictEqual(role.textContent, `(${t('Admin')})`)
+    assert.strictEqual(getComputedStyle(role).fontWeight, '400', 'the role is lighter than the name')
+  } finally {
+    i18n.status = savedStatus
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('the account menu localizes the viewer role', (assert) => {
+  const savedStatus = i18n.status
+  i18n.status = 'idle'
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer', '', true, 'bob'))
+
+  try {
+    m.render(fixture(), m(DefaultLayout, m('div')))
+
+    const info = fixture().querySelector('.nav-account-info')
+    assert.strictEqual(info.textContent, `bob (${t('Viewer')})`)
   } finally {
     i18n.status = savedStatus
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')

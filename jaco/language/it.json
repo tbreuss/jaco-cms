@@ -175,5 +175,7 @@
     "Delete upload": "Elimina caricamento",
     "Delete backup": "Elimina backup",
     "Restore backup": "Ripristina backup",
-    "Edit content": "Modifica contenuto"
+    "Edit content": "Modifica contenuto",
+    "Editor": "Redattore",
+    "Viewer": "Visitatore"
 }

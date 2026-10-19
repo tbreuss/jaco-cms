@@ -175,5 +175,7 @@
     "Delete upload": "Upload löschen",
     "Delete backup": "Backup löschen",
     "Restore backup": "Backup wiederherstellen",
-    "Edit content": "Inhalte bearbeiten"
+    "Edit content": "Inhalte bearbeiten",
+    "Editor": "Redakteur",
+    "Viewer": "Betrachter"
 }
