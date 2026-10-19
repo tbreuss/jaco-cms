@@ -61,9 +61,9 @@ return [
     'users' => [
         'admin' => [
             // a password_hash() digest, never the plaintext password
-            'password' => '$2y$...',
+            'password' => '<password-hash>',
             'role' => 'admin',
-            // optional: 'language' => 'de', 'totpSecret' => '...',
+            // optional: 'language' => 'de', 'totpSecret' => '<base32-secret>',
             // for a public demo: 'passwordChange' => false
         ],
     ],
@@ -103,8 +103,8 @@ There is no automatic migration: `settings.php` must list `users`. An old file
 ```php
 return [
     'username' => 'admin',
-    'password' => '$2y$...',
-    'totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ',
+    'password' => '<password-hash>',
+    'totpSecret' => '<base32-secret>',
     'secretKey' => 'at-least-32-random-characters',
 ];
 ```
@@ -115,9 +115,9 @@ becomes
 return [
     'users' => [
         'admin' => [
-            'password' => '$2y$...',
+            'password' => '<password-hash>',
             'role' => 'admin',
-            'totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ',
+            'totpSecret' => '<base32-secret>',
         ],
     ],
     'secretKey' => 'at-least-32-random-characters',

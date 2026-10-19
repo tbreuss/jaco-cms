@@ -12,23 +12,23 @@
 //
 //     'users' => [
 //         'kunde' => [
-//             'password' => '$2y$...',
+//             'password' => '<password-hash>',
 //             'role' => 'viewer',
 //             // ui language, empty falls back to defaultLanguage below
 //             'language' => 'de',
 //         ],
 //         'demo' => [
-//             'password' => '$2y$...',
+//             'password' => '<password-hash>',
 //             'role' => 'viewer',
 //             // a public demo must keep its seeded password, so visitors cannot
 //             // lock each other out by changing it; missing means true
 //             'passwordChange' => false,
 //         ],
 //         'admin' => [
-//             'password' => '$2y$...',
+//             'password' => '<password-hash>',
 //             'role' => 'admin',
 //             // TOTP secret; missing or empty means no second factor for this user
-//             'totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ',
+//             'totpSecret' => '<base32-secret>',
 //         ],
 //     ],
 //
@@ -36,16 +36,19 @@
 // `php jaco/cli.php auth:totp-setup -u admin` and remove it with
 // `auth:totp-disable -u admin`; do not share one secret between users. The
 // password is a password_hash() digest, never a plaintext password. The
-// browser installer stores it that way; when you fill it in by hand generate
+// browser installer stores it that way; when you fill it in by hand, generate
 // one with:
 //
-//     php -r "echo password_hash('your-password', PASSWORD_DEFAULT), PHP_EOL;"
+//     php -r 'echo password_hash("your-password", PASSWORD_DEFAULT), PHP_EOL;'
+//
+// Put the digest into that user's 'password' field and keep the rest of the
+// record. Existing login tokens are not revoked by a password change.
 
 return [
     // users and roles: viewer (read), editor (write pages and uploads), admin
     // (everything, including settings, CSS and backups). The password is a digest.
     'users' => [
-        // 'admin' => ['password' => '$2y$...', 'role' => 'admin'],
+        // 'admin' => ['password' => '<password-hash>', 'role' => 'admin'],
     ],
     'secretKey' => '',
     'uploadDir' => 'upload',

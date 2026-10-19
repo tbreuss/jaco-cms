@@ -207,6 +207,18 @@ can accompany it: `language` sets that account's UI language (empty means
 (default `true`) may be set to `false` to disable the own password change. Never share one
 TOTP secret between accounts – a shared code would let one user in as another.
 
+To set or reset a password, generate a digest and replace that user's password value in
+`settings.php`:
+
+```bash
+php -r 'echo password_hash("your-password", PASSWORD_DEFAULT), PHP_EOL;'
+```
+
+Keep the single quotes around the generated digest in PHP, otherwise the `$2y$` prefix
+is interpolated. There is no dedicated CLI command for this, and the manual reset also
+works when `passwordChange` is `false`. A password change does not revoke existing login
+tokens; rotate `secretKey` if every session must end.
+
 | Capability | `viewer` | `editor` | `admin` |
 | --- | --- | --- | --- |
 | Read pages, uploads, stylesheets, backups and templates | ✓ | ✓ | ✓ |
