@@ -9,11 +9,10 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | --- | --- | --- | --- |
 | open | Rename pages in the page manager | Promised in `features.html` ("copy, rename and delete") but missing: no `rename_page`, no route, no view. Workaround is copy plus delete, which breaks internal links. A real rename should rewrite links. | S |
 | open | Title field for existing pages | `create_page`/`copy_page` take `withTitle`, but existing pages can only change it via Ace source. Add a title field to the page manager using `set_title()`. | S |
-| open | Maintenance toggle in the admin panel | `maintenanceMode` works but is `settings.php`-only. The system page shows the state and every api response carries it as `X-Maintenance-Mode` (the banner follows it), but there is no route and no switch to change it. Add both. | S |
+| open | Maintenance toggle in the admin panel | `maintenanceMode` works but is `settings.php`-only. The system page shows the state, every api response carries it as `X-Maintenance-Mode` (the banner follows it), and `write_setting()` can persist a value without losing the file's comments. What is missing is the route plus the switch; the password endpoint is the template, including the maintenance exemption. | S |
 | open | Prune old backups on write, not only on list | `prune_old_backups()` runs in the backup listing only. Also prune when a backup is written (or via CLI), so the retention rule holds without opening the page. | S |
 | open | Warn on deleting referenced files | `upload/delete` and `page/delete` do not check references from other pages. List referencing pages and ask for confirmation. | M |
 | open | Upload progress and size feedback | `UploadListView` posts all files via one `Promise.all` with a single catch. Show per-file progress and pre-check sizes. | M |
-| open | Change password in the admin panel | No route and no menu entry; every change needs server access. Self-service for onboarding and rotation. | M |
 | open | Login throttle only covers one address at a time | The per-address bucket removed the denial of service (no attacker can lock the owner out any more), but a distributed attack with many addresses can still guess passwords, limited only by the number of hosts it has. A capped global bucket as a second layer plus a recovery key in `settings.php` would close it without reintroducing the lockout. | M |
 | open | Login history read-modify-write can lose a failure | Two simultaneous failed logins both read the history file, both append and the last write wins, so the throttle counts one instead of two. Harmless in practice, but counting should hold a lock across read and write. | S |
 | open | Loading and not-found states in detail views | Page, upload and backup detail views render empty forms on slow networks and cannot be told apart from deleted entries. | S |
@@ -32,6 +31,7 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Share one Ace editor helper across views | `PageEditView`, `CssEditView` and `BackupEditView` copy the same `ace.edit` setup with slightly different lifecycles (single instance twice, recreate-per-update once). Every lifecycle fix has to be thought through three times. Bundle creation, theme watching and destroy in one `lib/` helper; views keep only their save and content logic. | S |
 | open | Light theme flash on hard refresh | Briefly shows the light theme on hard refresh in dark mode. Not reproducible headless (admin boot, editors and preview are dark from the first frame); needs the exact spot (admin chrome, preview iframe, editor toolbar, window) plus theme setting and browser to narrow down. | S |
 | open | Triage the unmerged feature branches | `feat/content-templates`, `feat/js-editor`, `feat/draggable-content-blocks` and `feat/configurable-upload-dir` are 4 to 9 days old, `json-schema` is three and a half years old. Each needs a decision — finish, merge or delete — otherwise `git branch` stops being a signal about what is actually in flight. | S |
+| open | Remove the remaining error suppression in `install.php` | Five `@` calls survive there: `make_dir_rec`, `mkdir`, `file_put_contents` and `unlink(__FILE__)` at the end. The backend is free of them; the installer is the last place where a failed self-deletion (a security-relevant outcome) is silent. Check explicitly and let real failures surface. | S |
 | open | Restructure QUnit test suite | Single monolithic `tests.js` (~2700 lines): split into per-topic files, add `expect()` declarations, introduce a `mountView` setup helper, and tighten global-state cleanup (sessionStorage, ace, confirm, route) to avoid order-dependent leaks. | M |
 
 ## Done
@@ -54,6 +54,8 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | Inline editor loses the first unsaved change | `fix: detect the first unsaved change in the inline editor` |
 | Dirty check in the inline editor disabled editing | `fix: detect the first unsaved change in the inline editor` |
 | QUnit suite cannot run twice within 10 minutes | `test: reset the login throttle before a run` |
+| Change password in the admin panel | `feat: change the admin password in the system view` |
+| Error suppression (`@`) around file calls in the backend | `feat: change the admin password in the system view` |
 
 ## Won't do
 
