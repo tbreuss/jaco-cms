@@ -22,7 +22,6 @@ final readonly class Config
         public int $directoryPermissions,
         public int $filePermissions,
         public string $secretKey,
-        public string $totpSecret,
         public int $phpErrorReporting,
         public int $phpDisplayErrors,
         public int $phpDisplayStartupErrors,
@@ -31,7 +30,7 @@ final readonly class Config
         public string $loginHistoryFile,
         public bool $maintenanceMode,
         public int $backupRetentionDays,
-        /** @var array<string, array{password?: mixed, role?: mixed}> name → digest and role */
+        /** @var array<string, array{password?: mixed, role?: mixed, language?: mixed, totpSecret?: mixed, passwordChange?: mixed}> name → digest, role and per user preferences */
         public array $users = [],
     ) {}
 }
@@ -123,12 +122,19 @@ function write_setting(string $appDir, string $key, mixed $value): bool
 }
 
 /**
- * Replaces one user's password digest in the users list of settings.php. A nested array
+ * Replaces one field of one user in the users list of settings.php. A nested array
  * cannot be patched line by line, so the block is located with a balanced bracket scan,
  * rewritten as a whole and written through the same guard as write_setting().
+ *
+ * A null value removes the field again, which is how the second factor is turned off
+ * without leaving a misleading "totpSecret => null" in the file.
  */
-function write_user_password(string $appDir, string $username, string $digest): bool
+function write_user_field(string $appDir, string $username, string $field, ?string $value): bool
 {
+    if ($field === '') {
+        return false;
+    }
+
     $file = $appDir . '/settings.php';
 
     if (!is_file($file)) {
@@ -161,7 +167,11 @@ function write_user_password(string $appDir, string $username, string $digest): 
         return false;
     }
 
-    $users[$username] = array_merge($users[$username], ['password' => $digest]);
+    if ($value === null) {
+        unset($users[$username][$field]);
+    } else {
+        $users[$username][$field] = $value;
+    }
 
     return write_source($appDir, $file, substr($source, 0, $open) . var_export($users, true) . substr($source, $close + 1));
 }
@@ -264,7 +274,6 @@ function create_default_config(string $appDir, array $settings = []): Config
         directoryPermissions: 0755,
         filePermissions: 0644,
         secretKey: \strlen($secretKey) >= 32 ? $secretKey : (string) openssl_random_pseudo_bytes(32),
-        totpSecret: (string) ($settings['totpSecret'] ?? ''),
         phpErrorReporting: (int) ($settings['phpErrorReporting'] ?? E_ALL),
         phpDisplayErrors: (int) ($settings['phpDisplayErrors'] ?? 0),
         phpDisplayStartupErrors: (int) ($settings['phpDisplayStartupErrors'] ?? 0),
@@ -273,8 +282,7 @@ function create_default_config(string $appDir, array $settings = []): Config
         loginHistoryFile: $appDir . '/runtime/log/loginhistory.json',
         maintenanceMode: (bool) ($settings['maintenanceMode'] ?? false),
         backupRetentionDays: (int) ($settings['backupRetentionDays'] ?? 90),
-        // users in settings.php; empty means "use the single username/password pair",
-        // which then counts as the admin (see auth\find_user)
+        // users in settings.php; empty means nobody can log in
         users: is_array($settings['users'] ?? null) ? $settings['users'] : [],
     );
 }

@@ -23,11 +23,11 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | Page template | A file in `jaco/_template/page`, used when a page is created. Listed through `template/pages`. |
 | Block template | A file in `jaco/_template/content`, a single reusable block (e.g. a news item). Listed through `template/content`, fetched through `template/content/view`. |
 | Block list | No file: `<div data-jaco-content-list>` markup on a page that references a block template and lets editors add/remove blocks inline. Blocks live in `<div data-jaco-content-item>`. |
-| Config | The injected `jaco\core\config\Config` value object: directories (including the configurable `uploadDir`, always inside the web root), extensions, credentials, `defaultLanguage`, `maintenanceMode` and the php error settings. It replaced the former `jaco\*` constants; `jaco/settings.php` overrides the defaults. Empty credentials and short secret keys fall back to random values, so logging in stays impossible until real values are set (fail closed, see below). |
+| Config | The injected `jaco\core\config\Config` value object: directories (including the configurable `uploadDir`, always inside the web root), extensions, the `users` list, `defaultLanguage`, `maintenanceMode` and the php error settings. It replaced the former `jaco\*` constants; `jaco/settings.php` overrides the defaults. An empty users list and a short secret key fall back to safe values, so logging in stays impossible until real values are set (fail closed, see below). |
 | Domain payload | Return value of a `jaco\domain\*` function: `success`, `invalid` (HTTP 422 with an error list) or `error` (HTTP 500). |
 | API action | A route registered in `jaco/routes.php` (`action=page/update`). |
 | Session token | JWT signed with HS256, issued by `POST action=login`, sent as `Authorization: Bearer <token>`. |
-| Two-factor authentication | Optional TOTP second login step (RFC 6238, `jaco/backend/core/totp.php`). Offline by design: no SMS, mail or network. The secret lives in `jaco/settings.php` next to the password, enrollment runs through `auth:totp-setup` or the installer checkbox. |
+| Two-factor authentication | Optional TOTP second login step (RFC 6238, `jaco/backend/core/totp.php`). Offline by design: no SMS, mail or network. Every user has their own secret in their `settings.php` record (`users` → `totpSecret`); an empty or missing value means password-only login for that account. Enrollment runs through `auth:totp-setup -u <user>` or the installer checkbox. |
 | API vs. domain names | The page manager speaks `fileName` + `html`, the inline editor `fileName` + `body`; the domain functions speak `file` + `withContent` and `file` + `withBody`. |
 
 ## Constraints that are easy to break
@@ -86,26 +86,33 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   without an explicit role needs `admin`, and an unknown role in `settings.php` falls
   back to `viewer`. There is no legacy single login any more: `settings.php` lists users,
   and without one nobody can log in. A token whose user no longer exists is rejected,
-  which ends their sessions when a user is removed
+  which ends their sessions when a user is removed. Each record carries `password` and
+  `role`, plus the optional `language` (UI language, empty falls back to
+  `defaultLanguage`), `totpSecret` (that user's second factor) and `passwordChange`
+  (false disables the own password change)
   (`jaco/backend/core/auth.php`, `jaco/backend/core/router.php`, `jaco/routes.php`).
 - **The password changes through the api, not by editing the file.**
   `system/change-password` takes the current password as proof – a wrong one counts
   against the login throttle – and writes a new `password_hash()` digest through
-  `write_setting()`, which keeps the comments and the other keys of `settings.php` and
-  parses the result before it replaces the file. The route is deliberately exempt from
+  `write_user_field()`, which keeps the comments and the other keys of `settings.php`
+  and leaves the other users untouched. The result is parsed before it replaces the
+  file. The route is deliberately exempt from
   the maintenance block: it is the way back in when something went wrong
   (`jaco/backend/domain/system.php`, `jaco/backend/core/config.php`).
-- **Two-factor codes count as attempts.** A wrong TOTP code records a failure like a
-  wrong password, and a correct password without a code only reveals that a second
-  step is required (`totpRequired`), never a token. There are no backup codes:
-  a lost secret is replaced through `auth:totp-setup`, which needs server access.
+- **Two-factor codes count as attempts, and belong to one user.** A wrong TOTP code
+  records a failure like a wrong password, and a correct password without a code only
+  reveals that a second step is required (`totpRequired`), never a token. Each account
+  uses its own `users.<name>.totpSecret`: a code generated for one account is rejected
+  for another, and an account without a secret logs in with its password alone. There
+  are no backup codes: a lost secret is replaced through `auth:totp-setup -u <name>`,
+  which needs server access.
 - **Uploads are never overwritten.** A name collision gets `-1` appended
   (`filesystem\file_name_to_write()`), and `upload/create` validates the extension before
   the uploaded file is moved into place.
-- **Credentials fail closed, never open.** `create_default_config()` treats empty
-  `username`/`password`/`secretKey` like missing ones (random fallbacks) and
-  replaces a `secretKey` below 32 characters; `auth\authenticate()` additionally
-  refuses empty stored values. A verbatim copy of `settings.dist.php` can
+- **Credentials fail closed, never open.** `create_default_config()` treats an empty
+  `secretKey` like a missing one (random fallback) and replaces a key below 32
+  characters; without a `users` entry nobody can log in. `auth\authenticate()`
+  additionally refuses empty stored values. A verbatim copy of `settings.dist.php` can
   therefore never log in and never signs tokens with the example key
   (`jaco/backend/core/config.php`, `jaco/backend/core/auth.php`,
   `jaco/test/ConfigDefaultsTest.php`).
@@ -194,6 +201,12 @@ changes the site's configuration. Users and roles live in `settings.php` (`users
 token carries the role, and the router compares the ranks. A route without an explicit
 `role:` needs `admin`, and an unknown role in `settings.php` falls back to `viewer`.
 
+A user record is `['password' => '<digest>', 'role' => 'editor']`. Three optional fields
+can accompany it: `language` sets that account's UI language (empty means
+`defaultLanguage`), `totpSecret` holds that user's own TOTP secret, and `passwordChange`
+(default `true`) may be set to `false` to disable the own password change. Never share one
+TOTP secret between accounts – a shared code would let one user in as another.
+
 | Capability | `viewer` | `editor` | `admin` |
 | --- | --- | --- | --- |
 | Read pages, uploads, stylesheets, backups and templates | ✓ | ✓ | ✓ |
@@ -203,6 +216,11 @@ token carries the role, and the router compares the ranks. A route without an ex
 | Change a stylesheet | – | – | ✓ |
 | Restore and delete backups | – | – | ✓ |
 | Environment, error log and php-info | – | – | ✓ |
+
+`passwordChange` is the one capability a record can switch off: a public demo account
+sets it to `false`, otherwise the first visitor locks everyone else out by changing the
+seeded password. It is a per-account flag, not a fourth role, because “demo” describes
+the purpose of an account, not a permission tier.
 
 The routes behind it, `jaco/routes.php` being the source of truth:
 
@@ -217,6 +235,29 @@ An invalid or missing token answers **401**: the session is gone and the fronten
 to the login. A role that is too low answers **403**: the session stays, only that action
 is refused – a viewer must not be logged out for clicking a button they may not use.
 
+The admin UI mirrors that matrix. It decodes the token payload (without verifying it – the
+api does that) and disables what the role may not do: page delete, upload and delete
+buttons, and backup restore/delete stay visible but disabled for the roles that lack the
+right. Save and Save & Close are disabled in the page, inline and CSS editors. CSS stays
+visible but disabled below `admin`; the page add/copy/delete entries stay visible but
+disabled for a viewer. The System menu keeps About active for every role – it reads a
+viewer-protected endpoint with name, version and PHP version, while the public index
+exposes only name and version – and keeps environment, log and php-info visible but
+disabled below `admin`. The page manager's
+Ace editor is read-only for a viewer. The inline editor stays open as a playground: it is editable, the
+save button is visible but disabled, the save shortcuts are not bound, and the dirty guard
+is off, so changes are never persisted and do not trap the user in a discard dialog. The
+CSS editor works read-only for everyone below `admin`. A viewer sees a **read-only banner**
+saying that changes are not saved. The own password has its own `/password` route for
+every role, because it used to live inside the admin-only system view; the menu entry is
+disabled and the route redirected when the account disables the change. This is guidance,
+not access control: the router still checks the signed token on every request, and the
+write endpoints answer **403** regardless of what the editor shows.
+
+The token also carries the user's language. The frontend asks the translations endpoint
+for it and falls back to the configured default language when the claim is empty. That way
+each account gets its own UI language without a separate setting endpoint.
+
 ## Where the rules live
 
 | Area | Test |
@@ -224,9 +265,12 @@ is refused – a viewer must not be logged out for clicking a button they may no
 | Auth tokens: issue and validation | `jaco/test/AuthTest.php` |
 | Login throttling: per address, unblock, bounded history | `jaco/test/LoginThrottleTest.php` |
 | Two-factor codes (RFC vectors) and login flow with secret | `jaco/test/TotpTest.php`, `jaco/test/ApiLoginTotpTest.php` |
+| Two-factor setup writes one user's secret | `jaco/test/CliTotpTest.php` |
 | CLI entry point: web requests are refused | `jaco/test/CliEntryPointTest.php` |
 | Roles in the docs match the route table | `jaco/test/DocsRolesTest.php` |
 | Role matrix over the api (admin, editor, viewer, unknown role) | `jaco/test/ApiRolesTest.php` |
+| Own password change and the per-user opt-out | `jaco/test/ApiChangePasswordTest.php` |
+| Roles in the admin UI: menus, buttons and the read-only hint | `jaco/test/js/tests.js` (`role claims`, layout tests) |
 | System environment and log clearing | `jaco/test/ApiSystemTest.php`, `jaco/test/ApiSystemLogClearTest.php` |
 | Route table: public/private, methods | `jaco/test/ApiRoutesTest.php` |
 | HTTP: request headers, query handling | `jaco/test/HttpRequestTest.php` |

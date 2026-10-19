@@ -1,6 +1,7 @@
 import {closeDropdown} from '../lib/helpers.js'
 import {i18n, t} from '../model/i18n.js'
 import {app} from '../lib/app.js'
+import {auth} from '../lib/auth.js'
 import {iframe} from '../lib/iframe.js'
 import {maintenance} from '../lib/maintenance.js'
 import {getTheme, setTheme} from '../lib/theme.js'
@@ -20,6 +21,11 @@ const themeSwitch = () => m('select.theme-switch', {
 }, ['light', 'dark', 'auto'].map((value) =>
   m('option', {value}, themeLabel(value))
 ))
+
+// Menu entries follow the same rule as the action buttons: stay visible, but
+// disabled, so a client can see the capabilities without being able to use them.
+const disabledNav = (label) =>
+  m('span.nav-disabled', {title: t('Your role does not allow this.'), 'aria-disabled': 'true'}, label)
 
 const title = () => m(m.route.Link, {
   class: 'title',
@@ -42,6 +48,12 @@ const showInfo = (e) => {
 const maintenanceBanner = () =>
   m('.maintenance-banner', {role: 'status'},
     t('Changes are disabled while maintenance mode is enabled.'))
+
+// A viewer cannot persist anything. That stays true when the inline editor is
+// open, so the hint says what actually happens instead of forbidding the editor.
+const readOnlyBanner = () =>
+  m('.readonly-banner', {role: 'status'},
+    t('Read-only access: changes are not saved.'))
 
 export const DefaultLayout = {
   oncreate: () => {
@@ -75,6 +87,7 @@ export const DefaultLayout = {
           m('.toolbar',
             m.trust('<span id="loader" class="is-stoped"></span>'),
             maintenance.isActive() ? maintenanceBanner() : null,
+            app.hasAuthToken() && auth.isViewer() ? readOnlyBanner() : null,
             app.hasAuthToken() ? m('.navbar', [
               title(),
               m('.dropdown',
@@ -87,6 +100,8 @@ export const DefaultLayout = {
                       closeDropdown()
                     }
                   }, t('Go to page')),
+                  // every role may open the inline editor; without editor rights
+                  // it is a playground whose save is hidden
                   m(m.route.Link, {
                     href: '/page-edit',
                     onclick: (e) => {
@@ -94,42 +109,60 @@ export const DefaultLayout = {
                       closeDropdown()
                     }
                   }, t('Edit page')),
-                  m(m.route.Link, {
-                    href: '/page-add',
-                    onclick: (e) => {
-                      e.redraw = false
-                      closeDropdown()
-                    }
-                  }, t('Add page')),
-                  m(m.route.Link, {
-                    href: '/page-copy',
-                    onclick: (e) => {
-                      e.redraw = false
-                      closeDropdown()
-                    }
-                  }, t('Copy page')),
-                  m(m.route.Link, {
-                    href: '/page-delete',
-                    onclick: (e) => {
-                      e.redraw = false
-                      closeDropdown()
-                    }
-                  }, t('Delete page')),
+                  auth.can('editor') ? [
+                    m(m.route.Link, {
+                      href: '/page-add',
+                      onclick: (e) => {
+                        e.redraw = false
+                        closeDropdown()
+                      }
+                    }, t('Add page')),
+                    m(m.route.Link, {
+                      href: '/page-copy',
+                      onclick: (e) => {
+                        e.redraw = false
+                        closeDropdown()
+                      }
+                    }, t('Copy page')),
+                    m(m.route.Link, {
+                      href: '/page-delete',
+                      onclick: (e) => {
+                        e.redraw = false
+                        closeDropdown()
+                      }
+                    }, t('Delete page')),
+                  ] : [
+                    disabledNav(t('Add page')),
+                    disabledNav(t('Copy page')),
+                    disabledNav(t('Delete page')),
+                  ]
                 )
               ),
               m(m.route.Link, {href: '/pages'}, t('Pages')),
               m(m.route.Link, {href: '/uploads'}, t('Uploads')),
               m(m.route.Link, {href: '/backups'}, t('Backups')),
-              m(m.route.Link, {href: '/css'}, t('CSS')),
+              // stylesheets are written by admin only; the read-only route stays
+              // reachable by direct link, the menu entry stays visible but disabled
+              auth.can('admin') ? m(m.route.Link, {href: '/css'}, t('CSS')) : disabledNav(t('CSS')),
               m('.dropdown',
                 m('button.dropbtn', t('System')),
                 m('.dropdown-content',
-                  m(m.route.Link, {href: '/system/about'}, t('About')),
-                  m(m.route.Link, {href: '/system/env'}, t('System environment')),
-                  m(m.route.Link, {href: '/system/log'}, t('PHP error log')),
-                  m(m.route.Link, {href: '/system/php-info'}, t('PHP info')),
+                  auth.can('admin') ? [
+                    m(m.route.Link, {href: '/system/about'}, t('About')),
+                    m(m.route.Link, {href: '/system/env'}, t('System environment')),
+                    m(m.route.Link, {href: '/system/log'}, t('PHP error log')),
+                    m(m.route.Link, {href: '/system/php-info'}, t('PHP info')),
+                  ] : [
+                    // About is harmless and active for every role; the rest stays
+                    // visible like the other menu entries, but disabled
+                    m(m.route.Link, {href: '/system/about'}, t('About')),
+                    disabledNav(t('System environment')),
+                    disabledNav(t('PHP error log')),
+                    disabledNav(t('PHP info')),
+                  ]
                 )
               ),
+              auth.canChangePassword() ? m(m.route.Link, {href: '/password'}, t('Change password')) : disabledNav(t('Change password')),
               m(m.route.Link, {
                 class: 'logout',
                 href: '/logout'

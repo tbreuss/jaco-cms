@@ -4,8 +4,10 @@ import {InputText} from '/jaco/frontend/component/InputText.js'
 import {FormErrors, errorFor} from '/jaco/frontend/component/FormErrors.js'
 import {ButtonPrimary} from '/jaco/frontend/component/ButtonPrimary.js'
 import {ButtonSecondary} from '/jaco/frontend/component/ButtonSecondary.js'
+import {ButtonDanger} from '/jaco/frontend/component/ButtonDanger.js'
 import {Icon} from '/jaco/frontend/component/Icon.js'
 import {app} from '/jaco/frontend/lib/app.js'
+import {auth} from '/jaco/frontend/lib/auth.js'
 import {Select} from '/jaco/frontend/component/Select.js'
 import {LoginView} from '/jaco/frontend/view/LoginView.js'
 import {login as doLogin, verify as doVerify, state as loginState} from '/jaco/frontend/view/LoginView.js'
@@ -32,8 +34,10 @@ import {StartView} from '/jaco/frontend/view/StartView.js'
 import {BackupEditView} from '/jaco/frontend/view/backup/BackupEditView.js'
 import {BackupViewModel} from '/jaco/frontend/model/BackupViewModel.js'
 import {SystemView} from '/jaco/frontend/view/SystemView.js'
+import {PasswordView, state as passwordState} from '/jaco/frontend/view/PasswordView.js'
 import {AboutView} from '/jaco/frontend/view/AboutView.js'
 import {SystemModel} from '/jaco/frontend/model/SystemModel.js'
+import {AboutModel} from '/jaco/frontend/model/AboutModel.js'
 import {UploadListModel} from '/jaco/frontend/model/UploadListModel.js'
 import {BackupListView} from '/jaco/frontend/view/backup/BackupListView.js'
 import {BackupListModel} from '/jaco/frontend/model/BackupListModel.js'
@@ -52,7 +56,53 @@ import {formatDateTimeCompact, formatDateTimeFull, formatBytes} from '/jaco/fron
 import {state} from '/jaco/frontend/state/state.js'
 const fixture = () => document.getElementById('qunit-fixture')
 
+// The ui only reads the token payload; the signature is checked by the api. A
+// syntactically valid payload is enough to steer the role-aware controls.
+const tokenWithRole = (role, language = '', passwordChange = true) => {
+  const payload = btoa(JSON.stringify({role, language, passwordChange}))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
+  return 'eyJhbGciOiJub25lIn0.' + payload + '.qunit'
+}
+
+// Disabled controls use aria-disabled, not the native attribute: they stay
+// focusable so keyboard and screen-reader users can reach the explanation.
+const isAriaDisabled = (element) => element.getAttribute('aria-disabled') === 'true'
+
 QUnit.module('components')
+
+QUnit.test('a disabled button stays focusable, announced and inert', (assert) => {
+  for (const Component of [ButtonPrimary, ButtonSecondary, ButtonDanger]) {
+    let clicks = 0
+    m.render(fixture(), m(Component, {
+      disabled: true,
+      onclick: () => { clicks++ },
+      title: 'Save – Your role does not allow this.',
+    }, 'Save'))
+
+    const button = fixture().querySelector('button')
+    assert.strictEqual(button.getAttribute('aria-disabled'), 'true', Component.name + ' is announced as disabled')
+    assert.notOk(button.disabled, Component.name + ' is not removed from the tab order')
+    assert.strictEqual(button.getAttribute('title'), 'Save – Your role does not allow this.', 'the reason is available')
+    assert.strictEqual(button.getAttribute('aria-label'), 'Save – Your role does not allow this.', 'the reason is the accessible name')
+
+    button.focus()
+    assert.strictEqual(document.activeElement, button, Component.name + ' can take the focus')
+    button.click()
+    assert.strictEqual(clicks, 0, Component.name + ' does not act')
+  }
+})
+
+QUnit.test('an enabled button still acts', (assert) => {
+  let clicks = 0
+  m.render(fixture(), m(ButtonPrimary, {onclick: () => { clicks++ }}, 'Save'))
+
+  const button = fixture().querySelector('button')
+  assert.notOk(isAriaDisabled(button), 'not marked disabled')
+  button.click()
+  assert.strictEqual(clicks, 1, 'the handler runs')
+})
 
 QUnit.test('Input takes the focus when autofocus is set', (assert) => {
   m.render(fixture(), m(Input, {id: 'focus-me', autofocus: true, oninput: () => {}}))
@@ -519,7 +569,7 @@ QUnit.test('a real server error is reported even while the mode is on', async (a
 })
 
 QUnit.test('the layout shows a banner only while the signal is on', (assert) => {
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   // the layout renders a placeholder until the translations arrive, so pin
   // the status: otherwise the test passes or fails depending on when i18n
   // happened to settle
@@ -552,6 +602,173 @@ QUnit.test('the layout shows a banner only while the signal is on', (assert) => 
   } finally {
     i18n.status = savedStatus
   }
+})
+
+QUnit.test('the layout tells a viewer it is read-only and disables write controls', (assert) => {
+  const savedStatus = i18n.status
+  i18n.status = 'idle'
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
+
+  try {
+    m.render(fixture(), m(DefaultLayout, m('div')))
+
+    const banner = fixture().querySelector('.readonly-banner')
+    assert.ok(banner, 'the read-only hint is shown')
+    assert.strictEqual(banner.textContent, t('Read-only access: changes are not saved.'))
+    assert.strictEqual(banner.getAttribute('role'), 'status', 'announced to screen readers')
+
+    const navLabels = [...fixture().querySelectorAll('.navbar > a')].map((link) => link.textContent)
+    assert.ok(navLabels.includes(t('Pages')), 'reading stays')
+    assert.ok(navLabels.includes(t('Change password')), 'the own password stays reachable')
+    assert.notOk(navLabels.includes(t('CSS')), 'css is not an active link')
+    const disabledNav = [...fixture().querySelectorAll('.navbar > .nav-disabled')].map((item) => item.textContent)
+    assert.ok(disabledNav.includes(t('CSS')), 'css stays visible but disabled')
+
+    const menuLabels = [...fixture().querySelectorAll('.navbar .dropbtn')].map((button) => button.textContent)
+    assert.ok(menuLabels.includes(t('Quick Action')))
+    assert.ok(menuLabels.includes(t('System')), 'the system menu stays visible')
+
+    const dropdowns = [...fixture().querySelectorAll('.dropdown-content')]
+    const quickAction = dropdowns[0]
+    const quickLabels = [...quickAction.querySelectorAll('a')].map((link) => link.textContent)
+    assert.deepEqual(quickLabels, [t('Go to page'), t('Edit page')], 'navigation and the inline editor remain')
+    const quickDisabled = [...quickAction.querySelectorAll('.nav-disabled')].map((item) => item.textContent)
+    assert.deepEqual(quickDisabled, [t('Add page'), t('Copy page'), t('Delete page')], 'page writes stay visible but disabled')
+
+    const system = dropdowns[1]
+    const systemLinks = [...system.querySelectorAll('a')].map((link) => link.textContent)
+    assert.deepEqual(systemLinks, [t('About')], 'about stays available to a viewer')
+    const systemDisabled = [...system.querySelectorAll('.nav-disabled')].map((item) => item.textContent)
+    assert.deepEqual(systemDisabled, [t('System environment'), t('PHP error log'), t('PHP info')], 'the admin-only system entries stay visible but disabled')
+  } finally {
+    i18n.status = savedStatus
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('a demo viewer does not get the password link', (assert) => {
+  const savedStatus = i18n.status
+  i18n.status = 'idle'
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer', '', false))
+
+  try {
+    m.render(fixture(), m(DefaultLayout, m('div')))
+
+    const navLabels = [...fixture().querySelectorAll('.navbar > a')].map((link) => link.textContent)
+    assert.notOk(navLabels.includes(t('Change password')), 'a public demo password must not be changeable')
+    const disabledNav = [...fixture().querySelectorAll('.navbar > .nav-disabled')].map((item) => item.textContent)
+    assert.ok(disabledNav.includes(t('Change password')), 'the password entry stays visible but disabled')
+    assert.ok(fixture().querySelector('.readonly-banner'), 'the read-only hint stays')
+  } finally {
+    i18n.status = savedStatus
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('an editor writes content but sees admin menus disabled', (assert) => {
+  const savedStatus = i18n.status
+  i18n.status = 'idle'
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('editor'))
+
+  try {
+    m.render(fixture(), m(DefaultLayout, m('div')))
+
+    assert.notOk(fixture().querySelector('.readonly-banner'), 'an editor is not read-only')
+    const quickAction = fixture().querySelectorAll('.dropdown-content')[0]
+    const quickLabels = [...quickAction.querySelectorAll('a')].map((link) => link.textContent)
+    assert.ok(quickLabels.includes(t('Add page')), 'page writes are offered')
+    assert.ok(quickLabels.includes(t('Delete page')), 'page deletes are offered')
+    assert.strictEqual(quickAction.querySelectorAll('.nav-disabled').length, 0, 'no page write is disabled')
+
+    const navLabels = [...fixture().querySelectorAll('.navbar > a')].map((link) => link.textContent)
+    assert.notOk(navLabels.includes(t('CSS')), 'css stays admin-only')
+    const disabledNav = [...fixture().querySelectorAll('.navbar > .nav-disabled')].map((item) => item.textContent)
+    assert.ok(disabledNav.includes(t('CSS')), 'css stays visible but disabled')
+    const menuLabels = [...fixture().querySelectorAll('.navbar .dropbtn')].map((button) => button.textContent)
+    assert.ok(menuLabels.includes(t('System')), 'system stays visible')
+    const system = fixture().querySelectorAll('.dropdown-content')[1]
+    const systemLinks = [...system.querySelectorAll('a')].map((link) => link.textContent)
+    assert.deepEqual(systemLinks, [t('About')], 'about stays available to an editor')
+    const systemDisabled = [...system.querySelectorAll('.nav-disabled')].map((item) => item.textContent)
+    assert.deepEqual(systemDisabled, [t('System environment'), t('PHP error log'), t('PHP info')], 'admin-only system entries stay visible but disabled')
+  } finally {
+    i18n.status = savedStatus
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('an admin sees the system and css menus', (assert) => {
+  const savedStatus = i18n.status
+  i18n.status = 'idle'
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
+
+  try {
+    m.render(fixture(), m(DefaultLayout, m('div')))
+
+    const navLabels = [...fixture().querySelectorAll('.navbar > a')].map((link) => link.textContent)
+    assert.ok(navLabels.includes(t('CSS')), 'css menu visible')
+    assert.strictEqual(fixture().querySelectorAll('.navbar > .nav-disabled').length, 0, 'nothing is disabled')
+    const menuLabels = [...fixture().querySelectorAll('.navbar .dropbtn')].map((button) => button.textContent)
+    assert.ok(menuLabels.includes(t('System')), 'system menu visible')
+    const system = fixture().querySelectorAll('.dropdown-content')[1]
+    assert.strictEqual(system.querySelectorAll('a').length, 4, 'all system entries are active')
+    assert.strictEqual(system.querySelectorAll('.nav-disabled').length, 0, 'no system entry is disabled')
+  } finally {
+    i18n.status = savedStatus
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.module('role claims', {
+  afterEach: () => {
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('an admin token allows every role and carries the language', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin', 'de'))
+
+  assert.strictEqual(auth.role(), 'admin')
+  assert.ok(auth.can('viewer'), 'admin includes viewer')
+  assert.ok(auth.can('editor'), 'admin includes editor')
+  assert.ok(auth.can('admin'), 'admin includes admin')
+  assert.notOk(auth.isViewer())
+  assert.strictEqual(auth.language(), 'de')
+})
+
+QUnit.test('an editor token writes content but not configuration', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('editor'))
+
+  assert.ok(auth.can('viewer'))
+  assert.ok(auth.can('editor'))
+  assert.notOk(auth.can('admin'))
+  assert.notOk(auth.isViewer())
+})
+
+QUnit.test('a viewer token only reads', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
+
+  assert.ok(auth.can('viewer'))
+  assert.notOk(auth.can('editor'))
+  assert.notOk(auth.can('admin'))
+  assert.ok(auth.isViewer())
+  assert.ok(auth.canChangePassword(), 'the own password stays changeable by default')
+})
+
+QUnit.test('a demo token can disable the own password change', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer', '', false))
+
+  assert.ok(auth.isViewer(), 'the role is unchanged')
+  assert.notOk(auth.canChangePassword(), 'the demo password must stay as seeded')
+})
+
+QUnit.test('an unreadable token falls back to the least privilege', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'not-a-jwt')
+
+  assert.strictEqual(auth.role(), 'viewer')
+  assert.notOk(auth.can('editor'))
+  assert.notOk(auth.can('admin'))
+  assert.strictEqual(auth.language(), '')
 })
 
 QUnit.module('login against the real api')
@@ -764,7 +981,7 @@ QUnit.test('back button neither submits nor sticks to verify', (assert) => {
 
 QUnit.module('ViewUploadView preview', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     UploadListModel.load = () => Promise.resolve()
     const app = document.createElement('div')
     app.id = 'app'
@@ -828,7 +1045,7 @@ QUnit.test('metadata is shown in disabled inputs', (assert) => {
 
 QUnit.module('UploadListView size column', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     UploadListModel.load = () => Promise.resolve()
     const app = document.createElement('div')
     app.id = 'app'
@@ -880,9 +1097,28 @@ QUnit.test('created cell shows the compact time with the full time as tooltip', 
   assert.ok(cell.classList.contains('text-nowrap'), 'no wrapping inside the cell')
 })
 
+QUnit.test('a viewer sees upload and delete disabled', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
+  UploadListModel.items = [{file: 'a.png', extension: 'png', size: 1, created: 1700000000}]
+  UploadListModel.isLoading = false
+  m.render(fixture(), m(UploadListView))
+
+  const upload = fixture().querySelector('.content > div button')
+  assert.ok(upload, 'the upload button stays visible')
+  assert.ok(upload.textContent.includes(t('Upload files')))
+  assert.ok(isAriaDisabled(upload), 'upload is disabled')
+  assert.ok(fixture().querySelector('#uploadFiles'), 'the hidden file input stays in the DOM')
+
+  const buttons = [...fixture().querySelectorAll('tbody td.text-right button')]
+  assert.strictEqual(buttons.length, 2, 'view and delete stay visible')
+  assert.notOk(isAriaDisabled(buttons[0]), 'view stays usable')
+  assert.ok(buttons[1].classList.contains('danger'))
+  assert.ok(isAriaDisabled(buttons[1]), 'delete is disabled')
+})
+
 QUnit.module('PhpLogView clear button', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     PhpLogModel.load = () => Promise.resolve()
     const app = document.createElement('div')
     app.id = 'app'
@@ -961,10 +1197,12 @@ QUnit.test('a failed clear leaves the toasting to the api layer', async (assert)
   }
 })
 
-QUnit.module('SystemView password form', {
+QUnit.module('PasswordView form', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
-    SystemModel.load = () => Promise.resolve()
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
+    passwordState.current = ''
+    passwordState.next = ''
+    passwordState.errors = []
     const app = document.createElement('div')
     app.id = 'app'
     document.body.appendChild(app)
@@ -972,7 +1210,9 @@ QUnit.module('SystemView password form', {
   afterEach: () => {
     m.render(fixture(), null)
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
-    SystemModel.info = {}
+    passwordState.current = ''
+    passwordState.next = ''
+    passwordState.errors = []
     document.getElementById('app')?.remove()
   }
 })
@@ -981,10 +1221,10 @@ QUnit.test('the form posts both passwords and clears itself', async (assert) => 
   const stub = stubRequest(() => Promise.resolve({}))
 
   try {
-    m.render(fixture(), m(SystemView))
+    m.render(fixture(), m(PasswordView))
 
-    const headings = [...fixture().querySelectorAll('h2')].map((heading) => heading.textContent)
-    assert.ok(headings.includes(t('Change password')), 'the section has a heading')
+    const headings = [...fixture().querySelectorAll('h1')].map((heading) => heading.textContent)
+    assert.ok(headings.includes(t('Change password')), 'the page has a heading')
 
     const current = fixture().querySelector('#currentPassword')
     const next = fixture().querySelector('#newPassword')
@@ -1000,7 +1240,7 @@ QUnit.test('the form posts both passwords and clears itself', async (assert) => 
     // the stub replaces m.request, so the automatic redraw is gone and m.redraw() waits
     // for the next frame
     await new Promise((resolve) => setTimeout(resolve, 20))
-    m.render(fixture(), m(SystemView))
+    m.render(fixture(), m(PasswordView))
 
     const call = stub.calls.find((options) => String(options.url).includes('system/change-password'))
     assert.ok(call, 'the endpoint is called')
@@ -1023,10 +1263,10 @@ QUnit.test('a validation error is shown under its field', async (assert) => {
   }))
 
   try {
-    m.render(fixture(), m(SystemView))
+    m.render(fixture(), m(PasswordView))
     fixture().querySelector('form').dispatchEvent(new Event('submit', {cancelable: true}))
     await new Promise((resolve) => setTimeout(resolve, 20))
-    m.render(fixture(), m(SystemView))
+    m.render(fixture(), m(PasswordView))
 
     const error = fixture().querySelector('.field-error')
     assert.ok(error, 'the error is rendered')
@@ -1036,9 +1276,23 @@ QUnit.test('a validation error is shown under its field', async (assert) => {
   }
 })
 
+QUnit.test('a demo user is sent away from the form', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer', '', false))
+  const routeCalls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => routeCalls.push(path)
+
+  try {
+    m.render(fixture(), m(PasswordView))
+    assert.deepEqual(routeCalls, ['/'], 'no form for a disabled password change')
+  } finally {
+    m.route.set = originalSet
+  }
+})
+
 QUnit.module('SystemView requirements', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     SystemModel.load = () => Promise.resolve()
     const app = document.createElement('div')
     app.id = 'app'
@@ -1104,9 +1358,9 @@ QUnit.test('maintenanceMode reads as yes/no', (assert) => {
 
 QUnit.module('AboutView', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
-    SystemModel.load = () => Promise.resolve()
-    SystemModel.info = {}
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
+    AboutModel.load = () => Promise.resolve()
+    AboutModel.info = {}
     const app = document.createElement('div')
     app.id = 'app'
     document.body.appendChild(app)
@@ -1114,31 +1368,37 @@ QUnit.module('AboutView', {
   afterEach: () => {
     m.render(fixture(), null)
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
-    SystemModel.info = {}
+    AboutModel.info = {}
     document.getElementById('app')?.remove()
   }
 })
 
-QUnit.test('AboutView renders version, php version, license and project link', (assert) => {
-  SystemModel.info = {
-    checks: [{label: 'PHP version', ok: true, detail: '8.2.0'}],
-    config: {appVersion: '0.1.0'},
-    overview: {pages: 1, uploads: 2, backups: 3, projectSize: 1024, logSize: 0, logLines: 0},
-  }
-  m.render(fixture(), m(AboutView))
+QUnit.test('AboutView renders version, php version, license and project link for a viewer', (assert) => {
+  AboutModel.info = {name: 'jaco', version: '0.1.0', phpVersion: '8.2.0'}
+  const routeCalls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => routeCalls.push(path)
 
-  const text = fixture().textContent
-  assert.ok(text.includes('0.1.0'), 'version shown')
-  assert.ok(text.includes('8.2.0'), 'php version shown')
-  assert.ok(text.includes('Freeware'), 'license shown')
-  const links = [...fixture().querySelectorAll('a')]
-  assert.ok(links.some((a) => a.getAttribute('href') === 'https://github.com/tbreuss/jaco-cms'), 'project link shown')
-  assert.ok(links.some((a) => a.getAttribute('href') === 'https://github.com/tbreuss/jaco-cms/releases'), 'releases link shown')
+  try {
+    m.render(fixture(), m(AboutView))
+
+    assert.deepEqual(routeCalls, [], 'a viewer is not redirected')
+
+    const text = fixture().textContent
+    assert.ok(text.includes('0.1.0'), 'version shown')
+    assert.ok(text.includes('8.2.0'), 'php version shown')
+    assert.ok(text.includes('Freeware'), 'license shown')
+    const links = [...fixture().querySelectorAll('a')]
+    assert.ok(links.some((a) => a.getAttribute('href') === 'https://github.com/tbreuss/jaco-cms'), 'project link shown')
+    assert.ok(links.some((a) => a.getAttribute('href') === 'https://github.com/tbreuss/jaco-cms/releases'), 'releases link shown')
+  } finally {
+    m.route.set = originalSet
+  }
 })
 
 QUnit.module('PhpInfoView', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     PhpInfoModel.load = () => Promise.resolve()
     const app = document.createElement('div')
     app.id = 'app'
@@ -1186,7 +1446,7 @@ QUnit.test('renders without crashing', (assert) => {
 
 QUnit.module('BackupEditView', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     BackupViewModel.load = () => Promise.resolve()
     BackupViewModel.item = {}
     window.ace = {
@@ -1637,7 +1897,7 @@ QUnit.test('Icon renders decorative svg paths', (assert) => {
 })
 
 QUnit.test('row action buttons carry icons with accessible names', (assert) => {
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   const realLoad = UploadListModel.load
   UploadListModel.load = () => Promise.resolve()
   const app = document.createElement('div')
@@ -1820,7 +2080,7 @@ QUnit.test('auto resolves through the OS setting', (assert) => {
 
 QUnit.module('PageListView', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     PageListModel.load = () => Promise.resolve()
     const app = document.createElement('div')
     app.id = 'app'
@@ -1847,6 +2107,21 @@ QUnit.test('renders pages with edit and delete buttons', (assert) => {
   assert.ok(buttons[1].classList.contains('danger'), 'delete is danger')
 })
 
+QUnit.test('a viewer sees the delete button disabled', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
+  PageListModel.items = [{file: 'a.html', title: 'Page A', created: 1700000000}]
+  PageListModel.isLoading = false
+  m.render(fixture(), m(PageListView))
+
+  const buttons = [...fixture().querySelectorAll('tbody td.text-right button')]
+  assert.strictEqual(buttons.length, 2, 'view and delete stay visible')
+  assert.ok(buttons[0].classList.contains('secondary'), 'view is secondary')
+  assert.strictEqual(buttons[0].getAttribute('aria-label'), t('View'), 'the label says view, not edit')
+  assert.notOk(isAriaDisabled(buttons[0]), 'view stays usable')
+  assert.ok(buttons[1].classList.contains('danger'), 'delete is danger')
+  assert.ok(isAriaDisabled(buttons[1]), 'delete is disabled for a viewer')
+})
+
 QUnit.test('shows loading and empty states', (assert) => {
   PageListModel.isLoading = true
   PageListModel.items = []
@@ -1860,7 +2135,7 @@ QUnit.test('shows loading and empty states', (assert) => {
 
 QUnit.module('BackupListView', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     BackupListModel.loadList = () => Promise.resolve()
     const app = document.createElement('div')
     app.id = 'app'
@@ -1888,6 +2163,21 @@ QUnit.test('renders backups with view, delete and restore buttons', (assert) => 
   assert.ok(buttons[2].classList.contains('primary'), 'restore is primary')
 })
 
+QUnit.test('a viewer sees restore and delete disabled in the backup list', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
+  BackupListModel.items = [{file: 'a.html', name: 'a.html', title: 'Page A', created: 1700000000, backedUp: 1700000100, type: 'page'}]
+  BackupListModel.isLoading = false
+  m.render(fixture(), m(BackupListView))
+
+  const buttons = [...fixture().querySelectorAll('tbody td.text-right button')]
+  assert.strictEqual(buttons.length, 3, 'view, delete and restore stay visible')
+  assert.notOk(isAriaDisabled(buttons[0]), 'view stays usable')
+  assert.ok(buttons[1].classList.contains('danger'))
+  assert.ok(isAriaDisabled(buttons[1]), 'delete is disabled')
+  assert.ok(buttons[2].classList.contains('primary'))
+  assert.ok(isAriaDisabled(buttons[2]), 'restore is disabled')
+})
+
 QUnit.test('shows loading and empty states', (assert) => {
   BackupListModel.isLoading = true
   BackupListModel.items = []
@@ -1901,7 +2191,7 @@ QUnit.test('shows loading and empty states', (assert) => {
 
 QUnit.module('PageAddView', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     PageTemplateModel.loadList = () => Promise.resolve()
     const origHasElement = iframe.hasElement
     const origFileName = iframe.fileName
@@ -1934,7 +2224,7 @@ QUnit.test('renders the add page dialog', (assert) => {
 
 QUnit.module('Modal Escape handling', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     PageTemplateModel.loadList = () => Promise.resolve()
     const origHasElement = iframe.hasElement
     const origFileName = iframe.fileName
@@ -2000,7 +2290,7 @@ QUnit.test('Escape on modal with other key does nothing', (assert) => {
 
 QUnit.module('PageCopyView', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     const origHasElement = iframe.hasElement
     const origFileName = iframe.fileName
     const origPageTitle = iframe.pageTitle
@@ -2031,7 +2321,7 @@ QUnit.test('renders the copy page dialog', (assert) => {
 
 QUnit.module('PageDeleteView', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     const origFileName = iframe.fileName
     iframe.fileName = () => 'index.html'
     window._iframeRestore = () => { iframe.fileName = origFileName }
@@ -2054,7 +2344,7 @@ QUnit.test('renders the delete confirmation', (assert) => {
 
 QUnit.module('PageGotoView', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     PageListModel.load = () => Promise.resolve()
     const origHasElement = iframe.hasElement
     const origFileName = iframe.fileName
@@ -2096,6 +2386,7 @@ QUnit.module('import audit')
 const auditFiles = [
   '/jaco/frontend/app.js',
   '/jaco/frontend/lib/app.js',
+  '/jaco/frontend/lib/auth.js',
   '/jaco/frontend/lib/aceTheme.js',
   '/jaco/frontend/lib/format.js',
   '/jaco/frontend/lib/helpers.js',
@@ -2126,6 +2417,7 @@ const auditFiles = [
   '/jaco/frontend/view/PageInlineEditView.js',
   '/jaco/frontend/view/PhpInfoView.js',
   '/jaco/frontend/view/PhpLogView.js',
+  '/jaco/frontend/view/PasswordView.js',
   '/jaco/frontend/view/StartView.js',
   '/jaco/frontend/view/SystemView.js',
   '/jaco/frontend/view/backup/BackupEditView.js',
@@ -2196,6 +2488,35 @@ QUnit.test('CssEditView shows the form when stylesheets exist', (assert) => {
 })
 
 
+
+QUnit.test('a non-admin opens the stylesheet read-only', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('editor'))
+  CssEditModel.isLoading = false
+  CssEditModel.list = [{file: 'site.css'}]
+  CssEditModel.item = {file: 'site.css', content: 'body{}'}
+  cssEditState.file = 'site.css'
+
+  try {
+    m.render(fixture(), CssEditView.view())
+
+    const text = fixture().textContent
+    assert.ok(text.includes(t('Back')), 'the cancel button becomes back')
+
+    const buttons = [...fixture().querySelectorAll('button')]
+    const save = buttons.find((button) => button.textContent.trim() === t('Save'))
+    const saveClose = buttons.find((button) => button.textContent.trim() === t('Save & Close'))
+    assert.ok(save, 'the save button stays visible')
+    assert.ok(isAriaDisabled(save), 'save is disabled')
+    assert.ok(saveClose, 'the save and close button stays visible')
+    assert.ok(isAriaDisabled(saveClose), 'save and close is disabled')
+  } finally {
+    m.render(fixture(), null)
+    CssEditModel.list = []
+    CssEditModel.item = {}
+    cssEditState.file = ''
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
 
 QUnit.test('CssEditView survives an empty list without an editor', (assert) => {
   // regression test: the #ace div only exists once a file is listed, so the
@@ -2273,6 +2594,7 @@ QUnit.test('watchAceTheme switches the editor and stops on disconnect', (assert)
 
 QUnit.test('Save & Close does not navigate on a validation error', (assert) => {
   const done = assert.async()
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   const mockEditor = {getValue: () => '<p>x</p>'}
   setEditor(mockEditor)
   PageEditModel.item = {file: 'a.html', content: '<p>a</p>'}
@@ -2295,6 +2617,7 @@ QUnit.test('Save & Close does not navigate on a validation error', (assert) => {
     state.errors = []
     m.route.set = originalSet
     setEditor(undefined)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
     done()
   })
 })
@@ -2341,6 +2664,31 @@ QUnit.test('PageEditView stamps the editor only with the requested file', (asser
   delete window.ace
 })
 
+QUnit.test('a viewer opens the page editor read-only', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
+  PageEditModel.item = {file: 'a.html', title: 'Page A', content: '<p>a</p>'}
+
+  try {
+    m.render(fixture(), PageEditView.view())
+
+    const text = fixture().textContent
+    assert.ok(text.includes(t('View page')), 'the heading says view')
+    assert.ok(text.includes(t('Back')), 'the cancel button becomes back')
+
+    const buttons = [...fixture().querySelectorAll('button')]
+    const save = buttons.find((button) => button.textContent.trim() === t('Save'))
+    const saveClose = buttons.find((button) => button.textContent.trim() === t('Save & Close'))
+    assert.ok(save, 'the save button stays visible')
+    assert.ok(isAriaDisabled(save), 'save is disabled')
+    assert.ok(saveClose, 'the save and close button stays visible')
+    assert.ok(isAriaDisabled(saveClose), 'save and close is disabled')
+  } finally {
+    m.render(fixture(), null)
+    PageEditModel.item = {}
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
 QUnit.test('fitBelowNavbar shifts the preview below the navbar', (assert) => {
   // the fixed admin panel would otherwise cover the top of the site
   window.scrollTo(0, 0)
@@ -2375,6 +2723,7 @@ QUnit.test('fitBelowNavbar shifts the preview below the navbar', (assert) => {
 
 QUnit.test('PageEditView save succeeds and clears errors', (assert) => {
   const done = assert.async()
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   const mockEditor = {getValue: () => '<p>x</p>'}
   setEditor(mockEditor)
   PageEditModel.item = {file: 'a.html', content: '<p>a</p>'}
@@ -2394,11 +2743,13 @@ QUnit.test('PageEditView save succeeds and clears errors', (assert) => {
     PageEditModel.item = {}
     pageEditState.errors = []
     setEditor(undefined)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
     done()
   })
 })
 
 QUnit.test('PageEditView save validation error sets FormErrors', async (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   const mockEditor = {getValue: () => '<p>x</p>'}
   setEditor(mockEditor)
   PageEditModel.item = {file: 'a.html', content: '<p>a</p>'}
@@ -2418,10 +2769,12 @@ QUnit.test('PageEditView save validation error sets FormErrors', async (assert) 
   PageEditModel.item = {}
   pageEditState.errors = []
   setEditor(undefined)
+  window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
 })
 
 QUnit.test('CssEditView save succeeds and clears errors', (assert) => {
   const done = assert.async()
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   const mockEditor = {getValue: () => 'body{}'}
   setCssEditor(mockEditor)
   CssEditModel.item = {file: 'site.css', content: 'body{}'}
@@ -2441,11 +2794,13 @@ QUnit.test('CssEditView save succeeds and clears errors', (assert) => {
     CssEditModel.item = {}
     cssEditState.errors = []
     setCssEditor(undefined)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
     done()
   })
 })
 
 QUnit.test('CssEditView save validation error sets FormErrors', async (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   const mockEditor = {getValue: () => 'body{}'}
   setCssEditor(mockEditor)
   CssEditModel.item = {file: 'site.css', content: 'body{}'}
@@ -2465,6 +2820,7 @@ QUnit.test('CssEditView save validation error sets FormErrors', async (assert) =
   CssEditModel.item = {}
   cssEditState.errors = []
   setCssEditor(undefined)
+  window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
 })
 
 QUnit.module('LoginView', {
@@ -2508,7 +2864,7 @@ QUnit.test('successful login with TOTP switches to totp step', async (assert) =>
 
 QUnit.module('UploadListView filter', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     UploadListModel.load = () => Promise.resolve()
     const app = document.createElement('div')
     app.id = 'app'
@@ -2565,7 +2921,7 @@ QUnit.test('clear button resets filter and triggers load', (assert) => {
 QUnit.module('PageInlineEditView dirty baseline')
 
 QUnit.test('an unedited preview is not dirty', (assert) => {
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   const orig = {}
   const keys = ['hasElement', 'makeEditable', 'contentDocument', 'contentWindow', 'fitBelowNavbar', 'getHTML', 'fileName', 'reload', 'getElement']
   keys.forEach((k) => { orig[k] = iframe[k] })
@@ -2594,7 +2950,7 @@ QUnit.test('an unedited preview is not dirty', (assert) => {
 })
 
 QUnit.test('the first edit is detected instead of becoming the baseline', (assert) => {
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   const orig = {}
   const keys = ['hasElement', 'makeEditable', 'contentDocument', 'contentWindow', 'fitBelowNavbar', 'getHTML', 'fileName', 'reload', 'getElement']
   keys.forEach((k) => { orig[k] = iframe[k] })
@@ -2631,7 +2987,7 @@ QUnit.test('the first edit is detected instead of becoming the baseline', (asser
 })
 
 QUnit.test('checking for changes does not unhook the editor', (assert) => {
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   const orig = {}
   const keys = ['hasElement', 'makeEditable', 'contentDocument', 'contentWindow', 'fitBelowNavbar', 'getHTML', 'fileName', 'reload', 'getElement']
   keys.forEach((k) => { orig[k] = iframe[k] })
@@ -2737,7 +3093,7 @@ QUnit.test('dirty guard does not interfere when not dirty', (assert) => {
 
 QUnit.module('PageInlineEditView', {
   beforeEach: () => {
-    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
     const app = document.createElement('div')
     app.id = 'app'
     document.body.appendChild(app)
@@ -2810,6 +3166,30 @@ QUnit.test('save validation error does not navigate', async (assert) => {
   api.post = origPost
   m.route.set = originalSet
   assert.ok(!routeCalls.includes('/'), 'no navigation on validation error')
+})
+
+QUnit.test('a viewer can open the inline editor but gets no save button', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
+  m.render(fixture(), m(PageInlineEditView))
+
+  const buttons = [...fixture().querySelectorAll('button')]
+  assert.strictEqual(buttons.length, 2, 'cancel and save stay visible')
+  assert.ok(buttons[0].textContent.includes(t('Cancel')), 'cancel is rendered')
+  assert.notOk(isAriaDisabled(buttons[0]), 'cancel stays usable')
+  const save = buttons.find((button) => button.textContent.trim() === t('Save'))
+  assert.ok(save, 'the save button is rendered')
+  assert.ok(isAriaDisabled(save), 'save is disabled for a viewer')
+})
+
+QUnit.test('viewer edits do not trigger the discard guard', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
+  window.__iframeHtml = '<p>body</p>'
+  m.render(fixture(), m(PageInlineEditView))
+
+  window.__iframeHtml = '<p>changed by the viewer</p>'
+  assert.notOk(dirty.isDirty(), 'nothing can be saved, so there is nothing to guard')
+
+  delete window.__iframeHtml
 })
 
 QUnit.module('CSS')

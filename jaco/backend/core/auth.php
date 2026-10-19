@@ -29,7 +29,8 @@ use jaco\core\config\Config;
 function authenticate(Config $config, string $username, string $password): ?string
 {
     // fail closed: without a secret there is nothing to sign, and without users
-    // nobody can log in. (An empty totpSecret is the exception: no second factor.)
+    // nobody can log in. (An empty per user totpSecret is the exception: no second
+    // factor for that account.)
     // The password is stored as a password_hash() digest; password_verify() rejects
     // an empty or invalid digest by itself, so no explicit check here.
     if ($config->secretKey === '') {
@@ -43,7 +44,7 @@ function authenticate(Config $config, string $username, string $password): ?stri
         return null;
     }
 
-    return create_token($config, $username, $user['role']);
+    return create_token($config, $username, $user['role'], $user['language'], $user['passwordChange']);
 }
 
 /**
@@ -61,7 +62,7 @@ function verify_password(Config $config, string $username, string $password): bo
  * The user with this name, or null. The users list in settings.php is the only source;
  * there is no separate username/password pair any more.
  *
- * @return array{password: string, role: string}|null
+ * @return array{password: string, role: string, language: string, totpSecret: string, passwordChange: bool}|null
  */
 function find_user(Config $config, string $username): ?array
 {
@@ -72,11 +73,18 @@ function find_user(Config $config, string $username): ?array
     }
 
     $role = $user['role'] ?? '';
+    // missing means allowed; only an explicit boolean true enables the change, so a
+    // typo in a record disables the action instead of silently keeping it open
+    $passwordChange = $user['passwordChange'] ?? true;
 
     return [
         'password' => $user['password'],
         // fail closed: an unknown role gets the least privilege
         'role' => is_string($role) && isset(ROLE_RANK[$role]) ? $role : ROLE_VIEWER,
+        // per user preferences, empty means "fall back" (language) or "off" (second factor)
+        'language' => is_string($user['language'] ?? null) ? $user['language'] : '',
+        'totpSecret' => is_string($user['totpSecret'] ?? null) ? $user['totpSecret'] : '',
+        'passwordChange' => $passwordChange === true,
     ];
 }
 
@@ -90,7 +98,7 @@ function role_allows(string $actual, string $required): bool
  * unknown claim falls back to viewer, and a token whose user no longer exists is
  * rejected (removing a user ends their sessions).
  *
- * @return array{user: string, role: string}|null
+ * @return array{user: string, role: string, language: string, passwordChange: bool}|null
  */
 function read_token(Config $config, string $token): ?array
 {
@@ -106,14 +114,22 @@ function read_token(Config $config, string $token): ?array
     }
 
     $user = (string) ($payload->user ?? '');
+    $record = find_user($config, $user);
 
-    if (find_user($config, $user) === null) {
+    if ($record === null) {
         return null;
     }
 
     $role = (string) ($payload->role ?? '');
 
-    return ['user' => $user, 'role' => isset(ROLE_RANK[$role]) ? $role : ROLE_VIEWER];
+    return [
+        'user' => $user,
+        'role' => isset(ROLE_RANK[$role]) ? $role : ROLE_VIEWER,
+        'language' => (string) ($payload->language ?? ''),
+        // the current record wins over the claim, so revoking the permission takes
+        // effect without waiting for the token to expire
+        'passwordChange' => $record['passwordChange'],
+    ];
 }
 
 function is_authenticated(Config $config, string $token): bool
@@ -121,7 +137,7 @@ function is_authenticated(Config $config, string $token): bool
     return read_token($config, $token) !== null;
 }
 
-function create_token(Config $config, string $username, string $role): string
+function create_token(Config $config, string $username, string $role, string $language = '', bool $passwordChange = true): string
 {
     $now = time();
 
@@ -133,6 +149,8 @@ function create_token(Config $config, string $username, string $role): string
         'exp' => $now + TOKEN_TTL,
         'user' => $username,
         'role' => $role,
+        'language' => $language,
+        'passwordChange' => $passwordChange,
     ];
 
     return JWT::encode($payload, $config->secretKey, TOKEN_ALGORITHM);

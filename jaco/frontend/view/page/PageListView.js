@@ -7,6 +7,7 @@ import {addDanger, addSuccess} from '../../state/actions.js'
 import {api} from '../../service/api.js'
 import {t} from '../../model/i18n.js'
 import {app} from '../../lib/app.js'
+import {auth} from '../../lib/auth.js'
 import {formatDateTimeCompact, formatDateTimeFull} from '../../lib/format.js'
 
 const editPage = (file) => {
@@ -126,19 +127,22 @@ export const PageListView = {
                 m('td', page.title),
                 m('td.text-nowrap', {title: formatDateTimeFull(page.created)}, formatDateTimeCompact(page.created)),
                 m('td.text-right.text-nowrap',
+                  // a viewer opens the same document read-only: the editor hides
+                  // save, so "view" is the honest label
                   m(ButtonSecondary, {
                     onclick: () => {
                       editPage(page.file)
                     },
-                    title: t('Edit'),
-                    'aria-label': t('Edit'),
-                  }, m(Icon, {name: 'edit'})),
+                    title: t(auth.can('editor') ? 'Edit' : 'View'),
+                    'aria-label': t(auth.can('editor') ? 'Edit' : 'View'),
+                  }, m(Icon, {name: auth.can('editor') ? 'edit' : 'view'})),
                   m(ButtonDanger, {
                     onclick: (e) => {
                       e.redraw = false
                       deleteAction(page)
                     },
-                    title: t('Delete'),
+                    disabled: !auth.can('editor'),
+                    title: auth.can('editor') ? t('Delete') : t('Delete') + ' – ' + t('Your role does not allow this.'),
                     'aria-label': t('Delete'),
                   }, m(Icon, {name: 'delete'})),
                 )

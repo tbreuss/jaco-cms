@@ -1,15 +1,23 @@
 // see https://medium.com/i18n-and-l10n-resources-for-developers/localizing-mithril-applications-728fca63eaf3
 
 import {api} from '../service/api.js'
+import {auth} from '../lib/auth.js'
 
 const loadAndSetLocale = () => {
   i18n.status = 'loading'
 
-  // no language parameter: the api serves the configured default language
-  api.get('translations').then(
+  // the token carries the user's language; without one the api serves the
+  // configured defaultLanguage, which is also the fallback for an empty claim
+  const language = auth.language()
+  api.get('translations', language === '' ? {} : {language}).then(
     (data) => {
       i18n.messages = data
-      i18n.currentLocale = ''
+      i18n.currentLocale = language
+      i18n.status = 'idle'
+    },
+    () => {
+      // keep the labels that are already there instead of staying on the
+      // "Loading..." placeholder forever
       i18n.status = 'idle'
     },
   )

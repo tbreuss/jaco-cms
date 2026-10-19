@@ -4,6 +4,7 @@ import {Icon} from '../component/Icon.js'
 import {t} from '../model/i18n.js'
 import {addSuccess} from '../state/actions.js'
 import {app} from '../lib/app.js'
+import {auth} from '../lib/auth.js'
 
 const clearLog = () => {
   if (confirm(t('Do you want to clear the log?'))) {
@@ -37,6 +38,12 @@ export const PhpLogView = {
   oninit: () => {
     if (!app.hasAuthToken()) {
       m.route.set('/logout')
+      return
+    }
+    // the route is admin-only; a stale link must not load a 403 page
+    if (!auth.can('admin')) {
+      m.route.set('/')
+      return
     }
     PhpLogModel.load()
   },

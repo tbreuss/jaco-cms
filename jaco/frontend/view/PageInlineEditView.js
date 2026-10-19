@@ -7,6 +7,7 @@ import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../component/ButtonSecondary.js'
 import {Icon} from '../component/Icon.js'
 import {app} from '../lib/app.js'
+import {auth} from '../lib/auth.js'
 import {bindSaveShortcut, saveShortcutLabel} from '../lib/shortcuts.js'
 import {dirty} from '../lib/dirty.js'
 
@@ -26,7 +27,9 @@ const captureSavedBody = () => {
 }
 
 const isDirty = () => {
-  if (savedBody === null) {
+  // a viewer may try the editor, but nothing can be saved: do not trap them in
+  // a discard dialog for changes that would be thrown away anyway
+  if (!auth.can('editor') || savedBody === null) {
     return false
   }
   try { return readBody() !== savedBody } catch (e) { return false }
@@ -41,6 +44,9 @@ const beforeUnloadHandler = (e) => {
 
 export const save = (e) => {
   e.redraw = false
+  if (!auth.can('editor')) {
+    return
+  }
   api.post('page/update-body', {}, {
     background: true, // no redraw
     body: {
@@ -87,6 +93,12 @@ const setEditLayout = (on) => {
 
 const bindShortcut = () => {
   unbindSaveShortcuts.forEach((unbind) => unbind())
+  unbindSaveShortcuts = []
+  // a viewer has no save: binding Ctrl+S would only offer a shortcut that
+  // silently does nothing
+  if (!auth.can('editor')) {
+    return
+  }
   // keydown does not cross document boundaries: listen in the parent
   // document (toolbar, buttons) as well as inside the iframe (content)
   unbindSaveShortcuts = [
@@ -108,10 +120,15 @@ export const PageInlineEditView = {
     dirty.set(isDirty)
     if (!app.hasAuthToken()) {
       m.route.set('/logout')
+      return
     }
+    // every role may open the editor; without editor rights the save button is
+    // disabled and the shortcuts are not bound, and the global read-only banner
+    // says why
     // i.e. if page was reloaded with given route
     if (!iframe.hasElement()) {
       m.route.set('/')
+      return
     }
     iframe.makeEditable(captureSavedBody)
     bindShortcut()
@@ -131,6 +148,10 @@ export const PageInlineEditView = {
   },
   view: () => m(ButtonGroup, {wrap: 'div.dialog'},
     m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
-    m(ButtonPrimary, {onclick: save, title: t('Save') + ' (' + saveShortcutLabel() + ')'}, m(Icon, {name: 'save'}), m('span', t('Save'))),
+    m(ButtonPrimary, {
+      onclick: save,
+      disabled: !auth.can('editor'),
+      title: auth.can('editor') ? t('Save') + ' (' + saveShortcutLabel() + ')' : t('Save') + ' – ' + t('Your role does not allow this.'),
+    }, m(Icon, {name: 'save'}), m('span', t('Save'))),
   )
 }

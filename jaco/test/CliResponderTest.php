@@ -43,7 +43,7 @@ final class CliResponderTest extends TestCase
 
     public function testTokenCommandWithTotpAsksForTheCode(): void
     {
-        $config = test_config_with(['totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ']);
+        $config = test_config_with(['users' => [TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'admin', 'totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ']]]);
 
         [$output, $code] = token\command($config, TEST_USERNAME, TEST_PASSWORD);
 
@@ -54,7 +54,7 @@ final class CliResponderTest extends TestCase
     public function testTokenCommandWithTotpCodeSucceeds(): void
     {
         $secret = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
-        $config = test_config_with(['totpSecret' => $secret]);
+        $config = test_config_with(['users' => [TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'admin', 'totpSecret' => $secret]]]);
 
         [$output, $code] = token\command(
             $config,
@@ -69,7 +69,7 @@ final class CliResponderTest extends TestCase
 
     public function testTokenCommandWithWrongTotpCodeFails(): void
     {
-        $config = test_config_with(['totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ']);
+        $config = test_config_with(['users' => [TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'admin', 'totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ']]]);
 
         [, $code] = token\command($config, TEST_USERNAME, TEST_PASSWORD, '000000');
 

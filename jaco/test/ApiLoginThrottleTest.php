@@ -106,7 +106,7 @@ final class ApiLoginThrottleTest extends ApiTestCase
 
     public function testWrongTwoFactorCodesBlockThatAddressToo(): void
     {
-        $config = test_config_with(['totpSecret' => self::SECRET]);
+        $config = test_config_with(['users' => [TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'admin', 'totpSecret' => self::SECRET]]]);
         auth\clear_login_history($config);
 
         for ($i = 0; $i < auth\LOGIN_MAX_ATTEMPTS; $i++) {

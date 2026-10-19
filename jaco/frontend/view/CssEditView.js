@@ -10,6 +10,7 @@ import {addSuccess} from '../state/actions.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {FormErrors, errorFor} from '../component/FormErrors.js'
 import {app} from '../lib/app.js'
+import {auth} from '../lib/auth.js'
 import {bindSaveShortcut, saveAndCloseShortcutLabel, saveShortcutLabel} from '../lib/shortcuts.js'
 import {aceThemeName, watchAceTheme} from '../lib/aceTheme.js'
 import {dirty} from '../lib/dirty.js'
@@ -56,6 +57,7 @@ const ensureEditor = () => {
   if (editor || !document.getElementById('ace')) {
     return
   }
+  const canEdit = auth.can('admin')
   editor = ace.edit('ace', {
     theme: aceThemeName(),
     mode: 'ace/mode/css',
@@ -64,21 +66,24 @@ const ensureEditor = () => {
     indentedSoftWrap: false,
     behavioursEnabled: false, // disable autopairing of brackets and tags
     showLineNumbers: false, // hide the gutter
-    readOnly: false
+    // editor and viewer may open the stylesheet, but only admin may write it
+    readOnly: !canEdit
   })
   editor.resize(false)
   // Ace swallows keydown inside its textarea, so the document listener
   // alone would miss shortcuts with the focus in the editor
-  editor.commands.addCommand({
-    name: 'save',
-    bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
-    exec: () => onSaveButtonClicked({redraw: false}),
-  })
-  editor.commands.addCommand({
-    name: 'saveAndClose',
-    bindKey: {win: 'Ctrl-Shift-S', mac: 'Command-Shift-S'},
-    exec: () => onSaveAndCloseButtonClicked({redraw: false}),
-  })
+  if (canEdit) {
+    editor.commands.addCommand({
+      name: 'save',
+      bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
+      exec: () => onSaveButtonClicked({redraw: false}),
+    })
+    editor.commands.addCommand({
+      name: 'saveAndClose',
+      bindKey: {win: 'Ctrl-Shift-S', mac: 'Command-Shift-S'},
+      exec: () => onSaveAndCloseButtonClicked({redraw: false}),
+    })
+  }
   unwatchAceTheme = watchAceTheme(editor)
 }
 
@@ -92,6 +97,7 @@ const onInitComponent = () => {
   dirty.set(isDirty)
   if (!app.hasAuthToken()) {
     m.route.set('/logout')
+    return
   }
   state.errors = []
   state.loadedFile = null
@@ -101,11 +107,14 @@ const onInitComponent = () => {
   CssEditModel.item = {}
   if (unbindSaveShortcut) {
     unbindSaveShortcut()
+    unbindSaveShortcut = null
   }
-  unbindSaveShortcut = bindSaveShortcut(document, {
-    onSave: () => onSaveButtonClicked({redraw: false}),
-    onSaveAndClose: () => onSaveAndCloseButtonClicked({redraw: false}),
-  })
+  if (auth.can('admin')) {
+    unbindSaveShortcut = bindSaveShortcut(document, {
+      onSave: () => onSaveButtonClicked({redraw: false}),
+      onSaveAndClose: () => onSaveAndCloseButtonClicked({redraw: false}),
+    })
+  }
   const onListLoaded = () => {
     if (CssEditModel.list.length > 0) {
       selectFile(CssEditModel.list[0].file)
@@ -125,7 +134,7 @@ const selectFile = (file) => {
 
 export const onSaveButtonClicked = (e) => {
   e.redraw = false
-  if (!editor) {
+  if (!auth.can('admin') || !editor) {
     return Promise.resolve()
   }
   CssEditModel.item.content = editor.getValue()
@@ -193,7 +202,7 @@ export const CssEditView = {
   onremove: onRemoveComponent,
   view: () => m('div.main',
     m('.content',
-      m('h1', t('Edit CSS'), CssEditModel.item.file ? ': ' + CssEditModel.item.file : ''),
+      m('h1', t(auth.can('admin') ? 'Edit CSS' : 'CSS'), CssEditModel.item.file ? ': ' + CssEditModel.item.file : ''),
       CssEditModel.isLoading
         ? m('p', t('Loading') + '...')
         : CssEditModel.list.length === 0
@@ -224,9 +233,19 @@ export const CssEditView = {
             m('div#ace', {style: {width: '100%'}})
           ),
           m(ButtonGroup, {wrap: 'div.row.text-right'},
-            m(ButtonSecondary, {onclick: onCancelButtonClicked}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
-            m(ButtonPrimary, {onclick: onSaveButtonClicked, title: t('Save') + ' (' + saveShortcutLabel() + ')'}, m(Icon, {name: 'save'}), m('span', t('Save'))),
-            m(ButtonPrimary, {onclick: onSaveAndCloseButtonClicked, title: t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')'}, m(Icon, {name: 'check'}), m('span', t('Save & Close')))
+            m(ButtonSecondary, {onclick: onCancelButtonClicked},
+              m(Icon, {name: auth.can('admin') ? 'clear' : 'back'}),
+              m('span', t(auth.can('admin') ? 'Cancel' : 'Back'))),
+            m(ButtonPrimary, {
+              onclick: onSaveButtonClicked,
+              disabled: !auth.can('admin'),
+              title: auth.can('admin') ? t('Save') + ' (' + saveShortcutLabel() + ')' : t('Save') + ' – ' + t('Your role does not allow this.'),
+            }, m(Icon, {name: 'save'}), m('span', t('Save'))),
+            m(ButtonPrimary, {
+              onclick: onSaveAndCloseButtonClicked,
+              disabled: !auth.can('admin'),
+              title: auth.can('admin') ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
+            }, m(Icon, {name: 'check'}), m('span', t('Save & Close')))
           )
           ),
           m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),

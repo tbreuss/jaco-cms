@@ -1,13 +1,16 @@
 import {t} from '../model/i18n.js'
-import {SystemModel} from '../model/SystemModel.js'
+import {AboutModel} from '../model/AboutModel.js'
 import {app} from '../lib/app.js'
 
 export const AboutView = {
   oninit: () => {
     if (!app.hasAuthToken()) {
       m.route.set('/logout')
+      return
     }
-    SystemModel.load()
+    // public version data: every role may open this page, the admin-only
+    // system endpoint is not involved
+    AboutModel.load()
   },
   oncreate: () => {
     app.makeAppScrollable()
@@ -16,11 +19,9 @@ export const AboutView = {
     app.makeIframeScrollable()
   },
   view: () => {
-    const info = SystemModel.info || {}
-    const config = info.config || {}
-    const checks = Array.isArray(info.checks) ? info.checks : []
-    const phpVersion = (checks.find((c) => String(c.label).toLowerCase().includes('php version')) || {}).detail || ''
-    const version = config.appVersion || ''
+    const info = AboutModel.info || {}
+    const version = info.version || ''
+    const phpVersion = info.phpVersion || ''
     const link = (href, label) => m('a', {href: href, target: '_blank', rel: 'noopener noreferrer'}, label)
     return m('div.main',
       m('.content',

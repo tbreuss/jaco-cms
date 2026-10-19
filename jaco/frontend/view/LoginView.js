@@ -8,7 +8,7 @@ import {InputText} from '../component/InputText.js'
 import {ModalSmall} from '../component/ModalSmall.js'
 import {api} from '../service/api.js'
 import {app} from '../lib/app.js'
-import {t} from '../model/i18n.js'
+import {i18n, t} from '../model/i18n.js'
 
 export const state = {
   step: 'login',
@@ -39,6 +39,9 @@ export const login = () => {
       state.username = ''
       state.password = ''
       app.setAuthToken(data.token)
+      // the token now carries the user's language: reload the labels before the
+      // next view paints them
+      i18n.loadAndSetLocale()
       m.route.set('/')
     })
     .catch(({code, response}) => {
@@ -73,6 +76,9 @@ export const verify = () => {
       state.password = ''
       state.totpCode = ''
       app.setAuthToken(data.token)
+      // the token now carries the user's language: reload the labels before the
+      // next view paints them
+      i18n.loadAndSetLocale()
       m.route.set('/')
     })
     .catch(({code, response}) => {
