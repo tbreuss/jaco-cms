@@ -17,7 +17,7 @@ const editPage = (file) => {
 }
 
 const copyPage = (page) => {
-  PageCopySource.set(page.file, page.title)
+  PageCopySource.set(page.file, page.title, '/pages')
   m.route.set('/page-copy')
 }
 

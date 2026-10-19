@@ -19,7 +19,8 @@ const state = {
   srcPageTitle: '',
   dstFileName: '',
   dstPageTitle: '',
-  errors: []
+  errors: [],
+  returnTo: '/'
 }
 
 const fieldPointers = ['srcFileName', 'dstFileName', 'dstPageTitle']
@@ -37,7 +38,7 @@ const save = (e) => {
   })
     .then(() => {
       addSuccess(t('Page was successfully copied.'))
-      m.route.set('/')
+      m.route.set(state.returnTo)
     })
     .catch(({code, response}) => {
       if (code === 422) {
@@ -49,7 +50,7 @@ const save = (e) => {
 
 const cancel = (e) => {
   e.redraw = false
-  m.route.set('/')
+  m.route.set(state.returnTo)
 }
 
 export const PageCopyView = {
@@ -78,10 +79,11 @@ export const PageCopyView = {
     const sourceTitle = pending?.title || vnode.attrs.title || iframe.pageTitle()
     state.srcFileName = state.dstFileName = sourceFile
     state.srcPageTitle = state.dstPageTitle = sourceTitle
+    state.returnTo = pending?.returnTo || '/'
     state.errors = []
   },
   view: () => {
-    return m(ModalMedium, {title: t('Copy page')},
+    return m(ModalMedium, {title: t('Copy page'), closeRoute: state.returnTo},
       m(Fieldset, {legend: t('Current page')},
         m(InputText, {
           id: 'srcFileName',

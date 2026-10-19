@@ -1389,6 +1389,23 @@ QUnit.test('a validation error is shown under its field', async (assert) => {
   }
 })
 
+QUnit.test('cancel returns to the preview', (assert) => {
+  const originalSet = m.route.set
+  const routeCalls = []
+  m.route.set = (path) => routeCalls.push(path)
+
+  try {
+    m.render(fixture(), m(PasswordView))
+    const cancel = [...fixture().querySelectorAll('button')]
+      .find((button) => button.textContent.includes(t('Cancel')))
+    assert.ok(cancel, 'cancel button rendered')
+    cancel.click()
+    assert.deepEqual(routeCalls, ['/'])
+  } finally {
+    m.route.set = originalSet
+  }
+})
+
 QUnit.test('a demo user is sent away from the form', (assert) => {
   window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer', '', false))
   const routeCalls = []
@@ -2268,7 +2285,7 @@ QUnit.test('the copy row action passes the row to the copy route', (assert) => {
     copy.click()
 
     assert.deepEqual(calls, ['/page-copy'])
-    assert.deepEqual(PageCopySource.take(), {file: 'a.html', title: 'Page A'})
+    assert.deepEqual(PageCopySource.take(), {file: 'a.html', title: 'Page A', returnTo: '/pages'})
   } finally {
     m.route.set = originalSet
     PageCopySource.clear()
@@ -2494,12 +2511,31 @@ QUnit.test('renders the copy page dialog', (assert) => {
 })
 
 QUnit.test('a row action passes its source page', (assert) => {
-  PageCopySource.set('b.html', 'Page B')
+  PageCopySource.set('b.html', 'Page B', '/pages')
   m.render(fixture(), m(PageCopyView))
 
   const values = [...fixture().querySelectorAll('input')].map((input) => input.value)
   assert.ok(values.includes('b.html'), 'the row filename is the source')
   assert.ok(values.includes('Page B'), 'the row title is the source')
+})
+
+QUnit.test('cancel returns to the source list', (assert) => {
+  const originalSet = m.route.set
+  const routeCalls = []
+  m.route.set = (path) => routeCalls.push(path)
+
+  try {
+    PageCopySource.set('b.html', 'Page B', '/pages')
+    m.render(fixture(), m(PageCopyView))
+
+    const cancel = [...fixture().querySelectorAll('button')]
+      .find((button) => button.textContent.includes(t('Cancel')))
+    assert.ok(cancel, 'cancel button rendered')
+    cancel.click()
+    assert.deepEqual(routeCalls, ['/pages'], 'cancel returns to the page list')
+  } finally {
+    m.route.set = originalSet
+  }
 })
 
 QUnit.test('the copy dialog falls back to the preview page', (assert) => {

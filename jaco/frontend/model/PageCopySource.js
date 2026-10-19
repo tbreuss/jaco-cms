@@ -4,8 +4,8 @@
 let pending = null
 
 export const PageCopySource = {
-  set: (file, title) => {
-    pending = {file, title}
+  set: (file, title, returnTo = '/') => {
+    pending = {file, title, returnTo}
   },
   take: () => {
     const source = pending

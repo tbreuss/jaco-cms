@@ -113,7 +113,7 @@ export const PasswordView = {
               onclick: () => {
                 m.route.set('/')
               }
-            }, m(Icon, {name: 'back'}), m('span', t('Back'))),
+            }, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
             m(ButtonPrimary, {disabled: state.sending},
               m(Icon, {name: 'check'}),
               m('span', t('Change password')),
