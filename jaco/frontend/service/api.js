@@ -1,6 +1,6 @@
 import {addDanger} from '../state/actions.js'
 import {app} from '../lib/app.js'
-import {t} from '../model/i18n.js'
+import {t, tError} from '../model/i18n.js'
 
 const handlers = {
   // 422 Unprocessable Entity (validation of form data failed)
@@ -62,8 +62,12 @@ const request = method => (action, params = {}, options = {}) => {
         // nothing to map, show a generic message instead of crashing
         const errors = Array.isArray(err.response) ? err.response : [err.response ?? {title: 'Request failed'}]
         errors.forEach((error) => {
-          const msg = error.detail ? `${error.title}: ${error.detail}` : error.title
-          addDanger(t(msg, null, msg))
+          // title and detail each arrive as a key in their own right, only
+          // their concatenation is not translatable: look both up separately
+          // instead of translating the joined string, which always fell back
+          // to the English source
+          const title = t(error.title, null, error.title)
+          addDanger(error.detail ? `${title}: ${tError(error.detail)}` : title)
         })
         throw err
       }

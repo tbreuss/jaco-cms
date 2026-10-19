@@ -40,7 +40,7 @@ import {BackupListModel} from '/jaco/frontend/model/BackupListModel.js'
 import {CssEditView, setEditor as setCssEditor, onSaveButtonClicked as onSaveCssButtonClicked, state as cssEditState} from '/jaco/frontend/view/CssEditView.js'
 import {CssEditModel} from '/jaco/frontend/model/CssEditModel.js'
 import {api} from '/jaco/frontend/service/api.js'
-import {t, tError} from '/jaco/frontend/model/i18n.js'
+import {t, tError, i18n} from '/jaco/frontend/model/i18n.js'
 import {isSaveShortcut, isSaveAndCloseShortcut, bindSaveShortcut, saveShortcutLabel, saveAndCloseShortcutLabel} from '/jaco/frontend/lib/shortcuts.js'
 import {iframe} from '/jaco/frontend/lib/iframe.js'
 import {getTheme, setTheme, applyTheme} from '/jaco/frontend/lib/theme.js'
@@ -324,6 +324,41 @@ QUnit.test('500 error includes detail and reference in toast', async (assert) =>
     assert.ok(msg.text.includes('reference abc123'), 'toast contains log reference')
   } finally {
     stub.restore()
+  }
+})
+
+QUnit.test('title and detail are translated separately, not as one joined string', async (assert) => {
+  // the api sends both halves as keys, only their concatenation is unknown.
+  // Pin a locale where they actually differ: with the English source messages
+  // the joined fallback and the fixed lookup produce the same text, so the
+  // test would pass either way.
+  const savedMessages = i18n.messages
+  i18n.messages = {
+    'Maintenance mode: changes are disabled': 'Wartungsmodus',
+    'Changes are disabled while maintenance mode is enabled.': 'Es sind keine Änderungen möglich.',
+  }
+  const stub = stubRequest(() => Promise.reject({
+    code: 503,
+    response: [{
+      title: 'Maintenance mode: changes are disabled',
+      detail: 'Changes are disabled while maintenance mode is enabled.',
+    }]
+  }))
+  const before = state.list.length
+
+  try {
+    await api.get('page/list').catch(() => {})
+
+    assert.ok(state.list.length > before, 'a danger message was added')
+    const msg = state.list[state.list.length - 1]
+    assert.strictEqual(
+      msg.text,
+      'Wartungsmodus: Es sind keine Änderungen möglich.',
+      'both halves come from the translation table'
+    )
+  } finally {
+    stub.restore()
+    i18n.messages = savedMessages
   }
 })
 
