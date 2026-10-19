@@ -12,13 +12,23 @@ const keyValueTable = (title, object) => object
         m('col')
       ),
       m('thead', m('tr', m('th', t('Name')), m('th', t('Value')))),
-      m('tbody', Object.entries(object).map((constant) => m('tr',
-          m('td', constant[0]),
-          m('td', Array.isArray(constant[1]) ? constant[1].join(', ') : constant[1]),
+      m('tbody', Object.entries(object).map(([key, value]) => m('tr',
+          m('td', key),
+          m('td', configValue(key, value)),
         ))
       )
     ))
   : ''
+
+// maintenanceMode arrives as the string 'true'/'false' (display_config converts
+// the bool). Rendered as a translated yes/no instead of a raw string, but like
+// every other row: no special marking.
+const configValue = (key, value) => {
+  if (key === 'maintenanceMode') {
+    return value === 'true' ? t('Yes') : t('No')
+  }
+  return Array.isArray(value) ? value.join(', ') : value
+}
 
 const checksTable = (title, checks) => checks
   ? m('div',

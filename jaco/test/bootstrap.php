@@ -9,6 +9,7 @@ if (is_readable(__DIR__ . '/../vendor/autoload.php')) {
 }
 
 require_once __DIR__ . '/ApiTestCase.php';
+require_once __DIR__ . '/HttpServerTestCase.php';
 
 function test_config(): Config
 {

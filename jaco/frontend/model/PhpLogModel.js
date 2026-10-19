@@ -10,6 +10,11 @@ export const PhpLogModel = {
         PhpLogModel.data = data
         PhpLogModel.isLoading = false
       })
+      .catch(() => {
+        // the log is not worth an error toast: the banner already says that
+        // writing is blocked, and a failed read is not a failed save
+        PhpLogModel.isLoading = false
+      })
   },
   clear: () => {
     return api.post('system/log/clear', {}, {

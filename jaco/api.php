@@ -31,5 +31,9 @@ require('routes.php');
 $request = Request::fromGlobals();
 
 $response = router\dispatch($request, $config);
+// Let the frontend learn the maintenance state without a dedicated endpoint:
+// every response carries it, so the banner can follow a toggled setting
+// without a reload. The frontend ignores the header when it is absent.
+$response->headers['X-Maintenance-Mode'] = $config->maintenanceMode ? 'true' : 'false';
 
 http\emit($response);

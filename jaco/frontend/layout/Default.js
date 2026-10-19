@@ -2,6 +2,7 @@ import {closeDropdown} from '../lib/helpers.js'
 import {i18n, t} from '../model/i18n.js'
 import {app} from '../lib/app.js'
 import {iframe} from '../lib/iframe.js'
+import {maintenance} from '../lib/maintenance.js'
 import {getTheme, setTheme} from '../lib/theme.js'
 
 const themeLabel = (value) => t(value === 'light' ? 'Light' : value === 'dark' ? 'Dark' : 'Auto')
@@ -34,6 +35,14 @@ const showInfo = (e) => {
   console.debug(e.target.textContent + ' not yet implemented')
 }
 
+// role=status so it is announced when it appears. The mode travels with every
+// response header, so it is there from the first paint rather than only after a
+// save failed. First in the flow, because it outranks the navigation; the loader
+// above it is a fixed overlay and takes no space.
+const maintenanceBanner = () =>
+  m('.maintenance-banner', {role: 'status'},
+    t('Changes are disabled while maintenance mode is enabled.'))
+
 export const DefaultLayout = {
   oncreate: () => {
     iframe.fitBelowNavbar()
@@ -65,6 +74,7 @@ export const DefaultLayout = {
         [
           m('.toolbar',
             m.trust('<span id="loader" class="is-stoped"></span>'),
+            maintenance.isActive() ? maintenanceBanner() : null,
             app.hasAuthToken() ? m('.navbar', [
               title(),
               m('.dropdown',
