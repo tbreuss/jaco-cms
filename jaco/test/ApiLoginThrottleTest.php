@@ -79,7 +79,7 @@ final class ApiLoginThrottleTest extends ApiTestCase
 
         $response = $this->api(
             'login',
-            ['username' => $this->config->username, 'password' => $this->config->password],
+            ['username' => $this->config->username, 'password' => TEST_PASSWORD],
             'POST',
             true,
             [],
@@ -112,7 +112,7 @@ final class ApiLoginThrottleTest extends ApiTestCase
         for ($i = 0; $i < auth\LOGIN_MAX_ATTEMPTS; $i++) {
             // the password has to be right, otherwise the code is never looked at
             $response = $this->login(
-                ['password' => $config->password, 'totpCode' => '000000'],
+                ['password' => TEST_PASSWORD, 'totpCode' => '000000'],
                 self::ATTACKER,
                 $config,
             );
@@ -122,7 +122,7 @@ final class ApiLoginThrottleTest extends ApiTestCase
 
         // even the right password and code are rejected from that address now
         $response = $this->login([
-            'password' => $config->password,
+            'password' => TEST_PASSWORD,
             'totpCode' => totp\code_at(self::SECRET, time()),
         ], self::ATTACKER, $config);
 

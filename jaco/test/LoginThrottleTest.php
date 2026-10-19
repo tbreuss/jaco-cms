@@ -61,7 +61,7 @@ final class LoginThrottleTest extends TestCase
         $payload = system\authenticate_user(
             $config,
             $config->username,
-            $config->password,
+            TEST_PASSWORD,
             address: self::OWNER,
         );
 
@@ -85,7 +85,7 @@ final class LoginThrottleTest extends TestCase
         $payload = system\authenticate_user(
             $config,
             $config->username,
-            $config->password,
+            TEST_PASSWORD,
             address: self::OWNER,
         );
 
@@ -134,7 +134,7 @@ final class LoginThrottleTest extends TestCase
         $payload = system\authenticate_user(
             $config,
             $config->username,
-            $config->password,
+            TEST_PASSWORD,
             address: self::OTHER,
         );
 

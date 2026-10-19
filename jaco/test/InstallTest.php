@@ -70,8 +70,13 @@ final class InstallTest extends TestCase
 
     public function testWrittenSettingsLogIn(): void
     {
-        // quotes and backslashes prove the escaping roundtrips exactly
-        $settings = ['username' => "ad'min", 'password' => 'sec\\ret123', 'secretKey' => 'key'];
+        // quotes and backslashes prove the escaping roundtrips exactly; the
+        // password is hashed, like every password in a real settings.php
+        $settings = [
+            'username' => "ad'min",
+            'password' => \password_hash('sec\\ret123', PASSWORD_DEFAULT),
+            'secretKey' => 'key',
+        ];
 
         $this->assertTrue(config\write_settings($this->dir, $settings));
 

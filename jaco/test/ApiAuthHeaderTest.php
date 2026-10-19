@@ -45,6 +45,6 @@ final class ApiAuthHeaderTest extends ApiTestCase
 
     private function bearer(): string
     {
-        return 'Bearer ' . auth\authenticate($this->config, $this->config->username, $this->config->password);
+        return 'Bearer ' . auth\authenticate($this->config, $this->config->username, TEST_PASSWORD);
     }
 }

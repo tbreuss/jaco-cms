@@ -99,7 +99,7 @@ abstract class ApiTestCase extends TestCase
 
     protected function token(): string
     {
-        return (string) auth\authenticate($this->config, $this->config->username, $this->config->password);
+        return (string) auth\authenticate($this->config, $this->config->username, TEST_PASSWORD);
     }
 
     /**
