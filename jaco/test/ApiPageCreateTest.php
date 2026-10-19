@@ -92,7 +92,7 @@ final class ApiPageCreateTest extends ApiTestCase
             'pageTitle' => 'Created title',
         ], 'POST', false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
         $this->assertFileDoesNotExist($this->config->webDir . '/' . self::PAGE);
     }
 }

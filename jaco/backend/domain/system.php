@@ -10,7 +10,7 @@ use jaco\core\system;
 use jaco\core\totp;
 use jaco\domain\Payload;
 
-use function jaco\core\config\write_setting;
+use function jaco\core\config\write_user_password;
 
 function authenticate_user(
     Config $config,
@@ -79,6 +79,7 @@ function authenticate_user(
  */
 function change_password(
     Config $config,
+    string $username,
     string $withPassword,
     string $withNewPassword,
     string $address = '',
@@ -115,7 +116,9 @@ function change_password(
         return Payload::invalid([['', 'Too many attempts. Try again in ' . $minutes . ' minute(s).']]);
     }
 
-    if (auth\authenticate($config, $config->username, $withPassword) === null) {
+    // the logged in user, not the legacy username: with several users the name in the
+    // token decides whose digest is replaced
+    if (!auth\verify_password($config, $username, $withPassword)) {
         auth\record_login_failure($config, $address);
 
         return Payload::invalid([['withPassword', 'Authentication failed.']]);
@@ -123,7 +126,8 @@ function change_password(
 
     $digest = password_hash($withNewPassword, PASSWORD_DEFAULT);
 
-    if (!write_setting($config->appDir, 'password', $digest)) {
+    // a new digest in place, keeping the rest of the file and the other users untouched
+    if (!write_user_password($config->appDir, $username, $digest)) {
         return Payload::error([['', 'Could not write settings.']]);
     }
 
@@ -148,7 +152,7 @@ function display_config(Config $config): array
 {
     $values = get_object_vars($config);
     $values['secretKey'] = '********';
-    $values['password'] = '********';
+    $values['users'] = '********';
     $values['totpSecret'] = $values['totpSecret'] === '' ? '' : '********';
     $values['directoryPermissions'] = sprintf('0%o', $config->directoryPermissions);
     $values['filePermissions'] = sprintf('0%o', $config->filePermissions);

@@ -44,6 +44,6 @@ final class ApiTemplatePagesTest extends ApiTestCase
     {
         $response = $this->api('template/pages', method: 'GET', authenticated: false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 }

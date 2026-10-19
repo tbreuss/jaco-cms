@@ -116,7 +116,7 @@ final class ApiPageUpdateTest extends ApiTestCase
             'html' => '<p>overwritten</p>',
         ], 'POST', false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
         $this->assertSame($this->originalContent, file_get_contents($this->config->webDir . '/' . self::PAGE));
         $this->assertCount(0, $this->newEntriesIn($this->config->backupDir));
     }

@@ -52,7 +52,7 @@ final class ApiCssUpdateTest extends ApiTestCase
     {
         $response = $this->api('css/update', ['fileName' => self::FILE, 'css' => self::CHANGED], 'POST', false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
         $this->assertSame(self::ORIGINAL, file_get_contents($this->config->webDir . '/' . self::FILE));
     }
 }

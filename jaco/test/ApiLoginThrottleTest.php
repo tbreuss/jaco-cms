@@ -40,7 +40,7 @@ final class ApiLoginThrottleTest extends ApiTestCase
     {
         return $this->api(
             'login',
-            array_merge(['username' => $this->config->username, 'password' => 'definitely-wrong'], $extra),
+            array_merge(['username' => TEST_USERNAME, 'password' => 'definitely-wrong'], $extra),
             'POST',
             true,
             [],
@@ -79,7 +79,7 @@ final class ApiLoginThrottleTest extends ApiTestCase
 
         $response = $this->api(
             'login',
-            ['username' => $this->config->username, 'password' => TEST_PASSWORD],
+            ['username' => TEST_USERNAME, 'password' => TEST_PASSWORD],
             'POST',
             true,
             [],

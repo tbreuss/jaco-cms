@@ -60,7 +60,7 @@ final class ApiBackupViewTest extends ApiTestCase
     {
         $response = $this->api('backup/view', method: 'GET', authenticated: false, query: ['file' => self::PAGE]);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 
     private function changedPage(): string

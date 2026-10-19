@@ -292,6 +292,36 @@ QUnit.test('expired token on the login endpoint does not redirect', async (asser
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
   }
 })
+QUnit.test('a role denial keeps the session', async (assert) => {
+  // 403 means the role refuses one action, not that the session is gone: clearing the
+  // token here was the bug, a viewer was logged out by clicking a forbidden button
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'valid-token')
+  const stub = stubRequest(() => Promise.reject({
+    code: 403,
+    response: [{title: '403 Forbidden', detail: 'Your role does not allow this.'}]
+  }))
+  const routeCalls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => routeCalls.push(path)
+  const before = state.list.length
+
+  try {
+    await api.post('page/update', {}, {body: {}}).catch(() => {})
+
+    assert.strictEqual(window.sessionStorage.getItem('AUTHORIZATION_TOKEN'), 'valid-token', 'token stays')
+    assert.deepEqual(routeCalls, [], 'no redirect to the login')
+    assert.ok(state.list.length > before, 'the denial is reported')
+    assert.ok(
+      state.list.some((entry) => String(entry.text).includes(t('Your role does not allow this.'))),
+      'the message names the role'
+    )
+  } finally {
+    stub.restore()
+    m.route.set = originalSet
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
 QUnit.test('request urls have no trailing ampersand without parameters', async (assert) => {
   const stub = stubRequest(() => Promise.resolve({}))
 

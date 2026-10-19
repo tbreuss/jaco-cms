@@ -68,7 +68,7 @@ final class ApiBackupRestoreTest extends ApiTestCase
     {
         $response = $this->api('backup/restore', ['file' => self::PAGE], 'POST', false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
         $this->assertSame(self::ORIGINAL, file_get_contents($this->config->webDir . '/' . self::PAGE));
     }
 }

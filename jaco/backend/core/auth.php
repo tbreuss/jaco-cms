@@ -7,6 +7,13 @@ const TOKEN_ISSUER = 'ch.tebe.jaco';
 const TOKEN_TTL = 86400; // tokens are valid for 24 hours
 const TOKEN_ALGORITHM = 'HS256';
 
+// roles, lowest privilege first. A route names the role it needs, role_allows()
+// compares the rank, and an unknown role in settings.php falls back to viewer.
+const ROLE_VIEWER = 'viewer';
+const ROLE_EDITOR = 'editor';
+const ROLE_ADMIN = 'admin';
+const ROLE_RANK = [ROLE_VIEWER => 1, ROLE_EDITOR => 2, ROLE_ADMIN => 3];
+
 // login throttle: three failures from one address within ten minutes block that address
 // for ten minutes. The bucket is the address, not the username, so rotating names does
 // not help; there is no permanent block, so nobody can lock the owner out. The address
@@ -21,52 +28,100 @@ use jaco\core\config\Config;
 
 function authenticate(Config $config, string $username, string $password): ?string
 {
-    // fail closed: required security values may not be empty, no matter how the
-    // Config was constructed. Without this, empty input would match an empty
-    // username via hash_equals, and tokens would be signed with an empty key.
-    // (An empty totpSecret is the exception: it means "no second factor".)
-    // The password is stored as a password_hash() digest; password_verify()
-    // rejects an empty or invalid digest by itself, so no explicit check here.
-    if ($config->username === '' || $config->secretKey === '') {
+    // fail closed: without a secret there is nothing to sign, and without users
+    // nobody can log in. (An empty totpSecret is the exception: no second factor.)
+    // The password is stored as a password_hash() digest; password_verify() rejects
+    // an empty or invalid digest by itself, so no explicit check here.
+    if ($config->secretKey === '') {
         return null;
     }
 
-    // both comparisons are constant time. The password is stored as a
-    // password_hash() digest: password_verify() is constant time itself, and it
-    // rejects a plaintext setting because that is not a valid hash.
-    $isUsernameValid = \hash_equals($config->username, $username);
-    $isPasswordValid = \password_verify($password, $config->password);
+    $user = find_user($config, $username);
 
-    if (!$isUsernameValid || !$isPasswordValid) {
+    // constant time, and an unknown user takes the same path as a wrong password
+    if ($user === null || !\password_verify($password, $user['password'])) {
         return null;
     }
 
-    return create_token($config, $username);
+    return create_token($config, $username, $user['role']);
 }
 
-function is_authenticated(Config $config, string $token): bool
+/**
+ * Checks a password against the stored digest of that user. Constant time, and an
+ * unknown user takes the same path as a wrong password.
+ */
+function verify_password(Config $config, string $username, string $password): bool
+{
+    $user = find_user($config, $username);
+
+    return $user !== null && \password_verify($password, $user['password']);
+}
+
+/**
+ * The user with this name, or null. The users list in settings.php is the only source;
+ * there is no separate username/password pair any more.
+ *
+ * @return array{password: string, role: string}|null
+ */
+function find_user(Config $config, string $username): ?array
+{
+    $user = $config->users[$username] ?? null;
+
+    if (!is_array($user) || !is_string($user['password'] ?? null) || $user['password'] === '') {
+        return null;
+    }
+
+    $role = $user['role'] ?? '';
+
+    return [
+        'password' => $user['password'],
+        // fail closed: an unknown role gets the least privilege
+        'role' => is_string($role) && isset(ROLE_RANK[$role]) ? $role : ROLE_VIEWER,
+    ];
+}
+
+function role_allows(string $actual, string $required): bool
+{
+    return (ROLE_RANK[$actual] ?? 0) >= (ROLE_RANK[$required] ?? PHP_INT_MAX);
+}
+
+/**
+ * Claims of a valid token, or null. The role comes from the signed payload; an
+ * unknown claim falls back to viewer, and a token whose user no longer exists is
+ * rejected (removing a user ends their sessions).
+ *
+ * @return array{user: string, role: string}|null
+ */
+function read_token(Config $config, string $token): ?array
 {
     try {
         $payload = JWT::decode($token, new Key($config->secretKey, TOKEN_ALGORITHM));
     } catch (\Exception) {
-        return false;
+        return null;
     }
 
     // read optional claims safely to avoid warnings for missing properties
     if (($payload->iss ?? null) !== TOKEN_ISSUER || ($payload->aud ?? null) !== TOKEN_AUDIENCE) {
-        return false;
-    }
-    if (($payload->user ?? null) !== $config->username) {
-        return false;
-    }
-    if (($payload->admin ?? null) !== true) {
-        return false;
+        return null;
     }
 
-    return true;
+    $user = (string) ($payload->user ?? '');
+
+    if (find_user($config, $user) === null) {
+        return null;
+    }
+
+    $role = (string) ($payload->role ?? '');
+
+    return ['user' => $user, 'role' => isset(ROLE_RANK[$role]) ? $role : ROLE_VIEWER];
 }
 
-function create_token(Config $config, string $username): string
+function is_authenticated(Config $config, string $token): bool
+{
+    return read_token($config, $token) !== null;
+}
+
+function create_token(Config $config, string $username, string $role): string
 {
     $now = time();
 
@@ -77,7 +132,7 @@ function create_token(Config $config, string $username): string
         'nbf' => $now,
         'exp' => $now + TOKEN_TTL,
         'user' => $username,
-        'admin' => true,
+        'role' => $role,
     ];
 
     return JWT::encode($payload, $config->secretKey, TOKEN_ALGORITHM);

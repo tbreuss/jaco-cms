@@ -77,13 +77,13 @@ final class ApiTemplateContentTest extends ApiTestCase
     {
         $response = $this->api('template/content', method: 'GET', authenticated: false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 
     public function testViewRequestWithoutTokenIsForbidden(): void
     {
         $response = $this->api('template/content/view', method: 'GET', authenticated: false, query: ['file' => self::TEMPLATE]);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 }

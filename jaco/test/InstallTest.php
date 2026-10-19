@@ -73,8 +73,7 @@ final class InstallTest extends TestCase
         // quotes and backslashes prove the escaping roundtrips exactly; the
         // password is hashed, like every password in a real settings.php
         $settings = [
-            'username' => "ad'min",
-            'password' => \password_hash('sec\\ret123', PASSWORD_DEFAULT),
+            'users' => ["ad'min" => ['password' => \password_hash('sec\\ret123', PASSWORD_DEFAULT), 'role' => 'admin']],
             'secretKey' => 'key',
         ];
 

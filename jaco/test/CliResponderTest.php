@@ -24,7 +24,7 @@ final class CliResponderTest extends TestCase
     {
         $config = test_config();
 
-        [$output, $code] = token\command($config, $config->username, TEST_PASSWORD);
+        [$output, $code] = token\command($config, TEST_USERNAME, TEST_PASSWORD);
 
         $this->assertSame(0, $code);
         $this->assertStringStartsWith('The token for user "test_user" is:' . PHP_EOL, $output);
@@ -45,7 +45,7 @@ final class CliResponderTest extends TestCase
     {
         $config = test_config_with(['totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ']);
 
-        [$output, $code] = token\command($config, $config->username, TEST_PASSWORD);
+        [$output, $code] = token\command($config, TEST_USERNAME, TEST_PASSWORD);
 
         $this->assertSame(1, $code);
         $this->assertStringContainsString('--code', $output);
@@ -58,7 +58,7 @@ final class CliResponderTest extends TestCase
 
         [$output, $code] = token\command(
             $config,
-            $config->username,
+            TEST_USERNAME,
             TEST_PASSWORD,
             \jaco\core\totp\code_at($secret, time()),
         );
@@ -71,7 +71,7 @@ final class CliResponderTest extends TestCase
     {
         $config = test_config_with(['totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ']);
 
-        [, $code] = token\command($config, $config->username, TEST_PASSWORD, '000000');
+        [, $code] = token\command($config, TEST_USERNAME, TEST_PASSWORD, '000000');
 
         $this->assertSame(1, $code);
     }

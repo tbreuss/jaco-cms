@@ -41,6 +41,6 @@ final class ApiSystemLogClearTest extends ApiTestCase
     {
         $response = $this->api('system/log/clear', [], 'POST', false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 }

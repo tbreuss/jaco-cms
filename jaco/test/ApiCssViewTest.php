@@ -49,6 +49,6 @@ final class ApiCssViewTest extends ApiTestCase
     {
         $response = $this->api('css/view', method: 'GET', authenticated: false, query: ['file' => self::FILE]);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 }

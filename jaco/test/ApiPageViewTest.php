@@ -90,6 +90,6 @@ final class ApiPageViewTest extends ApiTestCase
     {
         $response = $this->api('page/view', method: 'GET', authenticated: false, query: ['file' => self::PAGE]);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 }

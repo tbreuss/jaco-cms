@@ -29,7 +29,7 @@ final class ApiAuthHeaderTest extends ApiTestCase
 
     public function testMissingTokenIsForbidden(): void
     {
-        $this->assertSame(Status::FORBIDDEN, $this->dispatchWith()->status);
+        $this->assertSame(Status::UNAUTHORIZED, $this->dispatchWith()->status);
     }
 
     /** @param array<string, string> $headers @param array<string, string> $server */
@@ -45,6 +45,6 @@ final class ApiAuthHeaderTest extends ApiTestCase
 
     private function bearer(): string
     {
-        return 'Bearer ' . auth\authenticate($this->config, $this->config->username, TEST_PASSWORD);
+        return 'Bearer ' . auth\authenticate($this->config, TEST_USERNAME, TEST_PASSWORD);
     }
 }

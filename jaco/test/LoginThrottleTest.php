@@ -54,13 +54,13 @@ final class LoginThrottleTest extends TestCase
     {
         $config = test_config();
         for ($i = 0; $i < auth\LOGIN_MAX_ATTEMPTS; $i++) {
-            system\authenticate_user($config, $config->username, 'wrong-password', address: self::ATTACKER);
+            system\authenticate_user($config, TEST_USERNAME, 'wrong-password', address: self::ATTACKER);
         }
 
         // the attack blocks the attacker, not the owner – that is the whole point
         $payload = system\authenticate_user(
             $config,
-            $config->username,
+            TEST_USERNAME,
             TEST_PASSWORD,
             address: self::OWNER,
         );
@@ -76,7 +76,7 @@ final class LoginThrottleTest extends TestCase
         for ($host = 1; $host <= 50; $host++) {
             $address = '192.0.2.' . $host;
             for ($i = 0; $i < 5; $i++) {
-                system\authenticate_user($config, $config->username, 'wrong-password', address: $address);
+                system\authenticate_user($config, TEST_USERNAME, 'wrong-password', address: $address);
             }
         }
 
@@ -84,7 +84,7 @@ final class LoginThrottleTest extends TestCase
 
         $payload = system\authenticate_user(
             $config,
-            $config->username,
+            TEST_USERNAME,
             TEST_PASSWORD,
             address: self::OWNER,
         );
@@ -127,13 +127,13 @@ final class LoginThrottleTest extends TestCase
     {
         $config = test_config();
         for ($i = 0; $i < auth\LOGIN_MAX_ATTEMPTS; $i++) {
-            system\authenticate_user($config, $config->username, 'wrong-password', address: self::OTHER);
+            system\authenticate_user($config, TEST_USERNAME, 'wrong-password', address: self::OTHER);
         }
 
         // strict: the block holds for that address, correct credentials or not
         $payload = system\authenticate_user(
             $config,
-            $config->username,
+            TEST_USERNAME,
             TEST_PASSWORD,
             address: self::OTHER,
         );
@@ -147,7 +147,7 @@ final class LoginThrottleTest extends TestCase
         $config = test_config();
 
         for ($i = 0; $i < 10; $i++) {
-            $payload = system\authenticate_user($config, $config->username, 'wrong-password');
+            $payload = system\authenticate_user($config, TEST_USERNAME, 'wrong-password');
             $this->assertSame('Authentication failed.', $payload->data[0][1]);
         }
 

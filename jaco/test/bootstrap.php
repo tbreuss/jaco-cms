@@ -15,6 +15,7 @@ require_once __DIR__ . '/HttpServerTestCase.php';
  * The plaintext that test_config() stores as a hash. authenticate() expects a
  * digest, so tests log in with this value, not with $config->password.
  */
+const TEST_USERNAME = 'test_user';
 const TEST_PASSWORD = 'test_pass';
 
 /**
@@ -52,10 +53,9 @@ function test_config(): Config
         directoryPermissions: 0755,
         filePermissions: 0644,
         secretKey: 'test_1234',
-        username: 'test_user',
-        // hashed like a real settings.php: authenticate() expects a digest, and
-        // hashing per run keeps the tests free of a hardcoded fixture hash
-        password: test_config_password_hash(),
+        users: [
+            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'admin'],
+        ],
         totpSecret: '',
         phpErrorReporting: E_ALL,
         phpDisplayErrors: 0,

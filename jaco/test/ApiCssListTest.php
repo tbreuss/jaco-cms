@@ -36,7 +36,7 @@ final class ApiCssListTest extends ApiTestCase
     {
         $response = $this->api('css/list', method: 'GET', authenticated: false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 
     public function testBackupStylesheetsAreExcluded(): void

@@ -54,7 +54,7 @@ final class ApiBackupDeleteTest extends ApiTestCase
 
         $response = $this->api('backup/delete', ['file' => $backup], 'POST', false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
         $this->assertFileExists($this->config->backupDir . '/' . $backup);
     }
 

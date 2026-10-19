@@ -80,6 +80,14 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   callers have no address and are not throttled. The history keeps at most
   `LOGIN_MAX_ADDRESSES` addresses and drops everything outside the window
   (`jaco/backend/core/auth.php`).
+- **Roles decide what a route may do.** A token carries `role`: `viewer` may read,
+  `editor` may also write pages and uploads, `admin` may also change the CSS, the
+  settings and the backups. The router compares the ranks (`role_allows`); a route
+  without an explicit role needs `admin`, and an unknown role in `settings.php` falls
+  back to `viewer`. There is no legacy single login any more: `settings.php` lists users,
+  and without one nobody can log in. A token whose user no longer exists is rejected,
+  which ends their sessions when a user is removed
+  (`jaco/backend/core/auth.php`, `jaco/backend/core/router.php`, `jaco/routes.php`).
 - **The password changes through the api, not by editing the file.**
   `system/change-password` takes the current password as proof – a wrong one counts
   against the login throttle – and writes a new `password_hash()` digest through
@@ -179,6 +187,36 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   to be opened in the browser once, refuses to run as soon as `settings.php` exists and
   deletes itself on success.
 
+## Roles
+
+Every route needs a role: `viewer` reads, `editor` also changes content, `admin` also
+changes the site's configuration. Users and roles live in `settings.php` (`users`), the
+token carries the role, and the router compares the ranks. A route without an explicit
+`role:` needs `admin`, and an unknown role in `settings.php` falls back to `viewer`.
+
+| Capability | `viewer` | `editor` | `admin` |
+| --- | --- | --- | --- |
+| Read pages, uploads, stylesheets, backups and templates | ✓ | ✓ | ✓ |
+| Change the own password | ✓ | ✓ | ✓ |
+| Create, update, copy and delete pages | – | ✓ | ✓ |
+| Add and delete uploads | – | ✓ | ✓ |
+| Change a stylesheet | – | – | ✓ |
+| Restore and delete backups | – | – | ✓ |
+| Environment, error log and php-info | – | – | ✓ |
+
+The routes behind it, `jaco/routes.php` being the source of truth:
+
+- reading: everything is `viewer`, except the three `system` routes, which are `admin`
+- `viewer` may call `system/change-password`
+- `editor` may call `page/create`, `page/update`, `page/update-body`, `page/copy`,
+  `page/delete`, `upload/create` and `upload/delete`
+- `admin` may call `css/update`, `backup/restore`, `backup/delete`, `system`,
+  `system/log`, `system/log/clear` and `system/php-info`
+
+An invalid or missing token answers **401**: the session is gone and the frontend returns
+to the login. A role that is too low answers **403**: the session stays, only that action
+is refused – a viewer must not be logged out for clicking a button they may not use.
+
 ## Where the rules live
 
 | Area | Test |
@@ -187,6 +225,8 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | Login throttling: per address, unblock, bounded history | `jaco/test/LoginThrottleTest.php` |
 | Two-factor codes (RFC vectors) and login flow with secret | `jaco/test/TotpTest.php`, `jaco/test/ApiLoginTotpTest.php` |
 | CLI entry point: web requests are refused | `jaco/test/CliEntryPointTest.php` |
+| Roles in the docs match the route table | `jaco/test/DocsRolesTest.php` |
+| Role matrix over the api (admin, editor, viewer, unknown role) | `jaco/test/ApiRolesTest.php` |
 | System environment and log clearing | `jaco/test/ApiSystemTest.php`, `jaco/test/ApiSystemLogClearTest.php` |
 | Route table: public/private, methods | `jaco/test/ApiRoutesTest.php` |
 | HTTP: request headers, query handling | `jaco/test/HttpRequestTest.php` |

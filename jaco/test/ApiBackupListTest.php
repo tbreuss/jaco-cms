@@ -75,7 +75,7 @@ final class ApiBackupListTest extends ApiTestCase
     {
         $response = $this->api('backup/list', method: 'GET', authenticated: false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 
     public function testBackupOlderThanRetentionIsPruned(): void

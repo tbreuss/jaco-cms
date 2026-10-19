@@ -27,7 +27,7 @@ final class ApiRoutesTest extends ApiTestCase
     {
         $response = $this->api('page/list', [], 'GET', false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 
     public function testUnknownRouteIsNotFound(): void

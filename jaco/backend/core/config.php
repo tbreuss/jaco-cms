@@ -22,8 +22,6 @@ final readonly class Config
         public int $directoryPermissions,
         public int $filePermissions,
         public string $secretKey,
-        public string $username,
-        public string $password,
         public string $totpSecret,
         public int $phpErrorReporting,
         public int $phpDisplayErrors,
@@ -33,6 +31,8 @@ final readonly class Config
         public string $loginHistoryFile,
         public bool $maintenanceMode,
         public int $backupRetentionDays,
+        /** @var array<string, array{password?: mixed, role?: mixed}> name → digest and role */
+        public array $users = [],
     ) {}
 }
 
@@ -43,14 +43,15 @@ final readonly class Config
  * that sets nothing else. The output uses the project code style on
  * purpose: generated code is still scanned by the cs check.
  *
- * @param array<string, string> $settings username, password and secretKey
+ * @param array<string, mixed> $settings scalars and the users list
  */
 function write_settings(string $appDir, array $settings): bool
 {
     $content = '<?php declare(strict_types=1);' . PHP_EOL . PHP_EOL . 'return [' . PHP_EOL;
 
     foreach ($settings as $key => $value) {
-        $content .= "    '" . addcslashes($key, "'\\") . "' => '" . addcslashes($value, "'\\") . "'," . PHP_EOL;
+        // var_export keeps strings quoted and also writes nested arrays (the users list)
+        $content .= '    ' . var_export($key, true) . ' => ' . var_export($value, true) . ',' . PHP_EOL;
     }
 
     $content .= '];' . PHP_EOL;
@@ -118,9 +119,84 @@ function write_setting(string $appDir, string $key, mixed $value): bool
         }
     }
 
+    return write_source($appDir, $file, $patched);
+}
+
+/**
+ * Replaces one user's password digest in the users list of settings.php. A nested array
+ * cannot be patched line by line, so the block is located with a balanced bracket scan,
+ * rewritten as a whole and written through the same guard as write_setting().
+ */
+function write_user_password(string $appDir, string $username, string $digest): bool
+{
+    $file = $appDir . '/settings.php';
+
+    if (!is_file($file)) {
+        return false;
+    }
+
+    $source = file_get_contents($file);
+
+    if (!is_string($source)) {
+        return false;
+    }
+
+    $key = strpos($source, "'users'");
+
+    if ($key === false) {
+        return false;
+    }
+
+    $open = strpos($source, '[', $key);
+    $close = $open === false ? null : matching_bracket($source, $open);
+
+    if ($open === false || $close === null) {
+        return false;
+    }
+
+    $settings = include $file;
+    $users = is_array($settings) && is_array($settings['users'] ?? null) ? $settings['users'] : [];
+
+    if (!isset($users[$username]) || !is_array($users[$username])) {
+        return false;
+    }
+
+    $users[$username] = array_merge($users[$username], ['password' => $digest]);
+
+    return write_source($appDir, $file, substr($source, 0, $open) . var_export($users, true) . substr($source, $close + 1));
+}
+
+/**
+ * Position of the bracket closing the one at $open, or null when the source is unbalanced.
+ */
+function matching_bracket(string $source, int $open): ?int
+{
+    $depth = 0;
+    $length = strlen($source);
+
+    for ($index = $open; $index < $length; $index++) {
+        if ($source[$index] === '[') {
+            $depth++;
+        } elseif ($source[$index] === ']') {
+            $depth--;
+            if ($depth === 0) {
+                return $index;
+            }
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Writes a generated settings source: parsed first, so a broken edit never reaches the
+ * disk, then written to a temporary .php file and renamed over the target.
+ */
+function write_source(string $appDir, string $file, string $content): bool
+{
     try {
         // the tokens are unused: the call only has to throw on a syntax error
-        $tokens = token_get_all($patched, TOKEN_PARSE);
+        $tokens = token_get_all($content, TOKEN_PARSE);
     } catch (\ParseError) {
         return false;
     }
@@ -134,7 +210,7 @@ function write_setting(string $appDir, string $key, mixed $value): bool
     }
 
     $temporaryPhp = $temporary . '.php';
-    $written = file_put_contents($temporaryPhp, $patched);
+    $written = file_put_contents($temporaryPhp, $content);
     unlink($temporary);
 
     if ($written === false || rename($temporaryPhp, $file) === false) {
@@ -161,8 +237,6 @@ function create_default_config(string $appDir, array $settings = []): Config
     // copy of settings.dist.php can never log in with empty credentials or
     // sign tokens with the public example key. Random fallbacks are
     // unguessable, logging in stays impossible until real values are set.
-    $username = (string) ($settings['username'] ?? '');
-    $password = (string) ($settings['password'] ?? '');
     $secretKey = (string) ($settings['secretKey'] ?? '');
 
     // the upload directory stays inside the web root: the value is checked
@@ -190,8 +264,6 @@ function create_default_config(string $appDir, array $settings = []): Config
         directoryPermissions: 0755,
         filePermissions: 0644,
         secretKey: \strlen($secretKey) >= 32 ? $secretKey : (string) openssl_random_pseudo_bytes(32),
-        username: $username !== '' ? $username : 'admin',
-        password: $password !== '' ? $password : (string) openssl_random_pseudo_bytes(32),
         totpSecret: (string) ($settings['totpSecret'] ?? ''),
         phpErrorReporting: (int) ($settings['phpErrorReporting'] ?? E_ALL),
         phpDisplayErrors: (int) ($settings['phpDisplayErrors'] ?? 0),
@@ -201,5 +273,8 @@ function create_default_config(string $appDir, array $settings = []): Config
         loginHistoryFile: $appDir . '/runtime/log/loginhistory.json',
         maintenanceMode: (bool) ($settings['maintenanceMode'] ?? false),
         backupRetentionDays: (int) ($settings['backupRetentionDays'] ?? 90),
+        // users in settings.php; empty means "use the single username/password pair",
+        // which then counts as the admin (see auth\find_user)
+        users: is_array($settings['users'] ?? null) ? $settings['users'] : [],
     );
 }

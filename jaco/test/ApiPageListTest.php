@@ -78,7 +78,7 @@ final class ApiPageListTest extends ApiTestCase
     {
         $response = $this->api('page/list', method: 'GET', authenticated: false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 
     private function page(string $title): string

@@ -137,6 +137,7 @@
     "Too many attempts. Try again in {minutes} minute(s).": "Troppi tentativi. Riprova tra {minutes} minuto/minuti.",
     "Validation Error": "Errore di convalida",
     "Value cannot be blank.": "Il valore non deve essere vuoto.",
+    "Your role does not allow this.": "Il tuo ruolo non lo consente.",
     "{value} cannot be blank.": "{value} non deve essere vuoto.",
     "{value} does not exist.": "{value} non esiste.",
     "{value} is an invalid extension": "{value} ha un'estensione non valida",

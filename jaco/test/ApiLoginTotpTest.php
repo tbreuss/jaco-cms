@@ -34,7 +34,7 @@ final class ApiLoginTotpTest extends ApiTestCase
     private function credentials(array $extra = []): array
     {
         return array_merge([
-            'username' => $this->config->username,
+            'username' => TEST_USERNAME,
             'password' => TEST_PASSWORD,
         ], $extra);
     }

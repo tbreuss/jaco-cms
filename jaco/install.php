@@ -185,10 +185,11 @@ if ($isPost && !$checksFailed) {
             $errors[] = 'Could not generate a two-factor secret, please reload and try again.';
         } elseif (!write_settings($appDir, array_merge(
             [
-                'username' => $username,
-                // stored hashed like every other password; authenticate()
-                // verifies a digest, so the plaintext would never match
-                'password' => password_hash($password, PASSWORD_DEFAULT),
+                // one admin user: settings.php lists users, there is no separate
+                // username/password pair any more
+                'users' => [
+                    $username => ['password' => password_hash($password, PASSWORD_DEFAULT), 'role' => 'admin'],
+                ],
                 'secretKey' => $secret,
                 'defaultLanguage' => $language,
                 'uploadDir' => $uploadDir,

@@ -136,7 +136,7 @@ final class ApiUploadCreateTest extends ApiTestCase
 
         $response = $this->api('upload/create', method: 'POST', authenticated: false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
         $this->assertFileDoesNotExist($this->config->uploadDir . '/api-upload-create-test.png');
     }
 

@@ -19,12 +19,13 @@ function setup_command(Config $config): array
         return ["Could not write settings.\n", 1];
     }
 
-    $output = sprintf('Two-factor authentication is now required for "%s".', $config->username) . PHP_EOL;
+    $account = (string) array_key_first($config->users);
+    $output = sprintf('Two-factor authentication is now required for "%s".', $account) . PHP_EOL;
     $output .= 'Enter this secret manually in the authenticator app:' . PHP_EOL;
     $output .= $secret . PHP_EOL;
-    $output .= provisioning_uri($secret, $config->username) . PHP_EOL;
+    $output .= provisioning_uri($secret, $account) . PHP_EOL;
     $output .= 'Or scan this code from the terminal:' . PHP_EOL;
-    $output .= qr_text(provisioning_uri($secret, $config->username)) . PHP_EOL;
+    $output .= qr_text(provisioning_uri($secret, $account)) . PHP_EOL;
 
     return [$output, 0];
 }

@@ -30,8 +30,7 @@ final class ConfigDefaultsTest extends TestCase
             'secretKey' => '',
         ]);
 
-        $this->assertSame('admin', $config->username);
-        $this->assertNotSame('', $config->password);
+        $this->assertSame([], $config->users);
         $this->assertGreaterThanOrEqual(32, \strlen($config->secretKey));
     }
 
@@ -48,12 +47,11 @@ final class ConfigDefaultsTest extends TestCase
         $secret = str_repeat('a', 32);
         // the password is stored hashed, like a real settings.php
         $config = config\create_default_config(sys_get_temp_dir(), [
-            'username' => 'admin',
-            'password' => \password_hash('secure-password', PASSWORD_DEFAULT),
+            'users' => ['admin' => ['password' => \password_hash('secure-password', PASSWORD_DEFAULT), 'role' => 'admin']],
             'secretKey' => $secret,
         ]);
 
-        $this->assertSame('admin', $config->username);
+        $this->assertSame(['password', 'role'], array_keys($config->users['admin']));
         $this->assertSame($secret, $config->secretKey);
         $this->assertIsString(auth\authenticate($config, 'admin', 'secure-password'));
     }
@@ -78,7 +76,7 @@ final class ConfigDefaultsTest extends TestCase
 
     public function testEmptyStoredCredentialsNeverAuthenticate(): void
     {
-        $config = test_config_with(['username' => '', 'password' => '']);
+        $config = test_config_with(['users' => []]);
 
         $this->assertNull(auth\authenticate($config, '', ''));
     }

@@ -144,7 +144,7 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
             'body' => '<p>overwritten</p>',
         ], 'POST', false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
         $this->assertSame(self::DOCUMENT, file_get_contents($this->config->webDir . '/' . self::PAGE));
     }
 }

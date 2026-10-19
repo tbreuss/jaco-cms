@@ -61,7 +61,7 @@ final class ApiUploadDeleteTest extends ApiTestCase
     {
         $response = $this->api('upload/delete', ['fileName' => self::UPLOAD], 'POST', false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
         $this->assertFileExists($this->config->webDir . '/' . self::UPLOAD);
     }
 }

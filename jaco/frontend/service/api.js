@@ -61,7 +61,9 @@ const request = method => (action, params = {}, options = {}) => {
       // to the login screen so they can re-authenticate instead of keeping a
       // stale editor open. The login endpoint itself is excluded (401 there
       // means bad credentials, handled by LoginView).
-      if ((code === 401 || code === 403) && action !== 'login' && app.hasAuthToken()) {
+      // only 401 means the session is gone; a 403 is the role refusing one action,
+      // and logging out would throw away a perfectly valid session
+      if (code === 401 && action !== 'login' && app.hasAuthToken()) {
         app.removeAuthToken()
         addDanger(t('Session expired', null, 'Session expired. Please log in again.'))
         try {

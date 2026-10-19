@@ -35,8 +35,9 @@ final class ApiChangePasswordTest extends ApiTestCase
 
             // keep me, I explain the file
             return [
-                'username' => 'demo',
-                'password' => '{$this->digest}',
+                'users' => [
+                    'test_user' => ['password' => '{$this->digest}', 'role' => 'admin'],
+                ],
             ];
             PHP);
     }
@@ -61,7 +62,7 @@ final class ApiChangePasswordTest extends ApiTestCase
     {
         return test_config_with(array_merge([
             'appDir' => $this->dir,
-            'password' => $this->digest,
+            'users' => [TEST_USERNAME => ['password' => $this->digest, 'role' => 'admin']],
         ], $overrides));
     }
 
@@ -97,9 +98,8 @@ final class ApiChangePasswordTest extends ApiTestCase
 
         $source = (string) file_get_contents($this->settingsPath());
         $this->assertStringContainsString('// keep me, I explain the file', $source, 'comments survive');
-        $this->assertSame('demo', $this->settings()['username'], 'other keys survive');
 
-        $stored = (string) $this->settings()['password'];
+        $stored = (string) $this->settings()['users'][TEST_USERNAME]['password'];
         $this->assertTrue(password_verify('ein-neues-passwort', $stored), 'the new password verifies');
         $this->assertFalse(password_verify(self::CURRENT, $stored), 'the old password does not');
     }

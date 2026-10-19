@@ -71,6 +71,6 @@ final class ApiUploadListTest extends ApiTestCase
     {
         $response = $this->api('upload/list', method: 'GET', authenticated: false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 }

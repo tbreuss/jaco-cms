@@ -19,7 +19,7 @@ function &routes(): array
     return $routes;
 }
 
-function add(string $method, string $route, callable $callback, bool $authenticated, ?string $requestSchema = null, ?string $responseSchema = null): void
+function add(string $method, string $route, callable $callback, bool $authenticated, ?string $requestSchema = null, ?string $responseSchema = null, string $role = auth\ROLE_ADMIN): void
 {
     $routes = &routes();
     $routes[] = [
@@ -27,19 +27,21 @@ function add(string $method, string $route, callable $callback, bool $authentica
         'action' => $route,
         'callback' => $callback,
         'authenticated' => $authenticated,
+        // fail closed: a route without an explicit role needs the highest one
+        'role' => $role,
         'requestJsonSchema' => $requestSchema,
         'responseJsonSchema' => $responseSchema,
     ];
 }
 
-function get(string $route, callable $callback, bool $authenticated, ?string $requestSchema = null, ?string $responseSchema = null): void
+function get(string $route, callable $callback, bool $authenticated, ?string $requestSchema = null, ?string $responseSchema = null, string $role = auth\ROLE_ADMIN): void
 {
-    add('GET', $route, $callback, $authenticated, $requestSchema, $responseSchema);
+    add('GET', $route, $callback, $authenticated, $requestSchema, $responseSchema, $role);
 }
 
-function post(string $route, callable $callback, bool $authenticated, ?string $requestSchema = null, ?string $responseSchema = null): void
+function post(string $route, callable $callback, bool $authenticated, ?string $requestSchema = null, ?string $responseSchema = null, string $role = auth\ROLE_ADMIN): void
 {
-    add('POST', $route, $callback, $authenticated, $requestSchema, $responseSchema);
+    add('POST', $route, $callback, $authenticated, $requestSchema, $responseSchema, $role);
 }
 
 function dispatch(Request $request, Config $config): Response
@@ -64,8 +66,19 @@ function dispatch(Request $request, Config $config): Response
     $route = reset($routes_by_method);
 
     if ($route['authenticated'] === true) {
-        if (check_authorization($config, $authorizationHeader) === false) {
-            return json_response([['title' => '403 Forbidden']], Status::FORBIDDEN);
+        $claims = check_authorization($config, $authorizationHeader);
+
+        // 401 sends the frontend back to the login, 403 (role) must not: the session
+        // itself is fine, only this action is not allowed
+        if ($claims === null) {
+            return json_response([['title' => '401 Unauthorized']], Status::UNAUTHORIZED);
+        }
+
+        if (!auth\role_allows($claims['role'], $route['role'])) {
+            return json_response(
+                [['title' => '403 Forbidden', 'detail' => 'Your role does not allow this.']],
+                Status::FORBIDDEN,
+            );
         }
     }
 
@@ -122,21 +135,25 @@ function call_action(Closure $action, Request $request, Config $config, ?string 
     return $response;
 }
 
-function check_authorization(Config $config, string $authorizationHeader): bool
+/**
+ * @return array{user: string, role: string}|null claims of the token, null when the
+ *                                               header is missing or the token invalid
+ */
+function check_authorization(Config $config, string $authorizationHeader): ?array
 {
     if ($authorizationHeader === '') {
-        return false;
+        return null;
     }
 
     $bearer = 'Bearer';
 
     if (!str_starts_with($authorizationHeader, $bearer)) {
-        return false;
+        return null;
     }
 
     $token = trim(substr($authorizationHeader, strlen($bearer)));
 
-    return auth\is_authenticated($config, $token);
+    return auth\read_token($config, $token);
 }
 
 /**

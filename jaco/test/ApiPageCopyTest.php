@@ -110,7 +110,7 @@ final class ApiPageCopyTest extends ApiTestCase
             'dstPageTitle' => 'Copied title',
         ], 'POST', false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
         $this->assertFileDoesNotExist($this->config->webDir . '/' . self::TARGET);
     }
 

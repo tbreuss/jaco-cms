@@ -137,6 +137,7 @@
     "Too many attempts. Try again in {minutes} minute(s).": "Zu viele Versuche. In {minutes} Minute(n) erneut versuchen.",
     "Validation Error": "Validierungsfehler",
     "Value cannot be blank.": "Wert darf nicht leer sein.",
+    "Your role does not allow this.": "Ihre Rolle erlaubt das nicht.",
     "{value} cannot be blank.": "{value} darf nicht leer sein.",
     "{value} does not exist.": "{value} existiert nicht.",
     "{value} is an invalid extension": "{value} hat eine ungültige Erweiterung",

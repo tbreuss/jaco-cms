@@ -37,6 +37,6 @@ final class ApiSystemTest extends ApiTestCase
     {
         $response = $this->api('system', [], 'GET', false);
 
-        $this->assertSame(Status::FORBIDDEN, $response->status);
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
     }
 }

@@ -17,8 +17,7 @@ final class DefinedConstantsTest extends TestCase
         $configValues = $environment->data['config'];
 
         $this->assertSame('********', $configValues['secretKey']);
-        $this->assertSame('********', $configValues['password']);
-        $this->assertSame('test_user', $configValues['username']);
+        $this->assertSame('********', $configValues['users']);
         $this->assertSame(str_replace('\\', '/', $config->backupDir), $configValues['backupDir']);
 
         foreach ($configValues as $value) {
@@ -34,7 +33,6 @@ final class DefinedConstantsTest extends TestCase
         $constants = system\defined_constants($config);
 
         $this->assertArrayNotHasKey('config.secretKey', $constants);
-        $this->assertArrayNotHasKey('config.password', $constants);
-        $this->assertArrayNotHasKey('config.username', $constants);
+        $this->assertArrayNotHasKey('config.users', $constants);
     }
 }
