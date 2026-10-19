@@ -1075,11 +1075,10 @@ ul.form-errors {
     white-space: nowrap;
 }
 
-.page-goto-edit {
+button.page-goto-action {
     flex: 0 0 auto;
-    padding: 0.4rem 0.4rem;
-    font-size: 0.75rem;
-    line-height: 1;
+    padding: 8px 12px;
+    margin: 0;
 }
 
 a.list-group-item {

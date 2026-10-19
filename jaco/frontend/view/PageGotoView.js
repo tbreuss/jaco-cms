@@ -109,16 +109,34 @@ const pageList = (pages, selected) =>
       },
       m('span.page-goto-file', page.file),
       page.title ? m('span.page-goto-title', ' · ' + page.title) : null),
-      m('button.secondary.page-goto-edit', {
-        type: 'button',
-        onclick: (e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          openPage(page, true)
-        },
-        title: t('Edit page'),
-      }, t('Edit')))
-    ))
+      m('span.page-goto-actions', {style: {display: 'flex', gap: '0.25rem', flex: '0 0 auto'}},
+        m('button.secondary.page-goto-action', {
+          type: 'button',
+          onclick: (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            openPage(page)
+          },
+          title: t('View page'),
+        }, m(Icon, {name: 'view'})),
+        m('button.secondary.page-goto-action', {
+          type: 'button',
+          onclick: (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            openPage(page, true)
+          },
+          title: t('Edit content'),
+        }, m(Icon, {name: 'edit-content'})),
+        m('button.secondary.page-goto-action', {
+          type: 'button',
+          onclick: (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            m.route.set('/pages/edit/:file...', {file: page.file})
+          },
+          title: t('Edit page'),
+        }, m(Icon, {name: 'edit'}))))))
     : m('p', t('Sorry, no page found'))
 
 export const PageGotoView = {

@@ -22,6 +22,32 @@ const viewPage = (file) => {
   m.route.set('/')
 }
 
+const editContentPage = (file) => {
+  const target = '/page-edit'
+  let frame = null
+  try {
+    if (!iframe.hasElement()) {
+      m.route.set('/')
+      return
+    }
+    frame = iframe.getElement()
+  } catch (e) {
+    m.route.set('/')
+    return
+  }
+  frame.onload = () => {
+    frame.onload = null
+    frame.onerror = null
+    m.route.set(target)
+  }
+  frame.onerror = () => {
+    frame.onload = null
+    frame.onerror = null
+    m.route.set('/')
+  }
+  iframe.load('/' + file)
+}
+
 const copyPage = (page) => {
   PageCopySource.set(page.file, page.title, '/pages')
   m.route.set('/page-copy')
@@ -157,6 +183,15 @@ export const PageListView = {
                     title: t('View page'),
                     'aria-label': t('View page'),
                   }, m(Icon, {name: 'view'})),
+                  // edit the page content inline (rich-text editor)
+                  m(ButtonSecondary, {
+                    onclick: () => {
+                      editContentPage(page.file)
+                    },
+                    disabled: !auth.can('editor'),
+                    title: auth.can('editor') ? t('Edit content') : t('Edit content') + ' – ' + t('Your role does not allow this.'),
+                    'aria-label': t('Edit content'),
+                  }, m(Icon, {name: 'edit-content'})),
                   // edit the page document (Ace editor; read-only for a viewer)
                   m(ButtonSecondary, {
                     onclick: () => {

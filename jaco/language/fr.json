@@ -174,5 +174,6 @@
     "Use ↑↓ to select, Enter to open, Shift+Enter to edit, Esc to close.": "Utilisez ↑↓ pour sélectionner, Entrée pour ouvrir, Shift+Entrée pour modifier, Échap pour fermer.",
     "Delete upload": "Supprimer le téléchargement",
     "Delete backup": "Supprimer la sauvegarde",
-    "Restore backup": "Restaurer la sauvegarde"
+    "Restore backup": "Restaurer la sauvegarde",
+    "Edit content": "Modifier le contenu"
 }
