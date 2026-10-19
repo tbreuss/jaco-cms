@@ -10,6 +10,8 @@ use jaco\core\system;
 use jaco\core\totp;
 use jaco\domain\Payload;
 
+use function jaco\core\config\write_setting;
+
 function authenticate_user(
     Config $config,
     string $username,
@@ -69,6 +71,65 @@ function authenticate_user(
     auth\record_login_success($config, $address);
 
     return Payload::success(['token' => $token]);
+}
+
+/**
+ * Replaces the stored password digest. The current password is the proof, a wrong one
+ * counts as a failed login for the same throttle as the login form.
+ */
+function change_password(
+    Config $config,
+    string $withPassword,
+    string $withNewPassword,
+    string $address = '',
+): Payload {
+    $errors = data\validate(
+        [
+            'withPassword' => $withPassword,
+            'withNewPassword' => $withNewPassword,
+        ],
+        [
+            ['withPassword', 'is_required'],
+            ['withPassword', 'is_string'],
+            ['withNewPassword', 'is_required'],
+            ['withNewPassword', 'is_string'],
+        ],
+    );
+
+    if (count($errors) > 0) {
+        return Payload::invalid($errors);
+    }
+
+    // the same rule as the installer, otherwise the api would allow weaker passwords
+    if (strlen($withNewPassword) < 8) {
+        return Payload::invalid([['withNewPassword', 'Password needs at least 8 characters.']]);
+    }
+
+    // a blocked address may not turn this endpoint into an unthrottled password oracle
+    $blocked = auth\get_login_block_remaining($config, $address);
+
+    if ($blocked > 0) {
+        auth\record_login_failure($config, $address);
+        $minutes = (int) ceil($blocked / 60);
+
+        return Payload::invalid([['', 'Too many attempts. Try again in ' . $minutes . ' minute(s).']]);
+    }
+
+    if (auth\authenticate($config, $config->username, $withPassword) === null) {
+        auth\record_login_failure($config, $address);
+
+        return Payload::invalid([['withPassword', 'Authentication failed.']]);
+    }
+
+    $digest = password_hash($withNewPassword, PASSWORD_DEFAULT);
+
+    if (!write_setting($config->appDir, 'password', $digest)) {
+        return Payload::error([['', 'Could not write settings.']]);
+    }
+
+    auth\record_login_success($config, $address);
+
+    return Payload::success();
 }
 
 function get_environment(Config $config): Payload

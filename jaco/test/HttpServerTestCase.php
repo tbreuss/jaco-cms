@@ -61,6 +61,8 @@ abstract class HttpServerTestCase extends TestCase
         // the response headers come from the stream metadata: $http_response_header is
         // deprecated as of php 8.5 and http_get_last_response_headers() does not exist
         // before 8.4, the project supports 8.2 upwards
+        // the one place where suppression is right: while the server starts, every poll
+        // fails and a warning per attempt would bury the real failures
         $handle = @fopen('http://127.0.0.1:' . self::$port . $path, 'rb', false, $context);
         if ($handle === false) {
             return [0, [], ''];

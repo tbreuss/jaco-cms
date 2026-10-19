@@ -133,6 +133,14 @@ router\post(
     responseSchema: 'null.json',
 );
 
+router\post(
+    route: 'system/change-password',
+    callback: jaco\api\system\change_password\action(...),
+    authenticated: true,
+    requestSchema: 'system/change-password/request.json',
+    responseSchema: 'null.json',
+);
+
 router\get(
     route: 'system/php-info',
     callback: jaco\api\system\phpinfo\action(...),

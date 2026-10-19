@@ -1,7 +1,7 @@
 export const Fieldset = {
   view: ({attrs: {legend}, children}) =>
     m('fieldset',
-      m('legend', legend),
+      legend ? m('legend', legend) : null,
       children
     )
 }

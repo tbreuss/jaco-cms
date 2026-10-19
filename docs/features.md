@@ -80,6 +80,13 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   callers have no address and are not throttled. The history keeps at most
   `LOGIN_MAX_ADDRESSES` addresses and drops everything outside the window
   (`jaco/backend/core/auth.php`).
+- **The password changes through the api, not by editing the file.**
+  `system/change-password` takes the current password as proof – a wrong one counts
+  against the login throttle – and writes a new `password_hash()` digest through
+  `write_setting()`, which keeps the comments and the other keys of `settings.php` and
+  parses the result before it replaces the file. The route is deliberately exempt from
+  the maintenance block: it is the way back in when something went wrong
+  (`jaco/backend/domain/system.php`, `jaco/backend/core/config.php`).
 - **Two-factor codes count as attempts.** A wrong TOTP code records a failure like a
   wrong password, and a correct password without a code only reveals that a second
   step is required (`totpRequired`), never a token. There are no backup codes:

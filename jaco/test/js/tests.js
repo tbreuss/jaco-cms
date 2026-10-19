@@ -931,6 +931,81 @@ QUnit.test('a failed clear leaves the toasting to the api layer', async (assert)
   }
 })
 
+QUnit.module('SystemView password form', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+    SystemModel.load = () => Promise.resolve()
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    SystemModel.info = {}
+    document.getElementById('app')?.remove()
+  }
+})
+
+QUnit.test('the form posts both passwords and clears itself', async (assert) => {
+  const stub = stubRequest(() => Promise.resolve({}))
+
+  try {
+    m.render(fixture(), m(SystemView))
+
+    const headings = [...fixture().querySelectorAll('h2')].map((heading) => heading.textContent)
+    assert.ok(headings.includes(t('Change password')), 'the section has a heading')
+
+    const current = fixture().querySelector('#currentPassword')
+    const next = fixture().querySelector('#newPassword')
+    assert.ok(current, 'the current password field is rendered')
+    assert.ok(next, 'the new password field is rendered')
+
+    current.value = 'alt'
+    current.dispatchEvent(new Event('input'))
+    next.value = 'neu-neu-neu'
+    next.dispatchEvent(new Event('input'))
+
+    fixture().querySelector('form').dispatchEvent(new Event('submit', {cancelable: true}))
+    // the stub replaces m.request, so the automatic redraw is gone and m.redraw() waits
+    // for the next frame
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    m.render(fixture(), m(SystemView))
+
+    const call = stub.calls.find((options) => String(options.url).includes('system/change-password'))
+    assert.ok(call, 'the endpoint is called')
+    assert.strictEqual(call.body.withPassword, 'alt')
+    assert.strictEqual(call.body.withNewPassword, 'neu-neu-neu')
+    assert.strictEqual(fixture().querySelector('#currentPassword').value, '', 'the fields are cleared')
+    assert.ok(
+      state.list.some((entry) => entry.type === 'success' && entry.text === t('The password was changed.')),
+      'a success toast is shown'
+    )
+  } finally {
+    stub.restore()
+  }
+})
+
+QUnit.test('a validation error is shown under its field', async (assert) => {
+  const stub = stubRequest(() => Promise.reject({
+    code: 422,
+    response: [{source: {pointer: 'withNewPassword'}, title: 'Validation Error', detail: 'Password needs at least 8 characters.'}]
+  }))
+
+  try {
+    m.render(fixture(), m(SystemView))
+    fixture().querySelector('form').dispatchEvent(new Event('submit', {cancelable: true}))
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    m.render(fixture(), m(SystemView))
+
+    const error = fixture().querySelector('.field-error')
+    assert.ok(error, 'the error is rendered')
+    assert.ok(error.textContent.includes(t('Password needs at least 8 characters.')), 'the message is translated')
+  } finally {
+    stub.restore()
+  }
+})
+
 QUnit.module('SystemView requirements', {
   beforeEach: () => {
     window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')

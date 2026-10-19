@@ -1,7 +1,15 @@
 import {SystemModel as SystemModel} from '../model/SystemModel.js'
+import {ButtonGroup} from '../component/ButtonGroup.js'
+import {ButtonPrimary} from '../component/ButtonPrimary.js'
+import {Fieldset} from '../component/Fieldset.js'
+import {FormErrors, errorFor} from '../component/FormErrors.js'
+import {Icon} from '../component/Icon.js'
+import {InputPassword} from '../component/InputPassword.js'
 import {t} from '../model/i18n.js'
 import {formatBytes} from '../lib/format.js'
 import {app} from '../lib/app.js'
+import {api} from '../service/api.js'
+import {addSuccess} from '../state/actions.js'
 
 const keyValueTable = (title, object) => object
   ? m('div',
@@ -54,6 +62,7 @@ export const SystemView = {
     if (!app.hasAuthToken()) {
       m.route.set('/logout')
     }
+    passwordFormState.errors = []
     SystemModel.load()
   },
   oncreate: () => {
@@ -68,9 +77,84 @@ export const SystemView = {
       checksTable(t('Requirements'), SystemModel.info.checks),
       overviewTable(SystemModel.info.overview),
       keyValueTable(t('Configuration'), SystemModel.info.config),
+      passwordForm(),
     )
   )
 }
+
+// the current password is the proof: the endpoint verifies it like a login and counts
+// a wrong one against the same throttle
+const passwordFormState = {current: '', next: '', sending: false, errors: []}
+
+const submitPassword = (event) => {
+  event.preventDefault()
+  passwordFormState.sending = true
+  passwordFormState.errors = []
+
+  // the passwords belong in the body, not in the query string: a url ends up in
+  // server logs and browser history
+  api.post('system/change-password', {}, {
+    body: {
+      withPassword: passwordFormState.current,
+      withNewPassword: passwordFormState.next,
+    },
+  })
+    .then(() => {
+      passwordFormState.current = ''
+      passwordFormState.next = ''
+      addSuccess(t('The password was changed.'))
+    })
+    .catch(({code, response}) => {
+      // validation errors belong under the fields; everything else is toasted by the
+      // api layer already
+      if (code === 422) {
+        passwordFormState.errors = Array.isArray(response) ? response : []
+      }
+    })
+    .finally(() => {
+      passwordFormState.sending = false
+      m.redraw()
+    })
+}
+
+const passwordForm = () => m('div',
+  m('h2', t('Change password')),
+  m('form.form-narrow', {onsubmit: submitPassword},
+    m(Fieldset, {},
+      m(InputPassword, {
+        id: 'currentPassword',
+        wrap: 'div.row',
+        label: t('Current password'),
+        value: passwordFormState.current,
+        error: errorFor(passwordFormState.errors, 'withPassword'),
+        oninput: (value) => {
+          passwordFormState.current = value
+          passwordFormState.errors = []
+        },
+      }),
+      m(InputPassword, {
+        id: 'newPassword',
+        wrap: 'div.row',
+        label: t('New password'),
+        value: passwordFormState.next,
+        error: errorFor(passwordFormState.errors, 'withNewPassword'),
+        oninput: (value) => {
+          passwordFormState.next = value
+          passwordFormState.errors = []
+        },
+      }),
+      m(ButtonGroup, {wrap: 'div.row.text-right'},
+        m(ButtonPrimary, {disabled: passwordFormState.sending},
+          m(Icon, {name: 'check'}),
+          m('span', t('Change password')),
+        ),
+      ),
+      m(FormErrors, {
+        errors: passwordFormState.errors.filter((error) => !['withPassword', 'withNewPassword'].includes(error.source.pointer)),
+      }),
+    ),
+  ),
+)
 
 const overviewTable = (overview) => {
   if (overview == null) {

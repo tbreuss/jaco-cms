@@ -59,6 +59,100 @@ function write_settings(string $appDir, array $settings): bool
 }
 
 /**
+ * Writes one value into an existing settings.php and leaves the rest of the file alone:
+ * comments survive, every other key keeps its value, a missing key is appended before
+ * the closing bracket. Only scalar values are supported, which is all settings.php holds.
+ *
+ * The patched source is parsed before it replaces the file, so a broken edit never
+ * reaches the disk. The write goes through a temporary file in the same directory and a
+ * rename; the temporary file carries a .php suffix, so a request to it executes it
+ * instead of serving the settings as text.
+ */
+function write_setting(string $appDir, string $key, mixed $value): bool
+{
+    $file = $appDir . '/settings.php';
+
+    if (!is_file($file)) {
+        return false;
+    }
+
+    $source = file_get_contents($file);
+
+    if (!is_string($source)) {
+        return false;
+    }
+
+    $keySource = var_export($key, true);
+    $valueSource = var_export($value, true);
+    $quotedKey = preg_quote($key, '/');
+
+    $patched = preg_replace_callback(
+        '/^([ \t]*[\'"]' . $quotedKey . '[\'"][ \t]*=>[ \t]*).+?(,?[ \t]*)$/m',
+        static fn(array $match): string => $match[1] . $valueSource . $match[2],
+        $source,
+        1,
+        $count,
+    );
+
+    if ($patched === null) {
+        return false;
+    }
+
+    if ($count === 0) {
+        // present but not on one line (an array, for example): appending would create a
+        // second entry that shadows the first, so fail instead
+        if (preg_match('/[\'"]' . $quotedKey . '[\'"]\s*=>/', $source) === 1) {
+            return false;
+        }
+
+        $patched = preg_replace_callback(
+            '/^(\];)[ \t]*$/m',
+            static fn(array $match): string => '    ' . $keySource . ' => ' . $valueSource . ',' . PHP_EOL . $match[1],
+            $source,
+            1,
+            $count,
+        );
+
+        if ($patched === null || $count === 0) {
+            return false;
+        }
+    }
+
+    try {
+        // the tokens are unused: the call only has to throw on a syntax error
+        $tokens = token_get_all($patched, TOKEN_PARSE);
+    } catch (\ParseError) {
+        return false;
+    }
+    unset($tokens);
+
+    $mode = fileperms($file);
+    $temporary = tempnam($appDir, '.settings-');
+
+    if ($temporary === false) {
+        return false;
+    }
+
+    $temporaryPhp = $temporary . '.php';
+    $written = file_put_contents($temporaryPhp, $patched);
+    unlink($temporary);
+
+    if ($written === false || rename($temporaryPhp, $file) === false) {
+        if (is_file($temporaryPhp)) {
+            unlink($temporaryPhp);
+        }
+
+        return false;
+    }
+
+    if ($mode !== false) {
+        chmod($file, $mode & 0777);
+    }
+
+    return true;
+}
+
+/**
  * @param array<string, mixed> $settings
  */
 function create_default_config(string $appDir, array $settings = []): Config

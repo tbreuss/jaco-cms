@@ -534,6 +534,13 @@ fieldset {
     border: 1px solid var(--color-border);
 }
 
+/* A form on a wide page: inputs follow their container, so the container sets the
+   width. Wide enough that the 25 % label column fits "Aktuelles Passwort" on one line;
+   a longer translation wraps instead of overlapping the field. */
+.form-narrow {
+    max-width: 48rem;
+}
+
 fieldset:not(:last-child) {
     margin-bottom: 1rem;
 }
@@ -725,6 +732,7 @@ fieldset .row:first-of-type {
 }
 
 .row:has(> label) > input[type=text],
+.row:has(> label) > input[type=password],
 .row:has(> label) > select {
     width: 75%;
 }

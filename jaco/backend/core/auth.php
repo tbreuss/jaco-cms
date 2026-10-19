@@ -161,7 +161,11 @@ function recent_failures(array $history, string $address): array
 /** @return array{addresses: array<string, list<int>>} */
 function read_login_history(Config $config): array
 {
-    $content = @file_get_contents($config->loginHistoryFile);
+    if (!is_file($config->loginHistoryFile)) {
+        return ['addresses' => []];
+    }
+
+    $content = file_get_contents($config->loginHistoryFile);
 
     if (!is_string($content)) {
         return ['addresses' => []];
@@ -227,12 +231,12 @@ function write_login_history(Config $config, array $history): void
     $dir = \dirname($config->loginHistoryFile);
 
     if (!\is_dir($dir)) {
-        @mkdir($dir, 0755, true);
+        mkdir($dir, 0755, true);
     }
 
     $encoded = json_encode($history);
 
-    if ($encoded === false || @file_put_contents($config->loginHistoryFile, $encoded, LOCK_EX) === false) {
+    if ($encoded === false || file_put_contents($config->loginHistoryFile, $encoded, LOCK_EX) === false) {
         error_log('Could not write login history to ' . $config->loginHistoryFile);
     }
 }
