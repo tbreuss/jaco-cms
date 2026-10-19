@@ -16,11 +16,17 @@ Size: medium (version check against releases, copy new files, keep
 ## 2. Multiple users and roles
 
 One login, no second editor, no roles — a real obstacle for clubs run by
-volunteers and companies shared between owner and agency. Side effect: no
-protection against concurrent editing (last write wins, backups are the
-only net).
+volunteers and companies shared between owner and agency. It also blocks two
+use cases that keep coming up: a client who may only read, and a public demo
+installation (one viewer account plus sample content).
 
-Size: large (user records in `settings.php` or files, session handling, UI).
+Size: medium for a minimal version — users in `settings.php` (name → hash and
+role), three roles (`admin`, `editor`, `viewer`), the role in the token (it
+already carries `user` and an `admin` flag) and one check per route. The
+existing single login becomes the `admin` user. Protection against concurrent
+editing (last write wins, backups are the only net) is a separate item, and so
+is an account management UI: a documented format in `settings.php` is enough
+for one to three users.
 
 ## 3. SEO basics
 
