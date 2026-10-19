@@ -12,7 +12,6 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Maintenance toggle in the admin panel | `maintenanceMode` works but is `settings.php`-only. Add an API route plus a switch on the system page. | S |
 | open | Prune old backups on write, not only on list | `prune_old_backups()` runs in the backup listing only. Also prune when a backup is written (or via CLI), so the retention rule holds without opening the page. | S |
 | open | Warn on deleting referenced files | `upload/delete` and `page/delete` do not check references from other pages. List referencing pages and ask for confirmation. | M |
-| open | Start page after login is empty | `StartView` renders nothing. Show what can be done here (edit pages, uploads, backups) instead of a dead page. | S |
 | open | Upload progress and size feedback | `UploadListView` posts all files via one `Promise.all` with a single catch. Show per-file progress and pre-check sizes. | M |
 | open | Change password in the admin panel | No route and no menu entry; every change needs server access. Self-service for onboarding and rotation. | M |
 | open | Loading and not-found states in detail views | Page, upload and backup detail views render empty forms on slow networks and cannot be told apart from deleted entries. | S |
@@ -51,3 +50,13 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | Dead ErrorModal component | `remove: dead ErrorModal component` |
 | Inline editor loses the first unsaved change | `fix: detect the first unsaved change in the inline editor` |
 | Dirty check in the inline editor disabled editing | `fix: detect the first unsaved change in the inline editor` |
+| QUnit suite cannot run twice within 10 minutes | `test: reset the login throttle before a run` |
+
+## Won't do
+
+Proposals that look like a gap but are not: closing them would cost more than
+they gain. Recorded so they are not brought up again.
+
+| Item | Why not |
+| --- | --- |
+| Fill the start page (`/`) with a quick-action dashboard | Measured as a regression: the admin panel is `position: fixed` over the site preview, so any content fills `#app` and hides the site (panel 97 px → 829 px, preview 747 px → ~0 px). `/` renders nothing on purpose — the JACO logo links to it from every view and is the way back to browsing the site. See the comment in `frontend/view/StartView.js`. |

@@ -64,10 +64,13 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   `text/css` carries no script vector. Only `.css` files below the web root are accepted,
   `jaco/` is out of reach, and the previous version is backed up first
   (`jaco/backend/domain/css.php`).
-- **Maintenance mode blocks writes, not reads.** With `MAINTENANCE_MODE` every mutating
-  route (page create, update, update body, delete, copy, `css/update`, `upload/create`,
-  `upload/delete`, `backup/restore`, `backup/delete`) answers with the maintenance
-  response, while lists and views keep working.
+- **Maintenance mode blocks writes, not reads.** With `maintenanceMode` in
+  `settings.php` every mutating route (page create, update, update body, delete, copy,
+  `css/update`, `upload/create`, `upload/delete`, `backup/restore`, `backup/delete`)
+  answers with the maintenance response, while lists and views keep working. Every api
+  response also carries the flag as an `X-Maintenance-Mode` header (`jaco/api.php`);
+  the admin reads it off the response instead of polling, so the banner follows the
+  setting without a reload (`jaco/frontend/lib/maintenance.js`).
 - **Login attempts are throttled per address, never globally.** Three failures from one
   address within ten minutes block that address for ten minutes; a blocked attempt counts
   again, so hammering keeps its own block alive. Rotating usernames does not help (the
@@ -218,6 +221,13 @@ headless:
 
     php -S 127.0.0.1:8899 -t . &
     node jaco/test/js/runner.mjs
+
+The runner clears the login history before it starts. The suite logs in with a deliberately
+wrong password and the api counts every failure towards the login throttle — three attempts
+block the address for ten minutes. Reloading `jaco/test/js/index.html` in a browser bypasses
+that reset, so unblock again once the third reload has failed:
+
+    php jaco/cli.php auth:unblock
 
 Not tested on purpose: the diagnostics endpoints (`system`, `system/log`,
 `system/php-info`, all environment dependent; `system\defined_constants()` itself is

@@ -40,12 +40,14 @@ import {BackupListModel} from '/jaco/frontend/model/BackupListModel.js'
 import {CssEditView, setEditor as setCssEditor, onSaveButtonClicked as onSaveCssButtonClicked, state as cssEditState} from '/jaco/frontend/view/CssEditView.js'
 import {CssEditModel} from '/jaco/frontend/model/CssEditModel.js'
 import {api} from '/jaco/frontend/service/api.js'
-import {t, tError} from '/jaco/frontend/model/i18n.js'
+import {t, tError, i18n} from '/jaco/frontend/model/i18n.js'
 import {isSaveShortcut, isSaveAndCloseShortcut, bindSaveShortcut, saveShortcutLabel, saveAndCloseShortcutLabel} from '/jaco/frontend/lib/shortcuts.js'
 import {iframe} from '/jaco/frontend/lib/iframe.js'
 import {getTheme, setTheme, applyTheme} from '/jaco/frontend/lib/theme.js'
 import {aceThemeName, watchAceTheme} from '/jaco/frontend/lib/aceTheme.js'
 import {dirty} from '/jaco/frontend/lib/dirty.js'
+import {maintenance} from '/jaco/frontend/lib/maintenance.js'
+import {DefaultLayout} from '/jaco/frontend/layout/Default.js'
 import {formatDateTimeCompact, formatDateTimeFull, formatBytes} from '/jaco/frontend/lib/format.js'
 import {state} from '/jaco/frontend/state/state.js'
 const fixture = () => document.getElementById('qunit-fixture')
@@ -324,6 +326,201 @@ QUnit.test('500 error includes detail and reference in toast', async (assert) =>
     assert.ok(msg.text.includes('reference abc123'), 'toast contains log reference')
   } finally {
     stub.restore()
+  }
+})
+
+QUnit.test('title and detail are translated separately, not as one joined string', async (assert) => {
+  // the api sends both halves as keys, only their concatenation is unknown.
+  // Pin a locale where they actually differ: with the English source messages
+  // the joined fallback and the fixed lookup produce the same text, so the
+  // test would pass either way.
+  const savedMessages = i18n.messages
+  i18n.messages = {
+    'Server Error': 'Serverfehler',
+    'Could not read file.': 'Datei konnte nicht gelesen werden.',
+  }
+  const stub = stubRequest(() => Promise.reject({
+    code: 500,
+    response: {title: 'Server Error', detail: 'Could not read file.'}
+  }))
+  const before = state.list.length
+
+  try {
+    await api.get('page/list').catch(() => {})
+
+    assert.ok(state.list.length > before, 'a danger message was added')
+    const msg = state.list[state.list.length - 1]
+    assert.strictEqual(
+      msg.text,
+      'Serverfehler: Datei konnte nicht gelesen werden.',
+      'both halves come from the translation table'
+    )
+  } finally {
+    stub.restore()
+    i18n.messages = savedMessages
+    maintenance.reset()
+  }
+})
+
+// the app loads translations on page load, and that response carries the
+// maintenance header. It can land in the middle of these tests and flip the
+// flag back on, because settings.php is a developer's own file. Wait for that
+// boot load to settle, then start every test from a known state.
+const waitForBootLoad = () => new Promise((resolve) => {
+  const started = Date.now()
+  const check = () => {
+    if (i18n.status === 'idle' || Date.now() - started > 2000) {
+      maintenance.reset()
+      resolve()
+      return
+    }
+    setTimeout(check, 10)
+  }
+  check()
+})
+
+// the real readFrom, captured before beforeEach stubs it
+const realReadFrom = maintenance.readFrom
+
+QUnit.module('maintenance signal', {
+  beforeEach: async (assert) => {
+    await waitForBootLoad()
+    // every response carries the header, so the app's own requests keep
+    // flipping the flag. Stub readFrom so tests control the state directly.
+    maintenance.readFrom = () => {}
+  },
+  afterEach: () => {
+    maintenance.reset()
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    m.render(fixture(), null)
+  }
+})
+
+QUnit.test('a 503 does not change the signal, the state comes from the header', async (assert) => {
+  // the mode is read from the response header, never guessed from a status
+  // code: a web server or proxy answers 503 on its own, and that is not a lock
+  maintenance.reset()
+  const stub = stubRequest(() => Promise.reject({
+    code: 503,
+    response: [{title: 'Maintenance mode: changes are disabled', detail: 'Changes are disabled while maintenance mode is enabled.'}]
+  }))
+
+  try {
+    await api.post('page/update', {}, {body: {}}).catch(() => {})
+    assert.notOk(maintenance.isActive(), 'a rejected write leaves the signal alone')
+  } finally {
+    stub.restore()
+  }
+})
+
+QUnit.test('readFrom sets the signal from the response header', (assert) => {
+  maintenance.readFrom = realReadFrom
+  maintenance.reset()
+  const fake = (value) => ({getResponseHeader: (name) => value})
+
+  maintenance.readFrom(fake('true'))
+  assert.ok(maintenance.isActive(), 'true sets it on')
+
+  maintenance.readFrom(fake('false'))
+  assert.notOk(maintenance.isActive(), 'false sets it off')
+
+  maintenance.set(true)
+  maintenance.readFrom(fake(null))
+  assert.ok(maintenance.isActive(), 'an absent header leaves the state untouched')
+})
+
+QUnit.test('a maintenance 503 produces a toast even while the banner is up', async (assert) => {
+  // the banner is the lasting signal, the toast confirms the failed save: both
+  // together, because a silent save looks like nothing happened at all
+  maintenance.set(true)
+  const stub = stubRequest(() => Promise.reject({
+    code: 503,
+    response: [{title: 'Maintenance mode: changes are disabled', detail: 'Changes are disabled while maintenance mode is enabled.'}]
+  }))
+  const before = state.list.length
+
+  try {
+    await api.post('page/update', {}, {body: {}}).catch(() => {})
+    assert.ok(state.list.length > before, 'the failed save is reported')
+  } finally {
+    stub.restore()
+  }
+})
+
+// callers pass background: true so mithril redraws neither on success nor on failure;
+// without an explicit redraw the toast only appeared after the next page change, where
+// it looked like it belonged to that page
+QUnit.test('a failed background request redraws so its toast appears right away', async (assert) => {
+  const stub = stubRequest(() => Promise.reject({
+    code: 503,
+    response: [{title: 'Maintenance mode: changes are disabled', detail: 'Changes are disabled while maintenance mode is enabled.'}]
+  }))
+  const realRedraw = m.redraw
+  let redraws = 0
+  m.redraw = () => { redraws++ }
+  const before = state.list.length
+
+  try {
+    await api.post('system/log/clear', {}, {background: true, body: {}}).catch(() => {})
+
+    assert.strictEqual(state.list.length, before + 1, 'exactly one toast for the failed request')
+    assert.ok(redraws > 0, 'a redraw is requested, the toast does not wait for the next click')
+  } finally {
+    m.redraw = realRedraw
+    stub.restore()
+  }
+})
+
+QUnit.test('a real server error is reported even while the mode is on', async (assert) => {
+  // suppressing every error while maintenance is on would hide actual failures
+  maintenance.set(true)
+  const stub = stubRequest(() => Promise.reject({
+    code: 500,
+    response: {title: 'PHP Error', detail: 'An unexpected error occurred (reference abc123).'}
+  }))
+  const before = state.list.length
+
+  try {
+    await api.post('page/update', {}, {body: {}}).catch(() => {})
+    assert.ok(state.list.length > before, 'a 500 still produces a toast')
+  } finally {
+    stub.restore()
+  }
+})
+
+QUnit.test('the layout shows a banner only while the signal is on', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
+  // the layout renders a placeholder until the translations arrive, so pin
+  // the status: otherwise the test passes or fails depending on when i18n
+  // happened to settle
+  const savedStatus = i18n.status
+  i18n.status = 'idle'
+
+  try {
+    m.render(fixture(), m(DefaultLayout, m('div')))
+    assert.notOk(fixture().querySelector('.maintenance-banner'), 'no banner while off')
+
+    maintenance.set(true)
+    m.render(fixture(), m(DefaultLayout, m('div')))
+    const banner = fixture().querySelector('.maintenance-banner')
+    assert.ok(banner, 'banner appears while the mode is on')
+    assert.strictEqual(banner.textContent, t('Changes are disabled while maintenance mode is enabled.'))
+    assert.strictEqual(banner.getAttribute('role'), 'status', 'announced to screen readers')
+
+    // the loader is an overlay: it must take no space, otherwise its dark track
+    // pushed the banner down and read as a black border under it
+    const loader = fixture().querySelector('#loader')
+    assert.ok(loader, 'the loader is rendered')
+    assert.strictEqual(getComputedStyle(loader).position, 'fixed', 'the loader takes no layout space')
+    assert.strictEqual(
+      getComputedStyle(loader).backgroundColor,
+      'rgba(0, 0, 0, 0)',
+      'the idle track is invisible'
+    )
+    assert.strictEqual(getComputedStyle(loader).height, '2px', 'the bar stays 2px high')
+    assert.strictEqual(getComputedStyle(loader, '::after').height, '2px', 'the segment stays 2px high')
+  } finally {
+    i18n.status = savedStatus
   }
 })
 
@@ -707,6 +904,33 @@ QUnit.test('confirming clear reloads the list, cancelling does nothing', (assert
   }
 })
 
+// the api layer reports a failed request already; a second toast from the view would
+// repeat the same message (that is how two toasts appeared when clearing the log
+// failed in maintenance mode)
+QUnit.test('a failed clear leaves the toasting to the api layer', async (assert) => {
+  const realConfirm = window.confirm
+  const realClear = PhpLogModel.clear
+  const before = state.list.length
+  PhpLogModel.clear = () => Promise.reject({
+    code: 503,
+    response: {title: 'Maintenance mode: changes are disabled', detail: 'Changes are disabled while maintenance mode is enabled.'}
+  })
+
+  try {
+    window.confirm = () => true
+    PhpLogModel.data = []
+    PhpLogModel.isLoading = false
+    m.render(fixture(), m(PhpLogView))
+    fixture().querySelector('.content button').click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    assert.strictEqual(state.list.length, before, 'no toast from the view itself')
+  } finally {
+    window.confirm = realConfirm
+    PhpLogModel.clear = realClear
+  }
+})
+
 QUnit.module('SystemView requirements', {
   beforeEach: () => {
     window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'qunit-token')
@@ -756,6 +980,21 @@ QUnit.test('checks render with status, label and detail', (assert) => {
     `0 B / ${t('Empty')}`,
     'empty log shows size and marker'
   )
+})
+
+QUnit.test('maintenanceMode reads as yes/no', (assert) => {
+  const configRow = (maintenanceMode) => {
+    SystemModel.info = {
+      checks: [],
+      config: {maintenanceMode: maintenanceMode},
+      overview: {pages: 0, uploads: 0, backups: 0, projectSize: 0, logSize: 0, logLines: 0},
+    }
+    m.render(fixture(), m(SystemView))
+    return [...fixture().querySelectorAll('tbody tr')].find((tr) => tr.cells[0].textContent === 'maintenanceMode')
+  }
+
+  assert.strictEqual(configRow('true').cells[1].textContent, t('Yes'), 'true shown as a translated yes')
+  assert.strictEqual(configRow('false').cells[1].textContent, t('No'), 'false shown as a translated no')
 })
 
 QUnit.module('AboutView', {

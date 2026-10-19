@@ -91,6 +91,18 @@ if (chrome === null) {
 
 await waitForServer(url)
 
+// The suite logs in with a deliberately wrong password ('login against the real
+// api' in tests.js) and the api counts every failure towards the login throttle:
+// three attempts block the address for ten minutes. Without this reset the next
+// run inside that window fails on an error the test never triggered, and the
+// red run says nothing about the change under test. The file holds failed
+// attempts only and is gitignored, so clearing it is safe.
+const loginHistory = join(import.meta.dirname, '../../runtime/log/loginhistory.json')
+if (existsSync(loginHistory)) {
+  rmSync(loginHistory, {force: true})
+  console.log('Reset the login throttle (runtime/log/loginhistory.json)')
+}
+
 const port = await freePort()
 const profile = mkdtempSync(join(tmpdir(), 'jaco-qunit-'))
 const browser = spawn(chrome, [

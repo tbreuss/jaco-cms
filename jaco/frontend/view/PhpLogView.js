@@ -1,8 +1,8 @@
 import {PhpLogModel} from '../model/PhpLogModel.js'
 import {ButtonDanger} from '../component/ButtonDanger.js'
 import {Icon} from '../component/Icon.js'
-import {t, tError} from '../model/i18n.js'
-import {addDanger, addSuccess} from '../state/actions.js'
+import {t} from '../model/i18n.js'
+import {addSuccess} from '../state/actions.js'
 import {app} from '../lib/app.js'
 
 const clearLog = () => {
@@ -11,12 +11,9 @@ const clearLog = () => {
       .then(() => {
         addSuccess(t('Log was successfully cleared.'))
       })
-      .catch(({response}) => {
-        const error = (response ?? [])[0]
-        if (error) {
-          addDanger(error.detail ? tError(error.detail) : t(error.title, null, error.title))
-        }
-        m.redraw()
+      .catch(() => {
+        // the api layer already reported the failure (one toast per error), so only
+        // swallow the rejection here: a second toast would repeat the same message
       })
   }
 }
