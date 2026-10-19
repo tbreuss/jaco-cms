@@ -8,6 +8,7 @@ import {Icon} from '../../component/Icon.js'
 import {api} from '../../service/api.js'
 import {addDanger, addSuccess} from '../../state/actions.js'
 import {app} from '../../lib/app.js'
+import {auth} from '../../lib/auth.js'
 import {formatDateTimeCompact, formatDateTimeFull} from '../../lib/format.js'
 
 const viewUpload = (file) => {
@@ -137,6 +138,8 @@ export const UploadListView = {
     m('.content',
       m('div', {style: {display: 'flex', justifyContent: 'space-between', alignItems: 'center'}},
         m('h1', t('Uploads')),
+        // uploading writes into upload/: editor and admin only; the disabled
+        // button shows the capability without offering it
         m('div',
           m(ButtonPrimary, {
             onclick: () => {
@@ -144,7 +147,9 @@ export const UploadListView = {
               if (input) {
                 input.click()
               }
-            }
+            },
+            disabled: !auth.can('editor'),
+            title: auth.can('editor') ? t('Upload files') : t('Upload files') + ' – ' + t('Your role does not allow this.'),
           }, m(Icon, {name: 'upload'}), m('span', t('Upload files'))),
           m('input#uploadFiles[type=file][multiple]', {
             style: {display: 'none'},
@@ -188,7 +193,8 @@ export const UploadListView = {
                       e.redraw = false
                       deleteAction(page)
                     },
-                    title: t('Delete'),
+                    disabled: !auth.can('editor'),
+                    title: auth.can('editor') ? t('Delete') : t('Delete') + ' – ' + t('Your role does not allow this.'),
                     'aria-label': t('Delete'),
                   }, m(Icon, {name: 'delete'})),
                 )

@@ -179,23 +179,30 @@ if ($isPost && !$checksFailed) {
             $errors[] = 'Could not create the upload directory ' . $uploadDir . ', please create it by hand.';
         }
 
+        $user = [
+            'password' => password_hash($password, PASSWORD_DEFAULT),
+            'role' => 'admin',
+            // the per user preference starts with the chosen site language
+            'language' => $language,
+        ];
+
+        // the second factor belongs to this user record, not to the installation
+        if (is_string($totpSecret)) {
+            $user['totpSecret'] = $totpSecret;
+        }
+
         if (!is_string($secret)) {
             $errors[] = 'Could not generate a secret key, please reload and try again.';
         } elseif ($totp && !is_string($totpSecret)) {
             $errors[] = 'Could not generate a two-factor secret, please reload and try again.';
-        } elseif (!write_settings($appDir, array_merge(
-            [
-                // one admin user: settings.php lists users, there is no separate
-                // username/password pair any more
-                'users' => [
-                    $username => ['password' => password_hash($password, PASSWORD_DEFAULT), 'role' => 'admin'],
-                ],
-                'secretKey' => $secret,
-                'defaultLanguage' => $language,
-                'uploadDir' => $uploadDir,
-            ],
-            is_string($totpSecret) ? ['totpSecret' => $totpSecret] : [],
-        ))) {
+        } elseif (!write_settings($appDir, [
+            // one admin user: settings.php lists users, there is no separate
+            // username/password pair any more
+            'users' => [$username => $user],
+            'secretKey' => $secret,
+            'defaultLanguage' => $language,
+            'uploadDir' => $uploadDir,
+        ])) {
             $errors[] = 'Could not write jaco/settings.php, please check write permissions.';
         } else {
             $written = require $appDir . '/settings.php';
@@ -213,7 +220,7 @@ if ($isPost && !$checksFailed) {
                         . install_escape($username) . '</strong>.</p>'
                         . '<p>Scan this code with the authenticator app. The secret is also stored in '
                         . '<code>jaco/settings.php</code> and can be shown again with '
-                        . '<code>php jaco/cli.php auth:totp-setup</code>.</p>'
+                        . '<code>php jaco/cli.php auth:totp-setup -u ' . install_escape($username) . '</code>.</p>'
                         . '<div style="max-width:220px">' . qr_svg(provisioning_uri($totpSecret, $username)) . '</div>';
                 }
                 install_page(

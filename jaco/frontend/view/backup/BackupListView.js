@@ -8,6 +8,7 @@ import {Icon} from '../../component/Icon.js'
 import {api} from '../../service/api.js'
 import {addDanger, addSuccess} from '../../state/actions.js'
 import {app} from '../../lib/app.js'
+import {auth} from '../../lib/auth.js'
 import {formatDateTimeCompact, formatDateTimeFull} from '../../lib/format.js'
 
 const restoreBackup = (backup) => {
@@ -158,12 +159,15 @@ export const BackupListView = {
                   title: t('View'),
                   'aria-label': t('View'),
                 }, m(Icon, {name: 'view'})),
+                // restoring and deleting rewrite files: admin only, matching the
+                // route table. The buttons stay visible but disabled for everyone else.
                 m(ButtonDanger, {
                   onclick: (e) => {
                     e.redraw = false
                     deleteAction(backup)
                   },
-                  title: t('Delete'),
+                  disabled: !auth.can('admin'),
+                  title: auth.can('admin') ? t('Delete') : t('Delete') + ' – ' + t('Your role does not allow this.'),
                   'aria-label': t('Delete'),
                 }, m(Icon, {name: 'delete'})),
                 m(ButtonPrimary, {
@@ -171,7 +175,8 @@ export const BackupListView = {
                     e.redraw = false
                     restoreBackup(backup)
                   },
-                  title: t('Restore'),
+                  disabled: !auth.can('admin'),
+                  title: auth.can('admin') ? t('Restore') : t('Restore') + ' – ' + t('Your role does not allow this.'),
                   'aria-label': t('Restore'),
                 }, m(Icon, {name: 'restore'}))
               )

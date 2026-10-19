@@ -161,6 +161,27 @@ final class ApiChangePasswordTest extends ApiTestCase
         $this->assertSame('Too many attempts. Try again in 10 minute(s).', $body[0]['detail']);
     }
 
+    public function testADisabledPasswordChangeIsRejected(): void
+    {
+        // a public demo account sets passwordChange to false, otherwise the first
+        // visitor locks everyone else out by changing the seeded password
+        $this->config = $this->config(['users' => [
+            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'viewer', 'passwordChange' => false],
+        ]]);
+        $before = (string) file_get_contents($this->settingsPath());
+
+        $response = $this->change([
+            'withPassword' => TEST_PASSWORD,
+            'withNewPassword' => 'ein-neues-passwort',
+        ], $this->config);
+
+        $this->assertSame(Status::FORBIDDEN, $response->status);
+
+        $body = json_decode((string) $response->body, true);
+        $this->assertSame('Password changes are disabled for this account.', $body[0]['detail']);
+        $this->assertSame($before, (string) file_get_contents($this->settingsPath()), 'the file is untouched');
+    }
+
     public function testWorksWhileMaintenanceModeIsOn(): void
     {
         // the way back in must not be blocked by the mode it is meant to recover from

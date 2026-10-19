@@ -10,7 +10,7 @@ use jaco\core\system;
 use jaco\core\totp;
 use jaco\domain\Payload;
 
-use function jaco\core\config\write_user_password;
+use function jaco\core\config\write_user_field;
 
 function authenticate_user(
     Config $config,
@@ -54,7 +54,12 @@ function authenticate_user(
         return Payload::invalid([['', 'Authentication failed.']]);
     }
 
-    if ($config->totpSecret === '') {
+    // the second factor belongs to the user, never to the installation: a shared secret
+    // would let anyone with a code in as any user
+    $user = auth\find_user($config, $username);
+    $secret = $user['totpSecret'] ?? '';
+
+    if ($secret === '') {
         auth\record_login_success($config, $address);
         return Payload::success(['token' => $token]);
     }
@@ -63,7 +68,7 @@ function authenticate_user(
         return Payload::success(['totpRequired' => true]);
     }
 
-    if (!totp\verify_code($config->totpSecret, $withTotpCode)) {
+    if (!totp\verify_code($secret, $withTotpCode)) {
         auth\record_login_failure($config, $address);
         return Payload::invalid([['totpCode', 'Invalid authentication code.']]);
     }
@@ -124,10 +129,18 @@ function change_password(
         return Payload::invalid([['withPassword', 'Authentication failed.']]);
     }
 
+    // a public demo account must keep its seeded password, otherwise the first
+    // visitor locks everyone else out; the api turns this into 403
+    $user = auth\find_user($config, $username);
+
+    if ($user === null || !$user['passwordChange']) {
+        return Payload::invalid([['', 'Password changes are disabled for this account.']]);
+    }
+
     $digest = password_hash($withNewPassword, PASSWORD_DEFAULT);
 
     // a new digest in place, keeping the rest of the file and the other users untouched
-    if (!write_user_password($config->appDir, $username, $digest)) {
+    if (!write_user_field($config->appDir, $username, 'password', $digest)) {
         return Payload::error([['', 'Could not write settings.']]);
     }
 
@@ -153,7 +166,6 @@ function display_config(Config $config): array
     $values = get_object_vars($config);
     $values['secretKey'] = '********';
     $values['users'] = '********';
-    $values['totpSecret'] = $values['totpSecret'] === '' ? '' : '********';
     $values['directoryPermissions'] = sprintf('0%o', $config->directoryPermissions);
     $values['filePermissions'] = sprintf('0%o', $config->filePermissions);
     $values['maintenanceMode'] = $config->maintenanceMode ? 'true' : 'false';
@@ -295,5 +307,8 @@ function get_version(Config $config): Payload
     return Payload::success([
         'name' => 'jaco',
         'version' => $config->appVersion,
+        // public on purpose: the About page shows it to every role, and the
+        // version is visible on the project page anyway
+        'phpVersion' => PHP_VERSION,
     ]);
 }

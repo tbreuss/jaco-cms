@@ -21,6 +21,26 @@ final class ApiRoutesTest extends ApiTestCase
         $body = (array) json_decode((string) $response->body, true);
         $this->assertArrayHasKey('name', $body);
         $this->assertArrayHasKey('version', $body);
+        $this->assertArrayNotHasKey('phpVersion', $body, 'the public index must not expose the PHP version');
+    }
+
+    public function testAboutRouteRequiresAToken(): void
+    {
+        $response = $this->api('about', [], 'GET', false);
+
+        $this->assertSame(Status::UNAUTHORIZED, $response->status);
+    }
+
+    public function testAboutRouteReturnsTheVersionDataForARole(): void
+    {
+        $response = $this->api('about', [], 'GET', true);
+
+        $this->assertSame(Status::OK, $response->status);
+
+        $body = (array) json_decode((string) $response->body, true);
+        $this->assertArrayHasKey('name', $body);
+        $this->assertArrayHasKey('version', $body);
+        $this->assertArrayHasKey('phpVersion', $body);
     }
 
     public function testPrivateRouteIsForbiddenWithoutToken(): void

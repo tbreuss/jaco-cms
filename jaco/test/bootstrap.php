@@ -56,7 +56,6 @@ function test_config(): Config
         users: [
             TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'admin'],
         ],
-        totpSecret: '',
         phpErrorReporting: E_ALL,
         phpDisplayErrors: 0,
         phpDisplayStartupErrors: 0,

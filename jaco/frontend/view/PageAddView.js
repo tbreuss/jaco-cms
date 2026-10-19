@@ -13,6 +13,7 @@ import {Select} from '../component/Select.js'
 import {FormErrors, errorFor} from '../component/FormErrors.js'
 import {PageTemplateModel} from '../model/PageTemplateModel.js'
 import {app} from '../lib/app.js'
+import {auth} from '../lib/auth.js'
 
 const state = {
   fileName: '',
@@ -55,10 +56,17 @@ export const PageAddView = {
   oninit: () => {
     if (!app.hasAuthToken()) {
       m.route.set('/logout')
+      return
+    }
+    // creating a page needs editor; a stale link from a viewer goes back to the site
+    if (!auth.can('editor')) {
+      m.route.set('/')
+      return
     }
     // i.e. if page was reloaded with given route
     if (!iframe.hasElement()) {
       m.route.set('/')
+      return
     }
     state.fileName = iframe.fileName()
     state.pageTitle = iframe.pageTitle()

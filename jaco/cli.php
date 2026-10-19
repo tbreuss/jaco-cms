@@ -61,16 +61,18 @@ $app->command('auth:unblock', 'Clear the login blocks of all addresses.')
         exit($exitCode);
     });
 
-$app->command('auth:totp-setup', 'Require two-factor authentication.')
-    ->action(function () use ($config): void {
-        [$output, $exitCode] = \jaco\cli\auth\totp\setup_command($config);
+$app->command('auth:totp-setup', 'Require two-factor authentication for one user.')
+    ->option('-u --user', 'The Username', 'strval', '')
+    ->action(function (string $user) use ($config): void {
+        [$output, $exitCode] = \jaco\cli\auth\totp\setup_command($config, $user);
         echo $output;
         exit($exitCode);
     });
 
-$app->command('auth:totp-disable', 'Remove two-factor authentication.')
-    ->action(function () use ($config): void {
-        [$output, $exitCode] = \jaco\cli\auth\totp\disable_command($config);
+$app->command('auth:totp-disable', 'Remove two-factor authentication for one user.')
+    ->option('-u --user', 'The Username', 'strval', '')
+    ->action(function (string $user) use ($config): void {
+        [$output, $exitCode] = \jaco\cli\auth\totp\disable_command($config, $user);
         echo $output;
         exit($exitCode);
     });

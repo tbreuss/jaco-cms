@@ -136,8 +136,9 @@ function call_action(Closure $action, Request $request, Config $config, ?string 
 }
 
 /**
- * @return array{user: string, role: string}|null claims of the token, null when the
- *                                               header is missing or the token invalid
+ * Claims of the token, or null when the header is missing or the token invalid.
+ *
+ * @return array{user: string, role: string, language: string, passwordChange: bool}|null
  */
 function check_authorization(Config $config, string $authorizationHeader): ?array
 {

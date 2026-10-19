@@ -37,6 +37,70 @@ final class AuthTest extends TestCase
         $this->assertNull(auth\authenticate($config, TEST_USERNAME, TEST_PASSWORD));
     }
 
+    public function testTokenCarriesTheUsersLanguage(): void
+    {
+        $config = test_config_with(['users' => [
+            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'admin', 'language' => 'de'],
+        ]]);
+
+        $token = (string) auth\authenticate($config, TEST_USERNAME, TEST_PASSWORD);
+        $claims = auth\read_token($config, $token);
+
+        $this->assertIsArray($claims);
+        $this->assertSame('de', $claims['language']);
+    }
+
+    public function testUserWithoutALanguageGetsAnEmptyClaim(): void
+    {
+        $config = test_config();
+
+        $token = (string) auth\authenticate($config, TEST_USERNAME, TEST_PASSWORD);
+        $claims = auth\read_token($config, $token);
+
+        $this->assertIsArray($claims);
+        $this->assertSame('', $claims['language']);
+    }
+
+    public function testTokenCarriesThePasswordChangePermission(): void
+    {
+        $config = test_config_with(['users' => [
+            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'viewer', 'passwordChange' => false],
+        ]]);
+
+        $token = (string) auth\authenticate($config, TEST_USERNAME, TEST_PASSWORD);
+        $claims = auth\read_token($config, $token);
+
+        $this->assertIsArray($claims);
+        $this->assertFalse($claims['passwordChange'], 'the current record forbids the change');
+        $this->assertFalse($this->decode($token)['passwordChange'], 'the claim carries the permission');
+    }
+
+    public function testRevokingPasswordChangeAppliesToExistingTokens(): void
+    {
+        $allowed = test_config_with(['users' => [
+            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'viewer', 'passwordChange' => true],
+        ]]);
+        $token = (string) auth\authenticate($allowed, TEST_USERNAME, TEST_PASSWORD);
+        $this->assertTrue($this->decode($token)['passwordChange']);
+
+        $revoked = test_config_with(['users' => [
+            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'viewer', 'passwordChange' => false],
+        ]]);
+
+        // the record wins over the claim, so revoking does not wait for the token to expire
+        $this->assertFalse(auth\read_token($revoked, $token)['passwordChange'] ?? true);
+    }
+
+    public function testPasswordChangeIsAllowedByDefault(): void
+    {
+        $config = test_config();
+
+        $token = (string) auth\authenticate($config, TEST_USERNAME, TEST_PASSWORD);
+
+        $this->assertTrue($this->decode($token)['passwordChange']);
+        $this->assertTrue(auth\read_token($config, $token)['passwordChange'] ?? false);
+    }
+
     public function testTokenIsSignedWithTheConfiguredAlgorithm(): void
     {
         $config = test_config();

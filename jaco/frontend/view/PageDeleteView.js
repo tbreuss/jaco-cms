@@ -10,6 +10,7 @@ import {Icon} from '../component/Icon.js'
 import {Fieldset} from '../component/Fieldset.js'
 import {FormErrors} from '../component/FormErrors.js'
 import {app} from '../lib/app.js'
+import {auth} from '../lib/auth.js'
 
 const state = {
   fileName: '',
@@ -44,6 +45,12 @@ export const PageDeleteView = {
   oninit: () => {
     if (!app.hasAuthToken()) {
       m.route.set('/logout')
+      return
+    }
+    // deleting writes files: editor only
+    if (!auth.can('editor')) {
+      m.route.set('/')
+      return
     }
     state.fileName = iframe.fileName()
     state.errors = []

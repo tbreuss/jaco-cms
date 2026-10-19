@@ -42,7 +42,7 @@ no build step. This guide describes the installation on an already existing HTML
 
 The installer refuses to run once `jaco/settings.php` exists, so nobody else
 can claim the installation afterwards. A lost TOTP secret is replaced through
-`php jaco/cli.php auth:totp-setup` (needs server access), so keep the secret
+`php jaco/cli.php auth:totp-setup -u <user>` (needs server access), so keep the secret
 from the installer screen in your authenticator app.
 
 ## B. Alternative: install from git
@@ -58,24 +58,76 @@ from the installer screen in your authenticator app.
 
 ```php
 return [
-    'username' => 'admin',
-    'password' => 'secure-password',
+    'users' => [
+        'admin' => [
+            // a password_hash() digest, never the plaintext password
+            'password' => '$2y$...',
+            'role' => 'admin',
+            // optional: 'language' => 'de', 'totpSecret' => '...',
+            // for a public demo: 'passwordChange' => false
+        ],
+    ],
     'secretKey' => 'at-least-32-random-characters',
     // optional, default 'upload'
     'uploadDir' => 'bilder/2026',
 ];
 ```
 
-Without `settings.php`, username and password fall back to random values
-and logging in is not possible. For two-factor login without the installer:
+A public demo account should set `passwordChange` to `false`: its password is
+known, and without the flag the first visitor would lock everyone else out by
+changing it. The flag is per account, not a role, so ordinary viewers keep the
+right to change their own password. A viewer can still try the inline editor,
+but its save button is disabled, the save shortcuts are not bound, and nothing
+is written.
 
-    php jaco/cli.php auth:totp-setup
+Generate the password digest with:
 
-Enter the printed secret in an authenticator app. The login then asks for
-the password first and the six-digit code second. `auth:totp-disable`
-removes it again. A token from the command line needs the code as well:
+    php -r "echo password_hash('your-password', PASSWORD_DEFAULT), PHP_EOL;"
+
+Without `settings.php` there is no user, and logging in is not possible. For
+two-factor login without the installer, enrol the named user:
+
+    php jaco/cli.php auth:totp-setup -u admin
+
+Enter the printed secret in an authenticator app. Only that user then asks for
+the password first and the six-digit code second; every other account keeps
+its own setting. `auth:totp-disable -u admin` removes it again. A token from
+the command line needs the code as well:
 
     php jaco/cli.php auth:token -u admin -p secret -c 123456
+
+## Upgrading from a single login
+
+There is no automatic migration: `settings.php` must list `users`. An old file
+
+```php
+return [
+    'username' => 'admin',
+    'password' => '$2y$...',
+    'totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ',
+    'secretKey' => 'at-least-32-random-characters',
+];
+```
+
+becomes
+
+```php
+return [
+    'users' => [
+        'admin' => [
+            'password' => '$2y$...',
+            'role' => 'admin',
+            'totpSecret' => 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ',
+        ],
+    ],
+    'secretKey' => 'at-least-32-random-characters',
+];
+```
+
+Move the old global `totpSecret` into the record of the one user who used it;
+a top-level `totpSecret` is no longer read. Every further account gets its own
+record and, if wanted, its own secret. If the old `password` is still plaintext,
+replace it with a `password_hash()` digest as shown above.
 
 ## Grant write permissions
 

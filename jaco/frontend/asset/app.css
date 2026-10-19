@@ -171,6 +171,27 @@ body {
     font-weight: bold;
 }
 
+/* Menu entries the role may not use: visible like their active neighbours, but
+   not clickable and visually muted. */
+.navbar .nav-disabled {
+    font-size: 16px;
+    color: var(--color-navbar-text);
+    text-align: center;
+    padding: 14px 16px;
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.dropdown-content .nav-disabled {
+    color: var(--color-text);
+    padding: 12px 16px;
+    display: block;
+    text-align: left;
+    white-space: nowrap;
+    opacity: .5;
+    cursor: not-allowed;
+}
+
 .navbar a.logout,
 .navbar a.login {
     margin-left: auto;
@@ -391,6 +412,16 @@ body.page-edit .dialog button {
     color: var(--color-toast-warning-text);
     background-color: var(--color-toast-warning-bg);
     border-bottom: 1px solid var(--color-toast-warning-border);
+}
+
+/* A viewer sees the same site, just without the write controls. Info colours:
+   this is the intended role, not a fault or a lock. */
+.readonly-banner {
+    padding: 10px 16px;
+    font-size: 15px;
+    color: var(--color-toast-info-text);
+    background-color: var(--color-toast-info-bg);
+    border-bottom: 1px solid var(--color-toast-info-border);
 }
 
 .dialog {
@@ -648,6 +679,39 @@ button.danger:hover {
 button.danger:active {
     background-color: var(--color-danger-dark);
     transform: translateY(1px);
+}
+
+/* A disabled button stays visible and focusable: a client can see the capability,
+   and a keyboard/screen-reader user can reach the explanation. Keep the colour
+   stable on hover/active, otherwise the disabled state looks clickable. */
+button:disabled,
+button[aria-disabled="true"] {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+button.primary:disabled:hover,
+button.primary:disabled:active,
+button.primary[aria-disabled="true"]:hover,
+button.primary[aria-disabled="true"]:active {
+    background-color: var(--color-primary);
+    transform: none;
+}
+
+button.secondary:disabled:hover,
+button.secondary:disabled:active,
+button.secondary[aria-disabled="true"]:hover,
+button.secondary[aria-disabled="true"]:active {
+    background-color: var(--color-secondary);
+    transform: none;
+}
+
+button.danger:disabled:hover,
+button.danger:disabled:active,
+button.danger[aria-disabled="true"]:hover,
+button.danger[aria-disabled="true"]:active {
+    background-color: var(--color-danger);
+    transform: none;
 }
 
 /* Visible keyboard focus everywhere; the navbar button removes the

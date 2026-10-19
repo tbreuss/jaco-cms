@@ -11,6 +11,7 @@ import {Icon} from '../component/Icon.js'
 import {InputText} from '../component/InputText.js'
 import {FormErrors, errorFor} from '../component/FormErrors.js'
 import {app} from '../lib/app.js'
+import {auth} from '../lib/auth.js'
 
 const state = {
   srcFileName: '',
@@ -54,10 +55,17 @@ export const PageCopyView = {
   oninit: () => {
     if (!app.hasAuthToken()) {
       m.route.set('/logout')
+      return
+    }
+    // copying writes a new page: editor only
+    if (!auth.can('editor')) {
+      m.route.set('/')
+      return
     }
     // i.e. if page was reloaded with given route
     if (!iframe.hasElement()) {
       m.route.set('/')
+      return
     }
     state.srcFileName = state.dstFileName = iframe.fileName()
     state.srcPageTitle = state.dstPageTitle = iframe.pageTitle()

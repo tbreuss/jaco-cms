@@ -2,8 +2,10 @@
 
 namespace jaco\cli\auth\totp;
 
+use jaco\core\auth;
 use jaco\core\config\Config;
 
+use function jaco\core\config\write_user_field;
 use function jaco\core\totp\generate_secret;
 use function jaco\core\totp\provisioning_uri;
 use function jaco\core\totp\qr_text;
@@ -11,15 +13,20 @@ use function jaco\core\totp\qr_text;
 /**
  * @return array{string, int} output and exit code, the caller prints and exits
  */
-function setup_command(Config $config): array
+function setup_command(Config $config, string $username = ''): array
 {
+    $account = resolve_user($config, $username);
+
+    if ($account === null) {
+        return [user_error($config, $username), 1];
+    }
+
     $secret = generate_secret();
 
-    if (!store_secret($config, $secret)) {
+    if (!write_user_field($config->appDir, $account, 'totpSecret', $secret)) {
         return ["Could not write settings.\n", 1];
     }
 
-    $account = (string) array_key_first($config->users);
     $output = sprintf('Two-factor authentication is now required for "%s".', $account) . PHP_EOL;
     $output .= 'Enter this secret manually in the authenticator app:' . PHP_EOL;
     $output .= $secret . PHP_EOL;
@@ -33,41 +40,52 @@ function setup_command(Config $config): array
 /**
  * @return array{string, int} output and exit code, the caller prints and exits
  */
-function disable_command(Config $config): array
+function disable_command(Config $config, string $username = ''): array
 {
-    if (!store_secret($config, null)) {
+    $account = resolve_user($config, $username);
+
+    if ($account === null) {
+        return [user_error($config, $username), 1];
+    }
+
+    // null removes the field entirely, so the record does not keep a secret that is
+    // switched off; an empty string would still be a value in the file
+    if (!write_user_field($config->appDir, $account, 'totpSecret', null)) {
         return ["Could not write settings.\n", 1];
     }
 
-    return ["Two-factor authentication is now disabled.\n", 0];
+    return [sprintf('Two-factor authentication is now disabled for "%s".', $account) . PHP_EOL, 0];
 }
 
-// write_settings only stores strings, so merge here with var_export to
-// keep the types (bool, int) of the existing settings untouched
-function store_secret(Config $config, ?string $secret): bool
+/**
+ * The named user, or null when the name is missing or unknown. The command never
+ * guesses, not even in an installation with a single account: a second factor that
+ * silently lands on the wrong record is exactly the kind of mistake this command
+ * must not make.
+ */
+function resolve_user(Config $config, string $username): ?string
 {
-    $file = $config->appDir . '/settings.php';
-
-    if (!is_readable($file)) {
-        $settings = [];
-    } else {
-        $settings = require $file;
-        if (!is_array($settings)) {
-            return false;
-        }
+    if ($username === '') {
+        return null;
     }
 
-    if ($secret === null) {
-        unset($settings['totpSecret']);
-    } else {
-        $settings['totpSecret'] = $secret;
+    return auth\find_user($config, $username) === null ? null : $username;
+}
+
+/**
+ * Why resolve_user() could not decide, in words the caller can act on.
+ */
+function user_error(Config $config, string $username): string
+{
+    if ($username !== '') {
+        return sprintf('Unknown user "%s".', $username) . PHP_EOL;
     }
 
-    $content = '<?php declare(strict_types=1);' . PHP_EOL . PHP_EOL . 'return [' . PHP_EOL;
-    foreach ($settings as $key => $value) {
-        $content .= '    ' . var_export($key, true) . ' => ' . var_export($value, true) . ',' . PHP_EOL;
-    }
-    $content .= '];' . PHP_EOL;
+    $names = array_keys($config->users);
 
-    return file_put_contents($file, $content) !== false;
+    if (count($names) === 0) {
+        return "No user is configured in settings.php.\n";
+    }
+
+    return 'Please name the user with --user, this installation has: ' . implode(', ', $names) . PHP_EOL;
 }

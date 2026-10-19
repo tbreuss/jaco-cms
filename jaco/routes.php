@@ -28,6 +28,14 @@ router\get(
 
 // private routes
 
+router\get(
+    route: 'about',
+    callback: jaco\api\about\action(...),
+    authenticated: true,
+    role: 'viewer',
+    responseSchema: 'about/response.json',
+);
+
 router\post(
     route: 'backup/delete',
     callback: jaco\api\backup\delete\action(...),

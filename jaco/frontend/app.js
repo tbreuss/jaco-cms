@@ -155,6 +155,14 @@ m.route(document.getElementById('app'), '/', {
       return m(DefaultLayout, m(vnode.tag))
     }
   },
+  '/password': {
+    onmatch:  () => {
+      return loadComponent('PasswordView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
+    }
+  },
   '/system/env': {
     onmatch:  () => {
       return loadComponent('SystemView.js')
