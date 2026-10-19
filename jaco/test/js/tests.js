@@ -2375,6 +2375,25 @@ QUnit.test('renders the add page dialog', (assert) => {
   assert.ok(fixture().textContent.includes(t('Add page')), 'title shown')
 })
 
+QUnit.test('cancel returns to the pages list', (assert) => {
+  const originalSet = m.route.set
+  const routeCalls = []
+  m.route.set = (path) => routeCalls.push(path)
+
+  try {
+    PageTemplateModel.list = [{file: 'default.html', title: 'Default'}]
+    m.render(fixture(), m(PageAddView))
+
+    const cancel = [...fixture().querySelectorAll('button')]
+      .find((button) => button.textContent.includes(t('Cancel')))
+    assert.ok(cancel, 'cancel button rendered')
+    cancel.click()
+    assert.deepEqual(routeCalls, ['/pages'], 'cancel returns to the page list')
+  } finally {
+    m.route.set = originalSet
+  }
+})
+
 QUnit.module('Modal Escape handling', {
   beforeEach: () => {
     window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
@@ -2411,7 +2430,7 @@ QUnit.test('ModalMedium closes on Escape', (assert) => {
 
   modal.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', bubbles: true}))
   m.route.set = originalSet
-  assert.ok(routeCalls.includes('/'), 'Escape navigates home')
+  assert.ok(routeCalls.includes('/pages'), 'Escape returns to the page list')
 })
 
 QUnit.test('ModalSmall closes on Escape', (assert) => {

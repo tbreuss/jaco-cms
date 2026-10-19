@@ -37,7 +37,7 @@ const onSaveButtonClicked = (e) => {
   })
     .then(() => {
       addSuccess(t('Page was successfully added.'))
-      m.route.set('/')
+      m.route.set('/pages')
     })
     .catch(({code, response}) => {
       if (code === 422) {
@@ -49,7 +49,7 @@ const onSaveButtonClicked = (e) => {
 
 const onCancelButtonClicked = (e) => {
   e.redraw = false
-  m.route.set('/')
+  m.route.set('/pages')
 }
 
 export const PageAddView = {
@@ -75,7 +75,7 @@ export const PageAddView = {
 
     PageTemplateModel.loadList()
   },
-  view: () => m(ModalMedium, {title: t('Add page')},
+  view: () => m(ModalMedium, {title: t('Add page'), closeRoute: '/pages'},
     m(Fieldset, {legend: t('New page')},
       m(Select, {
         id: 'pageTemplate',
