@@ -1,4 +1,4 @@
-import {t} from '../../model/i18n.js'
+import {t, tError} from '../../model/i18n.js'
 import {UploadListModel} from '../../model/UploadListModel.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {ButtonDanger} from '../../component/ButtonDanger.js'
@@ -34,7 +34,9 @@ const uploadFiles = (files) => {
     })
     .catch(({code, response}) => {
       if (code === 422) {
-        addDanger(response[0].title)
+        response.forEach(function (error) {
+          addDanger(error.detail ? tError(error.detail) : t(error.title, null, error.title))
+        })
       }
       m.redraw()
     })
@@ -54,7 +56,9 @@ const deleteAction = (page) => {
       })
       .catch(({code, response}) => {
         if (code === 422) {
-          addDanger(response[0].title)
+          response.forEach(function (error) {
+            addDanger(error.detail ? tError(error.detail) : t(error.title, null, error.title))
+          })
         }
         m.redraw()
       })

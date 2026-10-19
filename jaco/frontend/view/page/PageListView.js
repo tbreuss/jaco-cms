@@ -7,7 +7,7 @@ import {PageCopySource} from '../../model/PageCopySource.js'
 import {PageListModel as PageListModel} from '../../model/PageListModel.js'
 import {addDanger, addSuccess} from '../../state/actions.js'
 import {api} from '../../service/api.js'
-import {t} from '../../model/i18n.js'
+import {t, tError} from '../../model/i18n.js'
 import {app} from '../../lib/app.js'
 import {auth} from '../../lib/auth.js'
 import {formatDateTimeCompact, formatDateTimeFull} from '../../lib/format.js'
@@ -36,7 +36,9 @@ const deleteAction = (page) => {
       })
       .catch(({code, response}) => {
         if (code === 422) {
-          addDanger(response[0].title)
+          response.forEach(function (error) {
+            addDanger(error.detail ? tError(error.detail) : t(error.title, null, error.title))
+          })
         }
         m.redraw()
       })
