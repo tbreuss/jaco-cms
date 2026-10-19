@@ -31,6 +31,7 @@
     "Detail": "Dettaglio",
     "Diagnostics": "Diagnostica",
     "Do you want to delete the page?": "Vuoi eliminare la pagina?\r\n- {name}",
+    "Do you want to delete the upload?": "Vuoi eliminare il caricamento?\r\n- {name}",
     "Do you want to clear the log?": "Vuoi cancellare il registro?",
     "Do you want to restore this page?": "Vuoi ripristinare questa pagina?\r\n- {name}",
     "Edit page": "Modifica pagina",

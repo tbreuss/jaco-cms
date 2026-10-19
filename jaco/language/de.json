@@ -31,6 +31,7 @@
     "Detail": "Detail",
     "Diagnostics": "Diagnose",
     "Do you want to delete the page?": "Möchten Sie die Seite löschen?\r\n- {name}",
+    "Do you want to delete the upload?": "Möchten Sie den Upload löschen?\r\n- {name}",
     "Do you want to clear the log?": "Möchten Sie das Protokoll leeren?",
     "Do you want to restore this page?": "Möchten Sie diese Seite wiederherstellen?\r\n- {name}",
     "Edit page": "Seite bearbeiten",

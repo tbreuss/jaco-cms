@@ -31,6 +31,7 @@
     "Detail": "Detail",
     "Diagnostics": "Diagnostics",
     "Do you want to delete the page?": "Do you want to delete the page?\r\n- {name}",
+    "Do you want to delete the upload?": "Do you want to delete the upload?\r\n- {name}",
     "Do you want to clear the log?": "Do you want to clear the log?",
     "Do you want to restore this page?": "Do you want to restore this page?\r\n- {name}",
     "Edit page": "Edit page",
