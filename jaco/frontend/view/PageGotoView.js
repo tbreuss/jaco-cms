@@ -1,7 +1,6 @@
 import {t} from '../model/i18n.js'
 import {iframe} from '../lib/iframe.js'
 import {ModalMedium} from '../component/ModalMedium.js'
-import {Fieldset} from '../component/Fieldset.js'
 import {FilterInput} from '../component/FilterInput.js'
 import {ButtonGroup} from '../component/ButtonGroup.js'
 import {ButtonSecondary} from '../component/ButtonSecondary.js'
@@ -29,12 +28,29 @@ const cancel = (e) => {
   m.route.set('/')
 }
 
-const openPage = (page) => {
+const openPage = (page, edit = false) => {
   if (!page) {
     return
   }
-  iframe.load('/' + page.file)
-  m.route.set('/')
+  const target = edit ? '/page-edit' : '/'
+  let frame = null
+  try {
+    frame = iframe.getElement()
+    frame.onload = () => {
+      frame.onload = null
+      frame.onerror = null
+      m.route.set(target)
+    }
+    frame.onerror = () => {
+      frame.onload = null
+      frame.onerror = null
+      m.route.set('/')
+    }
+    iframe.load('/' + page.file)
+  } catch (e) {
+    iframe.load('/' + page.file)
+    m.route.set(target)
+  }
 }
 
 const load = () => {
@@ -74,23 +90,34 @@ const onKeyDown = (e) => {
   }
   if (e.key === 'Enter') {
     e.preventDefault()
-    openPage(pages[state.selected])
+    openPage(pages[state.selected], e.shiftKey)
   }
 }
 
 const pageList = (pages, selected) =>
   pages.length
     ? m('.list-group.page-goto-list', pages.map((page, index) =>
-      m('a.list-group-item', {
+      m('div.list-group-item.page-goto-item', {
         class: index === selected ? 'selected' : undefined,
+      },
+      m('a.page-goto-link', {
         href: '#',
         onclick: (e) => {
           e.preventDefault()
           openPage(page)
         }
       },
-      m('span', page.file),
-      page.title ? m('span.page-goto-title', ' · ' + page.title) : null)
+      m('span.page-goto-file', page.file),
+      page.title ? m('span.page-goto-title', ' · ' + page.title) : null),
+      m('button.secondary.page-goto-edit', {
+        type: 'button',
+        onclick: (e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          openPage(page, true)
+        },
+        title: t('Edit page'),
+      }, t('Edit')))
     ))
     : m('p', t('Sorry, no page found'))
 
@@ -115,29 +142,27 @@ export const PageGotoView = {
     const selected = Math.min(state.selected, Math.max(pages.length - 1, 0))
 
     return m(ModalMedium, {title: t('Jump to page')},
-      m(Fieldset, {legend: t('Select page')},
-        m(FilterInput, {
-          placeholder: t('Filter page files'),
-          value: state.filter,
-          autofocus: true,
-          onkeydown: onKeyDown,
-          oninput: (e) => {
-            state.filter = e.target.value
-            state.selected = 0
-          },
-          onclear: () => {
-            state.filter = ''
-            state.selected = 0
-          },
-          clearLabel: t('Clear filter'),
-        }),
-        state.loading
-          ? m('p', t('Loading') + '...')
-          : pageList(pages, selected),
-        m('p.hint', t('Use ↑↓ to select, Enter to open, Esc to close.')),
-        m(ButtonGroup, {wrap: 'div.row.text-right'},
-          m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('Cancel')))
-        )
+      m(FilterInput, {
+        placeholder: t('Filter page files'),
+        value: state.filter,
+        autofocus: true,
+        onkeydown: onKeyDown,
+        oninput: (e) => {
+          state.filter = e.target.value
+          state.selected = 0
+        },
+        onclear: () => {
+          state.filter = ''
+          state.selected = 0
+        },
+        clearLabel: t('Clear filter'),
+      }),
+      state.loading
+        ? m('p', t('Loading') + '...')
+        : pageList(pages, selected),
+      m('p.hint', t('Use ↑↓ to select, Enter to open, Shift+Enter to edit, Esc to close.')),
+      m(ButtonGroup, {wrap: 'div.row.text-right'},
+        m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('Cancel')))
       )
     )
   }

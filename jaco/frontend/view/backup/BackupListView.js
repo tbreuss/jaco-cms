@@ -160,8 +160,8 @@ export const BackupListView = {
                   onclick: () => {
                     viewBackup(backup.file)
                   },
-                  title: t('View'),
-                  'aria-label': t('View'),
+                  title: t('View backup'),
+                  'aria-label': t('View backup'),
                 }, m(Icon, {name: 'view'})),
                 // restoring and deleting rewrite files: admin only, matching the
                 // route table. The buttons stay visible but disabled for everyone else.
@@ -171,8 +171,8 @@ export const BackupListView = {
                     deleteAction(backup)
                   },
                   disabled: !auth.can('admin'),
-                  title: auth.can('admin') ? t('Delete') : t('Delete') + ' – ' + t('Your role does not allow this.'),
-                  'aria-label': t('Delete'),
+                  title: auth.can('admin') ? t('Delete backup') : t('Delete backup') + ' – ' + t('Your role does not allow this.'),
+                  'aria-label': t('Delete backup'),
                 }, m(Icon, {name: 'delete'})),
                 m(ButtonPrimary, {
                   onclick: (e) => {
@@ -180,8 +180,8 @@ export const BackupListView = {
                     restoreBackup(backup)
                   },
                   disabled: !auth.can('admin'),
-                  title: auth.can('admin') ? t('Restore') : t('Restore') + ' – ' + t('Your role does not allow this.'),
-                  'aria-label': t('Restore'),
+                  title: auth.can('admin') ? t('Restore backup') : t('Restore backup') + ' – ' + t('Your role does not allow this.'),
+                  'aria-label': t('Restore backup'),
                 }, m(Icon, {name: 'restore'}))
               )
             ))

@@ -10,10 +10,16 @@ import {api} from '../../service/api.js'
 import {t, tError} from '../../model/i18n.js'
 import {app} from '../../lib/app.js'
 import {auth} from '../../lib/auth.js'
+import {iframe} from '../../lib/iframe.js'
 import {formatDateTimeCompact, formatDateTimeFull} from '../../lib/format.js'
 
 const editPage = (file) => {
   m.route.set('/pages/edit/:file...', {file: file})
+}
+
+const viewPage = (file) => {
+  iframe.load('/' + file)
+  m.route.set('/')
 }
 
 const copyPage = (page) => {
@@ -143,15 +149,23 @@ export const PageListView = {
                 m('td', page.title),
                 m('td.text-nowrap', {title: formatDateTimeFull(page.created)}, formatDateTimeCompact(page.created)),
                 m('td.text-right.text-nowrap',
-                  // a viewer opens the same document read-only: the editor hides
-                  // save, so "view" is the honest label
+                  // view the page in the site preview
+                  m(ButtonSecondary, {
+                    onclick: () => {
+                      viewPage(page.file)
+                    },
+                    title: t('View page'),
+                    'aria-label': t('View page'),
+                  }, m(Icon, {name: 'view'})),
+                  // edit the page document (Ace editor; read-only for a viewer)
                   m(ButtonSecondary, {
                     onclick: () => {
                       editPage(page.file)
                     },
-                    title: t(auth.can('editor') ? 'Edit' : 'View'),
-                    'aria-label': t(auth.can('editor') ? 'Edit' : 'View'),
-                  }, m(Icon, {name: auth.can('editor') ? 'edit' : 'view'})),
+                    disabled: !auth.can('editor'),
+                    title: auth.can('editor') ? t('Edit page') : t('Edit page') + ' – ' + t('Your role does not allow this.'),
+                    'aria-label': t('Edit page'),
+                  }, m(Icon, {name: 'edit'})),
                   m(ButtonSecondary, {
                     onclick: () => {
                       copyPage(page)
@@ -166,8 +180,8 @@ export const PageListView = {
                       deleteAction(page)
                     },
                     disabled: !auth.can('editor'),
-                    title: auth.can('editor') ? t('Delete') : t('Delete') + ' – ' + t('Your role does not allow this.'),
-                    'aria-label': t('Delete'),
+                    title: auth.can('editor') ? t('Delete page') : t('Delete page') + ' – ' + t('Your role does not allow this.'),
+                    'aria-label': t('Delete page'),
                   }, m(Icon, {name: 'delete'})),
                 )
               ))

@@ -2225,17 +2225,19 @@ QUnit.module('PageListView', {
   }
 })
 
-QUnit.test('renders pages with edit, copy and delete buttons', (assert) => {
+QUnit.test('renders pages with view, edit, copy and delete buttons', (assert) => {
   PageListModel.items = [{file: 'a.html', title: 'Page A', created: 1700000000}]
   PageListModel.isLoading = false
   m.render(fixture(), m(PageListView))
 
   assert.ok(fixture().textContent.includes('Page A'), 'page title shown')
   const buttons = [...fixture().querySelectorAll('tbody td.text-right button')]
-  assert.strictEqual(buttons.length, 3, 'edit, copy and delete buttons')
-  assert.ok(buttons[0].classList.contains('secondary'), 'edit is secondary')
-  assert.ok(buttons[1].classList.contains('secondary'), 'copy is secondary')
-  assert.ok(buttons[2].classList.contains('danger'), 'delete is danger')
+  assert.strictEqual(buttons.length, 4, 'view, edit, copy and delete buttons')
+  assert.ok(buttons[0].classList.contains('secondary'), 'view is secondary')
+  assert.strictEqual(buttons[0].getAttribute('aria-label'), t('View page'), 'view is labelled')
+  assert.ok(buttons[1].classList.contains('secondary'), 'edit is secondary')
+  assert.ok(buttons[2].classList.contains('secondary'), 'copy is secondary')
+  assert.ok(buttons[3].classList.contains('danger'), 'delete is danger')
 })
 
 QUnit.test('a viewer sees copy and delete disabled', (assert) => {
@@ -2245,14 +2247,17 @@ QUnit.test('a viewer sees copy and delete disabled', (assert) => {
   m.render(fixture(), m(PageListView))
 
   const buttons = [...fixture().querySelectorAll('tbody td.text-right button')]
-  assert.strictEqual(buttons.length, 3, 'view, copy and delete stay visible')
+  assert.strictEqual(buttons.length, 4, 'view, edit, copy and delete stay visible')
   assert.ok(buttons[0].classList.contains('secondary'), 'view is secondary')
-  assert.strictEqual(buttons[0].getAttribute('aria-label'), t('View'), 'the label says view, not edit')
+  assert.strictEqual(buttons[0].getAttribute('aria-label'), t('View page'), 'view stays usable')
   assert.notOk(isAriaDisabled(buttons[0]), 'view stays usable')
-  assert.ok(buttons[1].getAttribute('aria-label').startsWith(t('Copy page')), 'copy is labelled')
-  assert.ok(isAriaDisabled(buttons[1]), 'copy is disabled for a viewer')
-  assert.ok(buttons[2].classList.contains('danger'), 'delete is danger')
-  assert.ok(isAriaDisabled(buttons[2]), 'delete is disabled for a viewer')
+  assert.ok(buttons[1].classList.contains('secondary'), 'edit is secondary')
+  assert.ok(buttons[1].getAttribute('aria-label').startsWith(t('Edit page')), 'edit is labelled')
+  assert.ok(isAriaDisabled(buttons[1]), 'edit is disabled for a viewer')
+  assert.ok(buttons[2].getAttribute('aria-label').startsWith(t('Copy page')), 'copy is labelled')
+  assert.ok(isAriaDisabled(buttons[2]), 'copy is disabled for a viewer')
+  assert.ok(buttons[3].classList.contains('danger'), 'delete is danger')
+  assert.ok(isAriaDisabled(buttons[3]), 'delete is disabled for a viewer')
 })
 
 QUnit.test('the pages toolbar offers add page, disabled for a viewer', (assert) => {
@@ -2281,7 +2286,7 @@ QUnit.test('the copy row action passes the row to the copy route', (assert) => {
     PageListModel.isLoading = false
     m.render(fixture(), m(PageListView))
 
-    const copy = [...fixture().querySelectorAll('tbody td.text-right button')][1]
+    const copy = [...fixture().querySelectorAll('tbody td.text-right button')][2]
     copy.click()
 
     assert.deepEqual(calls, ['/page-copy'])

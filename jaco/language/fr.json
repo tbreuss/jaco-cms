@@ -171,5 +171,8 @@
     "Jump to page": "Aller à la page",
     "Media": "Médias",
     "This page": "Cette page",
-    "Use ↑↓ to select, Enter to open, Esc to close.": "Utilisez ↑↓ pour sélectionner, Entrée pour ouvrir, Échap pour fermer."
+    "Use ↑↓ to select, Enter to open, Shift+Enter to edit, Esc to close.": "Utilisez ↑↓ pour sélectionner, Entrée pour ouvrir, Shift+Entrée pour modifier, Échap pour fermer.",
+    "Delete upload": "Supprimer le téléchargement",
+    "Delete backup": "Supprimer la sauvegarde",
+    "Restore backup": "Restaurer la sauvegarde"
 }

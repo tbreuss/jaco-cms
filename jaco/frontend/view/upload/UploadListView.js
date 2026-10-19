@@ -189,8 +189,8 @@ export const UploadListView = {
                     onclick: () => {
                       viewUpload(page.file)
                     },
-                    title: t('View'),
-                    'aria-label': t('View'),
+                    title: t('View upload'),
+                    'aria-label': t('View upload'),
                   }, m(Icon, {name: 'view'})),
                   m(ButtonDanger, {
                     onclick: (e) => {
@@ -198,8 +198,8 @@ export const UploadListView = {
                       deleteAction(page)
                     },
                     disabled: !auth.can('editor'),
-                    title: auth.can('editor') ? t('Delete') : t('Delete') + ' – ' + t('Your role does not allow this.'),
-                    'aria-label': t('Delete'),
+                    title: auth.can('editor') ? t('Delete upload') : t('Delete upload') + ' – ' + t('Your role does not allow this.'),
+                    'aria-label': t('Delete upload'),
                   }, m(Icon, {name: 'delete'})),
                 )
               ))

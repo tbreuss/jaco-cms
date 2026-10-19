@@ -171,5 +171,8 @@
     "Jump to page": "Zu Seite springen",
     "Media": "Medien",
     "This page": "Diese Seite",
-    "Use ↑↓ to select, Enter to open, Esc to close.": "Mit ↑↓ auswählen, Enter öffnen, Esc schließen."
+    "Use ↑↓ to select, Enter to open, Shift+Enter to edit, Esc to close.": "Mit ↑↓ auswählen, Enter öffnen, Shift+Enter bearbeiten, Esc schließen.",
+    "Delete upload": "Upload löschen",
+    "Delete backup": "Backup löschen",
+    "Restore backup": "Backup wiederherstellen"
 }
