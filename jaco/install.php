@@ -186,7 +186,9 @@ if ($isPost && !$checksFailed) {
         } elseif (!write_settings($appDir, array_merge(
             [
                 'username' => $username,
-                'password' => $password,
+                // stored hashed like every other password; authenticate()
+                // verifies a digest, so the plaintext would never match
+                'password' => password_hash($password, PASSWORD_DEFAULT),
                 'secretKey' => $secret,
                 'defaultLanguage' => $language,
                 'uploadDir' => $uploadDir,

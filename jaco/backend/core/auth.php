@@ -21,17 +21,21 @@ use jaco\core\config\Config;
 
 function authenticate(Config $config, string $username, string $password): ?string
 {
-    // fail closed: none of the security values may be empty, no matter how the
-    // Config was constructed. Without this, empty input would match empty
-    // settings via hash_equals, and tokens would be signed with an empty key.
+    // fail closed: required security values may not be empty, no matter how the
+    // Config was constructed. Without this, empty input would match an empty
+    // username via hash_equals, and tokens would be signed with an empty key.
     // (An empty totpSecret is the exception: it means "no second factor".)
-    if ($config->username === '' || $config->password === '' || $config->secretKey === '') {
+    // The password is stored as a password_hash() digest; password_verify()
+    // rejects an empty or invalid digest by itself, so no explicit check here.
+    if ($config->username === '' || $config->secretKey === '') {
         return null;
     }
 
-    // compare both values in constant time to prevent timing attacks
+    // both comparisons are constant time. The password is stored as a
+    // password_hash() digest: password_verify() is constant time itself, and it
+    // rejects a plaintext setting because that is not a valid hash.
     $isUsernameValid = \hash_equals($config->username, $username);
-    $isPasswordValid = \hash_equals($config->password, $password);
+    $isPasswordValid = \password_verify($password, $config->password);
 
     if (!$isUsernameValid || !$isPasswordValid) {
         return null;

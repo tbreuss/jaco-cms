@@ -94,6 +94,14 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
   therefore never log in and never signs tokens with the example key
   (`jaco/backend/core/config.php`, `jaco/backend/core/auth.php`,
   `jaco/test/ConfigDefaultsTest.php`).
+- **The admin password is stored hashed, never in clear.** `settings.php` holds a
+  `password_hash()` digest, verified with `password_verify()` (itself constant time).
+  A plaintext value no longer matches, because it is not a valid hash. There is no
+  migration path: an installation with a plaintext password has to have a hash
+  written into `settings.php` (`php -r "echo password_hash('...', PASSWORD_DEFAULT);"`)
+  or reinstalled. The installer and `auth:token` are unaffected — both take the
+  plaintext and verify it against the stored digest
+  (`jaco/install.php`, `jaco/backend/core/auth.php`).
 - **Uploads are scrubbed when they are SVG.** `svg` stays an allowed extension,
   but `html\sanitize_svg()` strips script elements, foreign objects, event
   handler attributes and script urls on every write path (direct upload,

@@ -46,14 +46,14 @@ final class ConfigDefaultsTest extends TestCase
     public function testValidValuesPassThrough(): void
     {
         $secret = str_repeat('a', 32);
+        // the password is stored hashed, like a real settings.php
         $config = config\create_default_config(sys_get_temp_dir(), [
             'username' => 'admin',
-            'password' => 'secure-password',
+            'password' => \password_hash('secure-password', PASSWORD_DEFAULT),
             'secretKey' => $secret,
         ]);
 
         $this->assertSame('admin', $config->username);
-        $this->assertSame('secure-password', $config->password);
         $this->assertSame($secret, $config->secretKey);
         $this->assertIsString(auth\authenticate($config, 'admin', 'secure-password'));
     }

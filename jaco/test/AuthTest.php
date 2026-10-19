@@ -13,7 +13,7 @@ final class AuthTest extends TestCase
     public function testValidCredentialsAreAccepted(): void
     {
         $config = test_config();
-        $token = auth\authenticate($config, $config->username, $config->password);
+        $token = auth\authenticate($config, $config->username, TEST_PASSWORD);
 
         $this->assertIsString($token);
         $this->assertTrue(auth\is_authenticated($config, $token));
@@ -22,15 +22,25 @@ final class AuthTest extends TestCase
     public function testWrongCredentialsAreRejected(): void
     {
         $config = test_config();
-        $this->assertNull(auth\authenticate($config, $config->username, $config->password . 'wrong'));
-        $this->assertNull(auth\authenticate($config, $config->username . 'wrong', $config->password));
+        $this->assertNull(auth\authenticate($config, $config->username, TEST_PASSWORD . 'wrong'));
+        $this->assertNull(auth\authenticate($config, $config->username . 'wrong', TEST_PASSWORD));
         $this->assertNull(auth\authenticate($config, '', ''));
+    }
+
+    public function testPlaintextPasswordInSettingsIsRejected(): void
+    {
+        // the password is stored hashed; a settings.php that still holds the
+        // plaintext must not authenticate anyone, otherwise the hash could be
+        // swapped back out unnoticed
+        $config = test_config_with(['password' => TEST_PASSWORD]);
+
+        $this->assertNull(auth\authenticate($config, $config->username, TEST_PASSWORD));
     }
 
     public function testTokenIsSignedWithTheConfiguredAlgorithm(): void
     {
         $config = test_config();
-        $token = (string) auth\authenticate($config, $config->username, $config->password);
+        $token = (string) auth\authenticate($config, $config->username, TEST_PASSWORD);
         $parts = explode('.', $token);
         $header = json_decode((string) base64_decode(strtr($parts[0], '-_', '+/'), true), true);
 
@@ -40,7 +50,7 @@ final class AuthTest extends TestCase
     public function testTokenIsValidForTheConfiguredDuration(): void
     {
         $config = test_config();
-        $token = (string) auth\authenticate($config, $config->username, $config->password);
+        $token = (string) auth\authenticate($config, $config->username, TEST_PASSWORD);
         $claims = $this->decode($token);
 
         $this->assertSame(auth\TOKEN_TTL, $claims['exp'] - $claims['iat']);
@@ -142,7 +152,7 @@ final class AuthTest extends TestCase
     private function validToken(): string
     {
         $config = test_config();
-        return (string) auth\authenticate($config, $config->username, $config->password);
+        return (string) auth\authenticate($config, $config->username, TEST_PASSWORD);
     }
 
     /** @return array<string, mixed> */

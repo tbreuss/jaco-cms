@@ -11,6 +11,27 @@ if (is_readable(__DIR__ . '/../vendor/autoload.php')) {
 require_once __DIR__ . '/ApiTestCase.php';
 require_once __DIR__ . '/HttpServerTestCase.php';
 
+/**
+ * The plaintext that test_config() stores as a hash. authenticate() expects a
+ * digest, so tests log in with this value, not with $config->password.
+ */
+const TEST_PASSWORD = 'test_pass';
+
+/**
+ * Hashed once per process and with the lowest cost: test_config() is built for every
+ * test, and password_verify() pays the digest's cost on every login, so the production
+ * cost would add minutes to the suite (the throttle tests alone log in hundreds of
+ * times). Only the tests read this digest, the installer keeps the default cost.
+ */
+function test_config_password_hash(): string
+{
+    static $hash = null;
+    if ($hash === null) {
+        $hash = \password_hash(TEST_PASSWORD, PASSWORD_DEFAULT, ['cost' => 4]);
+    }
+    return $hash;
+}
+
 function test_config(): Config
 {
     $dir = __DIR__ . '/asset/jaco';
@@ -32,7 +53,9 @@ function test_config(): Config
         filePermissions: 0644,
         secretKey: 'test_1234',
         username: 'test_user',
-        password: 'test_pass',
+        // hashed like a real settings.php: authenticate() expects a digest, and
+        // hashing per run keeps the tests free of a hardcoded fixture hash
+        password: test_config_password_hash(),
         totpSecret: '',
         phpErrorReporting: E_ALL,
         phpDisplayErrors: 0,
