@@ -211,6 +211,13 @@ headless:
     php -S 127.0.0.1:8899 -t . &
     node jaco/test/js/runner.mjs
 
+The runner clears the login history before it starts. The suite logs in with a deliberately
+wrong password and the api counts every failure towards the login throttle — three attempts
+block the address for ten minutes. Reloading `jaco/test/js/index.html` in a browser bypasses
+that reset, so unblock again once the third reload has failed:
+
+    php jaco/cli.php auth:unblock
+
 Not tested on purpose: the diagnostics endpoints (`system`, `system/log`,
 `system/php-info`, all environment dependent; `system\defined_constants()` itself is
 covered by `DefinedConstantsTest`) and the global `error_handler` and `fatal_handler`

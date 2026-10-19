@@ -50,6 +50,7 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | Dead ErrorModal component | `remove: dead ErrorModal component` |
 | Inline editor loses the first unsaved change | `fix: detect the first unsaved change in the inline editor` |
 | Dirty check in the inline editor disabled editing | `fix: detect the first unsaved change in the inline editor` |
+| QUnit suite cannot run twice within 10 minutes | `test: reset the login throttle before a run` |
 
 ## Won't do
 
