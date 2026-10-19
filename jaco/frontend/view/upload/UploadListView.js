@@ -137,7 +137,7 @@ export const UploadListView = {
   view: () => m('div.main',
     m('.content',
       m('div', {style: {display: 'flex', justifyContent: 'space-between', alignItems: 'center'}},
-        m('h1', t('Uploads')),
+        m('h1', t('Media')),
         // uploading writes into upload/: editor and admin only; the disabled
         // button shows the capability without offering it
         m('div',
@@ -201,7 +201,7 @@ export const UploadListView = {
               ))
             )
           )
-          : m('table.table', m('tr', m('td', t('No uploads found.'))))
+          : m('table.table', m('tr', m('td', t('No media found.'))))
     )
   )
 }

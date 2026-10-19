@@ -235,24 +235,27 @@ An invalid or missing token answers **401**: the session is gone and the fronten
 to the login. A role that is too low answers **403**: the session stays, only that action
 is refused – a viewer must not be logged out for clicking a button they may not use.
 
-The admin UI mirrors that matrix. It decodes the token payload (without verifying it – the
-api does that) and disables what the role may not do: page delete, upload and delete
-buttons, and backup restore/delete stay visible but disabled for the roles that lack the
-right. Save and Save & Close are disabled in the page, inline and CSS editors. CSS stays
-visible but disabled below `admin`; the page add/copy/delete entries stay visible but
-disabled for a viewer. The System menu keeps About active for every role – it reads a
-viewer-protected endpoint with name, version and PHP version, while the public index
-exposes only name and version – and keeps environment, log and php-info visible but
-disabled below `admin`. The page manager's
-Ace editor is read-only for a viewer. The inline editor stays open as a playground: it is editable, the
-save button is visible but disabled, the save shortcuts are not bound, and the dirty guard
-is off, so changes are never persisted and do not trap the user in a discard dialog. The
-CSS editor works read-only for everyone below `admin`. A viewer sees a **read-only banner**
-saying that changes are not saved. The own password has its own `/password` route for
-every role, because it used to live inside the admin-only system view; the menu entry is
-disabled and the route redirected when the account disables the change. This is guidance,
-not access control: the router still checks the signed token on every request, and the
-write endpoints answer **403** regardless of what the editor shows.
+The admin UI groups its navigation into four areas: Content (Pages, Media, Backups,
+Design), This page (Edit, Copy and Delete for the page currently in the preview), Admin
+(Environment, PHP error log, PHP info) and Account (About, Change password, Logout).
+Theme and Jump to page stay direct controls; the old Quick Action is gone. Add page is a
+button in the Pages toolbar, Copy and Delete are row actions there. On a fine pointer
+with hover, entering a menu opens it and leaving closes it; touch and keyboard toggle it
+with click, Enter or Space. Escape and an outside click close it.
+
+Restricted entries stay visible but disabled: Copy/Delete for a viewer, the admin entries
+below `admin`, and Change password when the record disables it. Design is read-only for a
+viewer and an editor. The page manager's Ace editor is read-only for a viewer. The inline
+editor stays open as a playground: it is editable, the save button is visible but
+disabled, the save shortcuts are not bound, and the dirty guard is off, so changes are
+never persisted and do not trap the user in a discard dialog. A viewer sees a **read-only
+banner** saying that changes are not saved. About is available to every role through a
+viewer-protected endpoint; the public index exposes only name and version. The own
+password has its own `/password` route for every role, because it used to live inside the
+admin-only system view; the menu entry is disabled and the route redirected when the
+account disables the change. This is guidance, not access control: the router still checks
+the signed token on every request, and the write endpoints answer **403** regardless of
+what the editor shows.
 
 The token also carries the user's language. The frontend asks the translations endpoint
 for it and falls back to the configured default language when the claim is empty. That way

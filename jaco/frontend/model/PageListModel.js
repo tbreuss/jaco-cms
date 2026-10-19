@@ -12,5 +12,9 @@ export const PageListModel = {
         PageListModel.isLoading = false
         PageListModel.items = data.items
       })
-  }
+  },
+  // Jump to page needs every page, independent of the filter that is active in
+  // the page manager; it must not overwrite that list.
+  loadAll: () => api.get('page/list', {filter: '', sort: 'file'})
+    .then((data) => data.items)
 }

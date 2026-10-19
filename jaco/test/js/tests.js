@@ -16,7 +16,7 @@ import {PageAddView} from '/jaco/frontend/view/PageAddView.js'
 import {PageCopyView} from '/jaco/frontend/view/PageCopyView.js'
 import {PageDeleteView} from '/jaco/frontend/view/PageDeleteView.js'
 import {ModalSmall} from '/jaco/frontend/component/ModalSmall.js'
-import {PageGotoView} from '/jaco/frontend/view/PageGotoView.js'
+import {PageGotoView, state as pageGotoState} from '/jaco/frontend/view/PageGotoView.js'
 import {PageInlineEditView} from '/jaco/frontend/view/PageInlineEditView.js'
 import {save as inlineSave} from '/jaco/frontend/view/PageInlineEditView.js'
 import {PageTemplateModel} from '/jaco/frontend/model/PageTemplateModel.js'
@@ -24,6 +24,7 @@ import {PageListView} from '/jaco/frontend/view/page/PageListView.js'
 import {PageEditView, onSaveButtonClicked as onSavePageButtonClicked, onSaveAndCloseButtonClicked, setEditor, state as pageEditState} from '/jaco/frontend/view/page/PageEditView.js'
 import {UploadListView} from '/jaco/frontend/view/upload/UploadListView.js'
 import {PageListModel} from '/jaco/frontend/model/PageListModel.js'
+import {PageCopySource} from '/jaco/frontend/model/PageCopySource.js'
 import {ViewUploadView} from '/jaco/frontend/view/upload/ViewUploadView.js'
 import {PhpLogView} from '/jaco/frontend/view/PhpLogView.js'
 import {PhpLogModel} from '/jaco/frontend/model/PhpLogModel.js'
@@ -617,36 +618,45 @@ QUnit.test('the layout tells a viewer it is read-only and disables write control
     assert.strictEqual(banner.textContent, t('Read-only access: changes are not saved.'))
     assert.strictEqual(banner.getAttribute('role'), 'status', 'announced to screen readers')
 
-    const navLabels = [...fixture().querySelectorAll('.navbar > a')].map((link) => link.textContent)
-    assert.ok(navLabels.includes(t('Pages')), 'reading stays')
-    assert.ok(navLabels.includes(t('Change password')), 'the own password stays reachable')
-    assert.notOk(navLabels.includes(t('CSS')), 'css is not an active link')
-    const disabledNav = [...fixture().querySelectorAll('.navbar > .nav-disabled')].map((item) => item.textContent)
-    assert.ok(disabledNav.includes(t('CSS')), 'css stays visible but disabled')
-
     const menuLabels = [...fixture().querySelectorAll('.navbar .dropbtn')].map((button) => button.textContent)
-    assert.ok(menuLabels.includes(t('Quick Action')))
-    assert.ok(menuLabels.includes(t('System')), 'the system menu stays visible')
+    assert.deepEqual(menuLabels, [t('Content'), t('This page'), t('Admin'), t('Account')])
 
     const dropdowns = [...fixture().querySelectorAll('.dropdown-content')]
-    const quickAction = dropdowns[0]
-    const quickLabels = [...quickAction.querySelectorAll('a')].map((link) => link.textContent)
-    assert.deepEqual(quickLabels, [t('Go to page'), t('Edit page')], 'navigation and the inline editor remain')
-    const quickDisabled = [...quickAction.querySelectorAll('.nav-disabled')].map((item) => item.textContent)
-    assert.deepEqual(quickDisabled, [t('Add page'), t('Copy page'), t('Delete page')], 'page writes stay visible but disabled')
-
-    const system = dropdowns[1]
-    const systemLinks = [...system.querySelectorAll('a')].map((link) => link.textContent)
-    assert.deepEqual(systemLinks, [t('About')], 'about stays available to a viewer')
-    const systemDisabled = [...system.querySelectorAll('.nav-disabled')].map((item) => item.textContent)
-    assert.deepEqual(systemDisabled, [t('System environment'), t('PHP error log'), t('PHP info')], 'the admin-only system entries stay visible but disabled')
+    assert.deepEqual(
+      [...dropdowns[0].querySelectorAll('a')].map((link) => link.textContent),
+      [t('Pages'), t('Media'), t('Backups'), t('Design')],
+      'all content sections stay available',
+    )
+    assert.deepEqual(
+      [...dropdowns[1].querySelectorAll('a')].map((link) => link.textContent),
+      [t('Edit page')],
+      'the inline editor stays available',
+    )
+    assert.deepEqual(
+      [...dropdowns[1].querySelectorAll('.nav-disabled')].map((item) => item.textContent),
+      [t('Copy page'), t('Delete page')],
+      'page writes stay visible but disabled',
+    )
+    assert.strictEqual(dropdowns[2].querySelectorAll('a').length, 0, 'no admin entry is active')
+    assert.deepEqual(
+      [...dropdowns[2].querySelectorAll('.nav-disabled')].map((item) => item.textContent),
+      [t('Environment'), t('PHP error log'), t('PHP info')],
+      'admin entries stay visible but disabled',
+    )
+    assert.deepEqual(
+      [...dropdowns[3].querySelectorAll('a')].map((link) => link.textContent),
+      [t('About'), t('Change password'), t('Logout')],
+      'the account menu is available',
+    )
+    assert.ok(fixture().querySelector('.jump-to-page'), 'the page jump is available')
+    assert.ok(fixture().querySelector('select.theme-switch'), 'the theme switch stays direct')
   } finally {
     i18n.status = savedStatus
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
   }
 })
 
-QUnit.test('a demo viewer does not get the password link', (assert) => {
+QUnit.test('a demo viewer sees the password entry disabled', (assert) => {
   const savedStatus = i18n.status
   i18n.status = 'idle'
   window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer', '', false))
@@ -654,10 +664,18 @@ QUnit.test('a demo viewer does not get the password link', (assert) => {
   try {
     m.render(fixture(), m(DefaultLayout, m('div')))
 
-    const navLabels = [...fixture().querySelectorAll('.navbar > a')].map((link) => link.textContent)
-    assert.notOk(navLabels.includes(t('Change password')), 'a public demo password must not be changeable')
-    const disabledNav = [...fixture().querySelectorAll('.navbar > .nav-disabled')].map((item) => item.textContent)
-    assert.ok(disabledNav.includes(t('Change password')), 'the password entry stays visible but disabled')
+    const dropdowns = [...fixture().querySelectorAll('.dropdown-content')]
+    const account = dropdowns[3]
+    assert.deepEqual(
+      [...account.querySelectorAll('a')].map((link) => link.textContent),
+      [t('About'), t('Logout')],
+      'the password entry is not active',
+    )
+    assert.deepEqual(
+      [...account.querySelectorAll('.nav-disabled')].map((item) => item.textContent),
+      [t('Change password')],
+      'the password entry stays visible but disabled',
+    )
     assert.ok(fixture().querySelector('.readonly-banner'), 'the read-only hint stays')
   } finally {
     i18n.status = savedStatus
@@ -674,30 +692,27 @@ QUnit.test('an editor writes content but sees admin menus disabled', (assert) =>
     m.render(fixture(), m(DefaultLayout, m('div')))
 
     assert.notOk(fixture().querySelector('.readonly-banner'), 'an editor is not read-only')
-    const quickAction = fixture().querySelectorAll('.dropdown-content')[0]
-    const quickLabels = [...quickAction.querySelectorAll('a')].map((link) => link.textContent)
-    assert.ok(quickLabels.includes(t('Add page')), 'page writes are offered')
-    assert.ok(quickLabels.includes(t('Delete page')), 'page deletes are offered')
-    assert.strictEqual(quickAction.querySelectorAll('.nav-disabled').length, 0, 'no page write is disabled')
-
-    const navLabels = [...fixture().querySelectorAll('.navbar > a')].map((link) => link.textContent)
-    assert.notOk(navLabels.includes(t('CSS')), 'css stays admin-only')
-    const disabledNav = [...fixture().querySelectorAll('.navbar > .nav-disabled')].map((item) => item.textContent)
-    assert.ok(disabledNav.includes(t('CSS')), 'css stays visible but disabled')
-    const menuLabels = [...fixture().querySelectorAll('.navbar .dropbtn')].map((button) => button.textContent)
-    assert.ok(menuLabels.includes(t('System')), 'system stays visible')
-    const system = fixture().querySelectorAll('.dropdown-content')[1]
-    const systemLinks = [...system.querySelectorAll('a')].map((link) => link.textContent)
-    assert.deepEqual(systemLinks, [t('About')], 'about stays available to an editor')
-    const systemDisabled = [...system.querySelectorAll('.nav-disabled')].map((item) => item.textContent)
-    assert.deepEqual(systemDisabled, [t('System environment'), t('PHP error log'), t('PHP info')], 'admin-only system entries stay visible but disabled')
+    const dropdowns = [...fixture().querySelectorAll('.dropdown-content')]
+    assert.deepEqual(
+      [...dropdowns[1].querySelectorAll('a')].map((link) => link.textContent),
+      [t('Edit page'), t('Copy page'), t('Delete page')],
+      'page writes are offered',
+    )
+    assert.strictEqual(dropdowns[1].querySelectorAll('.nav-disabled').length, 0, 'no page write is disabled')
+    assert.strictEqual(dropdowns[2].querySelectorAll('a').length, 0, 'no admin entry is active')
+    assert.strictEqual(dropdowns[2].querySelectorAll('.nav-disabled').length, 3, 'admin entries are disabled')
+    assert.deepEqual(
+      [...dropdowns[3].querySelectorAll('a')].map((link) => link.textContent),
+      [t('About'), t('Change password'), t('Logout')],
+      'the account menu is available',
+    )
   } finally {
     i18n.status = savedStatus
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
   }
 })
 
-QUnit.test('an admin sees the system and css menus', (assert) => {
+QUnit.test('an admin sees every menu entry active', (assert) => {
   const savedStatus = i18n.status
   i18n.status = 'idle'
   window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
@@ -705,18 +720,116 @@ QUnit.test('an admin sees the system and css menus', (assert) => {
   try {
     m.render(fixture(), m(DefaultLayout, m('div')))
 
-    const navLabels = [...fixture().querySelectorAll('.navbar > a')].map((link) => link.textContent)
-    assert.ok(navLabels.includes(t('CSS')), 'css menu visible')
-    assert.strictEqual(fixture().querySelectorAll('.navbar > .nav-disabled').length, 0, 'nothing is disabled')
     const menuLabels = [...fixture().querySelectorAll('.navbar .dropbtn')].map((button) => button.textContent)
-    assert.ok(menuLabels.includes(t('System')), 'system menu visible')
-    const system = fixture().querySelectorAll('.dropdown-content')[1]
-    assert.strictEqual(system.querySelectorAll('a').length, 4, 'all system entries are active')
-    assert.strictEqual(system.querySelectorAll('.nav-disabled').length, 0, 'no system entry is disabled')
+    assert.deepEqual(menuLabels, [t('Content'), t('This page'), t('Admin'), t('Account')])
+    assert.strictEqual(fixture().querySelectorAll('.nav-disabled').length, 0, 'nothing is disabled')
+    const dropdowns = [...fixture().querySelectorAll('.dropdown-content')]
+    assert.strictEqual(dropdowns[2].querySelectorAll('a').length, 3, 'all admin entries are active')
+    assert.deepEqual(
+      [...dropdowns[2].querySelectorAll('a')].map((link) => link.textContent),
+      [t('Environment'), t('PHP error log'), t('PHP info')],
+    )
   } finally {
     i18n.status = savedStatus
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
   }
+})
+
+QUnit.module('menu dropdowns', {
+  beforeEach: () => {
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
+    i18n.status = 'idle'
+    const app = document.createElement('div')
+    app.id = 'app'
+    document.body.appendChild(app)
+    m.render(fixture(), m(DefaultLayout, m('div')))
+  },
+  afterEach: () => {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    document.getElementById('app')?.remove()
+  }
+})
+
+QUnit.test('a click opens and closes the dropdown', (assert) => {
+  const button = fixture().querySelector('.dropbtn')
+  assert.strictEqual(button.getAttribute('aria-expanded'), 'false')
+
+  button.click()
+  m.render(fixture(), m(DefaultLayout, m('div')))
+  assert.strictEqual(fixture().querySelector('.dropbtn').getAttribute('aria-expanded'), 'true')
+  assert.ok(fixture().querySelector('.dropdown-content.is-open'), 'the menu is open')
+
+  fixture().querySelector('.dropbtn').click()
+  m.render(fixture(), m(DefaultLayout, m('div')))
+  assert.strictEqual(fixture().querySelector('.dropbtn').getAttribute('aria-expanded'), 'false')
+  assert.notOk(fixture().querySelector('.dropdown-content.is-open'), 'the menu is closed again')
+})
+
+QUnit.test('a mouse hover opens and closes the dropdown', (assert) => {
+  const realMatchMedia = window.matchMedia
+  window.matchMedia = (query) => ({
+    matches: query.includes('hover: hover'),
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  })
+
+  try {
+    const enter = new PointerEvent('pointerenter', {pointerType: 'mouse'})
+    fixture().querySelector('.dropdown').dispatchEvent(enter)
+    m.render(fixture(), m(DefaultLayout, m('div')))
+    assert.ok(fixture().querySelector('.dropdown-content.is-open'), 'hover opens the menu')
+
+    const leave = new PointerEvent('pointerleave', {pointerType: 'mouse'})
+    fixture().querySelector('.dropdown').dispatchEvent(leave)
+    m.render(fixture(), m(DefaultLayout, m('div')))
+    assert.notOk(fixture().querySelector('.dropdown-content.is-open'), 'leaving closes it')
+  } finally {
+    window.matchMedia = realMatchMedia
+  }
+})
+
+QUnit.test('a touch tap toggles even on a hover-capable device', (assert) => {
+  const realMatchMedia = window.matchMedia
+  window.matchMedia = (query) => ({
+    matches: query.includes('hover: hover'),
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  })
+
+  try {
+    const tap = () => {
+      const button = fixture().querySelector('.dropbtn')
+      button.dispatchEvent(new PointerEvent('pointerdown', {pointerType: 'touch', bubbles: true}))
+      button.dispatchEvent(new MouseEvent('click', {bubbles: true, detail: 1}))
+      m.render(fixture(), m(DefaultLayout, m('div')))
+    }
+
+    tap()
+    assert.ok(fixture().querySelector('.dropdown-content.is-open'), 'the tap opens the menu')
+    tap()
+    assert.notOk(fixture().querySelector('.dropdown-content.is-open'), 'the next tap closes it')
+  } finally {
+    window.matchMedia = realMatchMedia
+  }
+})
+
+QUnit.test('escape and a click outside close the menu', (assert) => {
+  fixture().querySelector('.dropbtn').click()
+  m.render(fixture(), m(DefaultLayout, m('div')))
+  assert.ok(fixture().querySelector('.dropdown-content.is-open'), 'open before escape')
+
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'}))
+  m.render(fixture(), m(DefaultLayout, m('div')))
+  assert.notOk(fixture().querySelector('.dropdown-content.is-open'), 'escape closes')
+
+  fixture().querySelector('.dropbtn').click()
+  m.render(fixture(), m(DefaultLayout, m('div')))
+  assert.ok(fixture().querySelector('.dropdown-content.is-open'), 'open before outside click')
+
+  document.body.click()
+  m.render(fixture(), m(DefaultLayout, m('div')))
+  assert.notOk(fixture().querySelector('.dropdown-content.is-open'), 'an outside click closes')
 })
 
 QUnit.module('role claims', {
@@ -2095,31 +2208,71 @@ QUnit.module('PageListView', {
   }
 })
 
-QUnit.test('renders pages with edit and delete buttons', (assert) => {
+QUnit.test('renders pages with edit, copy and delete buttons', (assert) => {
   PageListModel.items = [{file: 'a.html', title: 'Page A', created: 1700000000}]
   PageListModel.isLoading = false
   m.render(fixture(), m(PageListView))
 
   assert.ok(fixture().textContent.includes('Page A'), 'page title shown')
   const buttons = [...fixture().querySelectorAll('tbody td.text-right button')]
-  assert.strictEqual(buttons.length, 2, 'edit and delete buttons')
+  assert.strictEqual(buttons.length, 3, 'edit, copy and delete buttons')
   assert.ok(buttons[0].classList.contains('secondary'), 'edit is secondary')
-  assert.ok(buttons[1].classList.contains('danger'), 'delete is danger')
+  assert.ok(buttons[1].classList.contains('secondary'), 'copy is secondary')
+  assert.ok(buttons[2].classList.contains('danger'), 'delete is danger')
 })
 
-QUnit.test('a viewer sees the delete button disabled', (assert) => {
+QUnit.test('a viewer sees copy and delete disabled', (assert) => {
   window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
   PageListModel.items = [{file: 'a.html', title: 'Page A', created: 1700000000}]
   PageListModel.isLoading = false
   m.render(fixture(), m(PageListView))
 
   const buttons = [...fixture().querySelectorAll('tbody td.text-right button')]
-  assert.strictEqual(buttons.length, 2, 'view and delete stay visible')
+  assert.strictEqual(buttons.length, 3, 'view, copy and delete stay visible')
   assert.ok(buttons[0].classList.contains('secondary'), 'view is secondary')
   assert.strictEqual(buttons[0].getAttribute('aria-label'), t('View'), 'the label says view, not edit')
   assert.notOk(isAriaDisabled(buttons[0]), 'view stays usable')
-  assert.ok(buttons[1].classList.contains('danger'), 'delete is danger')
-  assert.ok(isAriaDisabled(buttons[1]), 'delete is disabled for a viewer')
+  assert.ok(buttons[1].getAttribute('aria-label').startsWith(t('Copy page')), 'copy is labelled')
+  assert.ok(isAriaDisabled(buttons[1]), 'copy is disabled for a viewer')
+  assert.ok(buttons[2].classList.contains('danger'), 'delete is danger')
+  assert.ok(isAriaDisabled(buttons[2]), 'delete is disabled for a viewer')
+})
+
+QUnit.test('the pages toolbar offers add page, disabled for a viewer', (assert) => {
+  PageListModel.items = [{file: 'a.html', title: 'Page A', created: 1700000000}]
+  PageListModel.isLoading = false
+
+  m.render(fixture(), m(PageListView))
+  const add = fixture().querySelector('.content > div button')
+  assert.ok(add, 'add page is in the toolbar')
+  assert.ok(add.textContent.includes(t('Add page')))
+  assert.notOk(isAriaDisabled(add), 'an admin may add a page')
+
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
+  m.render(fixture(), m(PageListView))
+  assert.ok(isAriaDisabled(fixture().querySelector('.content > div button')), 'a viewer cannot add a page')
+})
+
+QUnit.test('the copy row action passes the row to the copy route', (assert) => {
+  const calls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => calls.push(path)
+  PageCopySource.clear()
+
+  try {
+    PageListModel.items = [{file: 'a.html', title: 'Page A', created: 1700000000}]
+    PageListModel.isLoading = false
+    m.render(fixture(), m(PageListView))
+
+    const copy = [...fixture().querySelectorAll('tbody td.text-right button')][1]
+    copy.click()
+
+    assert.deepEqual(calls, ['/page-copy'])
+    assert.deepEqual(PageCopySource.take(), {file: 'a.html', title: 'Page A'})
+  } finally {
+    m.route.set = originalSet
+    PageCopySource.clear()
+  }
 })
 
 QUnit.test('shows loading and empty states', (assert) => {
@@ -2291,6 +2444,7 @@ QUnit.test('Escape on modal with other key does nothing', (assert) => {
 QUnit.module('PageCopyView', {
   beforeEach: () => {
     window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
+    PageCopySource.clear()
     const origHasElement = iframe.hasElement
     const origFileName = iframe.fileName
     const origPageTitle = iframe.pageTitle
@@ -2309,6 +2463,7 @@ QUnit.module('PageCopyView', {
   afterEach: () => {
     m.render(fixture(), null)
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    PageCopySource.clear()
     document.getElementById('app')?.remove()
     if (window._iframeRestore) { window._iframeRestore(); delete window._iframeRestore }
   }
@@ -2317,6 +2472,23 @@ QUnit.module('PageCopyView', {
 QUnit.test('renders the copy page dialog', (assert) => {
   m.render(fixture(), m(PageCopyView))
   assert.ok(fixture().textContent.includes(t('Copy page')), 'title shown')
+})
+
+QUnit.test('a row action passes its source page', (assert) => {
+  PageCopySource.set('b.html', 'Page B')
+  m.render(fixture(), m(PageCopyView))
+
+  const values = [...fixture().querySelectorAll('input')].map((input) => input.value)
+  assert.ok(values.includes('b.html'), 'the row filename is the source')
+  assert.ok(values.includes('Page B'), 'the row title is the source')
+})
+
+QUnit.test('the copy dialog falls back to the preview page', (assert) => {
+  m.render(fixture(), m(PageCopyView))
+
+  const values = [...fixture().querySelectorAll('input')].map((input) => input.value)
+  assert.ok(values.includes('index.html'), 'the preview filename is the fallback')
+  assert.ok(values.includes('Home'), 'the preview title is the fallback')
 })
 
 QUnit.module('PageDeleteView', {
@@ -2345,14 +2517,17 @@ QUnit.test('renders the delete confirmation', (assert) => {
 QUnit.module('PageGotoView', {
   beforeEach: () => {
     window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
-    PageListModel.load = () => Promise.resolve()
+    PageListModel.loadAll = () => Promise.resolve([{file: 'a.html', title: 'Page A'}, {file: 'b.html', title: 'Page B'}])
     const origHasElement = iframe.hasElement
     const origFileName = iframe.fileName
+    const origLoad = iframe.load
     iframe.hasElement = () => true
     iframe.fileName = () => 'index.html'
+    iframe.load = () => {}
     window._iframeRestore = () => {
       iframe.hasElement = origHasElement
       iframe.fileName = origFileName
+      iframe.load = origLoad
     }
     const app = document.createElement('div')
     app.id = 'app'
@@ -2361,18 +2536,50 @@ QUnit.module('PageGotoView', {
   afterEach: () => {
     m.render(fixture(), null)
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
-    PageListModel.items = []
-    PageListModel.isLoading = false
+    pageGotoState.filter = ''
+    pageGotoState.selected = 0
+    pageGotoState.items = []
+    pageGotoState.loading = false
     document.getElementById('app')?.remove()
     if (window._iframeRestore) { window._iframeRestore(); delete window._iframeRestore }
   }
 })
 
-QUnit.test('renders the goto page dialog', (assert) => {
-  PageListModel.items = [{file: 'a.html', title: 'Page A'}]
-  PageListModel.isLoading = false
-  m.render(fixture(), m(PageGotoView))
-  assert.ok(fixture().textContent.length > 0, 'renders without crashing')
+QUnit.test('filters the page list and opens the selected page', async (assert) => {
+  const routeCalls = []
+  const loaded = []
+  const originalSet = m.route.set
+  m.route.set = (path) => routeCalls.push(path)
+  iframe.load = (path) => loaded.push(path)
+
+  try {
+    m.render(fixture(), m(PageGotoView))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    m.render(fixture(), m(PageGotoView))
+
+    const modal = fixture().querySelector('.modal')
+    assert.ok(modal, 'the search palette is rendered')
+    assert.strictEqual(getComputedStyle(modal).alignItems, 'flex-start', 'every modal keeps a fixed top edge')
+
+    const input = fixture().querySelector('.list-filter input')
+    assert.ok(input, 'the filter field is rendered')
+    assert.ok(fixture().textContent.includes('a.html'), 'all pages are listed initially')
+
+    input.value = 'page b'
+    input.dispatchEvent(new Event('input'))
+    m.render(fixture(), m(PageGotoView))
+
+    const items = [...fixture().querySelectorAll('.list-group-item')]
+    assert.strictEqual(items.length, 1, 'the title filter narrows the list')
+    assert.ok(items[0].textContent.includes('b.html'))
+    assert.ok(items[0].classList.contains('selected'), 'the first hit is selected')
+
+    input.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}))
+    assert.deepEqual(loaded, ['/b.html'], 'enter opens the selected page')
+    assert.deepEqual(routeCalls, ['/'], 'and returns to the preview')
+  } finally {
+    m.route.set = originalSet
+  }
 })
 
 QUnit.module('import audit')

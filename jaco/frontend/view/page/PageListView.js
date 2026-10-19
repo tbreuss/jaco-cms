@@ -1,7 +1,9 @@
 import {ButtonDanger} from '../../component/ButtonDanger.js'
+import {ButtonPrimary} from '../../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../../component/ButtonSecondary.js'
 import {FilterInput} from '../../component/FilterInput.js'
 import {Icon} from '../../component/Icon.js'
+import {PageCopySource} from '../../model/PageCopySource.js'
 import {PageListModel as PageListModel} from '../../model/PageListModel.js'
 import {addDanger, addSuccess} from '../../state/actions.js'
 import {api} from '../../service/api.js'
@@ -12,6 +14,11 @@ import {formatDateTimeCompact, formatDateTimeFull} from '../../lib/format.js'
 
 const editPage = (file) => {
   m.route.set('/pages/edit/:file...', {file: file})
+}
+
+const copyPage = (page) => {
+  PageCopySource.set(page.file, page.title)
+  m.route.set('/page-copy')
 }
 
 const deleteAction = (page) => {
@@ -107,7 +114,14 @@ export const PageListView = {
   },
   view: () => m('div.main',
     m('.content',
-      m('h1', t('Pages')),
+      m('div', {style: {display: 'flex', justifyContent: 'space-between', alignItems: 'center'}},
+        m('h1', t('Pages')),
+        m(ButtonPrimary, {
+          onclick: () => m.route.set('/page-add'),
+          disabled: !auth.can('editor'),
+          title: auth.can('editor') ? t('Add page') : t('Add page') + ' – ' + t('Your role does not allow this.'),
+        }, m(Icon, {name: 'plus'}), m('span', t('Add page')))
+      ),
       dataFilter(loadList),
       PageListModel.isLoading
         ? m('table.table', m('tr', m('td', t('Loading') + '...')))
@@ -136,6 +150,14 @@ export const PageListView = {
                     title: t(auth.can('editor') ? 'Edit' : 'View'),
                     'aria-label': t(auth.can('editor') ? 'Edit' : 'View'),
                   }, m(Icon, {name: auth.can('editor') ? 'edit' : 'view'})),
+                  m(ButtonSecondary, {
+                    onclick: () => {
+                      copyPage(page)
+                    },
+                    disabled: !auth.can('editor'),
+                    title: auth.can('editor') ? t('Copy page') : t('Copy page') + ' – ' + t('Your role does not allow this.'),
+                    'aria-label': t('Copy page'),
+                  }, m(Icon, {name: 'copy'})),
                   m(ButtonDanger, {
                     onclick: (e) => {
                       e.redraw = false

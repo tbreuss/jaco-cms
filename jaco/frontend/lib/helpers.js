@@ -5,12 +5,3 @@ export function guid() {
     return v.toString(16)
   })
 }
-
-export function closeDropdown() {
-  document.querySelectorAll('.dropdown-content').forEach((el) => {
-    el.style.display = 'none'
-    setTimeout(() => {
-      el.style.display = null
-    }, 1)
-  })
-}

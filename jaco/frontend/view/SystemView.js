@@ -87,7 +87,7 @@ const overviewTable = (overview) => {
   const size = formatBytes(overview.projectSize)
   return keyValueTable(t('Overview'), {
     [t('Pages')]: String(overview.pages),
-    [t('Uploads')]: String(overview.uploads),
+    [t('Media')]: String(overview.uploads),
     [t('Backups')]: String(overview.backups),
     [t('Project size')]: size,
     [t('PHP error log')]: `${formatBytes(overview.logSize)} / ${overview.logLines === 0 ? t('Empty') : overview.logLines.toLocaleString('de-CH')}`,

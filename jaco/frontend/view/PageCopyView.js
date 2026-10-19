@@ -12,6 +12,7 @@ import {InputText} from '../component/InputText.js'
 import {FormErrors, errorFor} from '../component/FormErrors.js'
 import {app} from '../lib/app.js'
 import {auth} from '../lib/auth.js'
+import {PageCopySource} from '../model/PageCopySource.js'
 
 const state = {
   srcFileName: '',
@@ -52,7 +53,11 @@ const cancel = (e) => {
 }
 
 export const PageCopyView = {
-  oninit: () => {
+  oninit: (vnode) => {
+    // consume the row selection even when the view redirects, so a stale source
+    // cannot leak into the next copy attempt
+    const pending = PageCopySource.take()
+
     if (!app.hasAuthToken()) {
       m.route.set('/logout')
       return
@@ -67,8 +72,12 @@ export const PageCopyView = {
       m.route.set('/')
       return
     }
-    state.srcFileName = state.dstFileName = iframe.fileName()
-    state.srcPageTitle = state.dstPageTitle = iframe.pageTitle()
+    // a row action hands the source over in memory; the context menu falls back
+    // to the page currently shown in the preview
+    const sourceFile = pending?.file || vnode.attrs.file || iframe.fileName()
+    const sourceTitle = pending?.title || vnode.attrs.title || iframe.pageTitle()
+    state.srcFileName = state.dstFileName = sourceFile
+    state.srcPageTitle = state.dstPageTitle = sourceTitle
     state.errors = []
   },
   view: () => {

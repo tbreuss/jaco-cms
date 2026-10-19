@@ -134,7 +134,11 @@ body {
 
 .content {
     width: 100%;
-    min-height: 100%;
+    /* The card fills the view but its own padding and the 1rem top/bottom
+       margin have to fit inside that height; otherwise .main gets a scrollbar
+       even for a short form. */
+    box-sizing: border-box;
+    min-height: calc(100% - 2rem);
     max-width: 1040px;
     margin: 1rem auto;
     background-color: var(--color-surface);
@@ -197,6 +201,22 @@ body {
     margin-left: auto;
 }
 
+/* The account menu is the rightmost group; theme and the page jump follow it. */
+.navbar .account-menu {
+    margin-left: auto;
+}
+
+.account-menu .dropdown-content {
+    right: 0;
+    left: auto;
+}
+
+.navbar a.jump-to-page {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
 /* Theme switch: native select, navbar-styled. The dropdown popup itself is
    drawn by the browser; only its option hover is styled, in both themes. */
 .theme-switch {
@@ -243,6 +263,11 @@ body {
 }
 
 /* Dropdown button */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
 .dropdown .dropbtn {
     font-size: 16px;
     border: none;
@@ -258,7 +283,8 @@ body {
 
 /* Subtle background color for navbar links on hover */
 .navbar a:hover,
-.dropdown:hover .dropbtn {
+.dropdown:hover .dropbtn,
+.dropdown.is-open .dropbtn {
     background-color: var(--color-nav-hover);
 }
 
@@ -270,6 +296,8 @@ body {
 .dropdown-content {
     display: none;
     position: absolute;
+    top: 100%;
+    left: 0;
     background-color: var(--color-surface);
     min-width: 160px;
     box-shadow: var(--shadow-dropdown);
@@ -283,6 +311,8 @@ body {
     text-decoration: none;
     display: block;
     text-align: left;
+    /* the menu sizes itself to the longest entry, e.g. "PHP-Fehlerprotokoll" */
+    white-space: nowrap;
 }
 
 /* Add a grey background color to dropdown links on hover */
@@ -290,8 +320,8 @@ body {
     background-color: var(--color-menu-hover);
 }
 
-/* Show the dropdown menu on hover */
-.dropdown:hover .dropdown-content {
+/* Show the dropdown menu only when its trigger opened it. */
+.dropdown-content.is-open {
     display: block;
 }
 
@@ -304,8 +334,15 @@ body {
     background: var(--color-chrome-translucent);
     display: flex;
     justify-content: center;
-    align-items: center;
+    /* Every modal keeps a fixed top edge: a dialog whose height changes (for
+       example the filtered page list) must not move the whole box. */
+    align-items: flex-start;
     z-index: 3;
+}
+
+.modal-inner,
+.modal-sm {
+    margin-top: 8vh;
 }
 
 /* The overlay takes programmatic focus for Escape handling; it should not
@@ -720,7 +757,8 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+[tabindex]:focus-visible {
     outline: 2px solid var(--color-link);
     outline-offset: 2px;
 }
@@ -999,6 +1037,19 @@ ul.form-errors {
 
 .list-group-item:hover {
     background-color: var(--color-surface);
+}
+
+.list-group-item.selected {
+    background-color: var(--color-menu-hover);
+}
+
+.page-goto-list {
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.page-goto-title {
+    opacity: .7;
 }
 
 a.list-group-item {
