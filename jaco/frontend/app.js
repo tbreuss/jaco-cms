@@ -2,9 +2,11 @@ import {DefaultLayout} from './layout/Default.js'
 import {Notifications} from './service/Notifications.js'
 import {addDanger} from './state/actions.js'
 import {initTheme} from './lib/theme.js'
+import {iframe} from './lib/iframe.js'
 import {formatDateTimeCompact, formatDateTimeFull} from './lib/format.js'
 
 initTheme()
+iframe.initPreview()
 
 Number.prototype.toDateTime = function () {
   return formatDateTimeCompact(this)

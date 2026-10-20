@@ -2994,6 +2994,49 @@ QUnit.test('filters the page list and opens the selected page', async (assert) =
   }
 })
 
+QUnit.module('preview persistence', {
+  beforeEach: () => {
+    sessionStorage.removeItem('jaco-preview-page')
+    const frame = document.createElement('iframe')
+    frame.id = 'iframe'
+    frame.src = 'about:blank'
+    fixture().appendChild(frame)
+  },
+  afterEach: () => {
+    sessionStorage.removeItem('jaco-preview-page')
+    document.getElementById('iframe')?.remove()
+  },
+})
+
+QUnit.test('initPreview restores the last page from session storage', (assert) => {
+  sessionStorage.setItem('jaco-preview-page', 'kontakt.html')
+  iframe.initPreview()
+  const frame = document.getElementById('iframe')
+  assert.ok(frame.src.endsWith('/kontakt.html'), 'the preview loads the stored page')
+})
+
+QUnit.test('initPreview ignores unsafe stored paths', (assert) => {
+  sessionStorage.setItem('jaco-preview-page', '../../../etc/passwd')
+  iframe.initPreview()
+  const frame = document.getElementById('iframe')
+  assert.strictEqual(frame.src, 'about:blank', 'unsafe paths are not loaded')
+})
+
+QUnit.test('rememberPreviewPage clears storage when the page is gone', (assert) => {
+  const done = assert.async()
+  sessionStorage.setItem('jaco-preview-page', 'gone.html')
+  const origFileName = iframe.fileName
+  const origFetch = window.fetch
+  iframe.fileName = () => 'gone.html'
+  window.fetch = () => Promise.resolve({ok: false, status: 404})
+  iframe.rememberPreviewPage().then(() => {
+    assert.strictEqual(sessionStorage.getItem('jaco-preview-page'), null, 'stale path removed')
+    iframe.fileName = origFileName
+    window.fetch = origFetch
+    done()
+  })
+})
+
 QUnit.module('import audit')
 
 // Every module that renders mithril components. A <Capitalized> name used

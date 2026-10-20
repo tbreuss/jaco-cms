@@ -1,3 +1,38 @@
+const PREVIEW_STORAGE_KEY = 'jaco-preview-page'
+
+const isSafePreviewPath = (path) => {
+  if (typeof path !== 'string' || path === '') {
+    return false
+  }
+  if (path.includes('..') || path.includes('\\') || path.includes(':')) {
+    return false
+  }
+  return path === 'index.html' || /^[\w./-]+\.html$/i.test(path)
+}
+
+const pathToPreviewUrl = (file) => (file === 'index.html' ? '/' : '/' + file)
+
+const rememberPreviewPage = () => {
+  const file = iframe.fileName()
+  if (!isSafePreviewPath(file)) {
+    return Promise.resolve()
+  }
+  return fetch(pathToPreviewUrl(file), {method: 'HEAD', credentials: 'same-origin'})
+    .then((res) => {
+      if (res.ok) {
+        sessionStorage.setItem(PREVIEW_STORAGE_KEY, file)
+        return
+      }
+      sessionStorage.removeItem(PREVIEW_STORAGE_KEY)
+      if (file !== 'index.html') {
+        const frame = iframe.getElement()
+        frame.dataset.previewFallback = '1'
+        frame.src = '/'
+      }
+    })
+    .catch(() => {})
+}
+
 export const iframe = {
   pageTitle: () => {
     return iframe.contentDocument().title
@@ -94,6 +129,35 @@ export const iframe = {
   },
   load: (url) => {
     iframe.getElement().src = url
+  },
+  // Remember which site page is open in the preview so a hard refresh of the
+  // admin shell does not always reset the iframe to index.html.
+  rememberPreviewPage,
+  initPreview: () => {
+    if (!iframe.hasElement()) {
+      return
+    }
+    const frame = iframe.getElement()
+    if (frame.dataset.previewPersistence) {
+      return
+    }
+    frame.dataset.previewPersistence = '1'
+    frame.addEventListener('load', () => {
+      if (frame.dataset.previewFallback) {
+        delete frame.dataset.previewFallback
+        return
+      }
+      try {
+        rememberPreviewPage()
+      } catch {
+        // preview not readable yet
+      }
+    })
+
+    const saved = sessionStorage.getItem(PREVIEW_STORAGE_KEY)
+    if (saved && isSafePreviewPath(saved)) {
+      frame.src = pathToPreviewUrl(saved)
+    }
   },
   reload: () => {
     iframe.contentWindow().location.reload()
