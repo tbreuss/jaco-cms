@@ -2845,6 +2845,13 @@ QUnit.test('a row action passes its source page', (assert) => {
   const values = [...fixture().querySelectorAll('input')].map((input) => input.value)
   assert.ok(values.includes('b.html'), 'the row filename is the source')
   assert.ok(values.includes('Page B'), 'the row title is the source')
+
+  const dstFile = fixture().querySelector('#dstFileName')
+  const dstTitle = fixture().querySelector('#dstPageTitle')
+  assert.strictEqual(dstFile.value, '', 'the copy filename starts empty')
+  assert.strictEqual(dstTitle.value, '', 'the copy title starts empty')
+  assert.strictEqual(dstFile.placeholder, t('e.g. contact.html'))
+  assert.strictEqual(dstTitle.placeholder, t('e.g. Contact'))
 })
 
 QUnit.test('cancel returns to the source list', (assert) => {

@@ -77,8 +77,12 @@ export const PageCopyView = {
     // to the page currently shown in the preview
     const sourceFile = pending?.file || vnode.attrs.file || iframe.fileName()
     const sourceTitle = pending?.title || vnode.attrs.title || iframe.pageTitle()
-    state.srcFileName = state.dstFileName = sourceFile
-    state.srcPageTitle = state.dstPageTitle = sourceTitle
+    state.srcFileName = sourceFile
+    state.srcPageTitle = sourceTitle
+    // the copy needs its own name and title; pre-filling the source would only
+    // invite an accidental collision, so start empty like the add-page dialog
+    state.dstFileName = ''
+    state.dstPageTitle = ''
     state.returnTo = pending?.returnTo || '/'
     state.errors = []
   },
@@ -105,6 +109,7 @@ export const PageCopyView = {
           id: 'dstFileName',
           wrap: 'div.row',
           label: t('Filename'),
+          placeholder: t('e.g. contact.html'),
           value: state.dstFileName,
           error: errorFor(state.errors, 'dstFileName'),
           oninput: (value) => {
@@ -115,6 +120,7 @@ export const PageCopyView = {
           id: 'dstPageTitle',
           wrap: 'div.row',
           label: t('Page title'),
+          placeholder: t('e.g. Contact'),
           value: state.dstPageTitle,
           error: errorFor(state.errors, 'dstPageTitle'),
           oninput: (value) => {
