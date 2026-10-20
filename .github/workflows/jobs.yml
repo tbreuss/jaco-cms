@@ -68,7 +68,12 @@ jobs:
                   rm .editorconfig .gitignore Dockerfile jaco/.php-cs-fixer.php
 
             - name: Create settings.php file
-              run: echo "${{ secrets.SETTINGS_PHP_FILE_CONTENT }}" > jaco/settings.php
+              env:
+                  SETTINGS_PHP_FILE_CONTENT: ${{ secrets.SETTINGS_PHP_FILE_CONTENT }}
+              run: |
+                  # Do not interpolate the secret into the shell command: hashes contain
+                  # "$2y$..." and the shell would expand those dollar signs.
+                  printf '%s\n' "$SETTINGS_PHP_FILE_CONTENT" > jaco/settings.php
 
             - name: Deploy code to ${{ vars.SSH_TARGET }} on server ${{ vars.SSH_HOST }} with scp
               uses: appleboy/scp-action@master
