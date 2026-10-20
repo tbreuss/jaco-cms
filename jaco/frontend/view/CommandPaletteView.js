@@ -12,8 +12,19 @@ const itemId = (cmd) => 'palette-item-' + cmd.id.replace(/[^a-z0-9_-]/gi, '-')
 
 const filtered = () => {
   const query = paletteState.filter.trim().toLowerCase()
-  return visibleCommands().filter((cmd) =>
-    query === '' || t(cmd.labelKey).toLowerCase().includes(query))
+  return visibleCommands().filter((cmd) => {
+    if (query === '') {
+      return true
+    }
+    const words = [t(cmd.labelKey)]
+    if (cmd.context) {
+      words.push(cmd.context())
+    }
+    if (cmd.search) {
+      words.push(...cmd.search())
+    }
+    return words.some((word) => word.toLowerCase().includes(query))
+  })
 }
 
 const selectedCommand = (items) =>
@@ -161,7 +172,8 @@ export const CommandPalette = {
             paletteState.selected = index
           },
         },
-        m('span.palette-label', t(cmd.labelKey))))
+        m('span.palette-label', t(cmd.labelKey)),
+        cmd.context ? m('span.palette-context', cmd.context()) : null))
     ),
     m('.palette-hint', t('Use ↑↓ to select, Enter to run, Esc to close.'))
     ))

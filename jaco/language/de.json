@@ -183,5 +183,8 @@
     "Use ↑↓ to select, Enter to run, Esc to close.": "Mit ↑↓ auswählen, Enter ausführen, Esc schließen.",
     "Space": "Leertaste",
     "e.g. contact.html": "z. B. kontakt.html",
-    "e.g. Contact": "z. B. Kontakt"
+    "e.g. Contact": "z. B. Kontakt",
+    "List media": "Medien auflisten",
+    "List backups": "Backups auflisten",
+    "Change theme": "Theme wechseln"
 }

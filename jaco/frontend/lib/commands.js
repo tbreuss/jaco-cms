@@ -8,9 +8,20 @@ import {getTheme, setTheme} from './theme.js'
 // A command has:
 //   id       unique key
 //   labelKey translation key shown in the palette
+//   context  optional function returning the object the command acts on
+//   search   optional function returning extra words the filter matches
 //   roles    roles that may see/run it (empty = everyone)
 //   when     optional context check (returns boolean)
 //   run      function receiving the context
+
+// The page the commands act on: the one in the preview. The palette names it,
+// so "Edit page" cannot be mistaken for an arbitrary page. The title says more
+// than the file name ("Contact" instead of "kontakt.html"), so it leads; the
+// file name stays searchable in case the title is unknown.
+const currentPageTitle = () => (iframe.hasElement() ? iframe.pageTitle() : '')
+const currentPageFile = () => (iframe.hasElement() ? iframe.fileName() : '')
+const currentPage = () => currentPageTitle() || currentPageFile()
+const currentPageSearch = () => [currentPageTitle(), currentPageFile()]
 
 export const commands = [
   {
@@ -22,6 +33,8 @@ export const commands = [
   {
     id: 'page.edit-content',
     labelKey: 'Edit page',
+    context: currentPage,
+    search: currentPageSearch,
     roles: ['editor', 'admin'],
     when: () => iframe.hasElement(),
     run: () => m.route.set('/page-edit'),
@@ -29,6 +42,8 @@ export const commands = [
   {
     id: 'page.copy',
     labelKey: 'Copy page',
+    context: currentPage,
+    search: currentPageSearch,
     roles: ['editor', 'admin'],
     when: () => iframe.hasElement(),
     run: () => m.route.set('/page-copy'),
@@ -36,6 +51,8 @@ export const commands = [
   {
     id: 'page.delete',
     labelKey: 'Delete page',
+    context: currentPage,
+    search: currentPageSearch,
     roles: ['editor', 'admin'],
     when: () => iframe.hasElement(),
     run: () => m.route.set('/page-delete'),
@@ -47,28 +64,28 @@ export const commands = [
   },
   {
     id: 'nav.pages',
-    labelKey: 'Pages',
+    labelKey: 'List pages',
     run: () => m.route.set('/pages'),
   },
   {
     id: 'nav.uploads',
-    labelKey: 'Media',
+    labelKey: 'List media',
     run: () => m.route.set('/uploads'),
   },
   {
     id: 'nav.backups',
-    labelKey: 'Backups',
+    labelKey: 'List backups',
     run: () => m.route.set('/backups'),
   },
   {
     id: 'nav.design',
-    labelKey: 'Design',
+    labelKey: 'Edit CSS',
     roles: ['admin'],
     run: () => m.route.set('/css'),
   },
   {
     id: 'theme.toggle',
-    labelKey: 'Theme',
+    labelKey: 'Change theme',
     run: () => {
       const order = ['auto', 'light', 'dark']
       const current = getTheme()

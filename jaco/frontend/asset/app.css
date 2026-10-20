@@ -1155,11 +1155,9 @@ a.list-group-item {
 }
 
 .palette-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: block;
     width: 100%;
-    padding: 10px 16px;
+    padding: 8px 16px;
     border: none;
     background: transparent;
     color: var(--color-text);
@@ -1171,6 +1169,21 @@ a.list-group-item {
 .palette-item:hover,
 .palette-item.selected {
     background: var(--color-menu-hover);
+}
+
+/* The object a command acts on, e.g. the page in the preview. It sits on its
+   own line below the label: a long title must not squeeze the label out. */
+.palette-label {
+    display: block;
+}
+
+.palette-context {
+    display: block;
+    opacity: 0.6;
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .palette-hint {

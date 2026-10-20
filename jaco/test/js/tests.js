@@ -883,6 +883,17 @@ QUnit.module('command palette', {
     paletteState.filter = ''
     paletteState.selected = 0
     paletteState.previousFocus = null
+    const origHasElement = iframe.hasElement
+    const origFileName = iframe.fileName
+    const origPageTitle = iframe.pageTitle
+    iframe.hasElement = () => true
+    iframe.fileName = () => 'index.html'
+    iframe.pageTitle = () => 'Home'
+    window._iframeRestore = () => {
+      iframe.hasElement = origHasElement
+      iframe.fileName = origFileName
+      iframe.pageTitle = origPageTitle
+    }
     m.render(fixture(), null)
   },
   afterEach: () => {
@@ -893,6 +904,7 @@ QUnit.module('command palette', {
     paletteState.previousFocus = null
     m.render(fixture(), null)
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    if (window._iframeRestore) { window._iframeRestore(); delete window._iframeRestore }
   }
 })
 
@@ -907,8 +919,8 @@ QUnit.test('renders localized commands and opens the filter', (assert) => {
 
   const labels = [...fixture().querySelectorAll('.palette-label')].map((label) => label.textContent)
   assert.ok(labels.includes(t('Add page')), 'command labels are translated')
-  assert.ok(labels.includes(t('Pages')))
-  assert.ok(labels.includes(t('Theme')))
+  assert.ok(labels.includes(t('List pages')))
+  assert.ok(labels.includes(t('Change theme')))
   assert.ok(commands.every((cmd) => typeof cmd.labelKey === 'string'), 'commands use translation keys')
   assert.strictEqual(fixture().querySelectorAll('.palette-keys').length, 0, 'no shortcut badges')
 })
@@ -923,13 +935,13 @@ QUnit.test('filters by the translated label and runs with Enter', (assert) => {
     m.render(fixture(), m(CommandPalette))
 
     const input = fixture().querySelector('.palette-filter')
-    input.value = t('Pages')
+    input.value = t('List pages')
     input.dispatchEvent(new Event('input', {bubbles: true}))
     m.render(fixture(), m(CommandPalette))
 
     const items = [...fixture().querySelectorAll('.palette-item')]
     assert.strictEqual(items.length, 1, 'the label filter narrows the list')
-    assert.ok(items[0].textContent.includes(t('Pages')))
+    assert.ok(items[0].textContent.includes(t('List pages')))
     assert.deepEqual(routes, [], 'typing only filters, it does not run a command')
 
     fixture().querySelector('.palette-filter')
@@ -948,7 +960,7 @@ QUnit.test('the theme command cycles the theme', (assert) => {
     m.render(fixture(), m(CommandPalette))
 
     const input = fixture().querySelector('.palette-filter')
-    input.value = t('Theme')
+    input.value = t('Change theme')
     input.dispatchEvent(new Event('input', {bubbles: true}))
     m.render(fixture(), m(CommandPalette))
 
@@ -967,8 +979,17 @@ QUnit.test('a viewer does not see editor commands', (assert) => {
 
   const labels = [...fixture().querySelectorAll('.palette-label')].map((label) => label.textContent)
   assert.notOk(labels.includes(t('Add page')), 'a viewer cannot add pages')
-  assert.ok(labels.includes(t('Pages')), 'reading commands stay available')
+  assert.ok(labels.includes(t('List pages')), 'reading commands stay available')
   assert.notOk(visibleCommands().some((cmd) => cmd.id === 'page.add'))
+})
+
+QUnit.test('the palette names the page the page commands act on', (assert) => {
+  openPalette()
+  m.render(fixture(), m(CommandPalette))
+
+  const contexts = [...fixture().querySelectorAll('.palette-context')].map((item) => item.textContent)
+  assert.ok(contexts.length > 0, 'the page commands name their target')
+  assert.ok(contexts.every((text) => text === 'Home'), 'the target is the page in the preview')
 })
 
 QUnit.test('escape closes and restores focus', async (assert) => {
