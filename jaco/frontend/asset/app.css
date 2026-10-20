@@ -791,7 +791,7 @@ textarea:focus-visible,
 table button.primary,
 table button.secondary,
 table button.danger {
-    padding: 8px 12px;
+    padding: 6px 9px;
 }
 
 .table thead th {
@@ -885,7 +885,7 @@ fieldset .row button {
 }
 
 .table .text-right button {
-    margin-right: 0.5rem;
+    margin-right: 6px;
 }
 
 .table .text-right button:last-child {
@@ -1097,8 +1097,8 @@ ul.form-errors {
 
 button.page-goto-action {
     flex: 0 0 auto;
-    padding: 8px 12px;
-    margin: 0;
+    padding: 6px 9px;
+    margin: 0 6px 0 0;
 }
 
 a.list-group-item {
