@@ -5,10 +5,10 @@ Status: implemented in the working tree.
 ## Navigation
 
 ```text
-JACO | Content ▾ | This page ▾ | [🔍 Jump to page] | Admin ▾ | Account ▾ | [Theme ▾]
+JACO | Content ▾ | This page ▾ | [🔍 Jump to page] | [⌨ Commands] | Admin ▾ | Account ▾ | [Theme ▾]
 ```
 
-Four menu groups plus two direct controls.
+Four menu groups plus three direct controls.
 
 ## Groups
 

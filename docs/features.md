@@ -255,6 +255,13 @@ button in the Pages toolbar, Copy and Delete are row actions there. On a fine po
 with hover, entering a menu opens it and leaving closes it; touch and keyboard toggle it
 with click, Enter or Space. Escape and an outside click close it.
 
+The command palette opens with Space outside inputs, buttons and editors; Ctrl+K/Cmd+K is
+the fallback and also works over modals. It is search-first: typing filters, the arrow
+keys select, Enter runs and Escape closes. There are no direct Alt shortcuts, because
+browsers reserve several Alt+letter combinations. The Add page command starts a
+three-step process (template, details, confirmation) and uses the same create endpoint
+and inline-editor continuation as the Pages toolbar.
+
 Restricted entries stay visible but disabled: Copy/Delete for a viewer, the admin entries
 below `admin`, and Change password when the record disables it. Design is read-only for a
 viewer and an editor. The page manager's Ace editor is read-only for a viewer. The inline

@@ -1,6 +1,6 @@
-import {api} from '../service/api.js'
 import {addSuccess} from '../state/actions.js'
 import {iframe} from '../lib/iframe.js'
+import {createPage, continueAfterCreate} from '../lib/pageCreate.js'
 import {t} from '../model/i18n.js'
 import {ModalMedium} from '../component/ModalMedium.js'
 import {Fieldset} from '../component/Fieldset.js'
@@ -26,41 +26,14 @@ const fieldPointers = ['fileName', 'pageTemplate', 'pageTitle']
 
 const onSaveButtonClicked = (e) => {
   e.redraw = false
-  api.post('page/create', {}, {
-    background: true, // no redraw
-    body: {
-      fileName: state.fileName,
-      pageTitle: state.pageTitle,
-      pageTemplate: state.pageTemplate,
-    },
-    withCredentials: false
+  createPage({
+    fileName: state.fileName,
+    pageTitle: state.pageTitle,
+    pageTemplate: state.pageTemplate,
   })
     .then(() => {
       addSuccess(t('Page was successfully added.'))
-      // continue the "add page" process directly in the inline editor instead
-      // of sending the user back to the pages list
-      let frame = null
-      try {
-        if (!iframe.hasElement()) {
-          m.route.set('/pages')
-          return
-        }
-        frame = iframe.getElement()
-      } catch (e) {
-        m.route.set('/pages')
-        return
-      }
-      frame.onload = () => {
-        frame.onload = null
-        frame.onerror = null
-        m.route.set('/page-edit')
-      }
-      frame.onerror = () => {
-        frame.onload = null
-        frame.onerror = null
-        m.route.set('/pages')
-      }
-      iframe.load('/' + state.fileName)
+      continueAfterCreate(state.fileName)
     })
     .catch(({code, response}) => {
       if (code === 422) {

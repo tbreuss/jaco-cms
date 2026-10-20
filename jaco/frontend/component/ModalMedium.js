@@ -1,10 +1,10 @@
 let modalRef = undefined
 
 export const ModalMedium = {
-  view: ({attrs: {title, closeRoute = '/'}, children}) => {
-    const close = () => m.route.set(closeRoute)
+  view: ({attrs: {title, closeRoute = '/', onclose, cssClass}, children}) => {
+    const close = onclose ?? (() => m.route.set(closeRoute))
 
-    return m('.modal', {
+    return m('.modal' + (cssClass ? '.' + cssClass : ''), {
       oncreate: ({dom}) => {
         modalRef = dom
         dom.addEventListener('keydown', (e) => {

@@ -1110,6 +1110,17 @@ a.list-group-item {
     margin-bottom: 1rem;
 }
 
+/* Process runner sits above the palette and the ordinary modals. */
+.modal.process-modal {
+    z-index: 1001;
+}
+
+.process-progress {
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    opacity: 0.6;
+}
+
 /* Command palette */
 .palette-overlay {
     position: fixed;

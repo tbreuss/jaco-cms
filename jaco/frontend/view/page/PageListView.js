@@ -11,6 +11,8 @@ import {t, tError} from '../../model/i18n.js'
 import {app} from '../../lib/app.js'
 import {auth} from '../../lib/auth.js'
 import {iframe} from '../../lib/iframe.js'
+import {startProcess} from '../../lib/process.js'
+import {pageAddProcess} from '../../processes/pageAdd.js'
 import {formatDateTimeCompact, formatDateTimeFull} from '../../lib/format.js'
 
 const editPage = (file) => {
@@ -151,7 +153,7 @@ export const PageListView = {
       m('div', {style: {display: 'flex', justifyContent: 'space-between', alignItems: 'center'}},
         m('h1', t('Pages')),
         m(ButtonPrimary, {
-          onclick: () => m.route.set('/page-add'),
+          onclick: () => startProcess(pageAddProcess),
           disabled: !auth.can('editor'),
           title: auth.can('editor') ? t('Add page') : t('Add page') + ' – ' + t('Your role does not allow this.'),
         }, m(Icon, {name: 'plus'}), m('span', t('Add page')))

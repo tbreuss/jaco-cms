@@ -1,6 +1,7 @@
 import {auth} from './auth.js'
 import {iframe} from './iframe.js'
 import {getTheme, setTheme} from './theme.js'
+import {pageAddProcess} from '../processes/pageAdd.js'
 
 // Command registry: every action is defined once here, the palette only renders
 // and executes. Actions call existing functions — no second implementation.
@@ -17,7 +18,7 @@ export const commands = [
     id: 'page.add',
     labelKey: 'Add page',
     roles: ['editor', 'admin'],
-    run: () => m.route.set('/page-add'),
+    process: pageAddProcess,
   },
   {
     id: 'page.edit-content',

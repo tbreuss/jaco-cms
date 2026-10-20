@@ -1,5 +1,6 @@
 import {t} from '../model/i18n.js'
 import {visibleCommands} from '../lib/commands.js'
+import {startProcess} from '../lib/process.js'
 
 export const paletteState = {
   filter: '',
@@ -50,7 +51,11 @@ const execute = (cmd) => {
     return
   }
   close(false)
-  cmd.run()
+  if (cmd.process) {
+    startProcess(cmd.process)
+  } else {
+    cmd.run()
+  }
 }
 
 const trapFocus = (e) => {

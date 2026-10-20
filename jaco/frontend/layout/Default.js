@@ -6,6 +6,8 @@ import {maintenance} from '../lib/maintenance.js'
 import {getTheme, setTheme} from '../lib/theme.js'
 import {Icon} from '../component/Icon.js'
 import {CommandPalette, openPalette, paletteState} from '../view/CommandPaletteView.js'
+import {ProcessRunner} from '../view/ProcessRunnerView.js'
+import {processState} from '../lib/process.js'
 
 // Only one dropdown is open at a time. The state lives here instead of in each
 // menu so clicking another trigger closes the previous menu.
@@ -219,7 +221,7 @@ const paletteGuard = (e) => {
   if ((!isSpace && !isCtrlK) || e.repeat || e.defaultPrevented || paletteState.open) {
     return
   }
-  if (!app.hasAuthToken()) {
+  if (!app.hasAuthToken() || processState.open) {
     return
   }
   if (e.altKey || (isSpace && (e.ctrlKey || e.metaKey))) {
@@ -349,9 +351,11 @@ export const DefaultLayout = {
           m('a', 'Loading...')
         )),
         m('.main', m('.content', m('p', '…'))),
-        m(CommandPalette)] :
+        m(CommandPalette),
+        m(ProcessRunner)] :
         [
           m(CommandPalette),
+          m(ProcessRunner),
           m('.toolbar',
             m.trust('<span id="loader" class="is-stoped"></span>'),
             maintenance.isActive() ? maintenanceBanner() : null,

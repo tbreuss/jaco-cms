@@ -55,6 +55,9 @@ import {maintenance} from '/jaco/frontend/lib/maintenance.js'
 import {DefaultLayout} from '/jaco/frontend/layout/Default.js'
 import {CommandPalette, paletteState, openPalette, closePalette} from '/jaco/frontend/view/CommandPaletteView.js'
 import {commands, visibleCommands} from '/jaco/frontend/lib/commands.js'
+import {ProcessRunner} from '/jaco/frontend/view/ProcessRunnerView.js'
+import {processState, startProcess, closeProcess, nextProcess, backProcess} from '/jaco/frontend/lib/process.js'
+import {pageAddProcess} from '/jaco/frontend/processes/pageAdd.js'
 import {formatDateTimeCompact, formatDateTimeFull, formatBytes} from '/jaco/frontend/lib/format.js'
 import {state} from '/jaco/frontend/state/state.js'
 const fixture = () => document.getElementById('qunit-fixture')
@@ -1082,6 +1085,102 @@ QUnit.test('the palette opens over a modal', (assert) => {
   } finally {
     modal.remove()
   }
+})
+
+QUnit.module('process runner', {
+  beforeEach: () => {
+    i18n.status = 'idle'
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
+    closeProcess()
+    m.render(fixture(), null)
+  },
+  afterEach: () => {
+    closeProcess()
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('walks through steps with validation, back and commit', async (assert) => {
+  let committed = false
+  const process = {
+    id: 'test.process',
+    titleKey: 'Add page',
+    finishKey: 'Confirm',
+    steps: [
+      {
+        id: 'one',
+        titleKey: 'Page template',
+        pointers: ['value'],
+        view: (data, set) => m('input#processValue', {
+          value: data.value,
+          oninput: (e) => set('value', e.target.value),
+        }),
+        validate: (data) => data.value
+          ? []
+          : [{source: {pointer: 'value'}, detail: 'required'}],
+      },
+      {
+        id: 'two',
+        titleKey: 'New page',
+        view: () => m('p', 'review'),
+      },
+    ],
+    commit: () => {
+      committed = true
+      return Promise.resolve()
+    },
+  }
+
+  startProcess(process)
+  m.render(fixture(), m(ProcessRunner))
+
+  const button = (label) => [...fixture().querySelectorAll('.modal button')]
+    .find((candidate) => candidate.textContent.includes(label))
+
+  assert.ok(fixture().textContent.includes(t('Add page')), 'process title')
+  assert.ok(fixture().textContent.includes(t('Page template')), 'first step')
+  assert.strictEqual(processState.step, 0)
+
+  button(t('Next')).click()
+  assert.strictEqual(processState.step, 0, 'validation keeps the step')
+  assert.strictEqual(processState.errors.length, 1)
+
+  const input = fixture().querySelector('#processValue')
+  input.value = 'a.html'
+  input.dispatchEvent(new Event('input', {bubbles: true}))
+  m.render(fixture(), m(ProcessRunner))
+  button(t('Next')).click()
+  m.render(fixture(), m(ProcessRunner))
+  assert.strictEqual(processState.step, 1, 'the next step is shown')
+
+  button(t('Back')).click()
+  m.render(fixture(), m(ProcessRunner))
+  assert.strictEqual(processState.step, 0, 'back returns to the previous step')
+
+  button(t('Next')).click()
+  m.render(fixture(), m(ProcessRunner))
+  button(t('Confirm')).click()
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  assert.ok(committed, 'the process commits at the end')
+  assert.notOk(processState.open, 'the runner closes after commit')
+})
+
+QUnit.test('the add-page command starts its process', (assert) => {
+  PageTemplateModel.loadList = () => Promise.resolve()
+  PageTemplateModel.list = []
+
+  openPalette()
+  m.render(fixture(), m(CommandPalette))
+  const input = fixture().querySelector('.palette-filter')
+  input.value = t('Add page')
+  input.dispatchEvent(new Event('input', {bubbles: true}))
+  m.render(fixture(), m(CommandPalette))
+  fixture().querySelector('.palette-filter')
+    .dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}))
+
+  assert.ok(processState.open, 'the process starts')
+  assert.strictEqual(processState.definition.id, pageAddProcess.id)
 })
 
 QUnit.module('command palette in the preview iframe', {
@@ -2575,6 +2674,21 @@ QUnit.test('the pages toolbar offers add page, disabled for a viewer', (assert) 
   window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
   m.render(fixture(), m(PageListView))
   assert.ok(isAriaDisabled(fixture().querySelector('.content > div button')), 'a viewer cannot add a page')
+})
+
+QUnit.test('the add-page toolbar action starts the process', (assert) => {
+  PageTemplateModel.loadList = () => Promise.resolve()
+  PageListModel.items = [{file: 'a.html', title: 'Page A', created: 1700000000}]
+  PageListModel.isLoading = false
+  m.render(fixture(), m(PageListView))
+
+  try {
+    fixture().querySelector('.content > div button').click()
+    assert.ok(processState.open, 'the process opens')
+    assert.strictEqual(processState.definition.id, pageAddProcess.id)
+  } finally {
+    closeProcess()
+  }
 })
 
 QUnit.test('the copy row action passes the row to the copy route', (assert) => {
