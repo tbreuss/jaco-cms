@@ -19,6 +19,8 @@ jobs:
                   tools: composer:v2
             - name: Build archive
               run: ./build-dist.sh "${GITHUB_REF_NAME}"
+            - name: Verify archive contents
+              run: ./verify-dist-archive.sh "jaco-dist-${GITHUB_REF_NAME}.zip"
             - name: Attach archive to release
               uses: softprops/action-gh-release@v2
               with:

@@ -3,6 +3,9 @@
 Jaco manages static `.html` files directly in the web directory: no database setup,
 no build step. This guide describes the installation on an already existing HTML site.
 
+In release archives (`jaco-dist-*.zip`), this file is shipped as **`INSTALL.md`**
+in the archive root; in the git repository it lives here as `docs/install.md`.
+
 ## Requirements
 
 - PHP `^8.2` with the `dom`, `libxml` and `openssl` extensions

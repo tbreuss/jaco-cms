@@ -115,6 +115,23 @@ Composer validate (strict):
 
 CI runs these steps on every push; see `.github/workflows/jobs.yml`.
 
+## Release archive (`jaco-dist-*.zip`)
+
+Build (needs git, composer, zip on the host):
+
+    ./build-dist.sh [version]
+
+Check an existing zip:
+
+    ./verify-dist-archive.sh jaco-dist-dev.zip
+
+Build and verify in one step (removes the test zip afterwards):
+
+    ./test-dist.sh
+
+Release tags run `build-dist.sh` and `verify-dist-archive.sh` in `.github/workflows/release.yml`
+before the archive is attached to the GitHub release.
+
 ## JavaScript and QUnit
 
 JavaScript syntax check (Node ≥ 22, vendored assets excluded):
