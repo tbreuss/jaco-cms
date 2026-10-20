@@ -180,7 +180,7 @@ export const UploadListView = {
               sortableHead(headings, loadList)
             )),
             m('tbody', UploadListModel.items.map((page) => m('tr',
-                m('td', page.file),
+                m('td.cell-clip', {title: page.file}, page.file),
                 m('td.text-nowrap', page.extension),
                 m('td.text-right.text-nowrap', formatSize(page.size)),
                 m('td.text-nowrap', {title: formatDateTimeFull(page.created)}, formatDateTimeCompact(page.created)),

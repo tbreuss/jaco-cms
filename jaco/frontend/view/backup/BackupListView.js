@@ -150,8 +150,8 @@ export const BackupListView = {
             sortableHead(headings, loadList)
           )),
           m('tbody', BackupListModel.items.map((backup) => m('tr',
-              m('td', backup.name),
-              m('td', backup.title),
+              m('td.cell-clip', {title: backup.name}, backup.name),
+              m('td.cell-clip', {title: backup.title}, backup.title),
               m('td.text-nowrap', {title: formatDateTimeFull(backup.created)}, formatDateTimeCompact(backup.created)),
               m('td.text-nowrap', {title: formatDateTimeFull(backup.backedUp)}, formatDateTimeCompact(backup.backedUp)),
               m('td.text-nowrap', backup.type),

@@ -939,6 +939,15 @@ fieldset .row button {
     overflow-wrap: anywhere;
 }
 
+/* Clip long text in list tables without squeezing date/action columns:
+   max-width: 0 lets the cell shrink below content width; col widths assign the rest. */
+.table td.cell-clip {
+    max-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .table tbody tr:hover {
     background: var(--color-row-hover);
 }

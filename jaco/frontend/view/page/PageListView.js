@@ -171,8 +171,8 @@ export const PageListView = {
               sortableHead(headings, loadList)
             )),
             m('tbody', PageListModel.items.map((page) => m('tr',
-                m('td.text-nowrap', page.file),
-                m('td', page.title),
+                m('td.cell-clip', {title: page.file}, page.file),
+                m('td.cell-clip', {title: page.title}, page.title),
                 m('td.text-nowrap', {title: formatDateTimeFull(page.created)}, formatDateTimeCompact(page.created)),
                 m('td.text-right.text-nowrap',
                   // view the page in the site preview
