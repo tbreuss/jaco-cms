@@ -32,7 +32,10 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Semantic heading inside the line editor | The line editor wraps text in a `<p>` (Quill default block); a CSS override in `editor.css` keeps the heading look while editing. Alternative: a clipboard matcher (`P` → `header` level from the host tag) for real `<h1>`–`<h6>` during edit. Only worth it if DevTools-semantics while editing ever matter. | S |
 | open | Share one Ace editor helper across views | `PageEditView`, `CssEditView` and `BackupEditView` copy the same `ace.edit` setup with slightly different lifecycles (single instance twice, recreate-per-update once). Every lifecycle fix has to be thought through three times. Bundle creation, theme watching and destroy in one `lib/` helper; views keep only their save and content logic. | S |
 | open | Light theme flash on hard refresh | Briefly shows the light theme on hard refresh in dark mode. Not reproducible headless (admin boot, editors and preview are dark from the first frame); needs the exact spot (admin chrome, preview iframe, editor toolbar, window) plus theme setting and browser to narrow down. | S |
-| open | Triage the unmerged feature branches | `feat/content-templates`, `feat/js-editor`, `feat/draggable-content-blocks` and `feat/configurable-upload-dir` are 4 to 9 days old, `json-schema` is three and a half years old. Each needs a decision — finish, merge or delete — otherwise `git branch` stops being a signal about what is actually in flight. | S |
+| done | Triage the unmerged feature branches | All feature branches were deleted: `feat/content-templates`, `feat/js-editor`, `feat/draggable-content-blocks` and `feat/configurable-upload-dir` were never merged, `feat/password-hashing` and `feat/role-aware-ui` had already been merged as pull requests, `json-schema` is three and a half years old, and `feat/process-runner` was closed without merging (the process runner was not needed). `git branch` is a signal again. | S |
+| open | Shortcuts in the command palette | The palette lists the commands but binds no keys: every command is reached by typing or by clicking. The registry has no `shortcut` field and the palette shows no shortcut column. Alt+letter is out (browsers reserve several combinations), so the candidates are Ctrl/Cmd+letter or a modifier-free key. | S |
+| open | Recently used commands on top of the palette | The palette always shows the registry order. Commands that are used often should float to the top, so the two or three that matter are one keypress away. Needs a place to keep the history (session or local storage) and a cap. | S |
+| open | Multi-step processes for commands | A command may need more than one step ("New page" is a template, a filename and a title). The current dialog asks for all three at once, which is fine for one form but does not scale to a real process with a review step. A runner would carry the context, validate per step and commit at the end. Deferred: no command needs it today, and the one form is faster than a wizard. | M |
 | open | Remove the remaining error suppression in `install.php` | Five `@` calls survive there: `make_dir_rec`, `mkdir`, `file_put_contents` and `unlink(__FILE__)` at the end. The backend is free of them; the installer is the last place where a failed self-deletion (a security-relevant outcome) is silent. Check explicitly and let real failures surface. | S |
 | open | Restructure QUnit test suite | Single monolithic `tests.js` (~2700 lines): split into per-topic files, add `expect()` declarations, introduce a `mountView` setup helper, and tighten global-state cleanup (sessionStorage, ace, confirm, route) to avoid order-dependent leaks. | M |
 
@@ -61,6 +64,13 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | Roles (`admin` / `editor` / `viewer`) for every route | `feat: introduce roles for admin, editor and viewer` |
 | Split 401 from 403, so a denied action no longer logs out | `feat: introduce roles for admin, editor and viewer` |
 | Error suppression (`@`) around file calls in the backend | `feat: change the admin password in the system view` |
+| The upload delete confirmation was not translated | `fix: translate the upload delete confirmation` |
+| List views showed only "Validation Error" instead of the cause | `fix: show validation details in list views` |
+| Adding a page ended in the pages list, so the content had to be edited in a second step | `feat: continue the add-page flow directly in the inline editor` |
+| The pages list had no icon for "view the page", and the icon tooltips were named inconsistently | `feat: streamline page navigation with view/edit actions and consistent icon tooltips` |
+| No icon for "edit the content inline" (only "edit the document") | `feat: add edit-content icon and use icon actions in jump-to-page` |
+| The signed-in user and role were nowhere visible | `feat: show the signed-in user and role in the account menu` |
+| No way to reach the actions by keyboard | `feat: add the keyboard command palette` |
 
 ## Won't do
 

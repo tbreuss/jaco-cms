@@ -91,8 +91,10 @@ export const PageAddView = {
       m.route.set('/')
       return
     }
-    state.fileName = iframe.fileName()
-    state.pageTitle = iframe.pageTitle()
+    // a new page starts empty: the name and the title of the page in the
+    // preview belong to that page, not to the one about to be created
+    state.fileName = ''
+    state.pageTitle = ''
     state.pageTemplate = ''
     state.errors = []
 
@@ -117,6 +119,7 @@ export const PageAddView = {
         id: 'fileName',
         wrap: 'div.row',
         label: t('Filename'),
+        placeholder: t('e.g. contact.html'),
         value: state.fileName,
         error: errorFor(state.errors, 'fileName'),
         oninput: (value) => {
@@ -127,6 +130,7 @@ export const PageAddView = {
         id: 'pageTitle',
         wrap: 'div.row',
         label: t('Page title'),
+        placeholder: t('e.g. Contact'),
         value: state.pageTitle,
         error: errorFor(state.errors, 'pageTitle'),
         oninput: (value) => {

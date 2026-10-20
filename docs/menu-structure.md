@@ -5,10 +5,10 @@ Status: implemented in the working tree.
 ## Navigation
 
 ```text
-JACO | Content ▾ | This page ▾ | [🔍 Jump to page] | Admin ▾ | Account ▾ | [Theme ▾]
+JACO | Content ▾ | This page ▾ | [🔍 Jump to page] | [⌨ Commands] | Admin ▾ | Account ▾ | [Theme ▾]
 ```
 
-Four menu groups plus two direct controls.
+Four menu groups plus three direct controls.
 
 ## Groups
 
@@ -37,8 +37,10 @@ Account ▾
 
 - **Theme** stays a direct switch in the navbar.
 - **Jump to page** opens the search dialog from every view.
+- **Commands** opens the command palette (Space, Ctrl/Cmd+K).
 - **Quick Action** is gone.
 - About is no longer part of the admin group.
+- The account menu names the signed-in user and its role on top (`user (role)`).
 
 ## Interaction
 
@@ -79,7 +81,8 @@ a.html    Startseite      12.10.2026      [Edit] [Copy] [Delete]
 | Account: Change password | active | active | active unless `passwordChange => false` |
 | Theme | active | active | active |
 | Jump to page | active | active | active |
-| Pages: Add/Copy/Delete | active | active | visible-disabled |
+| Commands | active | active | active |
+| Pages: Add/View/Edit content/Edit/Copy/Delete | active | active | visible-disabled |
 
 Disabled controls stay visible and use `aria-disabled`; the API remains the
 security boundary.
@@ -92,3 +95,20 @@ security boundary.
 - Loads the page in the preview iframe and returns to the start route.
 - Uses `page/list` with an empty filter, so it is independent of the filter in
   the Pages view.
+- Every row carries three icon actions: view the page, edit the content inline
+  and edit the document.
+
+## Commands
+
+- Opens the command palette, centred over the site, with an autofocused
+  search field.
+- `Space` opens it when no input, button or editor has the focus;
+  `Ctrl`/`Cmd`+`K` always opens it, also over an open modal. The navbar
+  carries a visible trigger.
+- Typing filters, `↑`/`↓` selects, `Enter` runs, `Esc` closes and returns the
+  focus to where it came from.
+- The commands are defined once in `jaco/frontend/lib/commands.js`; the
+  palette only renders and runs them.
+- Commands the current role or the current context does not allow are not
+  listed — the palette is for running things, not for showing what is
+  refused. The navigation itself keeps those entries visible but disabled.
