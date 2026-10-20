@@ -1,7 +1,7 @@
 # Development guide
 
 Technical guide for contributors and automated tools. Process and PR expectations:
-[CONTRIBUTING.md](../CONTRIBUTING.md).
+[contributing.md](contributing.md).
 
 ## What this project is
 
@@ -163,13 +163,13 @@ UI structure and roles: [menu-structure.md](menu-structure.md).
 
 - Never commit `jaco/settings.php` or real credentials.
 - The API is the authority for roles; disabled UI is not a security boundary.
-- Upload paths and maintenance mode are documented in [INSTALL.md](../INSTALL.md).
+- Upload paths and maintenance mode are documented in [install.md](install.md).
 
 ## Further reading
 
 See [readme.md](readme.md) for all maintainer docs. Highlights:
 
-- [INSTALL.md](../INSTALL.md) — deployment, `.htaccess`, Nginx example
+- [install.md](install.md) — deployment, `.htaccess`, Nginx example
 - [menu-structure.md](menu-structure.md) — admin navigation and command palette
 - [backend-naming.md](backend-naming.md) — PHP function naming
 - [features.md](features.md) — product feature notes (maintainer)

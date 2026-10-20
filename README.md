@@ -49,7 +49,7 @@ pages, nothing more.
 
 ## Install in five minutes
 
-Full guide with markers reference: [`INSTALL.md`](INSTALL.md).
+Full guide with markers reference: [`docs/install.md`](docs/install.md).
 
 1. Download `jaco-dist-<version>.zip` from the [releases page](https://github.com/tbreuss/jaco-cms/releases) (dependencies included) and extract it next to your `index.html`.
 2. Open `https://example.com/jaco/install.php` and create your login: username, password (≥ 8 characters), language, upload directory (`upload` by default), two-factor authentication on. The installer writes `jaco/settings.php` and deletes itself.
@@ -64,14 +64,14 @@ Full guide with markers reference: [`INSTALL.md`](INSTALL.md).
 Heads-up for servers: on Nginx copy the blocks from `docs/nginx-jaco.conf.example`
 into the server context (`.htaccess` is Apache-only). With a dist archive on
 Apache, one `Authorization` forwarding rule belongs in the site root
-`.htaccess` — see “Protect the internals” in [`INSTALL.md`](INSTALL.md).
+`.htaccess` — see “Protect the internals” in [`docs/install.md`](docs/install.md).
 
 ## Development
 
 Working from git uses Docker (PHP 8.2–8.5) and Node ≥ 22 for frontend tests.
 Clone, run the site locally, static analysis, PHPUnit, and QUnit:
 [docs/development.md](docs/development.md). How we expect changes:
-[CONTRIBUTING.md](CONTRIBUTING.md). Doc index: [docs/readme.md](docs/readme.md).
+[docs/contributing.md](docs/contributing.md). Doc index: [docs/readme.md](docs/readme.md).
 
 ## License
 
@@ -83,6 +83,5 @@ days, the source automatically falls back to MIT terms. Details in
 ## Links
 
 - Features and docs: `features.html`, `docs.html` (German versions in `de/`)
-- Installation: [`INSTALL.md`](INSTALL.md)
-- Contributing: [`CONTRIBUTING.md`](CONTRIBUTING.md), [`docs/development.md`](docs/development.md), [`docs/readme.md`](docs/readme.md)
+- Documentation: [`docs/readme.md`](docs/readme.md) (installation, contributing, development)
 - Releases (dist archives): <https://github.com/tbreuss/jaco-cms/releases>

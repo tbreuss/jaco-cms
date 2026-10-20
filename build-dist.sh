@@ -21,7 +21,8 @@ command -v zip >/dev/null || { echo "zip fehlt" >&2; exit 1; }
 git -C "$ROOT" archive HEAD jaco | tar -x -C "$WORK"
 
 # Installationsanleitung und Lizenz aus dem Arbeitsverzeichnis dazu (evtl. uncommitted)
-cp "$ROOT/INSTALL.md" "$WORK/INSTALL.md"
+mkdir -p "$WORK/docs"
+cp "$ROOT/docs/install.md" "$WORK/docs/install.md"
 cp "$ROOT/LICENSE" "$WORK/LICENSE"
 
 # Dependencies für die Auslieferung installieren (braucht composer.json).
@@ -50,6 +51,6 @@ mkdir -p "$WORK/jaco/_backup" "$WORK/jaco/runtime/log"
 
 OUT="$ROOT/jaco-dist-$VERSION.zip"
 rm -f "$OUT"
-(cd "$WORK" && zip -qr "$OUT" jaco INSTALL.md LICENSE)
+(cd "$WORK" && zip -qr "$OUT" jaco docs LICENSE)
 
 echo "gebaut: $OUT ($(du -h "$OUT" | cut -f1))"

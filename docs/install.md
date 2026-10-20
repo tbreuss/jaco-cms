@@ -149,7 +149,7 @@ and every sensitive subdirectory (`_backup/`, `runtime/`, `vendor/`,
 Verify that hidden files are deployed (some SCP clients skip dotfiles).
 
 On Nginx `.htaccess` files are ignored: copy the location blocks from
-`docs/nginx-jaco.conf.example` of this repository
+`nginx-jaco.conf.example` in this directory
 (<https://github.com/tbreuss/jaco-cms/blob/main/docs/nginx-jaco.conf.example>)
 into the server context, and add
 `fastcgi_param HTTP_AUTHORIZATION $http_authorization;`
