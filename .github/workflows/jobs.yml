@@ -40,10 +40,21 @@ jobs:
                   node-version: 22
             - name: Check JavaScript syntax
               run: find jaco/frontend jaco/test/js \( -name '*.js' -o -name '*.mjs' \) -not -path '*/asset/*' -exec node --check {} \;
+            - name: Show browser version
+              run: |
+                  google-chrome --version || chromium --version || chromium-browser --version || true
             - name: Run QUnit tests
               run: |
+                  set -euo pipefail
                   php -S 127.0.0.1:8899 -t . > /tmp/jaco-server.log 2>&1 &
-                  node jaco/test/js/runner.mjs
+                  server_pid=$!
+                  if ! node jaco/test/js/runner.mjs --devtools-timeout=60000 --timeout=60000; then
+                      echo '--- PHP server log ---'
+                      cat /tmp/jaco-server.log || true
+                      kill "$server_pid" 2>/dev/null || true
+                      exit 1
+                  fi
+                  kill "$server_pid" 2>/dev/null || true
     publish:
         name: Publish Website
         runs-on: ubuntu-24.04

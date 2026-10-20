@@ -5,10 +5,10 @@
  * There are no npm dependencies: the devtools protocol is spoken through the built in
  * WebSocket (node >= 22) and the browser is the Chrome that is already installed.
  *
- *   node jaco/test/js/runner.mjs [--url=...] [--timeout=30000] [--chrome=/path/to/chrome]
+ *   node jaco/test/js/runner.mjs [--url=...] [--timeout=30000] [--devtools-timeout=60000] [--chrome=/path/to/chrome]
  */
 import {spawn, spawnSync} from 'node:child_process'
-import {existsSync, mkdtempSync, rmSync} from 'node:fs'
+import {closeSync, existsSync, mkdtempSync, openSync, readFileSync, rmSync} from 'node:fs'
 import {createServer} from 'node:net'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
@@ -22,6 +22,7 @@ const options = Object.fromEntries(
 
 const url = options.url ?? 'http://127.0.0.1:8899/jaco/test/js/index.html'
 const timeoutMs = Number(options.timeout ?? 30000)
+const devtoolsTimeoutMs = Number(options.devtoolsTimeout ?? 60000)
 
 const findChrome = () => {
   const candidates = [
@@ -55,9 +56,15 @@ const freePort = () => new Promise((resolve, reject) => {
   })
 })
 
-const waitForDevtools = async (port) => {
-  const deadline = Date.now() + 20000
+const waitForDevtools = async (port, browser, browserError) => {
+  const deadline = Date.now() + devtoolsTimeoutMs
   while (Date.now() < deadline) {
+    if (browserError) {
+      throw browserError
+    }
+    if (browser.exitCode !== null) {
+      throw new Error(`Chrome exited before the devtools endpoint came up (code ${browser.exitCode})`)
+    }
     try {
       const response = await fetch(`http://127.0.0.1:${port}/json/version`)
       if (response.ok) return
@@ -66,7 +73,7 @@ const waitForDevtools = async (port) => {
     }
     await new Promise((resolve) => setTimeout(resolve, 200))
   }
-  throw new Error('the devtools endpoint did not come up')
+  throw new Error(`the devtools endpoint did not come up within ${devtoolsTimeoutMs} ms`)
 }
 
 const waitForServer = async (url) => {
@@ -105,22 +112,35 @@ if (existsSync(loginHistory)) {
 
 const port = await freePort()
 const profile = mkdtempSync(join(tmpdir(), 'jaco-qunit-'))
+const chromeLog = join(tmpdir(), `jaco-chrome-${process.pid}.log`)
+const chromeLogFd = openSync(chromeLog, 'w')
+let browserError = null
 const browser = spawn(chrome, [
   '--headless=new',
   '--no-sandbox',
   '--disable-gpu',
   '--disable-dev-shm-usage',
+  '--disable-background-networking',
+  '--disable-component-update',
+  '--disable-sync',
+  '--metrics-recording-only',
+  '--remote-allow-origins=*',
   '--no-first-run',
   '--no-default-browser-check',
+  '--remote-debugging-address=127.0.0.1',
   `--user-data-dir=${profile}`,
   `--remote-debugging-port=${port}`,
   'about:blank',
-], {stdio: 'ignore'})
+], {stdio: ['ignore', chromeLogFd, chromeLogFd]})
+
+browser.on('error', (error) => {
+  browserError = error
+})
 
 let exitCode = 0
 
 try {
-  await waitForDevtools(port)
+  await waitForDevtools(port, browser, browserError)
 
   const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()
   const page = targets.find((target) => target.type === 'page')
@@ -184,6 +204,15 @@ try {
   }
 } catch (error) {
   console.error(`Runner error: ${error.message}`)
+  try {
+    const lines = readFileSync(chromeLog, 'utf8').trim().split('\n').slice(-25)
+    if (lines.join('').trim() !== '') {
+      console.error('Chrome log:')
+      console.error(lines.join('\n'))
+    }
+  } catch {
+    // no chrome log to show
+  }
   exitCode = 1
 } finally {
   browser.kill('SIGTERM')
@@ -197,7 +226,13 @@ try {
   })
 
   try {
+    closeSync(chromeLogFd)
+  } catch {
+    // already closed
+  }
+  try {
     rmSync(profile, {recursive: true, force: true})
+    rmSync(chromeLog, {force: true})
   } catch {
     // a temporary profile that cannot be removed is not a test failure
   }
