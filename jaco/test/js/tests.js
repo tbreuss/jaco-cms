@@ -53,6 +53,8 @@ import {aceThemeName, watchAceTheme} from '/jaco/frontend/lib/aceTheme.js'
 import {dirty} from '/jaco/frontend/lib/dirty.js'
 import {maintenance} from '/jaco/frontend/lib/maintenance.js'
 import {DefaultLayout} from '/jaco/frontend/layout/Default.js'
+import {CommandPalette, paletteState, openPalette, closePalette} from '/jaco/frontend/view/CommandPaletteView.js'
+import {commands, visibleCommands} from '/jaco/frontend/lib/commands.js'
 import {formatDateTimeCompact, formatDateTimeFull, formatBytes} from '/jaco/frontend/lib/format.js'
 import {state} from '/jaco/frontend/state/state.js'
 const fixture = () => document.getElementById('qunit-fixture')
@@ -871,6 +873,260 @@ QUnit.test('escape and a click outside close the menu', (assert) => {
   document.body.click()
   m.render(fixture(), m(DefaultLayout, m('div')))
   assert.notOk(fixture().querySelector('.dropdown-content.is-open'), 'an outside click closes')
+})
+
+QUnit.module('command palette', {
+  beforeEach: () => {
+    i18n.status = 'idle'
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
+    paletteState.open = false
+    paletteState.filter = ''
+    paletteState.selected = 0
+    paletteState.previousFocus = null
+    m.render(fixture(), null)
+  },
+  afterEach: () => {
+    closePalette(false)
+    paletteState.open = false
+    paletteState.filter = ''
+    paletteState.selected = 0
+    paletteState.previousFocus = null
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('renders localized commands and opens the filter', (assert) => {
+  openPalette()
+  m.render(fixture(), m(CommandPalette))
+
+  const palette = fixture().querySelector('.palette')
+  assert.ok(palette, 'palette rendered')
+  assert.strictEqual(palette.getAttribute('aria-modal'), 'true')
+  assert.strictEqual(document.activeElement, fixture().querySelector('.palette-filter'), 'the filter takes focus')
+
+  const labels = [...fixture().querySelectorAll('.palette-label')].map((label) => label.textContent)
+  assert.ok(labels.includes(t('Add page')), 'command labels are translated')
+  assert.ok(labels.includes(t('Pages')))
+  assert.ok(labels.includes(t('Theme')))
+  assert.ok(commands.every((cmd) => typeof cmd.labelKey === 'string'), 'commands use translation keys')
+  assert.strictEqual(fixture().querySelectorAll('.palette-keys').length, 0, 'no shortcut badges')
+})
+
+QUnit.test('filters by the translated label and runs with Enter', (assert) => {
+  const originalSet = m.route.set
+  const routes = []
+  m.route.set = (path) => routes.push(path)
+
+  try {
+    openPalette()
+    m.render(fixture(), m(CommandPalette))
+
+    const input = fixture().querySelector('.palette-filter')
+    input.value = t('Pages')
+    input.dispatchEvent(new Event('input', {bubbles: true}))
+    m.render(fixture(), m(CommandPalette))
+
+    const items = [...fixture().querySelectorAll('.palette-item')]
+    assert.strictEqual(items.length, 1, 'the label filter narrows the list')
+    assert.ok(items[0].textContent.includes(t('Pages')))
+    assert.deepEqual(routes, [], 'typing only filters, it does not run a command')
+
+    fixture().querySelector('.palette-filter')
+      .dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}))
+    assert.deepEqual(routes, ['/pages'])
+  } finally {
+    m.route.set = originalSet
+  }
+})
+
+QUnit.test('the theme command cycles the theme', (assert) => {
+  const originalTheme = getTheme()
+
+  try {
+    openPalette()
+    m.render(fixture(), m(CommandPalette))
+
+    const input = fixture().querySelector('.palette-filter')
+    input.value = t('Theme')
+    input.dispatchEvent(new Event('input', {bubbles: true}))
+    m.render(fixture(), m(CommandPalette))
+
+    fixture().querySelector('.palette-filter')
+      .dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}))
+    assert.notStrictEqual(getTheme(), originalTheme, 'the theme changes')
+  } finally {
+    setTheme(originalTheme)
+  }
+})
+
+QUnit.test('a viewer does not see editor commands', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
+  openPalette()
+  m.render(fixture(), m(CommandPalette))
+
+  const labels = [...fixture().querySelectorAll('.palette-label')].map((label) => label.textContent)
+  assert.notOk(labels.includes(t('Add page')), 'a viewer cannot add pages')
+  assert.ok(labels.includes(t('Pages')), 'reading commands stay available')
+  assert.notOk(visibleCommands().some((cmd) => cmd.id === 'page.add'))
+})
+
+QUnit.test('escape closes and restores focus', async (assert) => {
+  const trigger = document.createElement('button')
+  trigger.type = 'button'
+  trigger.textContent = 'trigger'
+  document.body.appendChild(trigger)
+  trigger.focus()
+
+  try {
+    openPalette()
+    m.render(fixture(), m(CommandPalette))
+    assert.strictEqual(document.activeElement, fixture().querySelector('.palette-filter'))
+
+    fixture().querySelector('.palette-filter')
+      .dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', bubbles: true}))
+    m.render(fixture(), m(CommandPalette))
+    assert.notOk(paletteState.open)
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    assert.strictEqual(document.activeElement, trigger, 'focus returns to the trigger')
+  } finally {
+    trigger.remove()
+  }
+})
+
+QUnit.module('command palette trigger', {
+  beforeEach: () => {
+    i18n.status = 'idle'
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
+    paletteState.open = false
+    paletteState.filter = ''
+    paletteState.selected = 0
+    paletteState.previousFocus = null
+    m.render(fixture(), m(DefaultLayout, m('div')))
+  },
+  afterEach: () => {
+    closePalette(false)
+    paletteState.open = false
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('space opens the palette outside interactive elements', (assert) => {
+  const outside = document.createElement('div')
+  outside.tabIndex = 0
+  fixture().appendChild(outside)
+  outside.focus()
+
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
+  assert.ok(paletteState.open, 'space opens the palette')
+})
+
+QUnit.test('the palette trigger names the Space shortcut', (assert) => {
+  const trigger = fixture().querySelector('.palette-trigger')
+  assert.ok(trigger, 'trigger rendered')
+  assert.ok(trigger.title.includes(t('Space')), 'the tooltip names the Space key')
+  assert.ok(trigger.getAttribute('aria-label').includes(t('Space')), 'the accessible name names the Space key')
+})
+
+QUnit.test('space does not open the palette while typing', (assert) => {
+  closePalette(false)
+  const input = document.createElement('input')
+  fixture().appendChild(input)
+  input.focus()
+
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
+  assert.notOk(paletteState.open, 'typing a space stays in the input')
+})
+
+QUnit.test('the listener is removed with the layout', (assert) => {
+  closePalette(false)
+  m.render(fixture(), null)
+
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
+  assert.notOk(paletteState.open, 'unmounted layout listens no longer')
+})
+
+QUnit.test('the palette stays closed on the login screen', (assert) => {
+  closePalette(false)
+  window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  m.render(fixture(), m(DefaultLayout, m('div')))
+
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
+  assert.notOk(paletteState.open, 'unauthenticated users cannot open the palette')
+})
+
+QUnit.test('the palette opens over a modal', (assert) => {
+  closePalette(false)
+  const modal = document.createElement('div')
+  modal.className = 'modal'
+  modal.tabIndex = -1
+  document.body.appendChild(modal)
+  modal.focus()
+
+  try {
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
+    assert.ok(paletteState.open, 'space opens while the modal has focus')
+
+    closePalette(false)
+    const input = document.createElement('input')
+    modal.appendChild(input)
+    input.focus()
+
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
+    assert.notOk(paletteState.open, 'space still types in a modal input')
+
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'k', ctrlKey: true, bubbles: true}))
+    assert.ok(paletteState.open, 'Ctrl+K opens from a modal input')
+  } finally {
+    modal.remove()
+  }
+})
+
+QUnit.module('command palette in the preview iframe', {
+  beforeEach: () => {
+    i18n.status = 'idle'
+    window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
+    paletteState.open = false
+    paletteState.filter = ''
+    paletteState.selected = 0
+    paletteState.previousFocus = null
+
+    const frame = document.createElement('iframe')
+    frame.id = 'iframe'
+    document.body.appendChild(frame)
+    frame.contentDocument?.body?.focus()
+    m.render(fixture(), m(DefaultLayout, m('div')))
+  },
+  afterEach: () => {
+    closePalette(false)
+    paletteState.open = false
+    m.render(fixture(), null)
+    document.getElementById('iframe')?.remove()
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('space and Ctrl+K work while the preview has focus', async (assert) => {
+  const frame = document.getElementById('iframe')
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  const doc = frame.contentDocument
+  doc.body.focus()
+
+  doc.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
+  assert.ok(paletteState.open, 'space opens from the preview')
+
+  closePalette(false)
+  const input = doc.createElement('input')
+  doc.body.appendChild(input)
+  input.focus()
+
+  doc.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
+  assert.notOk(paletteState.open, 'space stays in an input inside the preview')
+
+  doc.dispatchEvent(new KeyboardEvent('keydown', {key: 'k', ctrlKey: true, bubbles: true}))
+  assert.ok(paletteState.open, 'Ctrl+K opens from an input inside the preview')
 })
 
 QUnit.module('role claims', {

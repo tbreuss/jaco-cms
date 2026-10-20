@@ -177,5 +177,9 @@
     "Restore backup": "Restaurer la sauvegarde",
     "Edit content": "Modifier le contenu",
     "Editor": "Rédacteur",
-    "Viewer": "Lecteur"
+    "Viewer": "Lecteur",
+    "Commands": "Commandes",
+    "Search": "Rechercher",
+    "Use ↑↓ to select, Enter to run, Esc to close.": "Utilisez ↑↓ pour sélectionner, Entrée pour exécuter, Échap pour fermer.",
+    "Space": "Espace"
 }

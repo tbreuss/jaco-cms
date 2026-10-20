@@ -5,6 +5,7 @@ import {iframe} from '../lib/iframe.js'
 import {maintenance} from '../lib/maintenance.js'
 import {getTheme, setTheme} from '../lib/theme.js'
 import {Icon} from '../component/Icon.js'
+import {CommandPalette, openPalette, paletteState} from '../view/CommandPaletteView.js'
 
 // Only one dropdown is open at a time. The state lives here instead of in each
 // menu so clicking another trigger closes the previous menu.
@@ -207,9 +208,108 @@ const readOnlyBanner = () =>
   m('.readonly-banner', {role: 'status'},
     t('Read-only access: changes are not saved.'))
 
+// Space opens the palette only when no interactive element is focused —
+// otherwise it would interfere with typing, buttons and form fields. Ctrl/Cmd+K
+// is the fallback, but it must not steal the shortcut from the editors. Modals
+// are deliberately not blocked: the palette is also available over a dialog.
+const paletteGuard = (e) => {
+  const isSpace = e.key === ' ' || e.code === 'Space'
+  const isCtrlK = e.key.toLowerCase() === 'k' && (e.ctrlKey || e.metaKey)
+
+  if ((!isSpace && !isCtrlK) || e.repeat || e.defaultPrevented || paletteState.open) {
+    return
+  }
+  if (!app.hasAuthToken()) {
+    return
+  }
+  if (e.altKey || (isSpace && (e.ctrlKey || e.metaKey))) {
+    return
+  }
+
+  const el = (e.currentTarget && e.currentTarget.activeElement
+    ? e.currentTarget
+    : document).activeElement
+  const inEditor = el && (
+    el.isContentEditable ||
+    (el.closest && el.closest('.ql-editor, .ace_editor, .palette'))
+  )
+
+  if (inEditor) {
+    return
+  }
+
+  if (isSpace && el && (
+    el.tagName === 'INPUT' ||
+    el.tagName === 'TEXTAREA' ||
+    el.tagName === 'SELECT' ||
+    el.tagName === 'BUTTON' ||
+    el.tagName === 'A' ||
+    el.tagName === 'SUMMARY' ||
+    (el.closest && el.closest('[role="button"], [role="menuitem"]'))
+  )) {
+    return
+  }
+
+  e.preventDefault()
+  openPalette()
+}
+
+// The preview is an iframe: key events inside it never reach the parent
+// document. Bind the same guard to the iframe document and re-bind after every
+// navigation, because a new document starts without listeners.
+const IFRAME_PALETTE_FLAG = 'jacoPaletteGuardBound'
+
+const bindIframePalette = () => {
+  if (DefaultLayout.iframePaletteBinding) {
+    return
+  }
+  const frame = document.getElementById('iframe')
+  if (!frame) {
+    return
+  }
+  const bind = () => {
+    try {
+      const doc = frame.contentDocument
+      if (!doc || doc[IFRAME_PALETTE_FLAG]) {
+        return
+      }
+      doc[IFRAME_PALETTE_FLAG] = true
+      doc.addEventListener('keydown', paletteGuard)
+    } catch {
+      // a cross-origin preview cannot be reached; the parent listener still works
+    }
+  }
+  frame.addEventListener('load', bind)
+  DefaultLayout.iframePaletteBinding = {frame, bind}
+  bind()
+}
+
+const unbindIframePalette = () => {
+  const binding = DefaultLayout.iframePaletteBinding
+  if (!binding) {
+    return
+  }
+  binding.frame.removeEventListener('load', binding.bind)
+  try {
+    const doc = binding.frame.contentDocument
+    if (doc && doc[IFRAME_PALETTE_FLAG]) {
+      doc.removeEventListener('keydown', paletteGuard)
+      delete doc[IFRAME_PALETTE_FLAG]
+    }
+  } catch {
+    // the document may already be gone
+  }
+  DefaultLayout.iframePaletteBinding = null
+}
+
 export const DefaultLayout = {
   oncreate: () => {
     iframe.fitBelowNavbar()
+    if (!DefaultLayout.paletteListener) {
+      DefaultLayout.paletteListener = true
+      document.addEventListener('keydown', paletteGuard)
+    }
+    bindIframePalette()
     if (!DefaultLayout.dropdownListeners) {
       DefaultLayout.dropdownListeners = true
       document.addEventListener('click', onDocumentClick)
@@ -230,6 +330,9 @@ export const DefaultLayout = {
     }
   },
   onremove: () => {
+    unbindIframePalette()
+    document.removeEventListener('keydown', paletteGuard)
+    DefaultLayout.paletteListener = false
     document.removeEventListener('click', onDocumentClick)
     document.removeEventListener('keydown', onDocumentKeydown)
     DefaultLayout.dropdownListeners = false
@@ -245,8 +348,10 @@ export const DefaultLayout = {
           title(),
           m('a', 'Loading...')
         )),
-        m('.main', m('.content', m('p', '…')))] :
+        m('.main', m('.content', m('p', '…'))),
+        m(CommandPalette)] :
         [
+          m(CommandPalette),
           m('.toolbar',
             m.trust('<span id="loader" class="is-stoped"></span>'),
             maintenance.isActive() ? maintenanceBanner() : null,
@@ -267,6 +372,12 @@ export const DefaultLayout = {
               m(m.route.Link, {href: '/page-goto', class: 'jump-to-page'},
                 m(Icon, {name: 'search'}),
                 m('span', t('Jump to page'))),
+              m('button.palette-trigger', {
+                type: 'button',
+                onclick: () => openPalette(),
+                title: t('Commands') + ' (' + t('Space') + ')',
+                'aria-label': t('Commands') + ' (' + t('Space') + ')',
+              }, m(Icon, {name: 'keyboard'}), m('span', t('Commands'))),
               dropdown('admin', t('Admin'), auth.can('admin') ? [
                 menuLink('/system/env', t('Environment')),
                 menuLink('/system/log', t('PHP error log')),
