@@ -2928,6 +2928,23 @@ QUnit.module('PageGotoView', {
   }
 })
 
+QUnit.test('arrow keys wrap the selection like the command palette', (assert) => {
+  m.render(fixture(), m(PageGotoView))
+  pageGotoState.items = [{file: 'a.html', title: 'A'}, {file: 'b.html', title: 'B'}]
+  pageGotoState.loading = false
+  pageGotoState.selected = 0
+  m.render(fixture(), m(PageGotoView))
+
+  const input = fixture().querySelector('.list-filter input')
+  input.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp', bubbles: true}))
+  m.render(fixture(), m(PageGotoView))
+  assert.strictEqual(pageGotoState.selected, 1, 'arrow up from the first item wraps to the last')
+
+  input.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown', bubbles: true}))
+  m.render(fixture(), m(PageGotoView))
+  assert.strictEqual(pageGotoState.selected, 0, 'arrow down from the last item wraps to the first')
+})
+
 QUnit.test('filters the page list and opens the selected page', async (assert) => {
   const routeCalls = []
   const loaded = []

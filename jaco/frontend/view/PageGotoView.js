@@ -72,18 +72,13 @@ const onKeyDown = (e) => {
     cancel(e)
     return
   }
-  if (e.key === 'ArrowDown') {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault()
-    if (pages.length > 0) {
-      state.selected = Math.min(state.selected + 1, pages.length - 1)
+    if (pages.length === 0) {
+      return
     }
-    return
-  }
-  if (e.key === 'ArrowUp') {
-    e.preventDefault()
-    if (pages.length > 0) {
-      state.selected = Math.max(state.selected - 1, 0)
-    }
+    const delta = e.key === 'ArrowDown' ? 1 : -1
+    state.selected = (state.selected + delta + pages.length) % pages.length
     return
   }
   if (e.key === 'Enter') {

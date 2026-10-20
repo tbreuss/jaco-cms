@@ -86,10 +86,6 @@ const trapFocus = (e) => {
 }
 
 const onKeyDown = (e) => {
-  if (e.repeat) {
-    return
-  }
-
   const items = filtered()
 
   if (e.key === 'Escape') {
