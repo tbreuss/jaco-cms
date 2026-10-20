@@ -20,7 +20,6 @@ export const FilterInput = {
           title: clearLabel,
           'aria-label': clearLabel,
           onclick: (e) => {
-            e.redraw = false
             onclear()
             e.target.closest('.list-filter-input')?.querySelector('input')?.focus()
           },

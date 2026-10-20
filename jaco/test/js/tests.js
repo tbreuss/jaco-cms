@@ -1521,10 +1521,10 @@ QUnit.test('created cell shows the compact time with the full time as tooltip', 
   UploadListModel.isLoading = false
   m.render(fixture(), m(UploadListView))
 
-  const cell = [...fixture().querySelectorAll('tbody td')].find((td) => td.hasAttribute('title'))
-  assert.ok(cell, 'a cell with a tooltip is rendered')
+  const cell = [...fixture().querySelectorAll('tbody td.text-nowrap')].find((td) =>
+    /^\d{2}\.\d{2}\.\d{2} \d{2}:\d{2}$/.test(td.textContent.trim()))
+  assert.ok(cell, 'the created cell is rendered')
   assert.ok(/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2}$/.test(cell.getAttribute('title')), 'tooltip holds the full time')
-  assert.ok(/^\d{2}\.\d{2}\.\d{2} \d{2}:\d{2}$/.test(cell.textContent), 'cell shows the compact time')
   assert.ok(cell.classList.contains('text-nowrap'), 'no wrapping inside the cell')
 })
 
@@ -2946,7 +2946,19 @@ QUnit.test('filters the page list and opens the selected page', async (assert) =
 
     const input = fixture().querySelector('.list-filter input')
     assert.ok(input, 'the filter field is rendered')
+    assert.strictEqual(document.activeElement, input, 'the filter takes focus')
     assert.ok(fixture().textContent.includes('a.html'), 'all pages are listed initially')
+
+    input.value = 'page b'
+    input.dispatchEvent(new Event('input'))
+    m.render(fixture(), m(PageGotoView))
+
+    const clearBtn = fixture().querySelector('.list-filter-clear')
+    assert.ok(clearBtn, 'clear button shown while filtering')
+    clearBtn.click()
+    m.render(fixture(), m(PageGotoView))
+    assert.strictEqual(pageGotoState.filter, '', 'clear resets the filter')
+    assert.notOk(fixture().querySelector('.list-filter-clear'), 'clear button hides when filter is empty')
 
     input.value = 'page b'
     input.dispatchEvent(new Event('input'))

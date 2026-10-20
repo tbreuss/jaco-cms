@@ -1,5 +1,26 @@
 let modalRef = undefined
 
+const focusInitial = (modal) => {
+  const inner = modal.querySelector('.modal-inner')
+  if (!inner) {
+    modal.focus()
+    return
+  }
+  const autofocus = inner.querySelector('[autofocus]')
+  if (autofocus && typeof autofocus.focus === 'function') {
+    autofocus.focus()
+    return
+  }
+  const focusable = inner.querySelector(
+    'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])'
+  )
+  if (focusable && typeof focusable.focus === 'function') {
+    focusable.focus()
+    return
+  }
+  modal.focus()
+}
+
 export const ModalMedium = {
   view: ({attrs: {title, closeRoute = '/'}, children}) => {
     const close = () => m.route.set(closeRoute)
@@ -13,15 +34,15 @@ export const ModalMedium = {
             close()
           }
         })
-        dom.focus()
+        focusInitial(dom)
       },
       onremove: () => {
         modalRef = undefined
       },
       tabindex: '-1',
       onclick: (e) => {
-        e.redraw = false
         if (e.target === modalRef) {
+          e.redraw = false
           close()
         }
       }

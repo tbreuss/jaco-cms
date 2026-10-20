@@ -2,8 +2,6 @@ import {t} from '../model/i18n.js'
 import {iframe} from '../lib/iframe.js'
 import {ModalMedium} from '../component/ModalMedium.js'
 import {FilterInput} from '../component/FilterInput.js'
-import {ButtonGroup} from '../component/ButtonGroup.js'
-import {ButtonSecondary} from '../component/ButtonSecondary.js'
 import {Icon} from '../component/Icon.js'
 import {PageListModel} from '../model/PageListModel.js'
 import {app} from '../lib/app.js'
@@ -178,10 +176,7 @@ export const PageGotoView = {
       state.loading
         ? m('p', t('Loading') + '...')
         : pageList(pages, selected),
-      m('p.hint', t('Use ↑↓ to select, Enter to open, Shift+Enter to edit, Esc to close.')),
-      m(ButtonGroup, {wrap: 'div.row.text-right'},
-        m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('Cancel')))
-      )
+      m('p.hint', t('Use ↑↓ to select, Enter to open, Shift+Enter to edit, Esc to close.'))
     )
   }
 }
