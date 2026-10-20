@@ -18,6 +18,8 @@ server {
     # The admin shell and its ES modules are not content-hashed yet: make the
     # browser revalidate them so a release is picked up without a hard refresh.
     location ~* \.(html|css|js)$ {
+        # Do not inherit a server-level expires setting.
+        expires off;
         add_header Cache-Control "no-cache, must-revalidate" always;
     }
 

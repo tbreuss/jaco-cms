@@ -17,6 +17,9 @@
 <IfModule mod_headers.c>
     <FilesMatch "\.(html|css|js)$">
         Header set Cache-Control "no-cache, must-revalidate"
+        # A hosting-level mod_expires may add a future Expires; no-cache wins,
+        # but removing it keeps proxies from making the opposite assumption.
+        Header unset Expires
     </FilesMatch>
 </IfModule>
 
