@@ -11,6 +11,15 @@
     Header always set X-Robots-Tag "noindex, nofollow"
 </IfModule>
 
+# The admin shell and its native ES modules have no content-hashed names yet.
+# Revalidate them on every use so a release is picked up without a hard refresh.
+# Only switch to immutable/long-lived caching together with hashed filenames.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|css|js)$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
 # The API authenticates via "Authorization: Bearer <jwt>". Apache drops that header
 # for php-fpm/CGI unless it is passed through explicitly; php -S and mod_php are
 # unaffected. The router also reads REDIRECT_HTTP_AUTHORIZATION and the parsed

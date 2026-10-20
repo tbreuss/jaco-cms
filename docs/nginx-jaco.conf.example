@@ -15,6 +15,12 @@ server {
         fastcgi_param HTTP_AUTHORIZATION $http_authorization;
     }
 
+    # The admin shell and its ES modules are not content-hashed yet: make the
+    # browser revalidate them so a release is picked up without a hard refresh.
+    location ~* \.(html|css|js)$ {
+        add_header Cache-Control "no-cache, must-revalidate" always;
+    }
+
     # Everything except the entry points and public assets is internal.
     # Order matters: specific denies first, the frontend regex last.
     location = /jaco/settings.php { deny all; }

@@ -172,6 +172,30 @@ authenticated API call answers 403.
 </IfModule>
 ```
 
+### Browser cache after a release
+
+`index.html` points at unversioned files (`frontend/app.css`, `frontend/app.js`).
+The shipped root `.htaccess` therefore sends `Cache-Control: no-cache,
+must-revalidate` for HTML, CSS and JavaScript, and the Nginx example does the
+same. Browsers keep the files but revalidate them, so a release is picked up
+without a hard refresh.
+
+Do not switch these files to `immutable`/long-lived caching until their names
+are content-hashed and the ES-module imports are rewritten. Uploaded images and
+other media can use longer lifetimes because their names are unique.
+
+Check after a deployment:
+
+```bash
+curl -sI https://example.com/jaco/frontend/app.js | grep -i cache-control
+```
+
+Expected:
+
+```text
+Cache-Control: no-cache, must-revalidate
+```
+
 The admin panel reports the state under System environment: the four
 `.htaccess` checks (app, backup, log, vendor) verify that the protection
 files exist. On Nginx they stay green once the files are deployed; the
