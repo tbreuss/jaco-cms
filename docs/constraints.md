@@ -64,7 +64,7 @@ These are the invariants and edge cases that tests cannot express on their own.
   (`jaco/backend/core/auth.php`, `jaco/backend/core/router.php`, `jaco/routes.php`).
 - **The password changes through the api, not by editing the file.**
   `system/change-password` takes the current password as proof – a wrong one counts
-  against the login throttle – and writes a new `password_hash()` digest through
+  against the login throttle – and writes a new password hash through
   `write_user_field()`, which keeps the comments and the other keys of `settings.php`
   and leaves the other users untouched. The result is parsed before it replaces the
   file. The route is deliberately exempt from
@@ -88,13 +88,12 @@ These are the invariants and edge cases that tests cannot express on their own.
   (`jaco/backend/core/config.php`, `jaco/backend/core/auth.php`,
   `jaco/test/ConfigDefaultsTest.php`).
 - **The admin password is stored hashed, never in clear.** `settings.php` holds a
-  `password_hash()` digest, verified with `password_verify()` (itself constant time).
+  password hash, verified in constant time.
   A plaintext value no longer matches, because it is not a valid hash. There is no
-  migration path: an installation with a plaintext password has to have a hash
-  written into `settings.php` (`php -r "echo password_hash('...', PASSWORD_DEFAULT);"`)
-  or reinstalled. The installer and `auth:token` are unaffected — both take the
-  plaintext and verify it against the stored digest
-  (`jaco/install.php`, `jaco/backend/core/auth.php`).
+  migration path: an installation with a plaintext password has to have a new hash
+  written into `settings.php` (`php jaco/cli.php auth:password`) or be reinstalled.
+  The installer and `auth:token` are unaffected — both take the plaintext and verify
+  it against the stored digest (`jaco/install.php`, `jaco/backend/core/auth.php`).
 - **Uploads are scrubbed when they are SVG.** `svg` stays an allowed extension,
   but `html\sanitize_svg()` strips script elements, foreign objects, event
   handler attributes and script urls on every write path (direct upload,
@@ -178,17 +177,24 @@ can accompany it: `language` sets that account's UI language (empty means
 (default `true`) may be set to `false` to disable the own password change. Never share one
 TOTP secret between accounts – a shared code would let one user in as another.
 
-To set or reset a password, generate a digest and replace that user's password value in
-`settings.php`:
+To hash a password you choose, run the command with `--ask` and type the password twice.
+It prints only the digest, which replaces the user's password value in `settings.php`:
 
 ```bash
-php -r 'echo password_hash("your-password", PASSWORD_DEFAULT), PHP_EOL;'
+php jaco/cli.php auth:password --ask
+```
+
+Without `--ask`, the command generates a random password and prints both the password and
+its digest:
+
+```bash
+php jaco/cli.php auth:password
 ```
 
 Keep the single quotes around the generated digest in PHP, otherwise the `$2y$` prefix
-is interpolated. There is no dedicated CLI command for this, and the manual reset also
-works when `passwordChange` is `false`. A password change does not revoke existing login
-tokens; rotate `secretKey` if every session must end.
+is interpolated. The manual reset also works when `passwordChange` is `false`. A password
+change does not revoke existing login tokens; rotate `secretKey` if every session must
+end.
 
 | Capability | `viewer` | `editor` | `admin` |
 | --- | --- | --- | --- |

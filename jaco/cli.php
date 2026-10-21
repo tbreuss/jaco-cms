@@ -54,6 +54,28 @@ $app->command('auth:token', 'Get token for credential.')
         exit($exitCode);
     });
 
+$app->command('auth:password', 'Generate a password and its settings.php hash.')
+    ->option('-a --ask', 'Ask for the password instead of generating one.', 'boolval', false)
+    ->action(function (bool $ask) use ($app): void {
+        $password = null;
+
+        if ($ask) {
+            /** @var \Ahc\Cli\IO\Interactor $io */
+            $io = $app->io();
+            $password = (string) $io->promptHidden('Password: ');
+            $repeat = (string) $io->promptHidden('Repeat password: ');
+
+            if ($password === '' || $password !== $repeat) {
+                echo "Passwords are empty or do not match.\n";
+                exit(1);
+            }
+        }
+
+        [$output, $exitCode] = \jaco\cli\auth\password\command($password);
+        echo $output;
+        exit($exitCode);
+    });
+
 $app->command('auth:unblock', 'Clear the login blocks of all addresses.')
     ->action(function () use ($config): void {
         [$output, $exitCode] = \jaco\cli\auth\unblock\command($config);

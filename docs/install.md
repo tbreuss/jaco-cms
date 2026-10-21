@@ -63,7 +63,7 @@ from the installer screen in your authenticator app.
 return [
     'users' => [
         'admin' => [
-            // a password_hash() digest, never the plaintext password
+            // a password hash, never the plaintext password
             'password' => '<password-hash>',
             'role' => 'admin',
             // optional: 'language' => 'de', 'totpSecret' => '<base32-secret>',
@@ -83,9 +83,13 @@ right to change their own password. A viewer can still try the inline editor,
 but its save button is disabled, the save shortcuts are not bound, and nothing
 is written.
 
-Generate the password digest with:
+Hash a password you choose with:
 
-    php -r "echo password_hash('your-password', PASSWORD_DEFAULT), PHP_EOL;"
+    php jaco/cli.php auth:password --ask
+
+Or generate a random password and its digest with:
+
+    php jaco/cli.php auth:password
 
 Without `settings.php` there is no user, and logging in is not possible. For
 two-factor login without the installer, enrol the named user:
@@ -130,7 +134,7 @@ return [
 Move the old global `totpSecret` into the record of the one user who used it;
 a top-level `totpSecret` is no longer read. Every further account gets its own
 record and, if wanted, its own secret. If the old `password` is still plaintext,
-replace it with a `password_hash()` digest as shown above.
+replace it with a password hash as shown above.
 
 ## Grant write permissions
 

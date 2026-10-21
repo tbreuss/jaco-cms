@@ -67,8 +67,11 @@ For QUnit only, a bare PHP server on the host is enough:
     docker run --rm -v .:/app -w /app/jaco jaco php cli.php sys:version
     docker run --rm -v .:/app -w /app/jaco jaco php cli.php sys:log -s 20
     docker run --rm -v .:/app -w /app/jaco jaco php cli.php auth:token -u demo -p demo
+    docker run --rm -v .:/app -w /app/jaco jaco php cli.php auth:password
 
 With two-factor login, append the current code: `php cli.php auth:token -u demo -p demo -c 123456`.
+`auth:password` generates a random password and its `settings.php` digest; with `--ask`
+it prompts for a password you choose and prints only the digest.
 
 ## Static analysis and PHP tests
 

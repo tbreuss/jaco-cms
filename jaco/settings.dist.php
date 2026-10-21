@@ -35,11 +35,11 @@
 // Every user has their own second factor. Enrol it with
 // `php jaco/cli.php auth:totp-setup -u admin` and remove it with
 // `auth:totp-disable -u admin`; do not share one secret between users. The
-// password is a password_hash() digest, never a plaintext password. The
+// password is a password hash, never a plaintext password. The
 // browser installer stores it that way; when you fill it in by hand, generate
 // one with:
 //
-//     php -r 'echo password_hash("your-password", PASSWORD_DEFAULT), PHP_EOL;'
+//     php jaco/cli.php auth:password --ask
 //
 // Put the digest into that user's 'password' field and keep the rest of the
 // record. Existing login tokens are not revoked by a password change.
