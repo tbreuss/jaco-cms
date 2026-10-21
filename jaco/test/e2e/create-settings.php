@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-// Write a disposable test configuration for the Playwright smoke tests. The
-// file is gitignored (like the real settings.php) and must never be deployed.
-// The password for every test account is "test-password".
+// Write a disposable test configuration for the Playwright smoke tests. It
+// lives next to this script and is gitignored; the real jaco/settings.php is
+// never touched. The password for every test account is "test-password".
 $settings = [
     'users' => [
         'admin' => [
@@ -23,7 +23,7 @@ $settings = [
     'maintenanceMode' => false,
 ];
 
-$file = __DIR__ . '/../../settings.php';
+$file = __DIR__ . '/settings.php';
 $content = '<?php declare(strict_types=1);' . PHP_EOL . PHP_EOL
     . 'return ' . var_export($settings, true) . ';' . PHP_EOL;
 

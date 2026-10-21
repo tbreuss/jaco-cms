@@ -1,4 +1,8 @@
 import {defineConfig} from '@playwright/test'
+import {dirname, resolve} from 'node:path'
+import {fileURLToPath} from 'node:url'
+
+const settingsFile = resolve(dirname(fileURLToPath(import.meta.url)), 'settings.php')
 
 export default defineConfig({
   testDir: '.',
@@ -21,5 +25,9 @@ export default defineConfig({
     url: 'http://127.0.0.1:8899/jaco/',
     reuseExistingServer: !process.env.CI,
     timeout: 30000,
+    env: {
+      ...process.env,
+      JACO_SETTINGS_FILE: settingsFile,
+    },
   },
 })

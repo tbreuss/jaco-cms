@@ -6,6 +6,7 @@
 /jaco/.phpunit.cache
 /jaco/.phpunit.result.cache
 /jaco/settings.php
+/jaco/test/e2e/settings.php
 /jaco/test/e2e/settings.test.php
 /jaco/test/e2e/node_modules
 /jaco/test/e2e/playwright-report

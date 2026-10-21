@@ -172,18 +172,16 @@ QUnit runner uses) and a test-only `settings.php`:
 
     npm ci --prefix jaco/test/e2e
 
-Use a disposable checkout, or back up the real settings first:
+Use a disposable checkout, or just generate the separate test settings:
 
-    backup=$(mktemp)
-    cp jaco/settings.php "$backup"
-    trap 'cp "$backup" jaco/settings.php; rm -f "$backup"' EXIT
     php jaco/test/e2e/create-settings.php
     npm --prefix jaco/test/e2e run test:e2e
 
-`create-settings.php` generates a gitignored `settings.php`; its users all use
-the password `test-password`. There is no committed settings fixture, and the
-generated file must never be deployed. CI generates it automatically and runs
-the smoke test only on PHP 8.4.
+`create-settings.php` writes a gitignored `jaco/test/e2e/settings.php`; the real
+`jaco/settings.php` is never touched. The test server receives it through
+`JACO_SETTINGS_FILE`. Its users all use the password `test-password`; the file
+must never be deployed. CI generates it automatically and runs the smoke test
+only on PHP 8.4.
 
 Run one spec, headed, or with the Playwright debugger:
 
