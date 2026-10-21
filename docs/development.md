@@ -189,8 +189,8 @@ Use a disposable checkout, or just generate the separate test settings:
 must never be deployed. CI generates it automatically and runs the smoke suite
 only on PHP 8.4.
 
-The suite creates a temporary upload and backup fixture for the detail pages and
-removes them after the run.
+The suite clears the login throttle, creates a temporary upload and backup
+fixture for the detail pages and removes the fixtures after the run.
 
 These are **smoke tests**: they verify that each route renders or redirects for
 the current role. They do not replace functional tests for page CRUD, saving,

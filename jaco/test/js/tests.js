@@ -650,7 +650,7 @@ QUnit.test('the layout tells a viewer it is read-only and disables write control
       [t('About'), t('Change password'), t('Logout')],
       'the account menu is available',
     )
-    assert.ok(fixture().querySelector('.jump-to-page'), 'the page jump is available')
+    assert.strictEqual(fixture().querySelector('.jump-to-page'), null, 'the page jump is no longer a direct control')
     assert.ok(fixture().querySelector('select.theme-switch'), 'the theme switch stays direct')
   } finally {
     i18n.status = savedStatus

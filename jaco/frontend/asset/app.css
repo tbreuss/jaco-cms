@@ -212,12 +212,6 @@ body {
     max-width: calc(100vw - 1rem);
 }
 
-.navbar a.jump-to-page {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-}
-
 /* Theme switch: native select, navbar-styled. The dropdown popup itself is
    drawn by the browser; only its option hover is styled, in both themes. */
 .theme-switch {

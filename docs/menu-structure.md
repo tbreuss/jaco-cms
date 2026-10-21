@@ -5,10 +5,10 @@ Status: implemented in the working tree.
 ## Navigation
 
 ```text
-JACO | Content ▾ | This page ▾ | [🔍 Jump to page] | [⌘K Commands] | Admin ▾ | Account ▾ | [Theme ▾]
+JACO | Content ▾ | This page ▾ | Admin ▾ | [⌘K Commands] | Account ▾ | [Theme ▾]
 ```
 
-Four menu groups plus three direct controls. The Commands badge shows `⌘K` on
+Four menu groups plus two direct controls. The Commands badge shows `⌘K` on
 macOS and `Ctrl+K` elsewhere.
 
 ## Groups
@@ -37,7 +37,7 @@ Account ▾
 ```
 
 - **Theme** stays a direct switch in the navbar.
-- **Jump to page** opens the search dialog from every view.
+- **Jump to page** is available from the command palette.
 - **Commands** opens the command palette (Ctrl/Cmd+K).
 - **Quick Action** is gone.
 - About is no longer part of the admin group.
@@ -67,7 +67,7 @@ a.html    Startseite      12.10.2026      [Edit] [Copy] [Delete]
 - `Edit`, `Copy` and `Delete` are row actions.
 - `Copy` receives the row's file and title; it no longer assumes the page in
   the preview.
-- `Jump to page` is global and not part of the Pages view.
+- `Jump to page` is available from the command palette, not the Pages view.
 
 ## Roles
 
@@ -81,7 +81,7 @@ a.html    Startseite      12.10.2026      [Edit] [Copy] [Delete]
 | Account: About, Logout | active | active | active |
 | Account: Change password | active | active | active unless `passwordChange => false` |
 | Theme | active | active | active |
-| Jump to page | active | active | active |
+| Jump to page (Commands) | active | active | active |
 | Commands | active | active | active |
 | Pages: Add/View/Edit content/Edit/Copy/Delete | active | active | visible-disabled |
 
@@ -90,7 +90,7 @@ security boundary.
 
 ## Jump to page
 
-- Opens the existing page dialog with an autofocused filter.
+- Opens from the command palette; there is no direct navbar control.
 - Searches filename, path and title, case-insensitive.
 - `↑`/`↓` selects, `Enter` opens, `Esc` closes.
 - Loads the page in the preview iframe and returns to the start route.

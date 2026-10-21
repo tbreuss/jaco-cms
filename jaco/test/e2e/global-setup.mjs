@@ -5,6 +5,7 @@ import {fileURLToPath} from 'node:url'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const uploadFile = join(root, 'upload', 'e2e-smoke.png')
 const backupFile = join(root, 'jaco', '_backup', '20260101_000000_e2e1_index.html')
+const loginHistoryFile = join(root, 'jaco', 'runtime', 'log', 'loginhistory.json')
 
 // A valid 1×1 PNG; the upload detail view only needs a real file with an
 // allowed extension.
@@ -18,10 +19,12 @@ export default async function globalSetup() {
   mkdirSync(dirname(backupFile), {recursive: true})
   writeFileSync(uploadFile, png)
   copyFileSync(join(root, 'index.html'), backupFile)
+  rmSync(loginHistoryFile, {force: true})
 
   // Playwright runs this after the suite if it is returned here.
   return async () => {
     rmSync(uploadFile, {force: true})
     rmSync(backupFile, {force: true})
+    rmSync(loginHistoryFile, {force: true})
   }
 }

@@ -227,7 +227,8 @@ is refused – a viewer must not be logged out for clicking a button they may no
 The admin UI groups its navigation into four areas: Content (Pages, Media, Backups,
 Design), This page (Edit, Copy and Delete for the page currently in the preview), Admin
 (Environment, PHP error log, PHP info) and Account (About, Change password, Logout).
-Theme and Jump to page stay direct controls; the old Quick Action is gone. Add page is a
+Theme stays a direct control; Jump to page is available from the command palette.
+The old Quick Action is gone. Add page is a
 button in the Pages toolbar, Copy and Delete are row actions there. On a fine pointer
 with hover, entering a menu opens it and leaving closes it; touch and keyboard toggle it
 with click, Enter or Space. Escape and an outside click close it.

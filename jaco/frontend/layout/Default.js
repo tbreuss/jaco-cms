@@ -359,15 +359,6 @@ export const DefaultLayout = {
                 auth.can('editor') ? menuLink('/page-copy', t('Copy page')) : disabledNav(t('Copy page')),
                 auth.can('editor') ? menuLink('/page-delete', t('Delete page')) : disabledNav(t('Delete page')),
               ]),
-              m(m.route.Link, {href: '/page-goto', class: 'jump-to-page'},
-                m(Icon, {name: 'search'}),
-                m('span', t('Jump to page'))),
-              m('button.palette-trigger', {
-                type: 'button',
-                onclick: () => openPalette(),
-                title: t('Commands') + ' (' + paletteShortcut + ')',
-                'aria-label': t('Commands') + ' (' + paletteShortcut + ')',
-              }, m('kbd.palette-shortcut', paletteShortcut), m('span', t('Commands'))),
               dropdown('admin', t('Admin'), auth.can('admin') ? [
                 menuLink('/system/env', t('Environment')),
                 menuLink('/system/log', t('PHP error log')),
@@ -377,6 +368,12 @@ export const DefaultLayout = {
                 disabledNav(t('PHP error log')),
                 disabledNav(t('PHP info')),
               ]),
+              m('button.palette-trigger', {
+                type: 'button',
+                onclick: () => openPalette(),
+                title: t('Commands') + ' (' + paletteShortcut + ')',
+                'aria-label': t('Commands') + ' (' + paletteShortcut + ')',
+              }, m('kbd.palette-shortcut', paletteShortcut), m('span', t('Commands'))),
               dropdown('account', t('Account'), [
                 accountInfo(),
                 menuLink('/system/about', t('About')),
