@@ -189,5 +189,7 @@ See [readme.md](readme.md) for all maintainer docs. Highlights:
 - [install.md](install.md) — deployment, `.htaccess`, Nginx example
 - [menu-structure.md](menu-structure.md) — admin navigation and command palette
 - [backend-naming.md](backend-naming.md) — PHP function naming
-- [features.md](features.md) — product feature notes (maintainer)
+- [features.md](features.md) — one-sentence feature catalogue
+- [constraints.md](constraints.md) — invariants, roles and test map
+- [glossary.md](glossary.md) — shared terms
 - [backlog.md](backlog.md) — open product/tech items

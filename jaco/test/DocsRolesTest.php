@@ -8,11 +8,11 @@ use jaco\core\auth;
 use jaco\core\router;
 
 /**
- * The role matrix in docs/features.md and the route table must not drift apart. Every
+ * The role matrix in docs/constraints.md and the route table must not drift apart. Every
  * route named there has to exist with exactly that role, and every route that needs more
  * than viewer has to be named there.
  */
-#[TestDox('Roles documented in features.md')]
+#[TestDox('Roles documented in constraints.md')]
 final class DocsRolesTest extends TestCase
 {
     /** @var array<string, string>|null */
@@ -25,7 +25,7 @@ final class DocsRolesTest extends TestCase
             return self::$documented;
         }
 
-        $docs = (string) file_get_contents(__DIR__ . '/../../docs/features.md');
+        $docs = (string) file_get_contents(__DIR__ . '/../../docs/constraints.md');
         $matched = preg_match('/^## Roles\n(.*?)\n## /ms', $docs, $section);
 
         $this->assertSame(1, $matched, 'the docs have a "## Roles" section');
