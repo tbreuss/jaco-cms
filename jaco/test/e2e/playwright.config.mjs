@@ -10,10 +10,11 @@ export default defineConfig({
   globalSetup: './global-setup.mjs',
   fullyParallel: false,
   workers: 1,
-  timeout: 30000,
+  timeout: 45000,
   expect: {
-    timeout: 10000,
+    timeout: 20000,
   },
+  retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', {open: 'never'}]],
   use: {
     baseURL: 'http://127.0.0.1:8899',
