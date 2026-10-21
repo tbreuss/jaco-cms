@@ -2,7 +2,8 @@
   "name": "jaco-cms",
   "private": true,
   "scripts": {
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test --grep @smoke"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1"

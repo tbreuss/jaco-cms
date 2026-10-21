@@ -70,7 +70,7 @@ Apache, one `Authorization` forwarding rule belongs in the site root
 
 Working from git uses Docker (PHP 8.2–8.5) and Node ≥ 22 for frontend tests.
 Clone, run the site locally, static analysis, PHPUnit, QUnit, and the Playwright
-smoke test: [docs/development.md](docs/development.md). How we expect changes:
+smoke suite: [docs/development.md](docs/development.md). How we expect changes:
 [docs/contributing.md](docs/contributing.md). Doc index: [docs/readme.md](docs/readme.md).
 
 ## License

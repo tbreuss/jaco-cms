@@ -1,6 +1,8 @@
 import {test, expect} from '@playwright/test'
 
-test('admin can log in, open the pages list and log out', async ({page}) => {
+// Smoke coverage only: boot the shell, log in, open the Pages list and log out.
+// Functional page CRUD is covered separately.
+test('admin can log in, open the pages list and log out', {tag: '@smoke'}, async ({page}) => {
   await page.goto('/jaco/#!/login')
 
   await expect(page.locator('#username')).toBeVisible()

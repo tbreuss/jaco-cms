@@ -7,6 +7,7 @@ const settingsFile = resolve(dirname(fileURLToPath(import.meta.url)), 'settings.
 export default defineConfig({
   testDir: '.',
   testMatch: '**/*.spec.mjs',
+  globalSetup: './global-setup.mjs',
   fullyParallel: false,
   workers: 1,
   timeout: 30000,

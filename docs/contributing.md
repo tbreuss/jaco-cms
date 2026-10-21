@@ -18,7 +18,7 @@ automated assistants (any AI or bot): follow it together with
    formatting sweeps, or speculative features.
 3. Match the **existing style** in the files you touch (PHP, JavaScript, CSS, docs).
 4. Add or update **tests** when behaviour changes (PHPUnit, QUnit, and/or the
-   Playwright smoke test as appropriate).
+   Playwright smoke suite as appropriate).
 5. Run the same checks CI runs when you can (see [development.md](development.md)). At minimum for frontend
    work: `node jaco/test/js/runner.mjs` with a local `php -S` server.
 6. Use **commit messages** in the style of recent history: `fix:`, `feat:`, `style:`,

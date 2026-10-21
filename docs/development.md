@@ -166,9 +166,12 @@ After API/backend changes, add or adjust PHPUnit under `jaco/test/`.
 
 ## End-to-end smoke tests
 
-The Playwright smoke test covers the real PHP server, login, the Pages list and
-logout. It needs Node ≥ 22, an installed Google Chrome (the same browser the
-QUnit runner uses) and a test-only `settings.php`:
+The Playwright smoke suite covers every admin route for the admin, editor and
+viewer roles, including role-specific read-only views and redirects: start,
+pages and page editor, the inline editor and page modals, media and upload
+detail, backups and backup detail, CSS, password, the system pages and logout.
+It needs Node ≥ 22, an installed Google Chrome (the same browser the QUnit
+runner uses) and a test-only `settings.php`:
 
     npm ci --prefix jaco/test/e2e
 
@@ -180,14 +183,24 @@ Use a disposable checkout, or just generate the separate test settings:
 `create-settings.php` writes a gitignored `jaco/test/e2e/settings.php`; the real
 `jaco/settings.php` is never touched. The test server receives it through
 `JACO_SETTINGS_FILE`. Its users all use the password `test-password`; the file
-must never be deployed. CI generates it automatically and runs the smoke test
+must never be deployed. CI generates it automatically and runs the smoke suite
 only on PHP 8.4.
+
+The suite creates a temporary upload and backup fixture for the detail pages and
+removes them after the run.
+
+These are **smoke tests**: they verify that each route renders or redirects for
+the current role. They do not replace functional tests for page CRUD, saving,
+uploads, restores or CSS changes. Every smoke test carries the `@smoke` tag:
+
+    npm --prefix jaco/test/e2e run test:e2e:smoke
+    npm --prefix jaco/test/e2e run test:e2e -- --grep @smoke
 
 Run one spec, headed, or with the Playwright debugger:
 
-    npm --prefix jaco/test/e2e run test:e2e -- smoke.spec.mjs
-    npm --prefix jaco/test/e2e run test:e2e -- smoke.spec.mjs --headed
-    npm --prefix jaco/test/e2e run test:e2e -- smoke.spec.mjs --debug
+    npm --prefix jaco/test/e2e run test:e2e -- role-pages.spec.mjs
+    npm --prefix jaco/test/e2e run test:e2e -- role-pages.spec.mjs --headed
+    npm --prefix jaco/test/e2e run test:e2e -- role-pages.spec.mjs --debug
 
 The test starts the PHP server through
 `jaco/test/e2e/playwright.config.mjs`; stop an existing QUnit server on port 8899
