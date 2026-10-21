@@ -1034,38 +1034,21 @@ QUnit.module('command palette trigger', {
   }
 })
 
-QUnit.test('space opens the palette outside interactive elements', (assert) => {
-  const outside = document.createElement('div')
-  outside.tabIndex = 0
-  fixture().appendChild(outside)
-  outside.focus()
-
-  document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
-  assert.ok(paletteState.open, 'space opens the palette')
-})
-
-QUnit.test('the palette trigger names the Space shortcut', (assert) => {
+QUnit.test('the palette trigger names the Ctrl/Cmd+K shortcut', (assert) => {
+  const shortcut = /Mac|iPhone|iPad|iPod/.test(navigator.platform) ? '⌘K' : 'Ctrl+K'
   const trigger = fixture().querySelector('.palette-trigger')
   assert.ok(trigger, 'trigger rendered')
-  assert.ok(trigger.title.includes(t('Space')), 'the tooltip names the Space key')
-  assert.ok(trigger.getAttribute('aria-label').includes(t('Space')), 'the accessible name names the Space key')
-})
-
-QUnit.test('space does not open the palette while typing', (assert) => {
-  closePalette(false)
-  const input = document.createElement('input')
-  fixture().appendChild(input)
-  input.focus()
-
-  document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
-  assert.notOk(paletteState.open, 'typing a space stays in the input')
+  assert.ok(trigger.title.includes(shortcut), 'the tooltip names the shortcut')
+  assert.ok(trigger.getAttribute('aria-label').includes(shortcut), 'the accessible name names the shortcut')
+  assert.strictEqual(trigger.querySelector('.palette-shortcut')?.textContent, shortcut, 'the shortcut is visible')
+  assert.strictEqual(trigger.querySelector('.icon'), null, 'the shortcut badge replaces the keyboard icon')
 })
 
 QUnit.test('the listener is removed with the layout', (assert) => {
   closePalette(false)
   m.render(fixture(), null)
 
-  document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: 'k', ctrlKey: true, bubbles: true}))
   assert.notOk(paletteState.open, 'unmounted layout listens no longer')
 })
 
@@ -1074,11 +1057,11 @@ QUnit.test('the palette stays closed on the login screen', (assert) => {
   window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
   m.render(fixture(), m(DefaultLayout, m('div')))
 
-  document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: 'k', ctrlKey: true, bubbles: true}))
   assert.notOk(paletteState.open, 'unauthenticated users cannot open the palette')
 })
 
-QUnit.test('the palette opens over a modal', (assert) => {
+QUnit.test('Ctrl/Cmd+K opens over a modal', (assert) => {
   closePalette(false)
   const modal = document.createElement('div')
   modal.className = 'modal'
@@ -1087,16 +1070,13 @@ QUnit.test('the palette opens over a modal', (assert) => {
   modal.focus()
 
   try {
-    document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
-    assert.ok(paletteState.open, 'space opens while the modal has focus')
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'k', ctrlKey: true, bubbles: true}))
+    assert.ok(paletteState.open, 'Ctrl+K opens while the modal has focus')
 
     closePalette(false)
     const input = document.createElement('input')
     modal.appendChild(input)
     input.focus()
-
-    document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
-    assert.notOk(paletteState.open, 'space still types in a modal input')
 
     document.dispatchEvent(new KeyboardEvent('keydown', {key: 'k', ctrlKey: true, bubbles: true}))
     assert.ok(paletteState.open, 'Ctrl+K opens from a modal input')
@@ -1129,22 +1109,19 @@ QUnit.module('command palette in the preview iframe', {
   }
 })
 
-QUnit.test('space and Ctrl+K work while the preview has focus', async (assert) => {
+QUnit.test('Ctrl/Cmd+K works while the preview has focus', async (assert) => {
   const frame = document.getElementById('iframe')
   await new Promise((resolve) => setTimeout(resolve, 0))
   const doc = frame.contentDocument
   doc.body.focus()
 
-  doc.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
-  assert.ok(paletteState.open, 'space opens from the preview')
+  doc.dispatchEvent(new KeyboardEvent('keydown', {key: 'k', ctrlKey: true, bubbles: true}))
+  assert.ok(paletteState.open, 'Ctrl+K opens from the preview')
 
   closePalette(false)
   const input = doc.createElement('input')
   doc.body.appendChild(input)
   input.focus()
-
-  doc.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', code: 'Space', bubbles: true}))
-  assert.notOk(paletteState.open, 'space stays in an input inside the preview')
 
   doc.dispatchEvent(new KeyboardEvent('keydown', {key: 'k', ctrlKey: true, bubbles: true}))
   assert.ok(paletteState.open, 'Ctrl+K opens from an input inside the preview')

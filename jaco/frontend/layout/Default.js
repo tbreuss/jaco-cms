@@ -208,21 +208,23 @@ const readOnlyBanner = () =>
   m('.readonly-banner', {role: 'status'},
     t('Read-only access: changes are not saved.'))
 
-// Space opens the palette only when no interactive element is focused —
-// otherwise it would interfere with typing, buttons and form fields. Ctrl/Cmd+K
-// is the fallback, but it must not steal the shortcut from the editors. Modals
-// are deliberately not blocked: the palette is also available over a dialog.
+// Ctrl+K / Cmd+K opens the palette. The shortcut still must not steal keys
+// from the rich-text or Ace editors; modals are deliberately not blocked, so
+// the palette is also available over a dialog.
+const paletteShortcut = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)
+  ? '⌘K'
+  : 'Ctrl+K'
+
 const paletteGuard = (e) => {
-  const isSpace = e.key === ' ' || e.code === 'Space'
   const isCtrlK = e.key.toLowerCase() === 'k' && (e.ctrlKey || e.metaKey)
 
-  if ((!isSpace && !isCtrlK) || e.repeat || e.defaultPrevented || paletteState.open) {
+  if (!isCtrlK || e.repeat || e.defaultPrevented || paletteState.open) {
     return
   }
   if (!app.hasAuthToken()) {
     return
   }
-  if (e.altKey || (isSpace && (e.ctrlKey || e.metaKey))) {
+  if (e.altKey || e.shiftKey) {
     return
   }
 
@@ -235,18 +237,6 @@ const paletteGuard = (e) => {
   )
 
   if (inEditor) {
-    return
-  }
-
-  if (isSpace && el && (
-    el.tagName === 'INPUT' ||
-    el.tagName === 'TEXTAREA' ||
-    el.tagName === 'SELECT' ||
-    el.tagName === 'BUTTON' ||
-    el.tagName === 'A' ||
-    el.tagName === 'SUMMARY' ||
-    (el.closest && el.closest('[role="button"], [role="menuitem"]'))
-  )) {
     return
   }
 
@@ -375,9 +365,9 @@ export const DefaultLayout = {
               m('button.palette-trigger', {
                 type: 'button',
                 onclick: () => openPalette(),
-                title: t('Commands') + ' (' + t('Space') + ')',
-                'aria-label': t('Commands') + ' (' + t('Space') + ')',
-              }, m(Icon, {name: 'keyboard'}), m('span', t('Commands'))),
+                title: t('Commands') + ' (' + paletteShortcut + ')',
+                'aria-label': t('Commands') + ' (' + paletteShortcut + ')',
+              }, m('kbd.palette-shortcut', paletteShortcut), m('span', t('Commands'))),
               dropdown('admin', t('Admin'), auth.can('admin') ? [
                 menuLink('/system/env', t('Environment')),
                 menuLink('/system/log', t('PHP error log')),

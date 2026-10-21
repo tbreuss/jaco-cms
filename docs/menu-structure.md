@@ -5,10 +5,11 @@ Status: implemented in the working tree.
 ## Navigation
 
 ```text
-JACO | Content ▾ | This page ▾ | [🔍 Jump to page] | [⌨ Commands] | Admin ▾ | Account ▾ | [Theme ▾]
+JACO | Content ▾ | This page ▾ | [🔍 Jump to page] | [⌘K Commands] | Admin ▾ | Account ▾ | [Theme ▾]
 ```
 
-Four menu groups plus three direct controls.
+Four menu groups plus three direct controls. The Commands badge shows `⌘K` on
+macOS and `Ctrl+K` elsewhere.
 
 ## Groups
 
@@ -37,7 +38,7 @@ Account ▾
 
 - **Theme** stays a direct switch in the navbar.
 - **Jump to page** opens the search dialog from every view.
-- **Commands** opens the command palette (Space, Ctrl/Cmd+K).
+- **Commands** opens the command palette (Ctrl/Cmd+K).
 - **Quick Action** is gone.
 - About is no longer part of the admin group.
 - The account menu names the signed-in user and its role on top (`user (role)`).
@@ -102,9 +103,8 @@ security boundary.
 
 - Opens the command palette, centred over the site, with an autofocused
   search field.
-- `Space` opens it when no input, button or editor has the focus;
-  `Ctrl`/`Cmd`+`K` always opens it, also over an open modal. The navbar
-  carries a visible trigger.
+- `Ctrl`/`Cmd`+`K` opens it, including over an open modal. The navbar carries
+  a visible trigger with the shortcut hint.
 - Typing filters, `↑`/`↓` selects, `Enter` runs, `Esc` closes and returns the
   focus to where it came from.
 - The commands are defined once in `jaco/frontend/lib/commands.js`; the

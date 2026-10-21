@@ -39,7 +39,7 @@ the admin navigation in [menu-structure.md](menu-structure.md), and installation
 | Feature | What it does | Details |
 | --- | --- | --- |
 | Jump to page | Jump to page filters all pages by filename or title and opens the chosen page in the preview. | [Menu](menu-structure.md) |
-| Command palette | Space or Ctrl/Cmd+K opens a searchable palette for role- and context-aware commands. | [Menu](menu-structure.md) |
+| Command palette | Ctrl/Cmd+K opens a searchable palette for role- and context-aware commands. | [Menu](menu-structure.md) |
 | Languages | The admin UI is available in English, German, French and Italian, with a per-user language. | [Constraints](constraints.md) |
 | Theme | Light, dark and auto themes are explicit, persisted choices applied before first paint. | [Constraints](constraints.md) |
 | Diagnostics | About is available to every role, while environment, PHP error log and phpinfo are admin-only. | [Constraints](constraints.md) |

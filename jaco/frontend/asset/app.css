@@ -1212,6 +1212,17 @@ a.list-group-item {
     font-size: 0.85rem;
 }
 
+.palette-trigger kbd {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-family: inherit;
+    font-size: 0.72rem;
+    line-height: 1;
+    opacity: 0.55;
+}
+
 /* Clear button inside the filter field, only while filtered */
 .list-filter-input {
     position: relative;
