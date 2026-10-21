@@ -145,6 +145,12 @@ QUnit (headless Chrome via the runner; Node ≥ 22):
 
 While developing, you can also open `jaco/test/js/index.html` in a browser.
 
+QUnit runner options (the defaults work for a local checkout):
+
+    node jaco/test/js/runner.mjs --url=http://127.0.0.1:8899/jaco/test/js/index.html
+    node jaco/test/js/runner.mjs --timeout=60000 --devtools-timeout=60000
+    node jaco/test/js/runner.mjs --chrome=/path/to/chrome
+
 The runner clears the login history before it starts. The suite logs in with a deliberately
 wrong password and the API counts every failure towards the login throttle — three attempts
 block the address for ten minutes. Reloading the HTML test page in a browser bypasses that
@@ -157,6 +163,40 @@ practical. New view/component modules that use Mithril components must stay on t
 import-audit list at the bottom of `tests.js` (see comment there).
 
 After API/backend changes, add or adjust PHPUnit under `jaco/test/`.
+
+## End-to-end smoke tests
+
+The Playwright smoke test covers the real PHP server, login, the Pages list and
+logout. It needs Node ≥ 22, an installed Google Chrome (the same browser the
+QUnit runner uses) and a test-only `settings.php`:
+
+    npm ci --prefix jaco/test/e2e
+
+Use a disposable checkout, or back up the real settings first:
+
+    backup=$(mktemp)
+    cp jaco/settings.php "$backup"
+    trap 'cp "$backup" jaco/settings.php; rm -f "$backup"' EXIT
+    php jaco/test/e2e/create-settings.php
+    npm --prefix jaco/test/e2e run test:e2e
+
+`create-settings.php` generates a gitignored `settings.php`; its users all use
+the password `test-password`. There is no committed settings fixture, and the
+generated file must never be deployed. CI generates it automatically and runs
+the smoke test only on PHP 8.4.
+
+Run one spec, headed, or with the Playwright debugger:
+
+    npm --prefix jaco/test/e2e run test:e2e -- smoke.spec.mjs
+    npm --prefix jaco/test/e2e run test:e2e -- smoke.spec.mjs --headed
+    npm --prefix jaco/test/e2e run test:e2e -- smoke.spec.mjs --debug
+
+The test starts the PHP server through
+`jaco/test/e2e/playwright.config.mjs`; stop an existing QUnit server on port 8899
+first.
+
+Traces and the HTML report are written to `jaco/test/e2e/test-results/` and
+`jaco/test/e2e/playwright-report/`.
 
 ## Frontend conventions
 
