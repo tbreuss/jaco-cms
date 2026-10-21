@@ -10,7 +10,7 @@ test('admin can log in, open the pages list and log out', {tag: '@smoke'}, async
   await page.fill('#password', 'test-password')
   await page.locator('form button').click()
 
-  await expect(page.locator('.navbar')).toBeVisible()
+  await expect(page).toHaveURL(/\/jaco\/#!\/$/)
   await page.getByRole('button', {name: 'Content'}).click()
   await page.getByRole('menuitem', {name: 'Pages'}).click()
   await expect(page.locator('h1')).toContainText('Pages')
