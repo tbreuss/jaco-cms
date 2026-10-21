@@ -291,7 +291,13 @@ QUnit.test('save sends the document unchanged', (assert) => {
   }
 })
 
-QUnit.module('api service error handling')
+QUnit.module('api service error handling', {
+  // the app loads its translations on page load; a test that asserts on a
+  // translated message must not run before that response landed
+  beforeEach: async () => {
+    await waitForBootLoad()
+  }
+})
 
 QUnit.test('network failure shows a toast instead of crashing', async (assert) => {
   const stub = stubRequest(() => Promise.reject({code: 0}))
