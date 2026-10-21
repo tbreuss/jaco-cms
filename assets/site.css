@@ -194,7 +194,8 @@ li {
     margin-bottom: 0.75rem;
 }
 
-.hero p {
+.hero p,
+.hero [data-jaco-editable] {
     font-size: 1.15rem;
     color: var(--muted);
     max-width: 44rem;
@@ -232,7 +233,8 @@ li {
     margin-bottom: 0.25rem;
 }
 
-.page-head p {
+.page-head p,
+.page-head [data-jaco-editable] {
     color: var(--muted);
     max-width: 44rem;
     margin-bottom: 0;
@@ -246,6 +248,15 @@ li {
     margin: 1.5rem 0 2rem;
 }
 
+.features > [data-jaco-content-item] {
+    display: flex;
+    flex-direction: column;
+}
+
+.features > [data-jaco-content-item] > .feature {
+    flex: 1;
+}
+
 .feature {
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -256,7 +267,8 @@ li {
     margin-top: 0;
 }
 
-.feature p {
+.feature p,
+.feature [data-jaco-editable] {
     margin-bottom: 0;
     color: var(--muted);
     font-size: 0.95rem;
