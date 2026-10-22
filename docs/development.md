@@ -186,7 +186,7 @@ Use a disposable checkout, or just generate the separate test settings:
 `create-settings.php` writes a gitignored `jaco/test/e2e/settings.php`; the real
 `jaco/settings.php` is never touched. The test server receives it through
 `JACO_SETTINGS_FILE`. Its users all use the password `test-password`; the file
-must never be deployed. CI generates it automatically and runs the smoke suite
+must never be deployed. CI generates it automatically and runs the E2E suite
 only on PHP 8.4.
 
 The suite clears the login throttle, creates a temporary upload and backup
@@ -194,7 +194,9 @@ fixture for the detail pages and removes the fixtures after the run.
 
 These are **smoke tests**: they verify that each route renders or redirects for
 the current role. They do not replace functional tests for page CRUD, saving,
-uploads, restores or CSS changes. Every smoke test carries the `@smoke` tag:
+uploads, restores or CSS changes. The media-picker flow is covered by a separate
+functional test (`media-picker.spec.mjs`) that runs with the full suite. Every
+smoke test carries the `@smoke` tag:
 
     npm --prefix jaco/test/e2e run test:e2e:smoke
     npm --prefix jaco/test/e2e run test:e2e -- --grep @smoke
