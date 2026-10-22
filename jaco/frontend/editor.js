@@ -1,3 +1,69 @@
+
+const editorMessages = {}
+let editorMessagesPromise = null
+
+const editorLanguage = () => {
+  const token = window.sessionStorage.getItem('AUTHORIZATION_TOKEN')
+  if (!token) {
+    return ''
+  }
+  try {
+    const payload = token.split('.')[1]
+    if (!payload) {
+      return ''
+    }
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')
+    const bytes = Uint8Array.from(atob(padded), (character) => character.charCodeAt(0))
+    const claims = JSON.parse(new TextDecoder().decode(bytes))
+    return typeof claims.language === 'string' ? claims.language : ''
+  } catch {
+    return ''
+  }
+}
+
+const loadEditorMessages = () => {
+  if (editorMessagesPromise) {
+    return editorMessagesPromise
+  }
+  const token = window.sessionStorage.getItem('AUTHORIZATION_TOKEN')
+  const language = editorLanguage()
+  const url = '/jaco/api.php?action=translations' + (language ? '&language=' + encodeURIComponent(language) : '')
+  editorMessagesPromise = fetch(url, {
+    headers: token ? {Authorization: 'Bearer ' + token} : {},
+  })
+    .then((response) => response.ok ? response.json() : {})
+    .then((data) => {
+      Object.assign(editorMessages, data)
+      return editorMessages
+    })
+    .catch(() => editorMessages)
+  return editorMessagesPromise
+}
+
+const t = (key, fallback = null, placeholders = null) => {
+  let text = editorMessages[key] ?? fallback ?? key
+  if (placeholders) {
+    text = text.replace(/\{(\w+)\}/g, (all, name) => placeholders[name] ?? all)
+  }
+  return text
+}
+
+window.jacoEditorT = t
+const editorMessagesReady = loadEditorMessages()
+window.jacoEditorReady = editorMessagesReady
+const imageSizeKey = 'Image size: HTML {width}x{height}, Displayed {displayWidth}x{displayHeight}, Original {originalWidth}x{originalHeight}'
+const imageSizeFallback = 'Image size: HTML {width}x{height}, Displayed {displayWidth}x{displayHeight}, Original {originalWidth}x{originalHeight}'
+
+const imageSizeText = (image) => t(imageSizeKey, imageSizeFallback, {
+  width: image.getAttribute('width') ?? '0',
+  height: image.getAttribute('height') ?? '0',
+  displayWidth: image.clientWidth,
+  displayHeight: image.clientHeight,
+  originalWidth: image.naturalWidth,
+  originalHeight: image.naturalHeight,
+})
+
 window.initRichTextEditor = () => {
   // add editor styles
   const customizedStylesheet = document.getElementById('editorStylesheet')
@@ -59,20 +125,13 @@ window.initImages = (root) => {
       container = document.createElement('div')
     }
     container.setAttribute('data-jaco-editable-image-temp', '')
-    container.innerText = 'Image size: '
-      + 'HTML '
-      + (image.getAttribute('width') ?? '0')
-      + 'x'
-      + (image.getAttribute('height') ?? '0')
-      + ', Displayed '
-      + image.clientWidth
-      + 'x'
-      + image.clientHeight
-      + ', Original '
-      + image.naturalWidth
-      + 'x'
-      + image.naturalHeight
+    container.innerText = imageSizeText(image)
     image.after(container)
+    editorMessagesReady.then(() => {
+      if (container.isConnected) {
+        container.innerText = imageSizeText(image)
+      }
+    })
   })
 }
 
@@ -140,7 +199,8 @@ window.removeMediaPicker = () => {
 
 // Pick an image that is already in the media library. The image dialog keeps
 // its own "upload new file" path; this picker only assigns an existing file.
-window.openMediaPicker = (targetImage, onUpload = null) => {
+window.openMediaPicker = async (targetImage, onUpload = null) => {
+  await editorMessagesReady
   window.removeMediaPicker()
 
   const overlay = document.createElement('div')
@@ -156,23 +216,23 @@ window.openMediaPicker = (targetImage, onUpload = null) => {
   header.className = 'jaco-media-header'
   const title = document.createElement('h2')
   title.id = 'editableMediaTitle'
-  title.textContent = 'Choose an image'
+  title.textContent = t('Choose an image', 'Choose an image')
   const closeButton = document.createElement('button')
   closeButton.type = 'button'
   closeButton.textContent = '×'
-  closeButton.setAttribute('aria-label', 'Close media picker')
+  closeButton.setAttribute('aria-label', t('Close media picker', 'Close media picker'))
   header.append(title, closeButton)
 
   const actions = document.createElement('div')
   actions.className = 'jaco-media-actions'
   const status = document.createElement('p')
   status.className = 'jaco-media-status'
-  status.textContent = 'Loading media...'
+  status.textContent = t('Loading media...', 'Loading media...')
   actions.append(status)
   if (onUpload) {
     const uploadButton = document.createElement('button')
     uploadButton.type = 'button'
-    uploadButton.textContent = 'Upload new image'
+    uploadButton.textContent = t('Upload new image', 'Upload new image')
     uploadButton.onclick = () => {
       close()
       onUpload()
@@ -219,7 +279,7 @@ window.openMediaPicker = (targetImage, onUpload = null) => {
       const imageExtensions = ['png', 'gif', 'jpg', 'jpeg', 'svg', 'webp']
       const items = (data.items || []).filter((item) =>
         imageExtensions.includes(String(item.extension).toLowerCase()))
-      status.textContent = items.length ? '' : 'No images in the media library.'
+      status.textContent = items.length ? '' : t('No images in the media library.', 'No images in the media library.')
       items.forEach((item) => {
         const button = document.createElement('button')
         button.type = 'button'
@@ -243,17 +303,20 @@ window.openMediaPicker = (targetImage, onUpload = null) => {
       })
     })
     .catch(() => {
-      status.textContent = 'Could not load the media library.'
+      status.textContent = t('Could not load the media library.', 'Could not load the media library.')
     })
 }
 
 window.addClickHandler = () => {
-  document.addEventListener('click', (event) => {
+  document.addEventListener('click', async (event) => {
     if (event.target.closest('.ql-container, .ql-toolbar, [data-jaco-is-editing], #editableImageExtended, #editableLink, #editableMedia, .jaco-content-add-button, .jaco-content-item-bar')) {
       //event.stopPropagation()
       return
     }
 
+    if (event.target.closest('[data-jaco-editable-image], [data-jaco-editable-image-extended], [data-jaco-editable-link]')) {
+      await editorMessagesReady
+    }
     removeRichTextEditorElements()
     removeExtendedImages()
     removeLinks()
@@ -342,7 +405,7 @@ window.addClickHandler = () => {
 
       // alt
       const label = document.createElement('label')
-      label.innerText = 'Alt Text'
+      label.innerText = t('Alt Text', 'Alt Text')
       divElement.appendChild(label)
 
       const inputAlt = document.createElement('input')
@@ -356,7 +419,7 @@ window.addClickHandler = () => {
       if (width > 0 && height > 0) {
         // see https://www.bannerbear.com/help/articles/26-difference-between-fit-and-fill/
         const imageScalingLabel = document.createElement('label')
-        imageScalingLabel.innerText = 'Image Scaling '
+        imageScalingLabel.innerText = t('Image Scaling', 'Image Scaling') + ' '
         divElement.appendChild(imageScalingLabel)
 
         const radio1 = document.createElement('input')
@@ -372,7 +435,7 @@ window.addClickHandler = () => {
         divElement.appendChild(radio1)
 
         const radioLabel1 = document.createElement('label')
-        radioLabel1.innerText = 'Fit'
+        radioLabel1.innerText = t('Fit', 'Fit')
         radioLabel1.htmlFor = 'radio1'
         divElement.appendChild(radioLabel1)
 
@@ -390,13 +453,13 @@ window.addClickHandler = () => {
         divElement.appendChild(radio2)
 
         const radioLabel2 = document.createElement('label')
-        radioLabel2.innerText = 'Fill'
+        radioLabel2.innerText = t('Fill', 'Fill')
         radioLabel2.htmlFor = 'radio2'
         divElement.appendChild(radioLabel2)
       }
 
       const button = document.createElement('button')
-      button.innerText = 'Choose file'
+      button.innerText = t('Choose file', 'Choose file')
       button.onclick = () => {
         // within onclick handler because it doesn't work outside!
         const inputFile = document.createElement('input')
@@ -420,7 +483,7 @@ window.addClickHandler = () => {
 
       const mediaButton = document.createElement('button')
       mediaButton.type = 'button'
-      mediaButton.innerText = 'Choose from media'
+      mediaButton.innerText = t('Choose from media', 'Choose from media')
       mediaButton.onclick = () => {
         window.removeExtendedImages()
         window.openMediaPicker(editableImageExtended)
@@ -444,7 +507,7 @@ window.addClickHandler = () => {
       divElement.id = 'editableLink'
 
       const labelHref = document.createElement('label')
-      labelHref.innerText = 'URL'
+      labelHref.innerText = t('URL', 'URL')
       divElement.appendChild(labelHref)
 
       const inputHref = document.createElement('input')
@@ -456,17 +519,17 @@ window.addClickHandler = () => {
       divElement.appendChild(inputHref)
 
       const labelTarget = document.createElement('label')
-      labelTarget.innerText = 'Target'
+      labelTarget.innerText = t('Target', 'Target')
       divElement.appendChild(labelTarget)
 
       const selectTarget = document.createElement('select')
 
       const targetOptions = [
         ['', ''],
-        ['_self', 'the current browsing context (self)'],
-        ['_blank', 'a new tab or window (blank)'],
-        ['_parent', 'the parent browsing context (parent)'],
-        ['_top', 'the topmost browsing context (top)'],
+        ['_self', t('the current browsing context (self)')],
+        ['_blank', t('a new tab or window (blank)')],
+        ['_parent', t('the parent browsing context (parent)')],
+        ['_top', t('the topmost browsing context (top)')],
       ]
 
       targetOptions.forEach(([value, label]) => {

@@ -95,7 +95,15 @@ window.JacoContentLists = (() => {
     const grip = document.createElement('span')
     grip.className = GRIP_CLASS
     grip.textContent = '⠿'
-    grip.setAttribute('title', 'drag to reorder')
+    const setTitle = () => {
+      grip.setAttribute('title', window.jacoEditorT
+        ? window.jacoEditorT('drag to reorder', 'drag to reorder')
+        : 'drag to reorder')
+    }
+    setTitle()
+    if (window.jacoEditorReady) {
+      window.jacoEditorReady.then(setTitle)
+    }
     return grip
   }
 

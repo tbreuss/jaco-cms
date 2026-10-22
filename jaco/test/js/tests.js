@@ -2226,7 +2226,7 @@ QUnit.test('the media picker lists images and assigns the chosen media path', as
   })
 
   try {
-    window.openMediaPicker(target)
+    await window.openMediaPicker(target)
     await new Promise((resolve) => setTimeout(resolve, 0))
 
     assert.strictEqual(document.querySelectorAll('.jaco-media-item').length, 1, 'only images are listed')
