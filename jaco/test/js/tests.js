@@ -2210,6 +2210,39 @@ QUnit.test('content-list controls can be mounted again after chrome removal', (a
   assert.strictEqual(frame.querySelectorAll('.jaco-content-item-bar').length, 1, 'item bar is back')
 })
 
+QUnit.test('the media picker lists images and assigns the chosen media path', async (assert) => {
+  const originalFetch = window.fetch
+  const target = document.createElement('img')
+  document.body.appendChild(target)
+
+  window.fetch = () => Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({
+      items: [
+        {file: 'upload/example.jpg', extension: 'jpg'},
+        {file: 'upload/document.pdf', extension: 'pdf'},
+      ],
+    }),
+  })
+
+  try {
+    window.openMediaPicker(target)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    assert.strictEqual(document.querySelectorAll('.jaco-media-item').length, 1, 'only images are listed')
+    const item = document.querySelector('.jaco-media-item')
+    assert.ok(item, 'the image is rendered')
+    item.click()
+
+    assert.strictEqual(target.getAttribute('src'), '/upload/example.jpg', 'the root-relative media path is assigned')
+    assert.strictEqual(document.getElementById('editableMedia'), null, 'the picker closes after choosing')
+  } finally {
+    window.removeMediaPicker()
+    target.remove()
+    window.fetch = originalFetch
+  }
+})
+
 QUnit.test('clicking a dynamically inserted block opens the editor toolbar', (assert) => {
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))

@@ -22,7 +22,8 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Consolidate component CSS under a `.j-` prefix | Component classes (`.modal`, `.field-error`, `.form-errors`, `.list-filter`, `.m-notification`) have no namespace while Quill (`.ql-*`), Ace (`.ace_*`) and QUnit (`.qunit-*`) all do. Rename component-owned classes to `.j-*` to avoid collisions if a third-party library ever ships the same class. Note: `.m-*` was likely meant as "message", not a namespace — do not extend it. | M |
 | open | Paginate lists, collapse admin navigation on mobile | Filter/sort only, no limit/offset; full navbar without a mobile menu. Lists slow down and the admin is barely usable on phones. | M |
 | open | Skeleton tables for list loading states | Lists pop in after loading instead of rendering in a stable frame. Build one `SkeletonTable` component (rows × columns matching each view) shown during `isLoading`, used by every list. Deliberately no route-level blocking on data (would trade shift for silence on slow connections). | M |
-| open | Choose uploaded images in the editor | Every image click opens the local file picker; the upload manager and the editor do not know each other. Reusing an image duplicates it with a `-1` suffix. Add a "choose from library" option. | M |
+| open | Translate the inline editor and media picker | `editor.js` runs inside the public-site iframe and cannot reach the admin i18n module. Labels such as `Alt Text`, `URL`, `Target`, `Choose file`, `Choose from media` and the media-picker status strings are hardcoded English. Pass the user's locale/messages into the iframe (or expose a small bridge) and add keys to all four language files. | M |
+| open | Dark mode for the Quill editor chrome | Toolbars, link/image dialogs and the media picker use fixed light colors (`#fff`, `#eee`, `#ccc`), while the website and admin follow `--bg`/`--fg`/`--border`. In dark mode the editor is a bright island. Theme the Quill chrome and its dialogs from the same tokens (or add a dark override) and verify toolbar, picker, dialogs and embedded media in both themes. | M |
 | open | Tables in the rich-text editor | The sanitizer allows `table`/`tr`/`td`, but the Quill toolbar has no table tool. Menus and price lists cannot be built without hand-written HTML. | M |
 | open | Duplicate content blocks | Blocks can only be added empty (from fragment) or deleted. Duplicating a filled block as a template for the next entry is the most common click for recurring content. | S |
 | open | Reorder blocks without draggable | Only `draggable` lists reorder; `top`/`bottom`/`any` have no grip and no up/down buttons. Changing order means delete plus recreate. | S |
@@ -43,6 +44,7 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 
 | Item | Commit |
 | --- | --- |
+| Choose uploaded images in the editor | `feat: add a media picker for image markers` |
 | Save & Close must not close on validation error | `fix: do not close editor on validation error` |
 | Redirect to login on expired token | `fix: redirect to login on expired session` |
 | Warn on unsaved changes | `fix: warn on unsaved changes` |

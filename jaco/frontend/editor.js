@@ -109,9 +109,147 @@ window.disableRichTextEditor = () => {
   })
 }
 
+
+const chooseNewImage = (editableImage) => {
+  const [width, height] = detectImageSize(editableImage)
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.onchange = e => {
+    const file = e.target.files[0]
+    if (!file) {
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = readerEvent => {
+      resizeImage(readerEvent.target.result, file.type, width, height, 'fill', editableImage)
+      editableImage.setAttribute('data-jaco-editable-image-file', file.name)
+      if (editableImage.hasAttribute('data-jaco-editable-image-gallery')) {
+        scaleDataUrlToWidth(readerEvent.target.result, file.type, GALLERY_FULL_MAX_WIDTH, (fullDataUrl) => {
+          editableImage.setAttribute('data-jaco-gallery-full', fullDataUrl)
+        })
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+  input.click()
+}
+
+window.removeMediaPicker = () => {
+  document.getElementById('editableMedia')?.remove()
+}
+
+// Pick an image that is already in the media library. The image dialog keeps
+// its own "upload new file" path; this picker only assigns an existing file.
+window.openMediaPicker = (targetImage, onUpload = null) => {
+  window.removeMediaPicker()
+
+  const overlay = document.createElement('div')
+  overlay.id = 'editableMedia'
+  overlay.setAttribute('role', 'dialog')
+  overlay.setAttribute('aria-modal', 'true')
+  overlay.setAttribute('aria-labelledby', 'editableMediaTitle')
+
+  const dialog = document.createElement('div')
+  dialog.className = 'jaco-media-dialog'
+
+  const header = document.createElement('div')
+  header.className = 'jaco-media-header'
+  const title = document.createElement('h2')
+  title.id = 'editableMediaTitle'
+  title.textContent = 'Choose an image'
+  const closeButton = document.createElement('button')
+  closeButton.type = 'button'
+  closeButton.textContent = '×'
+  closeButton.setAttribute('aria-label', 'Close media picker')
+  header.append(title, closeButton)
+
+  const actions = document.createElement('div')
+  actions.className = 'jaco-media-actions'
+  const status = document.createElement('p')
+  status.className = 'jaco-media-status'
+  status.textContent = 'Loading media...'
+  actions.append(status)
+  if (onUpload) {
+    const uploadButton = document.createElement('button')
+    uploadButton.type = 'button'
+    uploadButton.textContent = 'Upload new image'
+    uploadButton.onclick = () => {
+      close()
+      onUpload()
+    }
+    actions.append(uploadButton)
+  }
+
+  const grid = document.createElement('div')
+  grid.className = 'jaco-media-grid'
+
+  dialog.append(header, actions, grid)
+  overlay.append(dialog)
+  document.body.appendChild(overlay)
+  closeButton.focus()
+
+  const close = () => {
+    overlay.remove()
+    document.removeEventListener('keydown', onKeyDown)
+  }
+  const onKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      close()
+    }
+  }
+  document.addEventListener('keydown', onKeyDown)
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) {
+      close()
+    }
+  })
+  closeButton.addEventListener('click', close)
+
+  const token = window.sessionStorage.getItem('AUTHORIZATION_TOKEN')
+  fetch('/jaco/api.php?action=upload/list&filter=&sort=file', {
+    headers: token ? {Authorization: 'Bearer ' + token} : {},
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Could not load media')
+      }
+      return response.json()
+    })
+    .then((data) => {
+      const imageExtensions = ['png', 'gif', 'jpg', 'jpeg', 'svg', 'webp']
+      const items = (data.items || []).filter((item) =>
+        imageExtensions.includes(String(item.extension).toLowerCase()))
+      status.textContent = items.length ? '' : 'No images in the media library.'
+      items.forEach((item) => {
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.className = 'jaco-media-item'
+        button.title = item.file
+        const mediaSrc = '/' + String(item.file).replace(/^\/+/, '')
+        const image = document.createElement('img')
+        image.src = mediaSrc
+        image.alt = ''
+        image.loading = 'lazy'
+        const label = document.createElement('span')
+        label.textContent = item.file
+        button.append(image, label)
+        button.onclick = () => {
+          targetImage.src = mediaSrc
+          targetImage.removeAttribute('data-jaco-editable-image-file')
+          targetImage.removeAttribute('data-jaco-gallery-full')
+          close()
+        }
+        grid.append(button)
+      })
+    })
+    .catch(() => {
+      status.textContent = 'Could not load the media library.'
+    })
+}
+
 window.addClickHandler = () => {
   document.addEventListener('click', (event) => {
-    if (event.target.closest('.ql-container, .ql-toolbar, [data-jaco-is-editing], #editableImageExtended, #editableLink, .jaco-content-add-button, .jaco-content-item-bar')) {
+    if (event.target.closest('.ql-container, .ql-toolbar, [data-jaco-is-editing], #editableImageExtended, #editableLink, #editableMedia, .jaco-content-add-button, .jaco-content-item-bar')) {
       //event.stopPropagation()
       return
     }
@@ -190,26 +328,7 @@ window.addClickHandler = () => {
         window.resize()
       }
 
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.onchange = e => {
-        const [width, height] = detectImageSize(editableImage)
-        const file = e.target.files[0]
-        const reader = new FileReader()
-        reader.onload = readerEvent => {
-          resizeImage(readerEvent.target.result, file.type, width, height, 'fill', editableImage)
-          editableImage.setAttribute('data-jaco-editable-image-file', file.name)
-          if (editableImage.hasAttribute('data-jaco-editable-image-gallery')) {
-            scaleDataUrlToWidth(readerEvent.target.result, file.type, GALLERY_FULL_MAX_WIDTH, (fullDataUrl) => {
-              editableImage.setAttribute('data-jaco-gallery-full', fullDataUrl)
-            })
-          }
-        }
-        reader.onloadend = () => {
-        }
-        reader.readAsDataURL(file)
-      }
-      input.click()
+      window.openMediaPicker(editableImage, () => chooseNewImage(editableImage))
       return
     }
 
@@ -298,6 +417,15 @@ window.addClickHandler = () => {
         inputFile.click()
       }
       divElement.appendChild(button)
+
+      const mediaButton = document.createElement('button')
+      mediaButton.type = 'button'
+      mediaButton.innerText = 'Choose from media'
+      mediaButton.onclick = () => {
+        window.removeExtendedImages()
+        window.openMediaPicker(editableImageExtended)
+      }
+      divElement.appendChild(mediaButton)
 
       editableImageExtended.parentNode.insertBefore(divElement, editableImageExtended)
 
@@ -496,6 +624,7 @@ window.removeLinks = () => {
 }
 
 window.removeRichTextEditorElements = () => {
+  window.removeMediaPicker?.()
   document.querySelectorAll('.ql-editor').forEach((element) => {
     element.parentElement.classList.remove('ql-container', 'ql-snow')
     // remove empty class attribute
