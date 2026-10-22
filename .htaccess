@@ -32,3 +32,6 @@
     RewriteCond %{HTTP:Authorization} ^(.+)$
     RewriteRule ^ - [E=HTTP_AUTHORIZATION:%1]
 </IfModule>
+
+# 404 Error Document
+ErrorDocument 404 /404.html
