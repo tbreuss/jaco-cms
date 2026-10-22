@@ -75,18 +75,30 @@
     position: relative;
 }
 
+/* The Quill chrome is light in both themes; keep its auxiliary dialogs in the
+   same neutral palette instead of mixing a dark popover with a light editor. */
 #editableLink {
     position: absolute;
+    z-index: 20;
     background: #eee;
+    color: #222;
     outline: 1px solid #ccc;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
     padding: 8px;
     display: flex;
     align-items: center;
 }
 
+#editableLink label {
+    color: #555;
+    font-size: 0.9rem;
+}
+
 #editableLink input[type=text] {
     display: inline;
     background-color: #fff;
+    color: #222;
+    border: 1px solid #ccc;
     line-height: 1rem;
     font-size: 0.9rem;
     margin: 0;
@@ -95,6 +107,8 @@
 #editableLink select {
     display: inline;
     background-color: #fff;
+    color: #222;
+    border: 1px solid #ccc;
     line-height: 1rem;
     font-size: 0.9rem;
     margin: 0;
@@ -102,8 +116,11 @@
 
 #editableImageExtended {
     position: absolute;
+    z-index: 20;
     background: #eee;
+    color: #222;
     outline: 1px solid #ccc;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
     padding: 8px;
     display: flex;
     align-items: center;
@@ -111,11 +128,15 @@
 
 #editableImageExtended label {
     display: inline;
+    color: #555;
+    font-size: 0.9rem;
 }
 
 #editableImageExtended input[type=text] {
     display: inline;
     background-color: #fff;
+    color: #222;
+    border: 1px solid #ccc;
     line-height: 1rem;
     font-size: 0.9rem;
     margin: 0;
@@ -124,9 +145,39 @@
 #editableImageExtended input[type=file] {
     display: inline;
     background-color: #fff;
+    color: #222;
+    border: 1px solid #ccc;
     line-height: 1rem;
     font-size: 0.9rem;
     margin: 0;
+}
+
+/* Quill drops the iframe width/height attributes while editing; restore the
+   intended 16:9 box so the block does not jump in height. */
+.ql-editor iframe.ql-video {
+    display: block;
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--border, #ccc);
+    border-radius: var(--radius, 6px);
+}
+
+/* Quill inserts an empty paragraph around lists and video blocks. Site
+   stylesheets give paragraphs a margin, so those helpers would make the block
+   jump in height as soon as it becomes editable. They are caret helpers, not
+   content, and are removed again on save. */
+.ql-editor p:has(> br:only-child):has(+ ul),
+.ql-editor p:has(> br:only-child):has(+ ol),
+.ql-editor p:has(> br:only-child):has(+ iframe),
+.ql-editor ul + p:has(> br:only-child),
+.ql-editor ol + p:has(> br:only-child),
+.ql-editor iframe + p:has(> br:only-child) {
+    margin: 0;
+    height: 0;
+    line-height: 0;
+    overflow: hidden;
 }
 
 [data-jaco-is-editing] {
@@ -142,14 +193,15 @@
 }
 
 [data-jaco-content-list] {
-    outline: 1px dashed #bbb;
+    outline: 1px dashed var(--border, #bbb);
     padding: 0.5rem;
     margin-bottom: 1rem;
 }
 
 .jaco-content-add-button {
-    border: 1px dashed #999;
-    background: #f4f4f4;
+    border: 1px dashed var(--border, #999);
+    background: var(--bg, #f4f4f4);
+    color: var(--fg, #222);
     text-align: center;
     padding: 0.4rem;
     margin: 0.5rem 0;
@@ -158,7 +210,8 @@
 }
 
 .jaco-content-add-button:hover {
-    background: #e8e8e8;
+    background: var(--accent-soft, #e8e8e8);
+    border-color: var(--accent, #999);
 }
 
 /* NOTE: items must not be positioned (no relative/absolute): they would become
@@ -170,22 +223,35 @@
 
 .jaco-content-item-bar {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
     gap: 4px;
     margin-bottom: 2px;
 }
 
-.jaco-content-item-bar button {
-    background: #eee;
-    border: 1px solid #ccc;
-    cursor: pointer;
+.jaco-content-item-bar button,
+.jaco-content-grip {
+    background: var(--bg, #eee);
+    color: var(--fg, #222);
+    border: 1px solid var(--border, #ccc);
+    border-radius: 4px;
     line-height: 1;
     padding: 2px 8px;
+    font: inherit;
+}
+
+.jaco-content-item-bar button {
+    cursor: pointer;
+}
+
+.jaco-content-item-bar button:hover,
+.jaco-content-grip:hover {
+    background: var(--accent-soft, #e8e8e8);
+    border-color: var(--accent, #999);
 }
 
 .jaco-content-grip {
     cursor: grab;
-    padding: 2px 8px;
     user-select: none;
     touch-action: none;
 }
@@ -211,4 +277,7 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
 
 .ql-toolbar.ql-snow {
     background-color: #eee;
+    white-space: nowrap;
+    z-index: 20;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
 }

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180" role="img" aria-label="Demo image">
+  <rect width="320" height="180" fill="#2563eb"/>
+  <circle cx="80" cy="90" r="38" fill="#93c5fd"/>
+  <path d="M150 120 200 55l50 65Z" fill="#eff6ff"/>
+  <text x="160" y="166" fill="#ffffff" font-family="system-ui, sans-serif" font-size="14" text-anchor="middle">Editable image</text>
+</svg>

@@ -282,6 +282,12 @@ li {
     overflow: hidden;
 }
 
+iframe.ql-video {
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+}
+
 .screenshot img {
     display: block;
     width: 100%;

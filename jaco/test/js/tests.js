@@ -2193,6 +2193,23 @@ QUnit.test('init twice does not duplicate buttons', (assert) => {
   assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, 1, 'one button only')
 })
 
+QUnit.test('content-list controls can be mounted again after chrome removal', (assert) => {
+  m.render(fixture(), m.trust(contentListHtml('draggable')))
+  const frame = fixture()
+
+  window.JacoContentLists.initContentLists(frame, stubFetcher())
+  assert.strictEqual(frame.querySelectorAll('.jaco-content-add-button').length, 1, 'initial add button')
+  assert.strictEqual(frame.querySelectorAll('.jaco-content-item-bar').length, 1, 'initial item bar')
+
+  window.JacoContentLists.removeContentListChrome(frame)
+  assert.strictEqual(frame.querySelectorAll('.jaco-content-add-button').length, 0, 'chrome removed')
+  assert.strictEqual(frame.querySelectorAll('.jaco-content-item-bar').length, 0, 'item bar removed')
+
+  window.JacoContentLists.initContentLists(frame, stubFetcher())
+  assert.strictEqual(frame.querySelectorAll('.jaco-content-add-button').length, 1, 'add button is back')
+  assert.strictEqual(frame.querySelectorAll('.jaco-content-item-bar').length, 1, 'item bar is back')
+})
+
 QUnit.test('clicking a dynamically inserted block opens the editor toolbar', (assert) => {
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))

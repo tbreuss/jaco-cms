@@ -266,6 +266,9 @@ window.JacoContentLists = (() => {
       (root || document).querySelectorAll('.' + ADD_BUTTON_CLASS + ', .' + OVERLAY_CLASS).forEach((element) => {
         element.remove()
       });
+      (root || document).querySelectorAll('[' + LIST_ATTR + ']').forEach((list) => {
+        delete list._jacoContentListsInit
+      });
       (root || document).querySelectorAll('.' + DRAGGING_CLASS).forEach((element) => {
         element.classList.remove(DRAGGING_CLASS)
       })

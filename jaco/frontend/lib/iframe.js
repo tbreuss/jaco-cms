@@ -176,7 +176,9 @@ export const iframe = {
       contentWindow.removeRichTextEditor()
     }
     contentWindow.removeTempImageElements()
-    if (contentWindow.JacoContentLists) {
+    // keepEditorScripts is the dirty-check read: keep the content-list controls
+    // mounted, otherwise the next init call would short-circuit on the flags.
+    if (!keepEditorScripts && contentWindow.JacoContentLists) {
       contentWindow.JacoContentLists.removeContentListChrome()
     }
 

@@ -462,13 +462,25 @@ window.detectImageSize = (image) => {
 }
 
 window.handlePosition = (element) => {
-  const rect = element.getBoundingClientRect()
   const toolbar = element.parentElement.querySelectorAll('.ql-toolbar')[0]
+  // Take the toolbar out of flow before measuring the editor. If the Quill
+  // stylesheet is still loading, the toolbar would otherwise occupy space above
+  // the block and the content would jump when the stylesheet lands.
+  toolbar.style.position = 'absolute'
+  const rect = element.getBoundingClientRect()
+  // Let the toolbar use its natural one-line width instead of the card width.
+  // It may extend over neighbouring cards, but the edited card itself keeps its
+  // size; on small screens it is clamped to the viewport.
+  toolbar.style.width = 'max-content'
+  const viewportWidth = document.documentElement.clientWidth
+  const margin = 8
+  const toolbarWidth = Math.min(toolbar.offsetWidth, viewportWidth - 2 * margin)
+  const left = Math.max(margin, Math.min(rect.left, viewportWidth - toolbarWidth - margin))
   const toolbarHeight = toolbar.offsetHeight // or clientHeight?
   const scrollTop = document.body.scrollTop || document.documentElement.scrollTop
-  toolbar.style.top = (rect.top - toolbarHeight + scrollTop - 1) + 'px'
-  toolbar.style.left = rect.left + 'px'
-  toolbar.style.width = element.offsetWidth + 'px'
+  toolbar.style.top = Math.max(margin, rect.top - toolbarHeight + scrollTop - 1) + 'px'
+  toolbar.style.left = left + 'px'
+  toolbar.style.width = toolbarWidth + 'px'
 }
 
 window.removeExtendedImages = () => {
@@ -494,11 +506,42 @@ window.removeRichTextEditorElements = () => {
     if (element.parentElement.hasAttribute('data-jaco-editable-line')) {
       element.parentElement.innerHTML = removeBlockTags(element)
     } else if (element.parentElement.hasAttribute('data-jaco-editable')) {
+      removeBoundaryEmptyParagraphs(element)
+      normalizeVideoFrames(element)
       element.parentElement.innerHTML = element.innerHTML
     }
   })
   document.querySelectorAll('.ql-toolbar, .ql-clipboard, .ql-tooltip').forEach((element) => {
     element.remove()
+  })
+}
+
+// Quill drops the iframe dimensions when it turns a video into a ql-video
+// blot. Restore a sane box before the body is written to disk.
+window.normalizeVideoFrames = (element) => {
+  element.querySelectorAll('iframe.ql-video').forEach((frame) => {
+    if (!frame.getAttribute('width')) {
+      frame.setAttribute('width', '560')
+    }
+    if (!frame.getAttribute('height')) {
+      frame.setAttribute('height', '315')
+    }
+  })
+}
+
+// Quill uses empty paragraphs as caret helpers around lists and videos. They
+// are editing chrome, not content: do not persist them, and do not leave the
+// saved page taller than the source page.
+window.removeBoundaryEmptyParagraphs = (element) => {
+  const block = (node) => node && ['UL', 'OL', 'IFRAME'].includes(node.tagName)
+  element.querySelectorAll('p').forEach((paragraph) => {
+    const onlyBreaks = [...paragraph.childNodes].every((node) =>
+      node.nodeType === Node.TEXT_NODE
+        ? node.textContent.trim() === ''
+        : node.nodeName === 'BR')
+    if (onlyBreaks && (block(paragraph.previousElementSibling) || block(paragraph.nextElementSibling))) {
+      paragraph.remove()
+    }
   })
 }
 
