@@ -1976,7 +1976,10 @@ QUnit.test('top inserts fetched fragments at the beginning', (assert) => {
   const button = fixture().querySelector('.jaco-content-add-button')
   assert.ok(button, 'an add button is rendered')
   assert.strictEqual(button.previousElementSibling, null, 'button is before the list')
-  assert.ok(button.textContent.includes('Add news'), 'button uses the author title')
+  const expectedTitle = window.jacoEditorT
+    ? window.jacoEditorT('Add news', 'Add news')
+    : 'Add news'
+  assert.ok(button.textContent.includes(expectedTitle), 'button uses the author title')
 
   button.click()
   setTimeout(() => {
@@ -2240,6 +2243,28 @@ QUnit.test('the media picker lists images and assigns the chosen media path', as
     window.removeMediaPicker()
     target.remove()
     window.fetch = originalFetch
+  }
+})
+
+QUnit.test('content-list add buttons use editor translations', async (assert) => {
+  const originalTranslate = window.jacoEditorT
+  const originalReady = window.jacoEditorReady
+  window.jacoEditorT = (key, fallback) => key === 'Add news' ? 'News hinzufügen' : fallback
+  window.jacoEditorReady = Promise.resolve()
+
+  try {
+    m.render(fixture(), m.trust(contentListHtml('top')))
+    window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    assert.strictEqual(
+      fixture().querySelector('.jaco-content-add-button').textContent,
+      '+ News hinzufügen',
+      'the editor translation replaces the literal title',
+    )
+  } finally {
+    window.jacoEditorT = originalTranslate
+    window.jacoEditorReady = originalReady
   }
 })
 

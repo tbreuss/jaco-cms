@@ -205,5 +205,12 @@
     "the current browsing context (self)": "the current browsing context (self)",
     "a new tab or window (blank)": "a new tab or window (blank)",
     "the parent browsing context (parent)": "the parent browsing context (parent)",
-    "the topmost browsing context (top)": "the topmost browsing context (top)"
+    "the topmost browsing context (top)": "the topmost browsing context (top)",
+    "Add feature": "Add feature",
+    "Funktion hinzufügen": "Add feature",
+    "Add news": "Add news",
+    "Add top block": "Add top block",
+    "Add bottom block": "Add bottom block",
+    "Add block here": "Add block here",
+    "Add draggable block": "Add draggable block"
 }

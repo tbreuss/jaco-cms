@@ -45,7 +45,16 @@ window.JacoContentLists = (() => {
   const createAddButton = (list, onAdd) => {
     const button = document.createElement('div')
     button.className = ADD_BUTTON_CLASS
-    button.textContent = '+ ' + (list.getAttribute('data-jaco-title') || '')
+    const title = list.getAttribute('data-jaco-title') || ''
+    const setLabel = () => {
+      button.textContent = '+ ' + (window.jacoEditorT
+        ? window.jacoEditorT(title, title)
+        : title)
+    }
+    setLabel()
+    if (window.jacoEditorReady) {
+      window.jacoEditorReady.then(setLabel)
+    }
     button.addEventListener('click', (event) => {
       event.stopPropagation()
       onAdd(button)
