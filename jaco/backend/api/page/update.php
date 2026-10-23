@@ -23,6 +23,9 @@ function action(Config $config, Request $request): Response
         $config,
         file: $request->post->strVal('fileName'),
         withContent: $request->post->strVal('html'),
+        withTitle: $request->post->val('title') !== null ? $request->post->strVal('title') : null,
+        withDescription: $request->post->val('description') !== null ? $request->post->strVal('description') : null,
+        withRobots: $request->post->val('robots') !== null ? $request->post->strVal('robots') : null,
     );
 
     return responder($payload);
@@ -37,5 +40,10 @@ function responder(Payload $payload): Response
     return api_errors($payload, [
         'file' => 'fileName',
         'withContent' => 'html',
+        'withTitle' => 'pageTitle',
+        'withDescription' => 'metaDescription',
+        'withRobots' => 'robots',
+        'pageTitle' => 'pageTitle',
+        'metaDescription' => 'metaDescription',
     ]);
 }

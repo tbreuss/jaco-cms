@@ -71,6 +71,7 @@
     "Project size": "Project size",
     "Page template": "Page template",
     "Page title": "Page title",
+    "Page settings": "Page settings",
     "Page was successfully added.": "Page was successfully added.",
     "Page was successfully copied.": "Page was successfully copied.",
     "Page was successfully deleted.": "Page was successfully deleted.",
@@ -224,5 +225,13 @@
     "Heading 3": "Heading 3",
     "Heading 4": "Heading 4",
     "Heading 5": "Heading 5",
-    "Heading 6": "Heading 6"
+    "Heading 6": "Heading 6",
+    "Search & social": "Search & social",
+    "Meta description": "Meta description",
+    "Search engines": "Search engines",
+    "Not set": "Not set",
+    "Index, follow": "Index, follow",
+    "Noindex, nofollow": "Noindex, nofollow",
+    "Page settings were successfully saved.": "Page settings were successfully saved.",
+    "Could not save page settings.": "Could not save page settings."
 }

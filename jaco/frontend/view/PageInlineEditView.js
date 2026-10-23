@@ -5,6 +5,7 @@ import {t, tError} from '../model/i18n.js'
 import {ButtonGroup} from '../component/ButtonGroup.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {ButtonSecondary} from '../component/ButtonSecondary.js'
+import {PageSettingsDialog} from '../component/PageSettingsDialog.js'
 import {Icon} from '../component/Icon.js'
 import {app} from '../lib/app.js'
 import {auth} from '../lib/auth.js'
@@ -71,6 +72,83 @@ export const save = (e) => {
     })
 }
 
+const pageSettings = {
+  open: false,
+  page: null,
+  errors: [],
+  saving: false,
+}
+
+const openPageSettings = (e) => {
+  e.redraw = false
+  pageSettings.open = true
+  pageSettings.page = null
+  pageSettings.errors = []
+  api.get('page/view', {file: iframe.fileName()})
+    .then((data) => {
+      pageSettings.page = data
+      m.redraw()
+    })
+    .catch(({code, response}) => {
+      pageSettings.open = false
+      if (code === 422) {
+        response.forEach(function (error) {
+          addDanger(error.detail ? tError(error.detail) : t(error.title, null, error.title))
+        })
+      }
+      m.redraw()
+    })
+}
+
+const closePageSettings = () => {
+  pageSettings.open = false
+  pageSettings.page = null
+  pageSettings.errors = []
+  m.redraw()
+}
+
+const changePageSetting = (field, value) => {
+  if (!pageSettings.page) {
+    return
+  }
+  pageSettings.page[field] = value
+  pageSettings.errors = []
+  m.redraw()
+}
+
+const savePageSettings = (e) => {
+  e.redraw = false
+  if (!pageSettings.page) {
+    return
+  }
+  pageSettings.saving = true
+  pageSettings.errors = []
+  api.post('page/settings', {}, {
+    background: true,
+    body: {
+      fileName: iframe.fileName(),
+      title: pageSettings.page.title ?? '',
+      description: pageSettings.page.description ?? '',
+      robots: pageSettings.page.robots ?? '',
+    },
+    withCredentials: false,
+  })
+    .then(() => {
+      pageSettings.saving = false
+      addSuccess(t('Page settings were successfully saved.'))
+      closePageSettings()
+    })
+    .catch(({code, response}) => {
+      pageSettings.saving = false
+      if (code === 422) {
+        pageSettings.errors = response
+      } else {
+        addDanger(t('Could not save page settings.'))
+      }
+      m.redraw()
+    })
+}
+
 const cancel = (e) => {
   e.redraw = false
   if (isDirty() && !confirm(t('Discard unsaved changes?', null, 'Discard unsaved changes?'))) {
@@ -113,6 +191,10 @@ const bindShortcut = () => {
 
 export const PageInlineEditView = {
   oninit: () => {
+    pageSettings.open = false
+    pageSettings.page = null
+    pageSettings.errors = []
+    pageSettings.saving = false
     window.addEventListener('beforeunload', beforeUnloadHandler)
     // drop a baseline left over from a previous visit, so an unchanged preview
     // is not compared against it
@@ -138,6 +220,8 @@ export const PageInlineEditView = {
     iframe.getElement().onload = bindShortcut
   },
   onremove: () => {
+    pageSettings.open = false
+    pageSettings.page = null
     window.removeEventListener('beforeunload', beforeUnloadHandler)
     dirty.clear()
     unbindSaveShortcuts.forEach((unbind) => unbind())
@@ -146,12 +230,24 @@ export const PageInlineEditView = {
     iframe.fitBelowNavbar()
     iframe.getElement().onload = null
   },
-  view: () => m(ButtonGroup, {wrap: 'div.dialog'},
-    m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
-    m(ButtonPrimary, {
-      onclick: save,
-      disabled: !auth.can('editor'),
-      title: auth.can('editor') ? t('Save') + ' (' + saveShortcutLabel() + ')' : t('Save') + ' – ' + t('Your role does not allow this.'),
-    }, m(Icon, {name: 'save'}), m('span', t('Save'))),
-  )
+  view: () => m('div', [
+    m(ButtonGroup, {wrap: 'div.dialog'},
+      auth.can('editor') && m(ButtonSecondary, {onclick: openPageSettings},
+        m(Icon, {name: 'edit'}), m('span', t('Page settings'))),
+      m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
+      m(ButtonPrimary, {
+        onclick: save,
+        disabled: !auth.can('editor'),
+        title: auth.can('editor') ? t('Save') + ' (' + saveShortcutLabel() + ')' : t('Save') + ' – ' + t('Your role does not allow this.'),
+      }, m(Icon, {name: 'save'}), m('span', t('Save'))),
+    ),
+    pageSettings.open && m(PageSettingsDialog, {
+      page: pageSettings.page,
+      errors: pageSettings.errors,
+      saving: pageSettings.saving,
+      onchange: changePageSetting,
+      onsave: savePageSettings,
+      onclose: closePageSettings,
+    })
+  ])
 }

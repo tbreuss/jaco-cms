@@ -70,6 +70,7 @@
     "Preview": "Aperçu",
     "Project size": "Taille du projet",
     "Page template": "Modèle de page",
+    "Page settings": "Paramètres de la page",
     "Page title": "Titre de la page",
     "Page was successfully added.": "La page a été ajoutée avec succès.",
     "Page was successfully copied.": "La page a été copiée avec succès.",
@@ -224,5 +225,13 @@
     "Heading 3": "Titre 3",
     "Heading 4": "Titre 4",
     "Heading 5": "Titre 5",
-    "Heading 6": "Titre 6"
+    "Heading 6": "Titre 6",
+    "Search & social": "Recherche et réseaux sociaux",
+    "Meta description": "Méta-description",
+    "Search engines": "Moteurs de recherche",
+    "Not set": "Non défini",
+    "Index, follow": "Indexer, suivre",
+    "Noindex, nofollow": "Ne pas indexer, ne pas suivre",
+    "Page settings were successfully saved.": "Les paramètres de la page ont été enregistrés.",
+    "Could not save page settings.": "Impossible d’enregistrer les paramètres de la page."
 }

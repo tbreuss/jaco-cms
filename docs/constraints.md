@@ -215,8 +215,8 @@ The routes behind it, `jaco/routes.php` being the source of truth:
 
 - reading: everything is `viewer`, except the three `system` routes, which are `admin`
 - `viewer` may call `system/change-password`
-- `editor` may call `page/create`, `page/update`, `page/update-body`, `page/copy`,
-  `page/delete`, `upload/create` and `upload/delete`
+- `editor` may call `page/create`, `page/update`, `page/update-body`, `page/settings`,
+  `page/copy`, `page/delete`, `upload/create` and `upload/delete`
 - `admin` may call `css/update`, `backup/restore`, `backup/delete`, `system`,
   `system/log`, `system/log/clear` and `system/php-info`
 

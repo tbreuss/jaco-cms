@@ -1,0 +1,14 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "file": {"type": "string"},
+        "title": {"type": "string"},
+        "description": {"type": "string"},
+        "robots": {"type": "string"},
+        "created": {"type": "integer"},
+        "content": {"type": "string"}
+    },
+    "required": ["file", "title", "description", "robots", "created", "content"],
+    "additionalProperties": false
+}

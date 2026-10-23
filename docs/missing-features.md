@@ -30,13 +30,13 @@ for one to three users.
 
 ## 3. SEO basics
 
-No sitemap export, no meta description / Open Graph management, no redirect
-on rename (a renamed page leaves its old URL as a 404, internal links keep
-pointing at it). For restaurants, search visibility is revenue.
+Page title, meta description and robots are managed through page settings.
+Still missing: sitemap export, Open Graph management and a redirect on rename
+(a renamed page leaves its old URL as a 404, internal links keep pointing at
+it). For restaurants, search visibility is revenue.
 
 Size: small to medium — sitemap from the page listing, a redirect table as
-a text file, meta fields as markers. Note: the sanitizer only touches the
-body, so head editing needs its own path.
+a text file and Open Graph fields on top of the existing metadata endpoint.
 
 ## 4. Contact form
 

@@ -67,6 +67,37 @@ final class ApiPageUpdateTest extends ApiTestCase
         $this->assertStringNotContainsString('onclick', $content);
     }
 
+    public function testMetadataCanBeSavedWithTheDocument(): void
+    {
+        $response = $this->api('page/update', [
+            'fileName' => self::PAGE,
+            'html' => $this->originalContent,
+            'title' => 'Updated title',
+            'description' => 'Updated description',
+            'robots' => 'noindex,nofollow',
+        ]);
+
+        $this->assertSame(Status::CREATED, $response->status);
+
+        $content = (string) file_get_contents($this->config->webDir . '/' . self::PAGE);
+        $this->assertStringContainsString('<title>Updated title</title>', $content);
+        $this->assertStringContainsString('<meta name="description" content="Updated description">', $content);
+        $this->assertStringContainsString('<meta name="robots" content="noindex,nofollow">', $content);
+    }
+
+    public function testInvalidMetadataIsRejectedWithTheFieldPointer(): void
+    {
+        $response = $this->api('page/update', [
+            'fileName' => self::PAGE,
+            'html' => $this->originalContent,
+            'robots' => 'maybe',
+        ]);
+
+        $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
+        $this->assertStringContainsString('robots', (string) $response->body);
+        $this->assertSame($this->originalContent, file_get_contents($this->config->webDir . '/' . self::PAGE));
+    }
+
     public function testPageIsWrittenBackedUpAndEmbeddedImageIsExtracted(): void
     {
         $response = $this->api('page/update', [

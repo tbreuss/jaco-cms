@@ -120,6 +120,39 @@ final class HtmlFunctionsTest extends TestCase
         }
     }
 
+    public function testMetadataCanBeReadAndUpdatedWithoutTouchingTheBody(): void
+    {
+        $document = '<!DOCTYPE html><html><head><title>Old</title>'
+            . '<meta name="description" content="Old description">'
+            . '<meta name="robots" content="index,follow"></head>'
+            . '<body><p>keep</p></body></html>';
+
+        $this->assertSame('Old description', html\get_description($document));
+        $this->assertSame('index,follow', html\get_robots($document));
+
+        $updated = html\set_title($document, 'New title & more');
+        $updated = html\set_description($updated, 'New <description>');
+        $updated = html\set_robots($updated, 'noindex,nofollow');
+
+        $this->assertStringContainsString('<title>New title &amp; more</title>', $updated);
+        $this->assertStringContainsString('<meta name="description" content="New &lt;description&gt;">', $updated);
+        $this->assertStringContainsString('<meta name="robots" content="noindex,nofollow">', $updated);
+        $this->assertStringContainsString('<p>keep</p>', $updated);
+        $this->assertSame(1, substr_count($updated, 'name="description"'));
+        $this->assertSame(1, substr_count($updated, 'name="robots"'));
+    }
+
+    public function testEmptyMetadataIsRemoved(): void
+    {
+        $document = '<html><head><meta name="description" content="old"><meta name="robots" content="noindex,nofollow"></head><body></body></html>';
+
+        $updated = html\set_description($document, '');
+        $updated = html\set_robots($updated, '');
+
+        $this->assertStringNotContainsString('name="description"', $updated);
+        $this->assertStringNotContainsString('name="robots"', $updated);
+    }
+
     public function testBodyIsReplacedAndTheHeadIsKept(): void
     {
         $document = '<!DOCTYPE html>' . "\n"

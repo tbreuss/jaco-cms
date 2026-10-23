@@ -70,6 +70,7 @@
     "Preview": "Anteprima",
     "Project size": "Dimensione del progetto",
     "Page template": "Modello pagina",
+    "Page settings": "Impostazioni pagina",
     "Page title": "Titolo pagina",
     "Page was successfully added.": "La pagina è stata aggiunta con successo.",
     "Page was successfully copied.": "La pagina è stata copiata con successo.",
@@ -224,5 +225,13 @@
     "Heading 3": "Titolo 3",
     "Heading 4": "Titolo 4",
     "Heading 5": "Titolo 5",
-    "Heading 6": "Titolo 6"
+    "Heading 6": "Titolo 6",
+    "Search & social": "Ricerca e social",
+    "Meta description": "Meta descrizione",
+    "Search engines": "Motori di ricerca",
+    "Not set": "Non impostato",
+    "Index, follow": "Indicizza, segui",
+    "Noindex, nofollow": "Non indicizzare, non seguire",
+    "Page settings were successfully saved.": "Le impostazioni della pagina sono state salvate.",
+    "Could not save page settings.": "Impossibile salvare le impostazioni della pagina."
 }
