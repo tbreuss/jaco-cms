@@ -8,14 +8,16 @@ final readonly class Config
         public string $appVersion,
         public string $appDir,
         public string $appDirName,
+        public string $webDir,
+        public string $dataDir,
         public string $backupDir,
         public string $templatePageDir,
         public string $templateContentDir,
-        public string $webDir,
-        public string $uploadDir,
+        public string $templateSiteDir,
+        public string $mediaDir,
         /** @var list<string> */
         public array $uploadExtensions,
-        public string $uploadUrl,
+        public string $mediaUrl,
         /** @var list<string> */
         public array $pageExtensions,
         public string $defaultLanguage,
@@ -261,22 +263,33 @@ function create_default_config(string $appDir, array $settings = []): Config
     // untrimmed, so neither a leading slash nor a traversal segment can
     // turn into a relative path by accident; both fall back to the default
     // and keep listings, backups and the preview working
-    $uploadDirName = (string) ($settings['uploadDir'] ?? '');
-    if (!\preg_match('#^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$#', $uploadDirName)) {
-        $uploadDirName = 'upload';
+    $mediaDirName = (string) ($settings['mediaDir'] ?? '');
+    if (!\preg_match('#^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$#', $mediaDirName)) {
+        $mediaDirName = 'media';
     }
+
+    // Operator data lives next to the code, not inside it: templates and
+    // backups must survive replacing the jaco/ directory.
+    $dataDirName = (string) ($settings['dataDir'] ?? '');
+    if (!\preg_match('#^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$#', $dataDirName)) {
+        $dataDirName = 'jaco-data';
+    }
+    $webDir = dirname($appDir);
+    $dataDir = $webDir . '/' . $dataDirName;
 
     return new Config(
         appVersion: '0.1.0',
         appDir: $appDir,
         appDirName: basename($appDir),
-        backupDir: $appDir . '/_backup',
-        templatePageDir: $appDir . '/_template/page',
-        templateContentDir: $appDir . '/_template/content',
-        webDir: dirname($appDir),
-        uploadDir: dirname($appDir) . '/' . $uploadDirName,
+        webDir: $webDir,
+        dataDir: $dataDir,
+        backupDir: $dataDir . '/backups',
+        templatePageDir: $dataDir . '/templates/page',
+        templateContentDir: $dataDir . '/templates/content',
+        templateSiteDir: $dataDir . '/templates/site',
+        mediaDir: $webDir . '/' . $mediaDirName,
         uploadExtensions: ['png', 'gif', 'jpg', 'jpeg', 'svg', 'pdf'],
-        uploadUrl: $uploadDirName,
+        mediaUrl: $mediaDirName,
         pageExtensions: ['htm', 'html'],
         defaultLanguage: (string) ($settings['defaultLanguage'] ?? 'en'),
         directoryPermissions: 0755,

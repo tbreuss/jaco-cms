@@ -8,7 +8,7 @@ Technical guide for contributors and automated tools. Process and PR expectation
 - **Flat-file CMS**: site content lives as `.html` (and assets) in the web root.
 - **Admin UI**: Mithril.js SPA under `jaco/frontend/`, no frontend build step.
 - **API**: PHP 8.2+ under `jaco/backend/`, entry `jaco/api.php`, CLI `jaco/cli.php`.
-- **No database**; backups in `jaco/_backup/`, runtime data in `jaco/runtime/`.
+- **No database**; backups in `jaco-data/backups/`, runtime data in `jaco/runtime/`.
 
 ## Repository layout
 
@@ -21,7 +21,7 @@ Technical guide for contributors and automated tools. Process and PR expectation
 | `jaco/language/*.json` | Admin UI translations (en, de, fr, it) |
 | `jaco/test/` | PHPUnit; `jaco/test/js/` QUnit + `runner.mjs` |
 | `docs/` | Maintainer documentation; index in [readme.md](readme.md) |
-| Site root | Public HTML pages, `upload/`, demo content |
+| Site root | Public HTML pages, `assets/`, `media/` (uploads), `jaco-data/` (templates and backups), demo content |
 
 Backend naming rules: [backend-naming.md](backend-naming.md), page file names:
 [site-pages.md](site-pages.md).

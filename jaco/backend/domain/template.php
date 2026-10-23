@@ -93,13 +93,6 @@ function find_content_template(Config $config, string $file): Payload
     ]);
 }
 
-const SITE_TEMPLATE_DIR = '_template/site';
-
-function site_template_dir(Config $config): string
-{
-    return $config->appDir . '/' . SITE_TEMPLATE_DIR;
-}
-
 function site_template_name(string $file): string
 {
     return \pathinfo($file, PATHINFO_FILENAME);
@@ -117,11 +110,11 @@ function validate_site_template_file(string $file): array
 
 function find_site_templates(Config $config): Payload
 {
-    if (!\is_dir(site_template_dir($config))) {
+    if (!\is_dir($config->templateSiteDir)) {
         return Payload::success([]);
     }
 
-    $files = filesystem\find_files(site_template_dir($config), ['html']);
+    $files = filesystem\find_files($config->templateSiteDir, ['html']);
     $items = [];
     foreach ($files as $file) {
         $items[] = [
@@ -140,11 +133,11 @@ function find_site_template(Config $config, string $file): Payload
     if ($file === null) {
         return Payload::invalid($errors);
     }
-    if (!\is_file(site_template_dir($config) . '/' . $file)) {
+    if (!\is_file($config->templateSiteDir . '/' . $file)) {
         return Payload::invalid([['file', 'Template does not exist.']]);
     }
 
-    $content = filesystem\read_file(site_template_dir($config), $file);
+    $content = filesystem\read_file($config->templateSiteDir, $file);
     if ($content === null) {
         return Payload::error([['file', 'Could not read template.']]);
     }
@@ -152,7 +145,7 @@ function find_site_template(Config $config, string $file): Payload
     return Payload::success([
         'file' => $file,
         'name' => site_template_name($file),
-        'created' => filesystem\file_mtime($file, site_template_dir($config)),
+        'created' => filesystem\file_mtime($file, $config->templateSiteDir),
         'content' => $content,
     ]);
 }
@@ -234,8 +227,8 @@ function update_site_template(Config $config, string $file, string $content, boo
         return Payload::invalid([['content', 'Template must contain exactly one root element.']]);
     }
 
-    $dir = site_template_dir($config);
-    if (!\is_dir($dir) && !filesystem\make_dir_rec($config, $config->appDir, SITE_TEMPLATE_DIR)) {
+    $dir = $config->templateSiteDir;
+    if (!\is_dir($dir) && !filesystem\make_dir_rec($config, $config->webDir, \substr($config->templateSiteDir, \strlen($config->webDir) + 1))) {
         return Payload::error([['file', 'Could not create template directory.']]);
     }
     if (!filesystem\write_file_atomic($config, $dir, $file, $content)) {

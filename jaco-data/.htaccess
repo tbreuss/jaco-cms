@@ -1,0 +1,5 @@
+# Operator data: templates and backups of the site. Never serve directly, and
+# never expose a directory listing if the deny rule is overridden.
+Options -Indexes
+
+Require all denied

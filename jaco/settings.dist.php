@@ -32,6 +32,11 @@
 //         ],
 //     ],
 //
+// Directories, both relative to the web root: 'mediaDir' stores editor
+// uploads (default 'media'), 'dataDir' stores templates and backups
+// (default 'jaco-data'). Keep them out of the jaco/ directory so replacing
+// the application never touches site data.
+//
 // Every user has their own second factor. Enrol it with
 // `php jaco/cli.php auth:totp-setup -u admin` and remove it with
 // `auth:totp-disable -u admin`; do not share one secret between users. The
@@ -51,7 +56,8 @@ return [
         // 'admin' => ['password' => '<password-hash>', 'role' => 'admin'],
     ],
     'secretKey' => '',
-    'uploadDir' => 'upload',
+    'mediaDir' => 'media',
+    'dataDir' => 'jaco-data',
     'backupRetentionDays' => 90,
     'maintenanceMode' => false,
     'defaultLanguage' => 'en',

@@ -14,7 +14,7 @@ final class ApiUploadCreateTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->watchDir($this->config->uploadDir);
+        $this->watchDir($this->config->mediaDir);
     }
 
     protected function tearDown(): void
@@ -37,12 +37,12 @@ final class ApiUploadCreateTest extends ApiTestCase
 
         $body = (array) json_decode((string) $response->body, true);
         $this->assertSame('api-upload-create-test.png', $body['file']);
-        $this->assertSame(self::CONTENT, file_get_contents($this->config->uploadDir . '/api-upload-create-test.png'));
+        $this->assertSame(self::CONTENT, file_get_contents($this->config->mediaDir . '/api-upload-create-test.png'));
     }
 
     public function testExistingFileIsNotOverwritten(): void
     {
-        file_put_contents($this->config->uploadDir . '/api-upload-create-test.png', 'original');
+        file_put_contents($this->config->mediaDir . '/api-upload-create-test.png', 'original');
         $this->fakeUpload('api-upload-create-test.png');
 
         $response = $this->api('upload/create', method: 'POST');
@@ -51,8 +51,8 @@ final class ApiUploadCreateTest extends ApiTestCase
 
         $body = (array) json_decode((string) $response->body, true);
         $this->assertSame('api-upload-create-test-1.png', $body['file']);
-        $this->assertSame('original', file_get_contents($this->config->uploadDir . '/api-upload-create-test.png'));
-        $this->assertSame(self::CONTENT, file_get_contents($this->config->uploadDir . '/api-upload-create-test-1.png'));
+        $this->assertSame('original', file_get_contents($this->config->mediaDir . '/api-upload-create-test.png'));
+        $this->assertSame(self::CONTENT, file_get_contents($this->config->mediaDir . '/api-upload-create-test-1.png'));
     }
 
     public function testUploadWithDisallowedExtensionIsRejected(): void
@@ -62,7 +62,7 @@ final class ApiUploadCreateTest extends ApiTestCase
         $response = $this->api('upload/create', method: 'POST');
 
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
-        $this->assertFileDoesNotExist($this->config->uploadDir . '/api-upload-create-test.php');
+        $this->assertFileDoesNotExist($this->config->mediaDir . '/api-upload-create-test.php');
     }
 
     public function testUploadWithSpacesAndDotsInNameIsStored(): void
@@ -75,7 +75,7 @@ final class ApiUploadCreateTest extends ApiTestCase
 
         $body = (array) json_decode((string) $response->body, true);
         $this->assertSame('Bildschirmfoto-2026-07-21-um-06-51-53.png', $body['file']);
-        $this->assertSame(self::CONTENT, file_get_contents($this->config->uploadDir . '/Bildschirmfoto-2026-07-21-um-06-51-53.png'));
+        $this->assertSame(self::CONTENT, file_get_contents($this->config->mediaDir . '/Bildschirmfoto-2026-07-21-um-06-51-53.png'));
     }
 
     public function testMissingUploadIsRejected(): void
@@ -106,7 +106,7 @@ final class ApiUploadCreateTest extends ApiTestCase
 
         $this->assertSame(Status::OK, $response->status);
 
-        $stored = (string) file_get_contents($this->config->uploadDir . '/api-upload-evil.svg');
+        $stored = (string) file_get_contents($this->config->mediaDir . '/api-upload-evil.svg');
         $this->assertStringNotContainsString('<script', $stored);
         $this->assertStringNotContainsString('onload', $stored);
         $this->assertStringContainsString('<circle', $stored);
@@ -137,7 +137,7 @@ final class ApiUploadCreateTest extends ApiTestCase
         $response = $this->api('upload/create', method: 'POST', authenticated: false);
 
         $this->assertSame(Status::UNAUTHORIZED, $response->status);
-        $this->assertFileDoesNotExist($this->config->uploadDir . '/api-upload-create-test.png');
+        $this->assertFileDoesNotExist($this->config->mediaDir . '/api-upload-create-test.png');
     }
 
     private function fakeUpload(string $name): void

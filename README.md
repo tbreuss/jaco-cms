@@ -58,14 +58,18 @@ pages, nothing more.
 Full guide with markers reference: [`docs/install.md`](docs/install.md).
 
 1. Download `jaco-dist-<version>.zip` from the [releases page](https://github.com/tbreuss/jaco-cms/releases) (dependencies included) and extract it next to your `index.html`.
-2. Open `https://example.com/jaco/install.php` and create your login: username, password (≥ 8 characters), language, upload directory (`upload` by default), two-factor authentication on. The installer writes `jaco/settings.php` and deletes itself.
-3. Grant write permissions: editable `.html` files, `jaco/_backup/`, `upload/`, `jaco/runtime/log/`.
+2. Open `https://example.com/jaco/install.php` and create your login: username, password (≥ 8 characters), language, media directory (`media` by default), two-factor authentication on. The installer writes `jaco/settings.php` and deletes itself.
+3. Grant write permissions: editable `.html` files, `jaco-data/backups/`, `media/`, `jaco/runtime/log/`.
 4. Mark editable regions in your HTML and log in at `/jaco/`:
 
 ```html
 <h1 data-jaco-editable-line>My headline</h1>
 <div data-jaco-editable><p>My paragraph.</p></div>
 ```
+
+The three directories next to your pages: `jaco/` is the application (replaced on
+update), `jaco-data/` holds templates and backups (never publicly reachable),
+`media/` holds editor uploads.
 
 Heads-up for servers: on Nginx copy the blocks from `docs/nginx-jaco.conf.example`
 into the server context (`.htaccess` is Apache-only). With a dist archive on

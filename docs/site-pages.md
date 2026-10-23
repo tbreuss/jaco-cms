@@ -17,7 +17,7 @@ English file names, so a page maps to its translation by prefixing `de/`:
 Keep the pattern for new pages: an English slug in both trees. Renaming a page
 means updating the internal links, the `canonical`, `hreflang` and `og:url`
 values of both language versions, and — for the navigation and footer — the
-templates under `jaco/_template/site/`.
+templates under `jaco-data/templates/site/`.
 
 The language switch in `assets/nav.js` sends visitors to the other language's
 `index.html`, so no per-page link table is needed there.

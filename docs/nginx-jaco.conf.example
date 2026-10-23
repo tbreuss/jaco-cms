@@ -3,7 +3,7 @@
 # location blocks below into the server context of the site.
 #
 # Jaco lives entirely in the web root: static .html pages next to jaco/
-# (admin panel + api.php) and upload/ (editor images and PDFs).
+# (admin panel + api.php) and media/ (editor images and PDFs).
 
 server {
     # ... server_name, root, listen directives ...
@@ -35,17 +35,16 @@ server {
     location = /jaco/settings.php { deny all; }
     location = /jaco/install.php  { deny all; }
     location = /jaco/cli.php      { deny all; }
-    location ^~ /jaco/_backup/   { deny all; }
+    location ^~ /jaco-data/      { deny all; }
     location ^~ /jaco/runtime/   { deny all; }
     location ^~ /jaco/vendor/    { deny all; }
     location ^~ /jaco/backend/   { deny all; }
     location ^~ /jaco/test/      { deny all; }
     location ^~ /jaco/schema/    { deny all; }
     location ^~ /jaco/language/  { deny all; }
-    location ^~ /jaco/_template/ { deny all; }
 
     # Editor uploads: serve, never execute PHP through them.
-    location ~ ^/upload/.*\.ph(p|ar|tml|t|ps)$ { deny all; }
+    location ~ ^/media/.*\.ph(p|ar|tml|t|ps)$ { deny all; }
 
     # Behind a reverse proxy also forward the header:
     # proxy_set_header Authorization $http_authorization;

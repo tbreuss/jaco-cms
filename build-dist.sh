@@ -17,8 +17,16 @@ command -v composer >/dev/null || { echo "composer fehlt" >&2; exit 1; }
 command -v zip >/dev/null || { echo "zip fehlt" >&2; exit 1; }
 
 # nur getrackte Dateien aus jaco/: kein .git, keine Nutzerdaten (Backups,
-# Logs und settings.php sind ignoriert und kommen nicht mit)
+# Logs und settings.php sind ignoriert und kommen nicht mit). jaco-data/ wird
+# als leere Struktur mitgeliefert, damit die Anwendung schreiben kann.
 git -C "$ROOT" archive HEAD jaco | tar -x -C "$WORK"
+mkdir -p "$WORK/jaco-data/templates/page" "$WORK/jaco-data/templates/content" \
+         "$WORK/jaco-data/templates/site" "$WORK/jaco-data/backups"
+cp "$ROOT/jaco-data/.htaccess" "$WORK/jaco-data/.htaccess"
+cp "$ROOT/jaco-data/backups/.gitignore" "$WORK/jaco-data/backups/.gitignore"
+for dir in page content site; do
+    cp "$ROOT/jaco-data/templates/$dir/.gitignore" "$WORK/jaco-data/templates/$dir/.gitignore"
+done
 
 # Installationsanleitung und Lizenz aus dem Arbeitsverzeichnis dazu (evtl. uncommitted).
 # Quelle im Repo: docs/install.md; im ZIP weiterhin INSTALL.md im Archiv-Root.
@@ -37,6 +45,8 @@ rm -rf "$WORK/jaco/test"
 rm -f "$WORK/.editorconfig" "$WORK/.gitignore" "$WORK/Dockerfile"
 rm -f "$WORK/jaco/.php-cs-fixer.php" "$WORK/jaco/.php-cs-fixer.cache"
 rm -f "$WORK/jaco/.deptrac.cache"
+# Old operator data folders are no longer part of the release.
+rm -rf "$WORK/jaco/_backup" "$WORK/jaco/_template"
 rm -f "$WORK/jaco/phpunit.xml" "$WORK/jaco/.phpunit.cache" "$WORK/jaco/.phpunit.result.cache"
 rm -f "$WORK/jaco/composer.json" "$WORK/jaco/composer.lock"
 rm -f "$WORK/jaco/settings.php"
@@ -44,13 +54,13 @@ rm -f "$WORK/jaco/api.http" "$WORK/jaco/phpstan.neon" "$WORK/jaco/deptrac.yaml"
 find "$WORK" -name ".DS_Store" -delete
 
 # leere Laufzeitverzeichnisse sicherstellen (braucht die App zum Schreiben)
-mkdir -p "$WORK/jaco/_backup" "$WORK/jaco/runtime/log"
+mkdir -p "$WORK/jaco/runtime/log"
 
-# upload/ ist Nutzerdaten-Verzeichnis und kommt nicht mit: der Installer legt
-# es samt Schutzdatei an, wo immer es fehlt.
+# jaco-data/ (Vorlagen und Backups) und media/ (Uploads) sind Nutzerdaten und
+# kommen nicht mit: der Installer legt sie samt Schutzdatei an, wo sie fehlen.
 
 OUT="$ROOT/jaco-dist-$VERSION.zip"
 rm -f "$OUT"
-(cd "$WORK" && zip -qr "$OUT" jaco INSTALL.md LICENSE)
+(cd "$WORK" && zip -qr "$OUT" jaco jaco-data INSTALL.md LICENSE)
 
 echo "gebaut: $OUT ($(du -h "$OUT" | cut -f1))"

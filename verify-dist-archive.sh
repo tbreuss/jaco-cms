@@ -41,6 +41,9 @@ must_not_contain " jaco/test/"
 must_not_contain " docs/install.md"
 must_not_contain " jaco/composer.json"
 must_not_contain " jaco/settings.php"
+must_not_contain " jaco/_backup/"
+must_contain " jaco-data/.htaccess"
+must_not_contain " media/"
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK" "$LIST"' EXIT INT TERM

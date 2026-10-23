@@ -570,14 +570,14 @@ function handle_embedded_data_url_images(Config $config, string $html): array
             $decodedData = $svgCleaned;
         }
 
-        [$status, $newFile] = filesystem\write_file_without_overwrite($config, $config->uploadDir, $imgFile, $decodedData);
+        [$status, $newFile] = filesystem\write_file_without_overwrite($config, $config->mediaDir, $imgFile, $decodedData);
 
         if ($status === false) {
             $errors[] = 'Could not write file: ' . $imgFile;
             continue;
         }
 
-        $el->setAttribute('src', filesystem\combine($config->uploadUrl, $newFile));
+        $el->setAttribute('src', filesystem\combine($config->mediaUrl, $newFile));
         $el->removeAttribute($imgFileAttr);
 
         if ($el->hasAttribute($galleryAttr)) {
@@ -668,7 +668,7 @@ function write_gallery_full(\DOMDocument $dom, Config $config, \DOMElement $el, 
         return 'Invalid file name or extension: ' . $fullFile;
     }
 
-    [$status, $newFull] = filesystem\write_file_without_overwrite($config, $config->uploadDir, $fullFile, $fullData);
+    [$status, $newFull] = filesystem\write_file_without_overwrite($config, $config->mediaDir, $fullFile, $fullData);
 
     if ($status === false) {
         return 'Could not write file: ' . $fullFile;
@@ -676,7 +676,7 @@ function write_gallery_full(\DOMDocument $dom, Config $config, \DOMElement $el, 
 
     if ($parent instanceof \DOMElement) {
         $link = $dom->createElement('a');
-        $link->setAttribute('href', filesystem\combine($config->uploadUrl, $newFull));
+        $link->setAttribute('href', filesystem\combine($config->mediaUrl, $newFull));
         $parent->replaceChild($link, $el);
         $link->appendChild($el);
     }

@@ -8,19 +8,25 @@ These are the invariants and edge cases that tests cannot express on their own.
   focus. `jaco/frontend/component/Input.js` focuses immediately *and* again on `load` if
   the first attempt did not take effect.
 - **Nothing is touched without a backup.** `page/update`, `page/update-body`,
-  `page/delete`, `css/update` and `upload/delete` write a copy into `jaco/_backup` before
+  `page/delete`, `css/update` and `upload/delete` write a copy into `jaco-data/backups` before
   they modify a file (`jaco/backend/domain/page.php`, `css.php`, `upload.php`).
 - **The app directory is out of reach.** Page create, update, update body, delete, copy
   (source *and* target) and view, `css/update` and `upload/create` all reject paths whose
   first segment is `jaco/` (the `file_in_dir` guard), and the page, stylesheet, upload and
   backup lists never show files from `jaco/`.
+- **Operator data lives outside the app directory.** Templates and backups are stored in
+  `Config::$dataDir` (default `<webDir>/jaco-data`, overridable through the `dataDir`
+  setting), split into `templates/{page,content,site}` and `backups`.
+  `jaco-data/.htaccess` denies every request and disables directory listings, so replacing
+  the `jaco/` directory never touches site data. Uploads live in `Config::$mediaDir`
+  (default `<webDir>/media`).
 - **The JSON schemas are the API contract.** `jaco/schema/**` defines what a request must
   contain and what a response may contain; `jaco/backend/core/router.php` validates both.
 - **Embedded images are extracted, not stored.** `page/update` and `page/update-body`
   write an image file only
   when the `<img>` carries a marker attribute, a `src` and `data-jaco-editable-image-file`
   (`jaco/backend/core/html.php`). Afterwards that attribute is gone and `src` points to
-  `upload/<file>`. The parser clears the global libxml error buffer first, because the
+  `media/<file>`. The parser clears the global libxml error buffer first, because the
   check at the end reads all of it – a leftover error from earlier parsing would turn a
   valid save into a failure.
 - **Two save paths with different owners.** `page/update` is the page manager: the whole
@@ -97,7 +103,7 @@ These are the invariants and edge cases that tests cannot express on their own.
 - **Uploads are scrubbed when they are SVG.** `svg` stays an allowed extension,
   but `html\sanitize_svg()` strips script elements, foreign objects, event
   handler attributes and script urls on every write path (direct upload,
-  editor data urls, gallery full versions) before the file reaches `upload/`.
+  editor data urls, gallery full versions) before the file reaches `media/`.
   Malformed markup is rejected instead of guessed
   (`jaco/backend/core/html.php`).
 - **The app directory guard ignores case.** `filesystem\is_file_in_dir()`
@@ -119,7 +125,7 @@ These are the invariants and edge cases that tests cannot express on their own.
   A plain `DOMDocument::loadHTML()` assumes ISO-8859-1 and turns `Rückgabe` into
   `RÃ¼ckgabe` for pages without a `<meta charset>`.
 - **Paths are relative to the web root.** Page, stylesheet and upload names always contain
-  their directory (`upload/picture.jpg`), because the file search starts at
+  their directory (`media/picture.jpg`), because the file search starts at
   `Config::$webDir`.
 - **`backup/restore` moves instead of copying, and trusts the name.** The destination comes
   from the backup name (`|` becomes `/`), the backup is renamed onto it and the file

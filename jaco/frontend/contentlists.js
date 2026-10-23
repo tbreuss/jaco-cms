@@ -13,7 +13,7 @@
 // data-jaco-pos is "top", "bottom" or "any" (anything else behaves like "any").
 // The button label comes from data-jaco-title, so no translations are needed.
 // Fragments are fetched from the template/content/view API, which serves files
-// from jaco/_template/content. Item order lives in the DOM - save needs no
+// from jaco-data/templates/content. Item order lives in the DOM - save needs no
 // changes, but editor chrome has to be stripped (removeContentListChrome)
 // before the body is sent, see iframe.getHTML().
 window.JacoContentLists = (() => {
