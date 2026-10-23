@@ -21,7 +21,7 @@ Technical guide for contributors and automated tools. Process and PR expectation
 | `jaco/language/*.json` | Admin UI translations (en, de, fr, it) |
 | `jaco/test/` | PHPUnit; `jaco/test/js/` QUnit + `runner.mjs` |
 | `docs/` | Maintainer documentation; index in [readme.md](readme.md) |
-| Site root | Public HTML pages, `media/`, demo content |
+| Site root | Public HTML pages, `assets/`, `media/` (uploads), `jaco-data/` (templates and backups), demo content |
 
 Backend naming rules: [backend-naming.md](backend-naming.md), page file names:
 [site-pages.md](site-pages.md).

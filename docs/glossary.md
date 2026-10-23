@@ -15,6 +15,9 @@ Ambiguity usually starts with words, not sentences. These terms have exactly one
 | Backup | A copy in `jaco-data/backups`, taken before a page, stylesheet or upload is overwritten or deleted. Name: `<YYYYMMDD>_<HHMMSS>_<4 chars>_<file>`, where `/` in the file path becomes `|`. |
 | Page template | A file in `jaco-data/templates/page`, used when a page is created. Listed through `template/pages`. |
 | Block template | A file in `jaco-data/templates/content`, a single reusable block (e.g. a news item). Listed through `template/content`, fetched through `template/content/view`. |
+| Application directory | `jaco/`: admin UI, `api.php`, PHP code, `vendor/`, `runtime/` and `settings.php`. Reachable only through its entry points; the rest answers 403. |
+| Operator data directory | `jaco-data/` (`Config::$dataDir`): page, content and site templates under `templates/` and the backups under `backups/`. Never reachable over the web. Replacing `jaco/` does not touch it. |
+| Media directory | `media/` (`Config::$uploadDir`): editor uploads served as static files. Referenced as `media/<file>`. |
 | Config | The injected `jaco\core\config\Config` value object: directories (including the configurable `uploadDir` for uploads and `dataDir` for templates and backups, both always inside the web root), extensions, the `users` list, `defaultLanguage`, `maintenanceMode` and the php error settings. It replaced the former `jaco\*` constants; `jaco/settings.php` overrides the defaults. An empty users list and a short secret key fall back to safe values, so logging in stays impossible until real values are set (fail closed, see below). |
 | Domain payload | Return value of a `jaco\domain\*` function: `success`, `invalid` (HTTP 422 with an error list) or `error` (HTTP 500). |
 | API action | A route registered in `jaco/routes.php` (`action=page/update`). |

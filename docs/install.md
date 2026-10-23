@@ -30,6 +30,17 @@ in the archive root; in the git repository it lives here as `docs/install.md`.
         ├── frontend/
         └── ...
 
+   The three directories next to your pages have fixed roles:
+
+   | Directory | Role | Access |
+   |---|---|---|
+   | `jaco/` | The application: admin UI, `api.php`, PHP code, `vendor/`, `runtime/` logs and `settings.php` | Only the entry points and `frontend/` assets are reachable, everything else answers 403 |
+   | `jaco-data/` | Operator data written by the app: page, content and site templates plus the backups of every save | Never reachable over the web (`.htaccess`: `Require all denied`, `Options -Indexes`) |
+   | `media/` | Uploads from the editor (images, PDFs), referenced from your pages as `media/<file>` | Reachable as static files, but never executed |
+
+   Replacing `jaco/` with a new version never touches `jaco-data/` or `media/`,
+   so code updates cannot lose content or backups.
+
 3. Open the installer in the browser: `https://example.com/jaco/install.php`.
    Enter username (anything you like) and password (at least 8 characters),
    pick a language, and leave two-factor authentication enabled unless you
@@ -291,7 +302,7 @@ An image with `data-jaco-editable-image-gallery` (in addition to
 When a file is picked in the editor, the thumbnail follows the `width`/`height`
 attributes as usual, while the full version is capped at 1920px wide. On save
 both files are stored (`thumb.jpg` and `thumb-full.jpg`) and the thumbnail is
-wrapped in `<a href="upload/thumb-full.jpg">`. An explicit parent link always
+wrapped in `<a href="media/thumb-full.jpg">`. An explicit parent link always
 wins and stays untouched.
 
 The editor sets the attributes `data-jaco-editable-image-file`,
