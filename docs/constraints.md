@@ -201,6 +201,7 @@ end.
 | Read pages, uploads, stylesheets, backups and templates | ✓ | ✓ | ✓ |
 | Change the own password | ✓ | ✓ | ✓ |
 | Create, update, copy and delete pages | – | ✓ | ✓ |
+| Change page title, meta description and robots | – | ✓ | ✓ |
 | Add and delete uploads | – | ✓ | ✓ |
 | Change a stylesheet | – | – | ✓ |
 | Restore and delete backups | – | – | ✓ |

@@ -2,17 +2,20 @@
 
 **The flat-file CMS that manages static HTML files directly in the web directory.**
 
-No database, no build step — just PHP 8.2+ on any shared host. Mark regions of your
-existing pages with `data-jaco-*` attributes, then edit them inline on the live
-site: rich text, images, links, embedded videos, reorderable content blocks.
-Every overwrite or delete keeps a timestamped backup, restoring is one click.
+No database, no build step — just PHP 8.2+ on a typical shared host. Mark regions of
+your pages — existing or new — with `data-jaco-*` attributes, then edit them
+inline on the live site: rich text, images, links, embedded videos, reorderable
+content blocks. Every overwrite or delete keeps a timestamped backup, restoring
+is one click.
 
 ## Features
 
 **Editing**
 
 - Inline editor on the live site: rich text, single lines, links, images, YouTube embeds
-- Page manager: create from templates, copy, rename, delete — with backups
+- Media library: upload once and reuse images and PDFs from the image picker
+- Page manager: create from templates, copy and delete — with backups
+- Page settings: title, meta description and robots, without editing HTML by hand
 - Content blocks: editors add, remove and reorder recurring sections by drag and drop
 - Image galleries: thumbnails link to generated full versions
 - Stylesheet editor with backups, upload manager with extension and size checks
@@ -28,16 +31,18 @@ Every overwrite or delete keeps a timestamped backup, restoring is one click.
 
 ## Who Jaco is for
 
-Jaco fits small static sites whose owners — not developers — keep the content
-up to date, typically on cheap shared hosting:
+Jaco fits small static sites — existing or new — where a developer or template
+marks the editable regions once, then owners and editors keep the content up to
+date, typically on cheap shared hosting:
 
 - Restaurants, cafés, hairdressers and other local businesses: opening hours, menus, price lists and photos, edited in place on the live page
 - Clubs and associations: news, events and member info maintained by volunteers, no HTML knowledge needed
 - Small companies and freelancers: company site or portfolio with a contact page, editable without a backend workflow
-- Private individuals: family or hobby sites that should stay online for years with minimal care
+- Private individuals: family, hobby or portfolio sites that should stay online for years with minimal care
 
 The pattern is always the same: a developer (or the site template) marks the
-editable regions once, then editors work directly on the page. If you need
+editable regions once, then editors work directly on the page. A new site can
+start from any static HTML template; the same edit markers apply. If you need
 user accounts, comments or a shop, Jaco is the wrong tool — it edits static
 pages, nothing more.
 

@@ -1,6 +1,6 @@
 # Admin menu structure
 
-Status: implemented in the working tree.
+Status: implemented.
 
 ## Navigation
 
@@ -69,6 +69,17 @@ a.html    Startseite      12.10.2026      [Edit] [Copy] [Delete]
   the preview.
 - `Jump to page` is available from the command palette, not the Pages view.
 
+## Inline editor
+
+The inline editor toolbar offers **Page settings**, **Cancel** and **Save**.
+
+- **Page settings** opens a modal for the page title, meta description and robots
+  value. It is available to editors and admins; viewers see the editor but not
+  the settings button.
+- Saving the settings updates only the document head. Unsaved body changes stay
+  in the editor.
+- The raw page editor exposes the same title, description and robots fields.
+
 ## Roles
 
 | Element | Admin | Editor | Viewer |
@@ -77,6 +88,7 @@ a.html    Startseite      12.10.2026      [Edit] [Copy] [Delete]
 | Design | writable | read-only | read-only |
 | This page: Edit page | active | active | active, no save |
 | This page: Copy/Delete page | active | active | visible-disabled |
+| This page: Page settings | active | active | visible-disabled |
 | Admin entries | active | visible-disabled | visible-disabled |
 | Account: About, Logout | active | active | active |
 | Account: Change password | active | active | active unless `passwordChange => false` |
