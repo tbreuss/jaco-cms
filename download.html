@@ -57,10 +57,11 @@
     </ul>
     <h2>Install in three steps</h2>
     <ol>
-      <li>Download the latest <code>jaco-dist-*.zip</code> from the <a href="https://github.com/tbreuss/jaco-cms/releases">releases page</a>.</li>
-      <li>Unpack it into your web directory, next to the HTML files you want to edit.</li>
-      <li>Follow <code>INSTALL.md</code>: copy <code>settings.dist.php</code> to <code>settings.php</code>, set a login and grant write permissions. Then open <code>/jaco/</code>.</li>
+      <li>Download the latest <code>jaco-dist-*.zip</code> from the <a href="https://github.com/tbreuss/jaco-cms/releases">releases page</a> and unpack it into your web directory, next to the HTML files you want to edit.</li>
+      <li>Open <code>/jaco/install.php</code> in the browser and create your login, language and upload directory. The installer writes <code>settings.php</code> and removes itself afterwards.</li>
+      <li>Grant write permissions for the editable HTML files, <code>jaco/_backup/</code>, <code>upload/</code> and <code>jaco/runtime/log/</code> as described in <code>INSTALL.md</code>. Then open <code>/jaco/</code> and log in.</li>
     </ol>
+    <p>The installer is the preferred installation path. Copy <code>settings.dist.php</code> to <code>settings.php</code> manually only when working from git or when the installer cannot write the settings file.</p>
     <h2>Before you install</h2>
     <ul>
       <li>Make a backup of the existing website first.</li>
