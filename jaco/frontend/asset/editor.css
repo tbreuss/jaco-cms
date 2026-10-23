@@ -322,6 +322,40 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
     padding: 2px 8px;
 }
 
+/* Keep all inline-editor dialogs on the same spacing and control palette. */
+#editableLink,
+#editableImageExtended,
+#editableVideo {
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+#editableLink label,
+#editableImageExtended label,
+#editableVideo label {
+    white-space: nowrap;
+}
+
+#editableLink button,
+#editableImageExtended button,
+#editableVideo button {
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    padding: 3px 8px;
+    font: inherit;
+    font-size: 0.9rem;
+    line-height: 1.2;
+}
+
+#editableLink button:hover,
+#editableImageExtended button:hover,
+#editableVideo button:hover {
+    background: #e8e8e8;
+    border-color: #999;
+}
+
 /* Media picker for image markers: choose an existing upload instead of
    uploading the file again. Kept in the same light palette as the Quill chrome. */
 #editableMedia {
@@ -421,4 +455,60 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
     font-size: 0.75rem;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* Quill's link/video tooltip is part of the editor chrome; match the spacing
+   and light control palette of the custom dialogs. */
+.ql-snow .ql-tooltip {
+    background: #eee;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
+    color: #222;
+    padding: 6px 8px;
+}
+
+.ql-snow .ql-tooltip::before {
+    color: #555;
+    font-size: 0.9rem;
+    margin-right: 6px;
+}
+
+.ql-snow .ql-tooltip input[type=text] {
+    height: 24px;
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #222;
+    font-size: 0.9rem;
+}
+
+.ql-snow .ql-tooltip a {
+    color: #222;
+}
+
+.ql-snow .ql-tooltip a.ql-action,
+.ql-snow .ql-tooltip a.ql-remove {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 3px 8px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 0.9rem;
+    line-height: 1.2;
+}
+
+.ql-snow .ql-tooltip a.ql-action:hover,
+.ql-snow .ql-tooltip a.ql-remove:hover {
+    background: #e8e8e8;
+    border-color: #999;
+}
+
+.ql-snow .ql-tooltip a.ql-action::after {
+    border-right: 0;
+    margin-left: 0;
+    padding-right: 0;
+}
+
+.ql-snow .ql-tooltip a.ql-remove::before {
+    margin-left: 0;
 }

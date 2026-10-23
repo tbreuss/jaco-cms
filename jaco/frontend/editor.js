@@ -344,7 +344,7 @@ window.openVideoDialog = (frame) => {
 
   const remove = document.createElement('button')
   remove.type = 'button'
-  remove.innerText = t('Remove video', 'Remove video')
+  remove.innerText = t('Remove', 'Remove')
   remove.onclick = () => {
     frame.remove()
     dialog.remove()
