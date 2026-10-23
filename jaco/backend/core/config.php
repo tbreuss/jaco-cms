@@ -8,10 +8,12 @@ final readonly class Config
         public string $appVersion,
         public string $appDir,
         public string $appDirName,
+        public string $webDir,
+        public string $dataDir,
         public string $backupDir,
         public string $templatePageDir,
         public string $templateContentDir,
-        public string $webDir,
+        public string $siteTemplateDir,
         public string $uploadDir,
         /** @var list<string> */
         public array $uploadExtensions,
@@ -263,18 +265,29 @@ function create_default_config(string $appDir, array $settings = []): Config
     // and keep listings, backups and the preview working
     $uploadDirName = (string) ($settings['uploadDir'] ?? '');
     if (!\preg_match('#^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$#', $uploadDirName)) {
-        $uploadDirName = 'upload';
+        $uploadDirName = 'media';
     }
+
+    // Operator data lives next to the code, not inside it: templates and
+    // backups must survive replacing the jaco/ directory.
+    $dataDirName = (string) ($settings['dataDir'] ?? '');
+    if (!\preg_match('#^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$#', $dataDirName)) {
+        $dataDirName = 'jaco-data';
+    }
+    $webDir = dirname($appDir);
+    $dataDir = $webDir . '/' . $dataDirName;
 
     return new Config(
         appVersion: '0.1.0',
         appDir: $appDir,
         appDirName: basename($appDir),
-        backupDir: $appDir . '/_backup',
-        templatePageDir: $appDir . '/_template/page',
-        templateContentDir: $appDir . '/_template/content',
-        webDir: dirname($appDir),
-        uploadDir: dirname($appDir) . '/' . $uploadDirName,
+        webDir: $webDir,
+        dataDir: $dataDir,
+        backupDir: $dataDir . '/backups',
+        templatePageDir: $dataDir . '/templates/page',
+        templateContentDir: $dataDir . '/templates/content',
+        siteTemplateDir: $dataDir . '/templates/site',
+        uploadDir: $webDir . '/' . $uploadDirName,
         uploadExtensions: ['png', 'gif', 'jpg', 'jpeg', 'svg', 'pdf'],
         uploadUrl: $uploadDirName,
         pageExtensions: ['htm', 'html'],

@@ -15,7 +15,7 @@ final class SecurityChecksTest extends TestCase
     {
         $this->dir = sys_get_temp_dir() . '/jaco-security-test';
         $this->removeDir($this->dir);
-        mkdir($this->dir . '/_backup', 0755, true);
+        mkdir($this->dir . '/data/backups', 0755, true);
         mkdir($this->dir . '/runtime/log', 0755, true);
         mkdir($this->dir . '/vendor', 0755, true);
         mkdir($this->dir . '/upload', 0755, true);
@@ -28,7 +28,7 @@ final class SecurityChecksTest extends TestCase
 
     public function testAllProtectionsPresent(): void
     {
-        foreach (['/.htaccess', '/_backup/.htaccess', '/runtime/.htaccess', '/vendor/.htaccess'] as $file) {
+        foreach (['/.htaccess', '/data/.htaccess', '/runtime/.htaccess', '/vendor/.htaccess'] as $file) {
             file_put_contents($this->dir . $file, 'Require all denied');
         }
 
@@ -37,7 +37,7 @@ final class SecurityChecksTest extends TestCase
         $this->assertSame(
             [
                 'App protection (.htaccess)',
-                'Backup protection (.htaccess)',
+                'Data protection (.htaccess)',
                 'Log protection (.htaccess)',
                 'Vendor protection (.htaccess)',
                 'Installer removed',
@@ -69,14 +69,15 @@ final class SecurityChecksTest extends TestCase
         $this->assertFalse($checks[1]['ok']);
         $this->assertFalse($checks[2]['ok']);
         $this->assertFalse($checks[3]['ok']);
-        $this->assertStringEndsWith('/_backup/.htaccess', $checks[1]['detail']);
+        $this->assertStringEndsWith('/data/.htaccess', $checks[1]['detail']);
     }
 
     private function config(bool $secretKeyIsConfigured = true): \jaco\core\config\Config
     {
         return test_config_with([
             'appDir' => $this->dir,
-            'backupDir' => $this->dir . '/_backup',
+            'dataDir' => $this->dir . '/data',
+            'backupDir' => $this->dir . '/data/backups',
             'loginHistoryFile' => $this->dir . '/runtime/log/loginhistory.json',
             'secretKey' => str_repeat('a', 32),
             'secretKeyIsConfigured' => $secretKeyIsConfigured,

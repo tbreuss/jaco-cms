@@ -288,7 +288,7 @@ export const TemplateView = {
         SiteTemplateModel.isLoading && SiteTemplateModel.list.length === 0
           ? m('p', t('Loading') + '...')
           : SiteTemplateModel.list.length === 0
-            ? m('p', t('No templates found. Create HTML files under jaco/_template/site/ to get started.'))
+            ? m('p', t('No templates found. Create HTML files under jaco-data/templates/site/ to get started.'))
             : m(Fieldset, {legend: t('Template')},
               m(Select, {
                 id: 'templateFile',

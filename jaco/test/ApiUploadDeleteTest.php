@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\TestDox;
 #[TestDox('Upload delete API (upload/delete)')]
 final class ApiUploadDeleteTest extends ApiTestCase
 {
-    private const UPLOAD = 'upload/api-upload-delete-test.jpg';
+    private const UPLOAD = 'api-upload-delete-test.jpg';
     private const CONTENT = 'not really an image, but the extension is what counts';
 
     protected function setUp(): void
@@ -19,15 +19,15 @@ final class ApiUploadDeleteTest extends ApiTestCase
         $this->watchDir($this->config->backupDir);
         $this->watchDir($this->config->uploadDir);
 
-        file_put_contents($this->config->webDir . '/' . self::UPLOAD, self::CONTENT);
+        file_put_contents($this->config->uploadDir . '/' . self::UPLOAD, self::CONTENT);
     }
 
     public function testUploadIsBackedUpBeforeItIsDeleted(): void
     {
-        $response = $this->api('upload/delete', ['fileName' => self::UPLOAD]);
+        $response = $this->api('upload/delete', ['fileName' => 'upload/' . self::UPLOAD]);
 
         $this->assertSame(Status::OK, $response->status);
-        $this->assertFileDoesNotExist($this->config->webDir . '/' . self::UPLOAD);
+        $this->assertFileDoesNotExist($this->config->uploadDir . '/' . self::UPLOAD);
 
         $backups = $this->newEntriesIn($this->config->backupDir);
         $this->assertCount(1, $backups, 'exactly one backup is expected');
@@ -37,7 +37,7 @@ final class ApiUploadDeleteTest extends ApiTestCase
 
     public function testUploadWithDisallowedExtensionIsNotDeleted(): void
     {
-        $file = $this->config->webDir . '/upload/api-upload-delete-test.php';
+        $file = $this->config->uploadDir . '/api-upload-delete-test.php';
         file_put_contents($file, '<?php // must survive');
 
         try {
@@ -59,9 +59,9 @@ final class ApiUploadDeleteTest extends ApiTestCase
 
     public function testRequestWithoutTokenIsForbidden(): void
     {
-        $response = $this->api('upload/delete', ['fileName' => self::UPLOAD], 'POST', false);
+        $response = $this->api('upload/delete', ['fileName' => 'upload/' . self::UPLOAD], 'POST', false);
 
         $this->assertSame(Status::UNAUTHORIZED, $response->status);
-        $this->assertFileExists($this->config->webDir . '/' . self::UPLOAD);
+        $this->assertFileExists($this->config->uploadDir . '/' . self::UPLOAD);
     }
 }

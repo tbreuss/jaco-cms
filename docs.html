@@ -70,7 +70,7 @@
     same fields are available in the raw page editor.</p>
     <h2>Site templates</h2>
     <p>Site templates are reusable HTML fragments under
-    <code>jaco/_template/site/</code>. Mark an element with
+    <code>jaco-data/templates/site/</code>. Mark an element with
     <code>data-jaco-template="footer"</code> to make it replaceable. Admins
     edit the template under Content → Templates and can preview the affected
     pages before applying it to all marked elements. Applying uses atomic writes
@@ -88,7 +88,7 @@
     <ul>
       <li><strong>Save is disabled:</strong> the account is a viewer. Log in with an editor or admin account.</li>
       <li><strong>A region cannot be edited:</strong> the page does not carry a <code>data-jaco-editable</code> marker there.</li>
-      <li><strong>Nothing can be written:</strong> the web server needs write permission for the page and <code>upload/</code> directories.</li>
+      <li><strong>Nothing can be written:</strong> the web server needs write permission for the page and <code>media/</code> directories.</li>
       <li><strong>The media picker is empty:</strong> upload an image first, or check the configured upload directory.</li>
     </ul>
     <h2>Going further</h2>

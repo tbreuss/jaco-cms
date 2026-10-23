@@ -13,6 +13,7 @@
 /jaco/test/e2e/test-results
 /jaco/vendor
 /jaco/test/runtime
+/jaco-data/backups
 /inspiration
 /test
-/upload
+/media

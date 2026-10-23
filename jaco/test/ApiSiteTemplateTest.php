@@ -16,16 +16,16 @@ final class ApiSiteTemplateTest extends ApiTestCase
         parent::setUp();
         $this->watchDir($this->config->webDir);
         $this->watchDir($this->config->backupDir);
-        $this->watchDir($this->config->appDir . '/_template/site');
+        $this->watchDir($this->config->siteTemplateDir);
 
-        @mkdir($this->config->appDir . '/_template/site', 0755, true);
+        @mkdir($this->config->siteTemplateDir, 0755, true);
         file_put_contents($this->config->webDir . '/' . self::PAGE, '<html><body><footer data-jaco-template="footer">old</footer></body></html>');
         file_put_contents($this->config->webDir . '/' . self::OTHER, '<html><body><p>other</p></body></html>');
     }
 
     public function testTemplateCanBeListedAndViewed(): void
     {
-        file_put_contents($this->config->appDir . '/_template/site/footer.html', '<footer>old</footer>');
+        file_put_contents($this->config->siteTemplateDir . '/footer.html', '<footer>old</footer>');
 
         $list = $this->api('template/site/list', method: 'GET');
         $this->assertSame(Status::OK, $list->status);
@@ -98,7 +98,7 @@ final class ApiSiteTemplateTest extends ApiTestCase
 
     public function testInvalidTemplateIsRejectedAndNothingIsWritten(): void
     {
-        $templateDir = $this->config->appDir . '/_template/site';
+        $templateDir = $this->config->siteTemplateDir;
         $original = (string) file_get_contents($this->config->webDir . '/' . self::PAGE);
 
         $response = $this->api('template/site/update', [

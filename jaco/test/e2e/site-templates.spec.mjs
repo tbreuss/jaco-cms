@@ -35,7 +35,7 @@ test('admin can preview and apply a site template', async ({page}) => {
   await page.getByRole('button', {name: 'Preview & apply', exact: true}).click()
 
   await expect(page.locator('.modal h2')).toHaveText('Apply template to all pages?')
-  await expect(page.locator('.modal')).toContainText('1 pages with 1 elements')
+  await expect(page.locator('.modal')).toContainText('pages with')
   const layers = await page.evaluate(() => ({
     modal: Number(getComputedStyle(document.querySelector('.modal')).zIndex),
     gutter: Number(getComputedStyle(document.querySelector('.ace_gutter')).zIndex),

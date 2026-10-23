@@ -25,10 +25,10 @@ test('admin can choose an existing image from the media picker', async ({page}) 
   await image.evaluate((element) => element.click())
 
   await expect(frame.locator('#editableMedia')).toBeVisible()
-  const fixture = frame.locator('.jaco-media-item[title="upload/e2e-smoke.png"]')
+  const fixture = frame.locator('.jaco-media-item[title="media/e2e-smoke.png"]')
   await expect(fixture).toBeVisible()
   await fixture.click()
 
-  await expect(image).toHaveAttribute('src', '/upload/e2e-smoke.png')
+  await expect(image).toHaveAttribute('src', '/media/e2e-smoke.png')
   await expect(frame.locator('#editableMedia')).toHaveCount(0)
 })

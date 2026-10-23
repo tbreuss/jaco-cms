@@ -69,6 +69,8 @@ if ($bootFailed) {
 
 require $appDir . '/vendor/autoload.php';
 
+use jaco\core\config\Config;
+
 use function jaco\core\auth\authenticate;
 use function jaco\core\config\create_default_config;
 use function jaco\core\config\write_settings;
@@ -93,10 +95,26 @@ $config = create_default_config($appDir, []);
 
 // Runtime directories may not exist in a fresh upload, create what is
 // creatable before checking: the checks below verify the result.
-@make_dir_rec($config, $appDir, '_backup');
 @make_dir_rec($config, $appDir, 'runtime/log');
 
-// upload/ is user data, so no archive ships it: create and protect it here,
+// jaco-data/ holds templates and backups, so no archive ships it: create the
+// directory and its deny file here. An existing file is never overwritten.
+function install_protect_data(Config $config): void
+{
+    foreach (['backups', 'templates/page', 'templates/content', 'templates/site'] as $dir) {
+        @make_dir_rec($config, $config->webDir, 'jaco-data/' . $dir);
+    }
+    if (!is_dir($config->dataDir) || is_file($config->dataDir . '/.htaccess')) {
+        return;
+    }
+    @file_put_contents(
+        $config->dataDir . '/.htaccess',
+        "# Operator data: templates and backups of the site. Never serve directly.\n"
+        . "Require all denied\n",
+    );
+}
+
+// media/ is user data, so no archive ships it: create and protect it here,
 // wherever the directory comes from. An existing file is never overwritten.
 function install_protect_upload(string $webDir, string $uploadDir): void
 {
@@ -118,7 +136,8 @@ function install_protect_upload(string $webDir, string $uploadDir): void
     );
 }
 
-install_protect_upload(dirname($appDir), 'upload');
+install_protect_data($config);
+install_protect_upload(dirname($appDir), $config->uploadUrl);
 
 $checks = install_checks($config);
 $checksFailed = false;
@@ -134,7 +153,7 @@ $checksTable = '<table><tr><th>Check</th><th></th><th>Detail</th></tr>' . $check
 $isPost = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST';
 $username = isset($_POST['username']) && is_string($_POST['username']) ? trim($_POST['username']) : '';
 $password = isset($_POST['password']) && is_string($_POST['password']) ? (string) $_POST['password'] : '';
-$uploadDir = isset($_POST['uploadDir']) && is_string($_POST['uploadDir']) ? $_POST['uploadDir'] : 'upload';
+$uploadDir = isset($_POST['uploadDir']) && is_string($_POST['uploadDir']) ? $_POST['uploadDir'] : 'media';
 $language = isset($_POST['language']) && is_string($_POST['language']) ? $_POST['language'] : 'en';
 $totp = !$isPost || (isset($_POST['totp']) && $_POST['totp'] === '1');
 $errors = [];
@@ -152,7 +171,7 @@ if ($isPost && !$checksFailed) {
     // same vocabulary as create_default_config: no leading slash, no traversal
     if (!preg_match('#^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$#', $uploadDir)) {
         $errors[] = 'Upload directory name may only contain letters, digits, hyphens, underscores and slashes, '
-            . 'and must be relative to the web root, for example "upload" or "bilder/2026".';
+            . 'and must be relative to the web root, for example "media" or "bilder/2026".';
     }
 
     if (count($errors) === 0) {

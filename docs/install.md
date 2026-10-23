@@ -22,7 +22,8 @@ in the archive root; in the git repository it lives here as `docs/install.md`.
     /var/www/my-site/
     ├── index.html
     ├── foo.html
-    ├── upload/
+    ├── media/         <-- created by the installer
+    ├── jaco-data/     <-- templates and backups, created by the installer
     └── jaco/          <-- here
         ├── api.php
         ├── backend/
@@ -36,12 +37,12 @@ in the archive root; in the git repository it lives here as `docs/install.md`.
    (with a generated secret key) and the installer deletes itself afterwards.
    If it cannot delete itself, remove `jaco/install.php` by hand right away.
 
-   The upload directory defaults to `upload` and may be changed, e.g. to
+   The upload directory defaults to `media` and may be changed, e.g. to
    `bilder/2026` for a site that groups images by year. The path is relative
    to the web root, may contain slashes, and the installer creates it (with
    its `.htaccess`) before writing the settings.
 4. Log in at `/jaco/` with the credentials you just created. Jaco automatically
-   creates a backup under `jaco/_backup/` before every save.
+   creates a backup under `jaco-data/backups/` before every save.
 
 The installer refuses to run once `jaco/settings.php` exists, so nobody else
 can claim the installation afterwards. A lost TOTP secret is replaced through
@@ -71,8 +72,10 @@ return [
         ],
     ],
     'secretKey' => 'at-least-32-random-characters',
-    // optional, default 'upload'
+    // optional, default 'media'
     'uploadDir' => 'bilder/2026',
+    // optional, default 'jaco-data' (templates and backups)
+    'dataDir' => 'jaco-data',
 ];
 ```
 
@@ -141,17 +144,17 @@ replace it with a password hash as shown above.
 The PHP process must be allowed to write:
 
 - every `.html` file that should be editable
-- `jaco/_backup/` (created with the first backup, create it beforehand if needed)
-- the upload directory in the root directory (images from the editor), `upload/` by default
+- `jaco-data/backups/` (created with the first backup, create it beforehand if needed)
+- the upload directory in the root directory (images from the editor), `media/` by default
 - `jaco/runtime/log/` (error log)
 
 ## Protect the internals
 
 Jaco lives entirely in the web root, so the web server must deny direct
 access to the internals. On Apache this ships with the project: `jaco/`
-and every sensitive subdirectory (`_backup/`, `runtime/`, `vendor/`,
-`backend/`, `test/`, `schema/`, `language/`, `_template/`) contain an
-`.htaccess` with `Require all denied`, and `upload/` never executes PHP
+and every sensitive directory (`jaco-data/`, `jaco/runtime/`, `jaco/vendor/`,
+`jaco/backend/`, `jaco/test/`, `jaco/schema/`, `jaco/language/`) contains a
+`.htaccess` with `Require all denied`, and `media/` never executes PHP
 (the installer writes its `.htaccess` when creating the directory).
 Verify that hidden files are deployed (some SCP clients skip dotfiles).
 
@@ -207,7 +210,7 @@ location blocks themselves cannot be verified from PHP and must be
 checked once by hand:
 
     curl -I https://example.com/jaco/settings.php  # expect 403
-    curl -I https://example.com/jaco/_backup/      # expect 403
+    curl -I https://example.com/jaco-data/backups/      # expect 403
 
 ## File upload limits
 
@@ -241,13 +244,13 @@ Example:
 <h1 data-jaco-editable-line>My headline</h1>
 <div data-jaco-editable><p>My paragraph.</p></div>
 <a href="page.html" data-jaco-editable-link>My link</a>
-<img data-jaco-editable-image src="upload/image.jpg" alt="Image" width="800">
+<img data-jaco-editable-image src="media/image.jpg" alt="Image" width="800">
 ```
 
 ## Recurring content blocks
 
 A content list lets editors add prebuilt blocks (e.g. news items) themselves.
-Put a fragment file in `jaco/_template/content/` (see the samples there),
+Put a fragment file in `jaco-data/templates/content/` (see the samples there),
 then mark where blocks may appear:
 
 ```html
@@ -258,7 +261,7 @@ then mark where blocks may appear:
 </div>
 ```
 
-- `data-jaco-fragment` names the fragment file from `jaco/_template/content/`
+- `data-jaco-fragment` names the fragment file from `jaco-data/templates/content/`
 - `data-jaco-title` labels the add button shown in the editor
 - `data-jaco-pos` is `top` (new blocks first), `bottom` (new blocks last),
   `any` (a button before every block plus one at the end) or `draggable`
@@ -279,7 +282,7 @@ An image with `data-jaco-editable-image-gallery` (in addition to
 `data-jaco-editable-image`) links its thumbnail to the full version:
 
 ```html
-<img data-jaco-editable-image data-jaco-editable-image-gallery width="800" src="upload/thumb.jpg" alt="Gallery">
+<img data-jaco-editable-image data-jaco-editable-image-gallery width="800" src="media/thumb.jpg" alt="Gallery">
 ```
 
 When a file is picked in the editor, the thumbnail follows the `width`/`height`
@@ -304,4 +307,4 @@ browser's own save dialog is suppressed while an edit view is open.
 
 Open `/jaco/` in the browser and log in with the credentials you created in
 the installer (or in `settings.php` for a manual install). Jaco automatically
-creates a backup under `jaco/_backup/` before every save.
+creates a backup under `jaco-data/backups/` before every save.

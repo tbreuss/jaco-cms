@@ -8,7 +8,7 @@ These are the invariants and edge cases that tests cannot express on their own.
   focus. `jaco/frontend/component/Input.js` focuses immediately *and* again on `load` if
   the first attempt did not take effect.
 - **Nothing is touched without a backup.** `page/update`, `page/update-body`,
-  `page/delete`, `css/update` and `upload/delete` write a copy into `jaco/_backup` before
+  `page/delete`, `css/update` and `upload/delete` write a copy into `jaco-data/backups` before
   they modify a file (`jaco/backend/domain/page.php`, `css.php`, `upload.php`).
 - **The app directory is out of reach.** Page create, update, update body, delete, copy
   (source *and* target) and view, `css/update` and `upload/create` all reject paths whose
@@ -97,7 +97,7 @@ These are the invariants and edge cases that tests cannot express on their own.
 - **Uploads are scrubbed when they are SVG.** `svg` stays an allowed extension,
   but `html\sanitize_svg()` strips script elements, foreign objects, event
   handler attributes and script urls on every write path (direct upload,
-  editor data urls, gallery full versions) before the file reaches `upload/`.
+  editor data urls, gallery full versions) before the file reaches `media/`.
   Malformed markup is rejected instead of guessed
   (`jaco/backend/core/html.php`).
 - **The app directory guard ignores case.** `filesystem\is_file_in_dir()`

@@ -77,7 +77,7 @@
     "Template was successfully saved.": "Template was successfully saved.",
     "No backups are created when applying to all pages.": "No backups are created when applying to all pages.",
     "Apply to all pages": "Apply to all pages",
-    "No templates found. Create HTML files under jaco/_template/site/ to get started.": "No templates found. Create HTML files under jaco/_template/site/ to get started.",
+    "No templates found. Create HTML files under jaco-data/templates/site/ to get started.": "No templates found. Create HTML files under jaco-data/templates/site/ to get started.",
     "Site templates": "Site templates",
     "Templates": "Templates",
     "Page settings": "Page settings",

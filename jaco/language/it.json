@@ -73,7 +73,7 @@
     "Page settings": "Impostazioni pagina",
     "Templates": "Modelli",
     "Site templates": "Modelli del sito",
-    "No templates found. Create HTML files under jaco/_template/site/ to get started.": "Nessun modello trovato. Creare file HTML in jaco/_template/site/.",
+    "No templates found. Create HTML files under jaco-data/templates/site/ to get started.": "Nessun modello trovato. Creare file HTML in jaco-data/templates/site/.",
     "Apply to all pages": "Applica a tutte le pagine",
     "No backups are created when applying to all pages.": "Non vengono creati backup durante l’applicazione a tutte le pagine.",
     "Template was successfully saved.": "Il modello è stato salvato.",

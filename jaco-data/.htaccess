@@ -1,0 +1,2 @@
+# Operator data: templates and backups of the site. Never serve directly.
+Require all denied
