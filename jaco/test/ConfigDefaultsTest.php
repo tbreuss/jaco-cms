@@ -84,7 +84,7 @@ final class ConfigDefaultsTest extends TestCase
         $this->assertSame('/var/www/site/jaco-data/backups', $config->backupDir);
         $this->assertSame('/var/www/site/jaco-data/templates/page', $config->templatePageDir);
         $this->assertSame('/var/www/site/jaco-data/templates/content', $config->templateContentDir);
-        $this->assertSame('/var/www/site/jaco-data/templates/site', $config->siteTemplateDir);
+        $this->assertSame('/var/www/site/jaco-data/templates/site', $config->templateSiteDir);
     }
 
     public function testOperatorDataDirectoryIsConfigurable(): void

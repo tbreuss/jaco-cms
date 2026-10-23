@@ -46,7 +46,7 @@ function test_config(): Config
         backupDir: $dir . '/data/backups',
         templatePageDir: $dir . '/data/templates/page',
         templateContentDir: $dir . '/data/templates/content',
-        siteTemplateDir: $dir . '/data/templates/site',
+        templateSiteDir: $dir . '/data/templates/site',
         uploadDir: dirname($dir) . '/upload',
         uploadExtensions: ['png', 'gif', 'jpg', 'jpeg', 'svg', 'pdf'],
         uploadUrl: 'upload',

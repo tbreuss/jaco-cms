@@ -13,7 +13,7 @@ final readonly class Config
         public string $backupDir,
         public string $templatePageDir,
         public string $templateContentDir,
-        public string $siteTemplateDir,
+        public string $templateSiteDir,
         public string $uploadDir,
         /** @var list<string> */
         public array $uploadExtensions,
@@ -286,7 +286,7 @@ function create_default_config(string $appDir, array $settings = []): Config
         backupDir: $dataDir . '/backups',
         templatePageDir: $dataDir . '/templates/page',
         templateContentDir: $dataDir . '/templates/content',
-        siteTemplateDir: $dataDir . '/templates/site',
+        templateSiteDir: $dataDir . '/templates/site',
         uploadDir: $webDir . '/' . $uploadDirName,
         uploadExtensions: ['png', 'gif', 'jpg', 'jpeg', 'svg', 'pdf'],
         uploadUrl: $uploadDirName,
