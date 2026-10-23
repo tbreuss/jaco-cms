@@ -71,6 +71,7 @@
     "Project size": "Projektgrösse",
     "Page template": "Seitenvorlage",
     "Page title": "Seitentitel",
+    "Page settings": "Seiteneinstellungen",
     "Page was successfully added.": "Seite wurde erfolgreich hinzugefügt.",
     "Page was successfully copied.": "Seite wurde erfolgreich kopiert.",
     "Page was successfully deleted.": "Seite wurde erfolgreich gelöscht.",
@@ -224,5 +225,13 @@
     "Heading 3": "Überschrift 3",
     "Heading 4": "Überschrift 4",
     "Heading 5": "Überschrift 5",
-    "Heading 6": "Überschrift 6"
+    "Heading 6": "Überschrift 6",
+    "Search & social": "Suche & Social",
+    "Meta description": "Meta-Beschreibung",
+    "Search engines": "Suchmaschinen",
+    "Not set": "Nicht gesetzt",
+    "Index, follow": "Indexieren, folgen",
+    "Noindex, nofollow": "Nicht indexieren, nicht folgen",
+    "Page settings were successfully saved.": "Seiteneinstellungen wurden gespeichert.",
+    "Could not save page settings.": "Seiteneinstellungen konnten nicht gespeichert werden."
 }

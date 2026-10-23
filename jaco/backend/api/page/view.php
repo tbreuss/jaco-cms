@@ -27,6 +27,8 @@ function responder(Payload $payload): Response
         return json_response([
             'file' => $payload->data['file'],
             'title' => $payload->data['title'],
+            'description' => $payload->data['description'],
+            'robots' => $payload->data['robots'],
             'created' => $payload->data['created'],
             'content' => $payload->data['content'],
         ]);

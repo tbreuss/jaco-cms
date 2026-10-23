@@ -4,6 +4,7 @@ import {ButtonSecondary} from '../../component/ButtonSecondary.js'
 import {Icon} from '../../component/Icon.js'
 import {Fieldset} from '../../component/Fieldset.js'
 import {InputText} from '../../component/InputText.js'
+import {Select} from '../../component/Select.js'
 import {ButtonGroup} from '../../component/ButtonGroup.js'
 import {addSuccess} from '../../state/actions.js'
 import {ButtonPrimary} from '../../component/ButtonPrimary.js'
@@ -24,15 +25,33 @@ export const state = {
   initialized: false,
   file: '',
   savedContent: null,
+  savedTitle: '',
+  savedDescription: '',
+  savedRobots: '',
 }
 
-const fieldPointers = ['fileName']
+const fieldPointers = ['fileName', 'pageTitle', 'metaDescription', 'robots']
+
+const robotsOptions = (current) => {
+  const options = [
+    {value: '', label: t('Not set')},
+    {value: 'index,follow', label: t('Index, follow')},
+    {value: 'noindex,nofollow', label: t('Noindex, nofollow')},
+  ]
+  if (current && !options.some((option) => option.value === current)) {
+    options.push({value: current, label: current})
+  }
+  return options
+}
 
 const isDirty = () => {
   if (!editor || state.savedContent === null) {
     return false
   }
   return editor.getValue() !== state.savedContent
+    || PageEditModel.item.title !== state.savedTitle
+    || (PageEditModel.item.description ?? '') !== state.savedDescription
+    || (PageEditModel.item.robots ?? '') !== state.savedRobots
 }
 
 const beforeUnloadHandler = (e) => {
@@ -121,6 +140,9 @@ export const onSaveButtonClicked = (e) => {
     .then(() => {
       state.errors = []
       state.savedContent = editor.getValue()
+      state.savedTitle = PageEditModel.item.title
+      state.savedDescription = PageEditModel.item.description ?? ''
+      state.savedRobots = PageEditModel.item.robots ?? ''
       addSuccess(t('Page was successfully saved.'))
     })
     .catch(({code, response}) => {
@@ -165,6 +187,9 @@ const onUpdateComponent = () => {
   if (!state.initialized && loaded && loaded === state.file) {
     editor.setValue(PageEditModel.item.content, 1) // set cursor at the end
     state.savedContent = PageEditModel.item.content
+    state.savedTitle = PageEditModel.item.title
+    state.savedDescription = PageEditModel.item.description ?? ''
+    state.savedRobots = PageEditModel.item.robots ?? ''
     state.initialized = true
   }
 }
@@ -187,10 +212,16 @@ export const PageEditView = {
           disabled: true
         }),
         m(InputText, {
+          id: 'pageTitle',
           wrap: 'div.row',
           label: t('Page title'),
           value: PageEditModel.item.title ?? '',
-          disabled: true
+          error: errorFor(state.errors, 'pageTitle'),
+          disabled: !auth.can('editor'),
+          oninput: (value) => {
+            PageEditModel.item.title = value
+            state.errors = []
+          }
         }),
         m(InputText, {
           wrap: 'div.row',
@@ -218,6 +249,33 @@ export const PageEditView = {
             title: auth.can('editor') ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
           }, m(Icon, {name: 'check'}), m('span', t('Save & Close')))
         )
+      ),
+      m(Fieldset, {legend: t('Search & social')},
+        m(InputText, {
+          id: 'metaDescription',
+          wrap: 'div.row',
+          label: t('Meta description'),
+          value: PageEditModel.item.description ?? '',
+          error: errorFor(state.errors, 'metaDescription'),
+          disabled: !auth.can('editor'),
+          oninput: (value) => {
+            PageEditModel.item.description = value
+            state.errors = []
+          }
+        }),
+        m(Select, {
+          id: 'robots',
+          wrap: 'div.row',
+          label: t('Search engines'),
+          value: PageEditModel.item.robots ?? '',
+          disabled: !auth.can('editor'),
+          options: robotsOptions(PageEditModel.item.robots ?? ''),
+          error: errorFor(state.errors, 'robots'),
+          onchange: (value) => {
+            PageEditModel.item.robots = value
+            state.errors = []
+          }
+        })
       ),
       m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),
     )

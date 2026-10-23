@@ -106,6 +106,15 @@ router\get(
 );
 
 router\post(
+    route: 'page/settings',
+    callback: jaco\api\page\settings\action(...),
+    authenticated: true,
+    role: 'editor',
+    requestSchema: 'page/settings/request.json',
+    responseSchema: 'page/settings/response.json',
+);
+
+router\post(
     route: 'page/update',
     callback: jaco\api\page\update\action(...),
     authenticated: true,

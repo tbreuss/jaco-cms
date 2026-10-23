@@ -10,6 +10,7 @@ use jaco\core\list;
 use jaco\domain\Payload;
 
 const SORT_PARAMETERS = ['created', 'file', 'title'];
+const ROBOTS_PATTERN = '/^(index|noindex|follow|nofollow|noarchive)(,\s*(index|noindex|follow|nofollow|noarchive))*$/i';
 
 final class Page
 {
@@ -80,6 +81,8 @@ function find_page(Config $config, string $file): Payload
     return Payload::success([
         'file' => $file,
         'title' => html\get_title($html),
+        'description' => html\get_description($html),
+        'robots' => html\get_robots($html),
         'created' => filesystem\file_mtime($file, $config->webDir),
         'content' => $html,
     ]);
@@ -224,8 +227,14 @@ function create_page(Config $config, string $file, string $fromTemplate, string 
     return Payload::success();
 }
 
-function update_page(Config $config, string $file, string $withContent): Payload
-{
+function update_page(
+    Config $config,
+    string $file,
+    string $withContent,
+    ?string $withTitle = null,
+    ?string $withDescription = null,
+    ?string $withRobots = null,
+): Payload {
     $data = data\sanitize(
         [
             'file' => $file,
@@ -261,6 +270,17 @@ function update_page(Config $config, string $file, string $withContent): Payload
         return Payload::error([['withContent', \reset($htmlOrErrors)]]);
     }
 
+    $metaErrors = validate_page_metadata($withTitle, $withDescription, $withRobots);
+    if (\count($metaErrors) > 0) {
+        return Payload::invalid($metaErrors);
+    }
+    $data['withContent'] = apply_page_metadata(
+        $data['withContent'],
+        $withTitle,
+        $withDescription,
+        $withRobots,
+    );
+
     $status = filesystem\backup_file($config->webDir, $data['file'], $config->backupDir);
 
     if (!$status) {
@@ -274,6 +294,119 @@ function update_page(Config $config, string $file, string $withContent): Payload
     }
 
     return Payload::success();
+}
+
+
+/**
+ * Validate optional metadata fields. Null means "leave as is"; an empty
+ * string removes the tag.
+ *
+ * @return list<array{0: string, 1: string}>
+ */
+function validate_page_metadata(
+    ?string $title,
+    ?string $description,
+    ?string $robots,
+): array {
+    $errors = [];
+
+    if ($title !== null && \trim($title) === '') {
+        $errors[] = ['pageTitle', 'Page title is required.'];
+    }
+
+    if ($description !== null && \strlen($description) > 320) {
+        $errors[] = ['metaDescription', 'Meta description is too long.'];
+    }
+
+    if ($robots !== null && $robots !== '' && \preg_match(ROBOTS_PATTERN, $robots) !== 1) {
+        $errors[] = ['robots', 'Invalid robots value.'];
+    }
+
+    return $errors;
+}
+
+/**
+ * Apply already validated metadata to a document.
+ */
+function apply_page_metadata(
+    string $html,
+    ?string $title,
+    ?string $description,
+    ?string $robots,
+): string {
+    if ($title !== null) {
+        $html = html\set_title($html, $title);
+    }
+    if ($description !== null) {
+        $html = html\set_description($html, $description);
+    }
+    if ($robots !== null) {
+        $html = html\set_robots($html, $robots);
+    }
+
+    return $html;
+}
+
+/**
+ * Update only metadata. Unlike update_page(), this leaves the body untouched.
+ */
+function update_page_settings(
+    Config $config,
+    string $file,
+    string $title,
+    string $description,
+    string $robots,
+): Payload {
+    $data = data\sanitize(
+        ['file' => $file, 'title' => $title, 'description' => $description, 'robots' => $robots],
+        [
+            ['file', 'to_filename'],
+            ['title', 'to_string'],
+            ['description', 'to_string'],
+            ['robots', 'to_string'],
+        ],
+    );
+
+    $errors = data\validate($data, [
+        ['file', 'is_required'],
+        ['file', 'is_file_present', 'dir' => $config->webDir],
+        ['file', 'has_html_file_name'],
+        ['file', 'has_file_extension', 'allowedExtensions' => $config->pageExtensions],
+        ['file', 'is_file_in_dir', 'dir' => $config->appDirName, 'negate' => true],
+    ]);
+
+    if (\count($errors) > 0) {
+        return Payload::invalid($errors);
+    }
+
+    $html = filesystem\read_file($config->webDir, $data['file']);
+    if ($html === null) {
+        return Payload::error([['file', 'Could not read file.']]);
+    }
+
+    $metaErrors = validate_page_metadata($data['title'], $data['description'], $data['robots']);
+    if (\count($metaErrors) > 0) {
+        return Payload::invalid($metaErrors);
+    }
+    $html = apply_page_metadata($html, $data['title'], $data['description'], $data['robots']);
+
+    $status = filesystem\backup_file($config->webDir, $data['file'], $config->backupDir);
+    if (!$status) {
+        return Payload::error([['file', 'Could not backup file.']]);
+    }
+
+    if (!filesystem\write_file($config, $config->webDir, $data['file'], $html)) {
+        return Payload::error([['file', 'Could not write content to file.']]);
+    }
+
+    return Payload::success([
+        'file' => $data['file'],
+        'title' => html\get_title($html),
+        'description' => html\get_description($html),
+        'robots' => html\get_robots($html),
+        'created' => filesystem\file_mtime($data['file'], $config->webDir),
+        'content' => $html,
+    ]);
 }
 
 /**

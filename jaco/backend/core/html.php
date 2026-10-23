@@ -28,6 +28,69 @@ function get_title(?string $html): string
     return $title;
 }
 
+
+function get_meta_content(?string $html, string $name): string
+{
+    if ($html === null || $html === '') {
+        return '';
+    }
+
+    $dom = new \DOMDocument();
+    \libxml_use_internal_errors(true);
+    if ($dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">' . $html)) {
+        foreach ($dom->getElementsByTagName('meta') as $node) {
+            if (\strtolower($node->getAttribute('name')) !== \strtolower($name)) {
+                continue;
+            }
+            \libxml_clear_errors();
+            return $node->getAttribute('content');
+        }
+    }
+    \libxml_clear_errors();
+    return '';
+}
+
+function set_meta_content(string $html, string $name, string $content): string
+{
+    $quotedName = \preg_quote($name, '#');
+    $pattern = '#<meta\b(?=[^>]*\bname\s*=\s*["\']' . $quotedName . '["\'])[^>]*>\s*#i';
+    $stripped = \preg_replace($pattern, '', $html) ?? $html;
+
+    if ($content === '') {
+        return $stripped;
+    }
+
+    $tag = '<meta name="' . \htmlspecialchars($name, ENT_QUOTES) . '" content="'
+        . \htmlspecialchars($content, ENT_QUOTES) . '">';
+    $headEnd = \preg_match('#</head\s*>#i', $stripped, $matches, PREG_OFFSET_CAPTURE);
+    if ($headEnd !== 1) {
+        return $stripped;
+    }
+
+    $position = $matches[0][1];
+    return \substr($stripped, 0, $position) . '  ' . $tag . "\n" . \substr($stripped, $position);
+}
+
+function get_description(?string $html): string
+{
+    return get_meta_content($html, 'description');
+}
+
+function set_description(string $html, string $description): string
+{
+    return set_meta_content($html, 'description', $description);
+}
+
+function get_robots(?string $html): string
+{
+    return get_meta_content($html, 'robots');
+}
+
+function set_robots(string $html, string $robots): string
+{
+    return set_meta_content($html, 'robots', $robots);
+}
+
 function set_title(string $html, string $title): string
 {
     $replaced = \preg_replace('/<title>(.*?)<\/title>/', '<title>' . \htmlspecialchars($title) . '</title>', $html);
