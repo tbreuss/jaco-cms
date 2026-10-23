@@ -28,40 +28,36 @@ server {
 
     # The admin shell and its ES modules are not content-hashed yet: make the
     # browser revalidate them so a release is picked up without a hard refresh.
+    # `^~` below makes the /jaco/ prefix win over this regex, so repeat the
+    # no-cache header inside the frontend block.
     location ~* \.(html|css|js)$ {
         # Do not inherit a server-level expires setting.
         expires off;
         add_header Cache-Control "no-cache, must-revalidate" always;
     }
 
-    # Everything except the entry points and public assets is internal.
-    # Order matters: specific denies first, the frontend block last.
-    location = /jaco/settings.php { deny all; }
-    location = /jaco/install.php  { deny all; }
-    location = /jaco/cli.php      { deny all; }
-    # Everything in jaco/ except the two entry points and frontend/.
-    location ~ ^/jaco/.+\.(neon|yaml|dist|md|log|txt|json|bak|orig|swp)$ { deny all; }
+    # jaco/ as a whitelist: the API entry point, the admin shell and the
+    # frontend assets. The nested locations win over the parent block, so the
+    # inner deny also covers files that nobody listed.
+    location ^~ /jaco/ {
+        location = /jaco/api.php    { }
+        location = /jaco/index.html { }
+        location ^~ /jaco/frontend/ {
+            location ~* \.(js|mjs|css)$ {
+                try_files $uri =404;
+                expires off;
+                add_header Cache-Control "no-cache, must-revalidate" always;
+            }
+            location / { deny all; }
+        }
+        location / { deny all; }
+    }
+
     location ^~ /jaco-data/      { deny all; }
     location ^~ /jaco/runtime/   { deny all; }
-    location ^~ /jaco/vendor/    { deny all; }
-    location ^~ /jaco/backend/   { deny all; }
-    location ^~ /jaco/test/      { deny all; }
-    location ^~ /jaco/schema/    { deny all; }
-    location ^~ /jaco/language/  { deny all; }
 
     # Editor uploads: serve, never execute PHP through them.
     location ~ ^/media/.*\.ph(p|ar|tml|t|ps)$ { deny all; }
-
-    # The admin shell stays reachable, but only as a whitelist: JavaScript and
-    # stylesheets. Anything else in frontend/ is denied, whatever it is.
-    location ^~ /jaco/frontend/ {
-        location ~* \.(js|mjs|css)$ {
-            try_files $uri =404;
-        }
-        location / {
-            deny all;
-        }
-    }
 
     # Behind a reverse proxy also forward the header:
     # proxy_set_header Authorization $http_authorization;

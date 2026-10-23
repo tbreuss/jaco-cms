@@ -162,13 +162,19 @@ The PHP process must be allowed to write:
 ## Protect the internals
 
 Jaco lives entirely in the web root, so the web server must deny direct
-access to the internals. On Apache this ships with the project: `jaco/`
-and every sensitive directory (`jaco-data/`, `jaco/runtime/`, `jaco/vendor/`,
-`jaco/backend/`, `jaco/test/`, `jaco/schema/`, `jaco/language/`) contains a
-`.htaccess` with `Require all denied`. `jaco/frontend/` stays reachable for the
-admin shell but serves only static files. `media/` serves images and PDFs and
-never executes PHP (the installer writes its `.htaccess` when creating the
-directory).
+access to the internals. On Apache this ships with the project:
+
+- `jaco/.htaccess` allows only `api.php` and `index.html` and denies everything
+  else in that directory, so an unlisted file is never served.
+- `jaco/frontend/.htaccess` allows only `.js`, `.mjs` and `.css`.
+- `jaco/backend/`, `jaco/language/`, `jaco/schema/`, `jaco/runtime/`,
+  `jaco/vendor/` and `jaco/test/` deny every request.
+- `jaco-data/` denies every request.
+- `media/` serves images and PDFs and never executes PHP (the installer writes
+  its `.htaccess` when creating the directory).
+
+The whitelist depends on `jaco/frontend/.htaccess`: deleting it locks the admin
+out, so keep that file in place when you deploy.
 
 `jaco/vendor/` only gets its `.htaccess` from `composer install`; a manual
 install that skips it shows up as a red **Vendor protection (.htaccess)** check
