@@ -14,13 +14,19 @@ These are the invariants and edge cases that tests cannot express on their own.
   (source *and* target) and view, `css/update` and `upload/create` all reject paths whose
   first segment is `jaco/` (the `file_in_dir` guard), and the page, stylesheet, upload and
   backup lists never show files from `jaco/`.
+- **Operator data lives outside the app directory.** Templates and backups are stored in
+  `Config::$dataDir` (default `<webDir>/jaco-data`, overridable through the `dataDir`
+  setting), split into `templates/{page,content,site}` and `backups`.
+  `jaco-data/.htaccess` denies every request and disables directory listings, so replacing
+  the `jaco/` directory never touches site data. Uploads live in `Config::$uploadDir`
+  (default `<webDir>/media`).
 - **The JSON schemas are the API contract.** `jaco/schema/**` defines what a request must
   contain and what a response may contain; `jaco/backend/core/router.php` validates both.
 - **Embedded images are extracted, not stored.** `page/update` and `page/update-body`
   write an image file only
   when the `<img>` carries a marker attribute, a `src` and `data-jaco-editable-image-file`
   (`jaco/backend/core/html.php`). Afterwards that attribute is gone and `src` points to
-  `upload/<file>`. The parser clears the global libxml error buffer first, because the
+  `media/<file>`. The parser clears the global libxml error buffer first, because the
   check at the end reads all of it – a leftover error from earlier parsing would turn a
   valid save into a failure.
 - **Two save paths with different owners.** `page/update` is the page manager: the whole
@@ -119,7 +125,7 @@ These are the invariants and edge cases that tests cannot express on their own.
   A plain `DOMDocument::loadHTML()` assumes ISO-8859-1 and turns `Rückgabe` into
   `RÃ¼ckgabe` for pages without a `<meta charset>`.
 - **Paths are relative to the web root.** Page, stylesheet and upload names always contain
-  their directory (`upload/picture.jpg`), because the file search starts at
+  their directory (`media/picture.jpg`), because the file search starts at
   `Config::$webDir`.
 - **`backup/restore` moves instead of copying, and trusts the name.** The destination comes
   from the backup name (`|` becomes `/`), the backup is renamed onto it and the file
