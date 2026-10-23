@@ -15,6 +15,7 @@ All project markdown except the repository [README.md](../README.md) and
 | [development.md](development.md) | Clone, Docker, tests, frontend/backend conventions |
 | [backend-naming.md](backend-naming.md) | PHP function and file naming in the backend |
 | [menu-structure.md](menu-structure.md) | Admin navbar, roles, command palette, jump to page |
+| [site-pages.md](site-pages.md) | Public page file names, English/German mapping, rename checklist |
 | [features.md](features.md) | One-sentence feature catalogue |
 | [constraints.md](constraints.md) | Invariants, roles, edge cases and test map |
 | [glossary.md](glossary.md) | Shared terms with exactly one meaning |

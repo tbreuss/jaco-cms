@@ -13,6 +13,6 @@ test('navigation active state follows the page and language', {tag: '@smoke'}, a
   await expect(page.locator('.navigation li.active')).toHaveCount(0)
   await expect(page.locator('.nav-utility a')).toHaveAttribute('href', '/de/index.html')
 
-  await page.goto('/de/impressum.html')
+  await page.goto('/de/imprint.html')
   await expect(page.locator('.nav-utility a')).toHaveAttribute('href', '/index.html')
 })

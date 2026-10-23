@@ -13,8 +13,8 @@ const pages = [
   {path: '/de/features.html', title: 'Funktionen', h1: 'Jaco CMS Funktionen'},
   {path: '/de/docs.html', title: 'Doku', h1: 'Jaco CMS Doku'},
   {path: '/de/download.html', title: 'Download', h1: 'Jaco CMS herunterladen'},
-  {path: '/de/datenschutz.html', title: 'Datenschutz', h1: 'Datenschutzerklärung'},
-  {path: '/de/impressum.html', title: 'Impressum', h1: 'Impressum'},
+  {path: '/de/privacy.html', title: 'Datenschutz', h1: 'Datenschutzerklärung'},
+  {path: '/de/imprint.html', title: 'Impressum', h1: 'Impressum'},
   {path: '/elements.html', title: 'Editable content elements', h1: 'Editable content elements'},
 ]
 

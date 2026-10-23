@@ -23,7 +23,8 @@ Technical guide for contributors and automated tools. Process and PR expectation
 | `docs/` | Maintainer documentation; index in [readme.md](readme.md) |
 | Site root | Public HTML pages, `upload/`, demo content |
 
-Backend naming rules: [backend-naming.md](backend-naming.md).
+Backend naming rules: [backend-naming.md](backend-naming.md), page file names:
+[site-pages.md](site-pages.md).
 
 ## Clone and Docker image
 
