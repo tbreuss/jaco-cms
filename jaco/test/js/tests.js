@@ -632,7 +632,7 @@ QUnit.test('the layout tells a viewer it is read-only and disables write control
     const dropdowns = [...fixture().querySelectorAll('.dropdown-content')]
     assert.deepEqual(
       [...dropdowns[0].querySelectorAll('a')].map((link) => link.textContent),
-      [t('Pages'), t('Media'), t('Backups'), t('Design')],
+      [t('Pages'), t('Media'), t('Backups'), t('Design'), t('Templates')],
       'all content sections stay available',
     )
     assert.deepEqual(

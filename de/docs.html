@@ -70,6 +70,19 @@
     Seitentitel, Meta-Beschreibung und Robots-Wert ändern. Der Seiteninhalt wird
     dabei nicht neu geschrieben. Dieselben Felder stehen im Raw-Editor zur
     Verfügung.</p>
+    <h2>Website-Vorlagen</h2>
+    <p>Website-Vorlagen sind wiederverwendbare HTML-Fragmente unter
+    <code>jaco/_template/site/</code>. Ein Element mit
+    <code>data-jaco-template="footer"</code> kann durch die Vorlage ersetzt
+    werden. Admins bearbeiten die Vorlage unter Inhalte → Vorlagen und sehen vor
+    dem Anwenden eine Vorschau der betroffenen Seiten. Die Schreibvorgänge sind
+    atomar; Backups werden nicht erstellt.</p>
+    <p>Für eine zweisprachige Website getrennte Namen verwenden, zum Beispiel
+    <code>footer-en.html</code> mit <code>data-jaco-template="footer-en"</code>
+    und <code>footer-de.html</code> mit
+    <code>data-jaco-template="footer-de"</code>. „Auf alle Seiten anwenden“
+    ändert nur Elemente mit demselben Marker; eine automatische
+    Spracherkennung gibt es nicht.</p>
     <h2>So funktioniert das Speichern</h2>
     <p>Speichern schreibt die HTML-Datei direkt. Zuvor wird ein Backup angelegt.
     Es gibt keinen Build-Schritt, keine Datenbank und keine separate

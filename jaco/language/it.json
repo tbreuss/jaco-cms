@@ -71,6 +71,15 @@
     "Project size": "Dimensione del progetto",
     "Page template": "Modello pagina",
     "Page settings": "Impostazioni pagina",
+    "Templates": "Modelli",
+    "Site templates": "Modelli del sito",
+    "No templates found. Create HTML files under jaco/_template/site/ to get started.": "Nessun modello trovato. Creare file HTML in jaco/_template/site/.",
+    "Apply to all pages": "Applica a tutte le pagine",
+    "No backups are created when applying to all pages.": "Non vengono creati backup durante l’applicazione a tutte le pagine.",
+    "Template was successfully saved.": "Il modello è stato salvato.",
+    "Template applied to {files} pages ({elements} elements).": "Modello applicato a {files} pagine ({elements} elementi).",
+    "Some pages could not be updated: {files}": "Alcune pagine non sono state aggiornate: {files}",
+    "The marker must match the template name: data-jaco-template=\"{name}\".": "Il marcatore deve corrispondere al nome del modello: data-jaco-template=\"{name}\".",
     "Page title": "Titolo pagina",
     "Page was successfully added.": "La pagina è stata aggiunta con successo.",
     "Page was successfully copied.": "La pagina è stata copiata con successo.",
@@ -233,5 +242,11 @@
     "Index, follow": "Indicizza, segui",
     "Noindex, nofollow": "Non indicizzare, non seguire",
     "Page settings were successfully saved.": "Le impostazioni della pagina sono state salvate.",
-    "Could not save page settings.": "Impossibile salvare le impostazioni della pagina."
+    "Could not save page settings.": "Impossibile salvare le impostazioni della pagina.",
+    "Apply template to all pages?": "Applicare il modello a tutte le pagine?",
+    "{files} pages with {elements} elements will be replaced.": "{files} pagine con {elements} elementi verranno sostituite.",
+    "No elements with this marker were found.": "Nessun elemento con questo marcatore trovato.",
+    "Save without applying": "Salva senza applicare",
+    "Apply to all": "Applica a tutte",
+    "Could not preview the template.": "Impossibile visualizzare l’anteprima del modello."
 }

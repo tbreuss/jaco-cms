@@ -353,6 +353,7 @@ export const DefaultLayout = {
                 menuLink('/uploads', t('Media')),
                 menuLink('/backups', t('Backups')),
                 menuLink('/css', t('Design')),
+                menuLink('/templates', t('Templates')),
               ]),
               dropdown('this-page', t('This page'), [
                 menuLink('/page-edit', t('Edit page')),

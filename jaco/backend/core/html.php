@@ -100,6 +100,129 @@ function set_title(string $html, string $title): string
     return $replaced;
 }
 
+
+
+/**
+ * A site template is one root element. The marker is added to that root so a
+ * later "apply to all" can find the element again.
+ */
+function template_with_marker(string $template, string $name): ?string
+{
+    $trimmed = \trim($template);
+    if ($trimmed === '' || \preg_match('/\A<([a-zA-Z][a-zA-Z0-9:-]*)([^>]*)>/s', $trimmed, $match) !== 1) {
+        return null;
+    }
+
+    $dom = new \DOMDocument();
+    \libxml_use_internal_errors(true);
+    $loaded = $dom->loadHTML('<div id="jaco-template-root">' . $trimmed . '</div>');
+    \libxml_clear_errors();
+    if (!$loaded) {
+        return null;
+    }
+
+    $wrapper = null;
+    foreach ($dom->getElementsByTagName('div') as $candidate) {
+        if ($candidate->getAttribute('id') === 'jaco-template-root') {
+            $wrapper = $candidate;
+            break;
+        }
+    }
+    if ($wrapper === null) {
+        return null;
+    }
+
+    $elements = 0;
+    foreach ($wrapper->childNodes as $child) {
+        if ($child instanceof \DOMElement) {
+            $elements++;
+        } elseif ($child->nodeType === XML_TEXT_NODE && \trim($child->textContent) !== '') {
+            return null;
+        }
+    }
+    if ($elements !== 1) {
+        return null;
+    }
+
+    $attributes = $match[2];
+    $selfClosing = \preg_match('#/\s*$#', $attributes) === 1;
+    $attributes = \preg_replace(
+        '/\s+data-jaco-template\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+)/i',
+        '',
+        $attributes,
+    ) ?? $attributes;
+    if ($selfClosing) {
+        $attributes = \preg_replace('#/\s*$#', '', $attributes) ?? $attributes;
+    }
+    $attributes = \rtrim($attributes);
+    $marker = ' data-jaco-template="' . \htmlspecialchars($name, ENT_QUOTES) . '"';
+    $opening = '<' . $match[1] . $attributes . $marker . ($selfClosing ? ' /' : '') . '>';
+
+    return $opening . \substr($trimmed, \strlen($match[0]));
+}
+
+function count_template_elements(string $html, string $name): int
+{
+    $pattern = '#<[a-zA-Z][a-zA-Z0-9:-]*\b[^>]*\bdata-jaco-template\s*=\s*(["\'])' . \preg_quote($name, '#') . '\1[^>]*>#i';
+
+    return \preg_match_all($pattern, $html) ?: 0;
+}
+
+/**
+ * Replace every marked element in a document. Returns the changed document and
+ * the number of replaced elements.
+ *
+ * @return array{0: string, 1: int}
+ */
+function replace_template_elements(string $html, string $name, string $template): array
+{
+    $pattern = '#<([a-zA-Z][a-zA-Z0-9:-]*)\b[^>]*\bdata-jaco-template\s*=\s*(["\'])' . \preg_quote($name, '#') . '\2[^>]*>#i';
+    \preg_match_all($pattern, $html, $matches, PREG_OFFSET_CAPTURE);
+
+    $result = $html;
+    $count = 0;
+    $positions = $matches[0] ?? [];
+    for ($i = \count($positions) - 1; $i >= 0; $i--) {
+        $opening = $positions[$i][0];
+        $start = $positions[$i][1];
+        $tag = $matches[1][$i][0];
+        $end = find_element_end($result, $tag, $start + \strlen($opening));
+        if ($end === null) {
+            continue;
+        }
+        $result = \substr($result, 0, $start) . $template . \substr($result, $end);
+        $count++;
+    }
+
+    return [$result, $count];
+}
+
+function find_element_end(string $html, string $tag, int $offset): ?int
+{
+    if (\in_array(\strtolower($tag), ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'], true)) {
+        return $offset;
+    }
+
+    $pattern = '#<(/?)' . \preg_quote($tag, '#') . '\b[^>]*>#i';
+    $depth = 1;
+    $position = $offset;
+    while (\preg_match($pattern, $html, $match, PREG_OFFSET_CAPTURE, $position) === 1) {
+        $full = $match[0][0];
+        $start = $match[0][1];
+        $closing = $match[1][0] === '/';
+        if ($closing) {
+            $depth--;
+            if ($depth === 0) {
+                return $start + \strlen($full);
+            }
+        } elseif (\preg_match('#/\s*>$#', $full) !== 1) {
+            $depth++;
+        }
+        $position = $start + \strlen($full);
+    }
+
+    return null;
+}
 const ALLOWED_TAGS = [
     'a', 'abbr', 'article', 'aside', 'b', 'blockquote', 'br', 'button', 'caption', 'circle', 'cite', 'code', 'col', 'colgroup',
     'dd', 'del', 'details', 'div', 'dl', 'dt', 'em', 'figcaption', 'figure', 'footer', 'h1', 'h2',

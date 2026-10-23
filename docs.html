@@ -68,6 +68,18 @@
     <p>Use <strong>Page settings</strong> in the inline editor to change the page
     title, meta description and robots value. The body is not rewritten. The
     same fields are available in the raw page editor.</p>
+    <h2>Site templates</h2>
+    <p>Site templates are reusable HTML fragments under
+    <code>jaco/_template/site/</code>. Mark an element with
+    <code>data-jaco-template="footer"</code> to make it replaceable. Admins
+    edit the template under Content → Templates and can preview the affected
+    pages before applying it to all marked elements. Applying uses atomic writes
+    and creates no backups.</p>
+    <p>For a bilingual site use separate names, for example
+    <code>footer-en.html</code> with <code>data-jaco-template="footer-en"</code>
+    and <code>footer-de.html</code> with
+    <code>data-jaco-template="footer-de"</code>. Apply to all only touches
+    elements with the same marker; there is no automatic language detection.</p>
     <h2>How saving works</h2>
     <p>Saving writes the HTML file directly. A backup is taken first. There is no
     build step, no database and no separate publish action – the change is live

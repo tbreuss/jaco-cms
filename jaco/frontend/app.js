@@ -61,6 +61,14 @@ m.route(document.getElementById('app'), '/', {
       return m(DefaultLayout, m(vnode.tag, vnode.attrs))
     }
   },
+  '/templates': {
+    onmatch:  () => {
+      return loadComponent('TemplateView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
+    }
+  },
   '/pages': {
     onmatch:  () => {
       return loadComponent('page/PageListView.js')

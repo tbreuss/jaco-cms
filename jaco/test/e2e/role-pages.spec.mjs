@@ -69,6 +69,11 @@ const routes = [
       viewer: view('h1', 'CSS'),
     },
   },
+  {
+    name: 'Templates',
+    path: '/templates',
+    roles: everyRole('h1', 'Site templates'),
+  },
   {name: 'Password', path: '/password', roles: everyRole('h1', 'Change password')},
   {
     name: 'Environment',

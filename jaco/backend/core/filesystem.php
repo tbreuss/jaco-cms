@@ -181,6 +181,35 @@ function write_file(Config $config, string $dir, string $file, string $data): bo
     return !($status === false);
 }
 
+function write_file_atomic(Config $config, string $dir, string $file, string $data): bool
+{
+    $filePath = combine($dir, $file);
+    $fileDir = \dirname($filePath);
+    if (!\is_dir($fileDir) && !make_dir_rec($config, $dir, \dirname($file))) {
+        return false;
+    }
+
+    $mode = \is_file($filePath) ? (\fileperms($filePath) & 0777) : $config->filePermissions;
+    $temporary = \tempnam($fileDir, '.jaco-');
+    if ($temporary === false) {
+        return false;
+    }
+
+    $written = \file_put_contents($temporary, $data);
+    if ($written === false) {
+        @\unlink($temporary);
+        return false;
+    }
+    @\chmod($temporary, $mode);
+
+    if (!\rename($temporary, $filePath)) {
+        @\unlink($temporary);
+        return false;
+    }
+
+    return true;
+}
+
 function write_file_without_overwrite(Config $config, string $dir, string $file, string $data): array
 {
     $newFile = file_name_to_write($dir, $file);

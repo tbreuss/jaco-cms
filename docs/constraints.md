@@ -202,6 +202,7 @@ end.
 | Change the own password | ✓ | ✓ | ✓ |
 | Create, update, copy and delete pages | – | ✓ | ✓ |
 | Change page title, meta description and robots | – | ✓ | ✓ |
+| Manage and apply site templates | – | – | ✓ |
 | Add and delete uploads | – | ✓ | ✓ |
 | Change a stylesheet | – | – | ✓ |
 | Restore and delete backups | – | – | ✓ |
@@ -218,8 +219,9 @@ The routes behind it, `jaco/routes.php` being the source of truth:
 - `viewer` may call `system/change-password`
 - `editor` may call `page/create`, `page/update`, `page/update-body`, `page/settings`,
   `page/copy`, `page/delete`, `upload/create` and `upload/delete`
-- `admin` may call `css/update`, `backup/restore`, `backup/delete`, `system`,
-  `system/log`, `system/log/clear` and `system/php-info`
+- `admin` may call `css/update`, `template/site/preview`, `template/site/update`,
+  `backup/restore`, `backup/delete`, `system`, `system/log`, `system/log/clear` and
+  `system/php-info`
 
 An invalid or missing token answers **401**: the session is gone and the frontend returns
 to the login. A role that is too low answers **403**: the session stays, only that action
