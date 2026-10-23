@@ -234,8 +234,7 @@ function update_page(
     ?string $withTitle = null,
     ?string $withDescription = null,
     ?string $withRobots = null,
-): Payload
-{
+): Payload {
     $data = data\sanitize(
         [
             'file' => $file,
