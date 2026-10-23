@@ -57,7 +57,7 @@ final class ApiLoginTotpTest extends ApiTestCase
 
     public function testPasswordWithoutCodeAsksForTheCode(): void
     {
-        $response = $this->api('login', $this->credentials(), 'POST', true, [], $this->configWithTotp());
+        $response = $this->api('login', $this->credentials(), 'POST', false, [], $this->configWithTotp());
 
         $this->assertSame(Status::OK, $response->status);
 
@@ -71,7 +71,7 @@ final class ApiLoginTotpTest extends ApiTestCase
             'login',
             $this->credentials(['totpCode' => '000000']),
             'POST',
-            true,
+            false,
             [],
             $this->configWithTotp(),
         );
@@ -91,7 +91,7 @@ final class ApiLoginTotpTest extends ApiTestCase
             'login',
             $this->credentials(['totpCode' => $code]),
             'POST',
-            true,
+            false,
             [],
             $this->configWithTotp(),
         );
@@ -116,7 +116,7 @@ final class ApiLoginTotpTest extends ApiTestCase
             'login',
             ['username' => self::OTHER_USERNAME, 'password' => TEST_PASSWORD, 'totpCode' => $codeA],
             'POST',
-            true,
+            false,
             [],
             $config,
         );
@@ -131,7 +131,7 @@ final class ApiLoginTotpTest extends ApiTestCase
             'login',
             ['username' => self::OTHER_USERNAME, 'password' => TEST_PASSWORD, 'totpCode' => $codeB],
             'POST',
-            true,
+            false,
             [],
             $config,
         );
@@ -150,7 +150,7 @@ final class ApiLoginTotpTest extends ApiTestCase
             'login',
             ['username' => self::OTHER_USERNAME, 'password' => TEST_PASSWORD],
             'POST',
-            true,
+            false,
             [],
             $this->configWithTwoUsers(false),
         );
@@ -163,7 +163,7 @@ final class ApiLoginTotpTest extends ApiTestCase
 
     public function testPasswordWithoutSecretKeepsTheOldBehavior(): void
     {
-        $response = $this->api('login', $this->credentials());
+        $response = $this->api('login', $this->credentials(), 'POST', false);
 
         $this->assertSame(Status::OK, $response->status);
 

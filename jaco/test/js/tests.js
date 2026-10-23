@@ -3589,6 +3589,22 @@ QUnit.test('successful login with TOTP switches to totp step', async (assert) =>
   }
 })
 
+QUnit.test('already authenticated redirects to admin panel', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'existing-token')
+  const routeCalls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => routeCalls.push(path)
+
+  try {
+    LoginView.oninit()
+
+    assert.deepEqual(routeCalls, ['/'], 'redirects to admin panel when already authenticated')
+  } finally {
+    m.route.set = originalSet
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
 QUnit.module('UploadListView filter', {
   beforeEach: () => {
     window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))

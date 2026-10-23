@@ -121,12 +121,15 @@ function security_checks(Config $config): array
         'detail' => $settingsFile,
     ];
 
-    // secretKey must be set and long enough
-    $secretKey = $config->secretKey;
+    // A short or missing secretKey is replaced by a per-request random
+    // fallback, so the length is always valid. Check the source instead:
+    // without a configured key, tokens do not survive the next request.
     $checks[] = [
         'label' => 'Secret key set',
-        'ok' => \is_string($secretKey) && \strlen($secretKey) >= 32,
-        'detail' => $secretKey ? \strlen($secretKey) . ' chars' : 'not set',
+        'ok' => $config->secretKeyIsConfigured,
+        'detail' => $config->secretKeyIsConfigured
+            ? \strlen($config->secretKey) . ' chars'
+            : 'not configured (random fallback)',
     ];
 
     // Upload directory must exist and be writable

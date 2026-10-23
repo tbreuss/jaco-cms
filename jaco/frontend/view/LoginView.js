@@ -114,6 +114,12 @@ const onTotpSubmitted = (e) => {
 
 export const LoginView = {
   oninit: () => {
+    // already authenticated: go straight to the admin panel instead of
+    // showing the login form again
+    if (app.hasAuthToken()) {
+      m.route.set('/')
+      return
+    }
     state.step = 'login'
     state.username = ''
     state.password = ''

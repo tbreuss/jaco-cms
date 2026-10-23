@@ -32,6 +32,7 @@ final readonly class Config
         public int $backupRetentionDays,
         /** @var array<string, array{password?: mixed, role?: mixed, language?: mixed, totpSecret?: mixed, passwordChange?: mixed}> name → digest, role and per user preferences */
         public array $users = [],
+        public bool $secretKeyIsConfigured = false,
     ) {}
 }
 
@@ -281,6 +282,7 @@ function create_default_config(string $appDir, array $settings = []): Config
         directoryPermissions: 0755,
         filePermissions: 0644,
         secretKey: \strlen($secretKey) >= 32 ? $secretKey : (string) openssl_random_pseudo_bytes(32),
+        secretKeyIsConfigured: \strlen($secretKey) >= 32,
         phpErrorReporting: (int) ($settings['phpErrorReporting'] ?? E_ALL),
         phpDisplayErrors: (int) ($settings['phpDisplayErrors'] ?? 0),
         phpDisplayStartupErrors: (int) ($settings['phpDisplayStartupErrors'] ?? 0),

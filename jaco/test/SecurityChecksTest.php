@@ -18,6 +18,7 @@ final class SecurityChecksTest extends TestCase
         mkdir($this->dir . '/_backup', 0755, true);
         mkdir($this->dir . '/runtime/log', 0755, true);
         mkdir($this->dir . '/vendor', 0755, true);
+        mkdir($this->dir . '/upload', 0755, true);
     }
 
     protected function tearDown(): void
@@ -39,10 +40,23 @@ final class SecurityChecksTest extends TestCase
                 'Backup protection (.htaccess)',
                 'Log protection (.htaccess)',
                 'Vendor protection (.htaccess)',
+                'Installer removed',
+                'Settings not writable',
+                'Secret key set',
+                'Upload directory writable',
+                'Directory permissions not too open',
             ],
             array_column($checks, 'label'),
         );
-        $this->assertSame([true, true, true, true], array_column($checks, 'ok'));
+        $this->assertSame(array_fill(0, 9, true), array_column($checks, 'ok'));
+    }
+
+    public function testMissingSecretKeyIsReported(): void
+    {
+        $checks = system\security_checks($this->config(false));
+
+        $this->assertFalse($checks[6]['ok']);
+        $this->assertSame('not configured (random fallback)', $checks[6]['detail']);
     }
 
     public function testMissingProtectionIsReported(): void
@@ -58,12 +72,14 @@ final class SecurityChecksTest extends TestCase
         $this->assertStringEndsWith('/_backup/.htaccess', $checks[1]['detail']);
     }
 
-    private function config(): \jaco\core\config\Config
+    private function config(bool $secretKeyIsConfigured = true): \jaco\core\config\Config
     {
         return test_config_with([
             'appDir' => $this->dir,
             'backupDir' => $this->dir . '/_backup',
             'loginHistoryFile' => $this->dir . '/runtime/log/loginhistory.json',
+            'secretKey' => str_repeat('a', 32),
+            'secretKeyIsConfigured' => $secretKeyIsConfigured,
         ]);
     }
 

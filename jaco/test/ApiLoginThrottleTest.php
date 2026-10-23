@@ -5,8 +5,11 @@ namespace jaco\tests;
 use PHPUnit\Framework\Attributes\TestDox;
 use jaco\core\auth;
 use jaco\core\config\Config;
+use jaco\core\http\Map;
+use jaco\core\http\Request;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
+use jaco\core\router;
 use jaco\core\totp;
 
 /**
@@ -42,7 +45,7 @@ final class ApiLoginThrottleTest extends ApiTestCase
             'login',
             array_merge(['username' => TEST_USERNAME, 'password' => 'definitely-wrong'], $extra),
             'POST',
-            true,
+            false,
             [],
             $config,
             ['REMOTE_ADDR' => $address],
@@ -81,7 +84,7 @@ final class ApiLoginThrottleTest extends ApiTestCase
             'login',
             ['username' => TEST_USERNAME, 'password' => TEST_PASSWORD],
             'POST',
-            true,
+            false,
             [],
             null,
             ['REMOTE_ADDR' => self::OWNER],
@@ -97,7 +100,7 @@ final class ApiLoginThrottleTest extends ApiTestCase
     {
         // a request without REMOTE_ADDR (a command line caller) is never blocked
         for ($i = 0; $i < 5; $i++) {
-            $response = $this->api('login', ['username' => 'nobody', 'password' => 'wrong']);
+            $response = $this->api('login', ['username' => 'nobody', 'password' => 'wrong'], 'POST', false);
 
             $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
             $this->assertSame('Authentication failed.', $this->detail($response));
@@ -127,5 +130,49 @@ final class ApiLoginThrottleTest extends ApiTestCase
         ], self::ATTACKER, $config);
 
         $this->assertSame('Too many attempts. Try again in 10 minute(s).', $this->detail($response));
+    }
+
+    public function testLoginWhenAlreadyAuthenticatedReturns409(): void
+    {
+        require_once __DIR__ . '/../backend/core/router.php';
+        require_once __DIR__ . '/../backend/api/login.php';
+
+        $token = $this->token();
+
+        // First verify the header is found
+        $headerRequest = new Request(
+            query: new Map(['action' => 'login']),
+            post: new Map([]),
+            server: new Map([
+                'REQUEST_METHOD' => 'POST',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+                'REMOTE_ADDR' => '127.0.0.1',
+            ]),
+            headers: new Map([]),
+        );
+        $foundHeader = \jaco\core\router\get_authorization_header($headerRequest);
+        $this->assertSame('Bearer ' . $token, $foundHeader, 'Authorization header should be found');
+
+        // Then verify the token is valid
+        $claims = \jaco\core\auth\read_token($this->config, $token);
+        $this->assertNotNull($claims, 'Token should be valid');
+
+        // Now test the full action
+        $response = \jaco\api\login\action($this->config, new Request(
+            query: new Map(['action' => 'login']),
+            post: new Map(['username' => TEST_USERNAME, 'password' => TEST_PASSWORD]),
+            server: new Map([
+                'REQUEST_METHOD' => 'POST',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+                'REMOTE_ADDR' => '127.0.0.1',
+            ]),
+            headers: new Map([]),
+        ));
+
+        $this->assertSame(Status::CONFLICT, $response->status);
+
+        $body = json_decode((string) $response->body, true);
+        $this->assertSame('Already authenticated', $body[0]['title'] ?? '');
+        $this->assertSame('You are already logged in.', $body[0]['detail'] ?? '');
     }
 }

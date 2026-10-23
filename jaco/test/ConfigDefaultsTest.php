@@ -32,6 +32,7 @@ final class ConfigDefaultsTest extends TestCase
 
         $this->assertSame([], $config->users);
         $this->assertGreaterThanOrEqual(32, \strlen($config->secretKey));
+        $this->assertFalse($config->secretKeyIsConfigured);
     }
 
     public function testShortSecretKeyIsReplaced(): void
@@ -53,6 +54,7 @@ final class ConfigDefaultsTest extends TestCase
 
         $this->assertSame(['password', 'role'], array_keys($config->users['admin']));
         $this->assertSame($secret, $config->secretKey);
+        $this->assertTrue($config->secretKeyIsConfigured);
         $this->assertIsString(auth\authenticate($config, 'admin', 'secure-password'));
     }
 
