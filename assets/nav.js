@@ -50,4 +50,28 @@
   } else {
     document.addEventListener('DOMContentLoaded', wire)
   }
+
+  // The active menu item is derived from the current URL, so every page can
+  // ship the same navigation markup.
+  const setActive = () => {
+    const path = window.location.pathname.endsWith('/')
+      ? window.location.pathname + 'index.html'
+      : window.location.pathname
+    document.querySelectorAll('.navigation a[href]').forEach((link) => {
+      const target = new URL(link.getAttribute('href'), document.baseURI).pathname
+      const active = target === path
+      link.parentElement.classList.toggle('active', active)
+      if (active) {
+        link.setAttribute('aria-current', 'page')
+      } else {
+        link.removeAttribute('aria-current')
+      }
+    })
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setActive)
+  } else {
+    setActive()
+  }
 })()
