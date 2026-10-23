@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\TestDox;
 #[TestDox('Upload list API (upload/list)')]
 final class ApiUploadListTest extends ApiTestCase
 {
-    private const UPLOAD = 'upload/api-upload-list.jpg';
-    private const TEXT = 'upload/api-upload-list.txt';
+    private const UPLOAD = 'media/api-upload-list.jpg';
+    private const TEXT = 'media/api-upload-list.txt';
     private const HIDDEN = 'api-upload-hidden.jpg';
 
     protected function setUp(): void
@@ -17,7 +17,7 @@ final class ApiUploadListTest extends ApiTestCase
         parent::setUp();
 
         $this->watchDir($this->config->webDir);
-        $this->watchDir($this->config->uploadDir);
+        $this->watchDir($this->config->mediaDir);
         file_put_contents($this->config->webDir . '/' . self::UPLOAD, 'image bytes');
         file_put_contents($this->config->webDir . '/' . self::TEXT, 'not an upload');
     }

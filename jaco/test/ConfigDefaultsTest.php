@@ -60,19 +60,19 @@ final class ConfigDefaultsTest extends TestCase
 
     public function testUploadDirectoryIsConfigurable(): void
     {
-        $config = config\create_default_config('/var/www/site/jaco', ['uploadDir' => 'bilder/2026']);
+        $config = config\create_default_config('/var/www/site/jaco', ['mediaDir' => 'bilder/2026']);
 
-        $this->assertSame('/var/www/site/bilder/2026', $config->uploadDir);
-        $this->assertSame('bilder/2026', $config->uploadUrl);
+        $this->assertSame('/var/www/site/bilder/2026', $config->mediaDir);
+        $this->assertSame('bilder/2026', $config->mediaUrl);
     }
 
     public function testUnsafeUploadDirectoryFallsBackToTheDefault(): void
     {
         foreach (['../etc', '/abs/path', 'up/../load', 'has space', 'a;b', ''] as $unsafe) {
-            $config = config\create_default_config('/var/www/site/jaco', ['uploadDir' => $unsafe]);
+            $config = config\create_default_config('/var/www/site/jaco', ['mediaDir' => $unsafe]);
 
-            $this->assertSame('/var/www/site/media', $config->uploadDir, $unsafe);
-            $this->assertSame('media', $config->uploadUrl, $unsafe);
+            $this->assertSame('/var/www/site/media', $config->mediaDir, $unsafe);
+            $this->assertSame('media', $config->mediaUrl, $unsafe);
         }
     }
 

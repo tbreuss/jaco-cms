@@ -119,16 +119,16 @@ function install_protect_data(Config $config): void
 
 // media/ is user data, so no archive ships it: create and protect it here,
 // wherever the directory comes from. An existing file is never overwritten.
-function install_protect_upload(string $webDir, string $uploadDir): void
+function install_protect_upload(string $webDir, string $mediaDir): void
 {
-    if (!is_dir($webDir . '/' . $uploadDir)) {
-        @mkdir($webDir . '/' . $uploadDir, 0755, true);
+    if (!is_dir($webDir . '/' . $mediaDir)) {
+        @mkdir($webDir . '/' . $mediaDir, 0755, true);
     }
-    if (!is_dir($webDir . '/' . $uploadDir) || is_file($webDir . '/' . $uploadDir . '/.htaccess')) {
+    if (!is_dir($webDir . '/' . $mediaDir) || is_file($webDir . '/' . $mediaDir . '/.htaccess')) {
         return;
     }
     @file_put_contents(
-        $webDir . '/' . $uploadDir . '/.htaccess',
+        $webDir . '/' . $mediaDir . '/.htaccess',
         "# Editor uploads (images, PDFs): serve as static files, never execute.\n"
         . "# Uploads are already limited server-side to png/gif/jpg/jpeg/svg/pdf,\n"
         . "# this is defense in depth against double-extension and handler tricks.\n"
@@ -140,7 +140,7 @@ function install_protect_upload(string $webDir, string $uploadDir): void
 }
 
 install_protect_data($config);
-install_protect_upload(dirname($appDir), $config->uploadUrl);
+install_protect_upload(dirname($appDir), $config->mediaUrl);
 
 $checks = install_checks($config);
 $checksFailed = false;
@@ -156,7 +156,7 @@ $checksTable = '<table><tr><th>Check</th><th></th><th>Detail</th></tr>' . $check
 $isPost = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST';
 $username = isset($_POST['username']) && is_string($_POST['username']) ? trim($_POST['username']) : '';
 $password = isset($_POST['password']) && is_string($_POST['password']) ? (string) $_POST['password'] : '';
-$uploadDir = isset($_POST['uploadDir']) && is_string($_POST['uploadDir']) ? $_POST['uploadDir'] : 'media';
+$mediaDir = isset($_POST['mediaDir']) && is_string($_POST['mediaDir']) ? $_POST['mediaDir'] : 'media';
 $language = isset($_POST['language']) && is_string($_POST['language']) ? $_POST['language'] : 'en';
 $totp = !$isPost || (isset($_POST['totp']) && $_POST['totp'] === '1');
 $errors = [];
@@ -172,8 +172,8 @@ if ($isPost && !$checksFailed) {
         $errors[] = 'Please select a language.';
     }
     // same vocabulary as create_default_config: no leading slash, no traversal
-    if (!preg_match('#^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$#', $uploadDir)) {
-        $errors[] = 'Upload directory name may only contain letters, digits, hyphens, underscores and slashes, '
+    if (!preg_match('#^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$#', $mediaDir)) {
+        $errors[] = 'Media directory name may only contain letters, digits, hyphens, underscores and slashes, '
             . 'and must be relative to the web root, for example "media" or "bilder/2026".';
     }
 
@@ -195,10 +195,10 @@ if ($isPost && !$checksFailed) {
 
         // the chosen directory is created and protected before the settings
         // are written, so the app never starts without a usable upload folder
-        install_protect_upload(dirname($appDir), $uploadDir);
+        install_protect_upload(dirname($appDir), $mediaDir);
 
-        if (!is_dir(dirname($appDir) . '/' . $uploadDir)) {
-            $errors[] = 'Could not create the upload directory ' . $uploadDir . ', please create it by hand.';
+        if (!is_dir(dirname($appDir) . '/' . $mediaDir)) {
+            $errors[] = 'Could not create the media directory ' . $mediaDir . ', please create it by hand.';
         }
 
         $user = [
@@ -223,7 +223,7 @@ if ($isPost && !$checksFailed) {
             'users' => [$username => $user],
             'secretKey' => $secret,
             'defaultLanguage' => $language,
-            'uploadDir' => $uploadDir,
+            'mediaDir' => $mediaDir,
         ])) {
             $errors[] = 'Could not write jaco/settings.php, please check write permissions.';
         } else {
@@ -288,8 +288,8 @@ if ($checksFailed) {
         . '<label for="password">Password</label>'
         . '<input type="password" id="password" name="password" autocomplete="new-password">'
         . '<p class="hint">At least 8 characters.</p>'
-        . '<label for="uploadDir">Upload directory</label>'
-        . '<input type="text" id="uploadDir" name="uploadDir" value="' . install_escape($uploadDir) . '">'
+        . '<label for="mediaDir">Media directory</label>'
+        . '<input type="text" id="mediaDir" name="mediaDir" value="' . install_escape($mediaDir) . '">'
         . '<p class="hint">Relative to the web root, created by the installer. '
         . 'A subdirectory is allowed, e.g. <code>bilder/2026</code>.</p>'
         . '<label for="language">Language</label>'
@@ -303,7 +303,7 @@ if ($checksFailed) {
         . 'Enable two-factor authentication (needs an authenticator app)</label>'
         . '<button class="submit" type="submit">Install</button></form>'
         . '<p class="hint">The installer writes <code>jaco/settings.php</code> with your credentials '
-        . 'and a generated secret key for the login tokens, creates the upload directory, '
+        . 'and a generated secret key for the login tokens, creates the media directory, '
         . 'and then deletes itself.</p>';
 }
 

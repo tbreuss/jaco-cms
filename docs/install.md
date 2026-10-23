@@ -48,7 +48,7 @@ in the archive root; in the git repository it lives here as `docs/install.md`.
    (with a generated secret key) and the installer deletes itself afterwards.
    If it cannot delete itself, remove `jaco/install.php` by hand right away.
 
-   The upload directory defaults to `media` and may be changed, e.g. to
+   The media directory defaults to `media` and may be changed, e.g. to
    `bilder/2026` for a site that groups images by year. The path is relative
    to the web root, may contain slashes, and the installer creates it (with
    its `.htaccess`) before writing the settings.
@@ -84,7 +84,7 @@ return [
     ],
     'secretKey' => 'at-least-32-random-characters',
     // optional, default 'media'
-    'uploadDir' => 'bilder/2026',
+    'mediaDir' => 'bilder/2026',
     // optional, default 'jaco-data' (templates and backups)
     'dataDir' => 'jaco-data',
 ];
@@ -156,7 +156,7 @@ The PHP process must be allowed to write:
 
 - every `.html` file that should be editable
 - `jaco-data/backups/` (created with the first backup, create it beforehand if needed)
-- the upload directory in the root directory (images from the editor), `media/` by default
+- the media directory in the root directory (images from the editor), `media/` by default
 - `jaco/runtime/log/` (error log)
 
 ## Protect the internals

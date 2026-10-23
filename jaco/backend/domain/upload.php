@@ -96,7 +96,7 @@ function create_upload(Config $config, array $file): Payload
         return Payload::invalid($errors);
     }
 
-    $newFile = filesystem\file_name_to_write($config->uploadDir, $name);
+    $newFile = filesystem\file_name_to_write($config->mediaDir, $name);
 
     // svg uploads are scrubbed of active content on both write paths
     if (\strtolower(\pathinfo($name, PATHINFO_EXTENSION)) === 'svg') {
@@ -108,7 +108,7 @@ function create_upload(Config $config, array $file): Payload
             return Payload::invalid(\array_map(fn(string $error): array => ['file', $error], $svgCleaned));
         }
 
-        if (@\file_put_contents(filesystem\combine($config->uploadDir, $newFile), $svgCleaned) === false) {
+        if (@\file_put_contents(filesystem\combine($config->mediaDir, $newFile), $svgCleaned) === false) {
             return Payload::error([['file', 'Could not store file.']]);
         }
 
@@ -116,8 +116,8 @@ function create_upload(Config $config, array $file): Payload
     }
 
     $moved = \is_uploaded_file($tmpName)
-        ? \move_uploaded_file($tmpName, filesystem\combine($config->uploadDir, $newFile))
-        : \rename($tmpName, filesystem\combine($config->uploadDir, $newFile));
+        ? \move_uploaded_file($tmpName, filesystem\combine($config->mediaDir, $newFile))
+        : \rename($tmpName, filesystem\combine($config->mediaDir, $newFile));
 
     if (!$moved) {
         return Payload::error([['file', 'Could not store file.']]);

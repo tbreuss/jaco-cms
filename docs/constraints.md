@@ -18,7 +18,7 @@ These are the invariants and edge cases that tests cannot express on their own.
   `Config::$dataDir` (default `<webDir>/jaco-data`, overridable through the `dataDir`
   setting), split into `templates/{page,content,site}` and `backups`.
   `jaco-data/.htaccess` denies every request and disables directory listings, so replacing
-  the `jaco/` directory never touches site data. Uploads live in `Config::$uploadDir`
+  the `jaco/` directory never touches site data. Uploads live in `Config::$mediaDir`
   (default `<webDir>/media`).
 - **The JSON schemas are the API contract.** `jaco/schema/**` defines what a request must
   contain and what a response may contain; `jaco/backend/core/router.php` validates both.

@@ -64,7 +64,7 @@ function install_checks(Config $config): array
     foreach (
         [
             'Backup directory' => $config->backupDir,
-            'Upload directory' => $config->uploadDir,
+            'Upload directory' => $config->mediaDir,
             'Log directory' => dirname($config->loginHistoryFile),
         ] as $label => $dir
     ) {
@@ -135,13 +135,13 @@ function security_checks(Config $config): array
     // Upload directory must exist and be writable
     $checks[] = [
         'label' => 'Upload directory writable',
-        'ok' => \is_dir($config->uploadDir) && \is_writable($config->uploadDir),
-        'detail' => $config->uploadDir,
+        'ok' => \is_dir($config->mediaDir) && \is_writable($config->mediaDir),
+        'detail' => $config->mediaDir,
     ];
 
     // Directory permissions should not be world-writable (0777)
     $dirsToCheck = [
-        $config->uploadDir,
+        $config->mediaDir,
         $config->dataDir,
         $config->backupDir,
         \dirname($config->loginHistoryFile),

@@ -23,10 +23,10 @@ final class EmbeddedImagesTest extends TestCase
     protected function tearDown(): void
     {
         $config = test_config();
-        @unlink($config->uploadDir . '/' . self::FILE);
-        @unlink($config->uploadDir . '/' . self::SECOND_FILE);
-        @unlink($config->uploadDir . '/' . self::GALLERY_FILE);
-        @unlink($config->uploadDir . '/' . self::GALLERY_FULL_FILE);
+        @unlink($config->mediaDir . '/' . self::FILE);
+        @unlink($config->mediaDir . '/' . self::SECOND_FILE);
+        @unlink($config->mediaDir . '/' . self::GALLERY_FILE);
+        @unlink($config->mediaDir . '/' . self::GALLERY_FULL_FILE);
     }
 
     public function testHtmlWithoutEmbeddedImagesIsReturnedUnchanged(): void
@@ -79,10 +79,10 @@ final class EmbeddedImagesTest extends TestCase
         [$status, $result] = html\handle_embedded_data_url_images($config, $this->image(base64_encode('png-bytes')));
 
         $this->assertTrue($status);
-        $this->assertSame('png-bytes', file_get_contents($config->uploadDir . '/' . self::FILE));
+        $this->assertSame('png-bytes', file_get_contents($config->mediaDir . '/' . self::FILE));
 
         $result = (string) $result;
-        $this->assertStringContainsString('src="upload/' . self::FILE . '"', $result);
+        $this->assertStringContainsString('src="media/' . self::FILE . '"', $result);
         $this->assertStringNotContainsString('data-jaco-editable-image-file', $result);
         $this->assertStringNotContainsString('base64', $result);
     }
@@ -90,14 +90,14 @@ final class EmbeddedImagesTest extends TestCase
     public function testAnExistingUploadIsNeverOverwritten(): void
     {
         $config = test_config();
-        file_put_contents($config->uploadDir . '/' . self::FILE, 'old bytes');
+        file_put_contents($config->mediaDir . '/' . self::FILE, 'old bytes');
 
         [$status, $result] = html\handle_embedded_data_url_images($config, $this->image(base64_encode('new bytes')));
 
         $this->assertTrue($status);
-        $this->assertSame('old bytes', file_get_contents($config->uploadDir . '/' . self::FILE));
-        $this->assertSame('new bytes', file_get_contents($config->uploadDir . '/' . self::SECOND_FILE));
-        $this->assertStringContainsString('src="upload/' . self::SECOND_FILE . '"', (string) $result);
+        $this->assertSame('old bytes', file_get_contents($config->mediaDir . '/' . self::FILE));
+        $this->assertSame('new bytes', file_get_contents($config->mediaDir . '/' . self::SECOND_FILE));
+        $this->assertStringContainsString('src="media/' . self::SECOND_FILE . '"', (string) $result);
     }
 
     public function testErrorsFromAnEarlierParseDoNotLeakIntoTheResult(): void
@@ -112,7 +112,7 @@ final class EmbeddedImagesTest extends TestCase
         [$status, $result] = html\handle_embedded_data_url_images($config, $this->image(base64_encode('png-bytes')));
 
         $this->assertTrue($status, 'a foreign libxml error must not turn this into a failure');
-        $this->assertStringContainsString('src="upload/' . self::FILE . '"', (string) $result);
+        $this->assertStringContainsString('src="media/' . self::FILE . '"', (string) $result);
     }
 
     public function testGalleryImageIsLinkedToItsFullVersion(): void
@@ -126,12 +126,12 @@ final class EmbeddedImagesTest extends TestCase
         [$status, $result] = html\handle_embedded_data_url_images($config, $html);
 
         $this->assertTrue($status);
-        $this->assertSame('thumb-bytes', file_get_contents($config->uploadDir . '/' . self::GALLERY_FILE));
-        $this->assertSame('full-bytes', file_get_contents($config->uploadDir . '/' . self::GALLERY_FULL_FILE));
+        $this->assertSame('thumb-bytes', file_get_contents($config->mediaDir . '/' . self::GALLERY_FILE));
+        $this->assertSame('full-bytes', file_get_contents($config->mediaDir . '/' . self::GALLERY_FULL_FILE));
 
         $result = (string) $result;
-        $this->assertStringContainsString('<a href="upload/' . self::GALLERY_FULL_FILE . '">', $result);
-        $this->assertStringContainsString('src="upload/' . self::GALLERY_FILE . '"', $result);
+        $this->assertStringContainsString('<a href="media/' . self::GALLERY_FULL_FILE . '">', $result);
+        $this->assertStringContainsString('src="media/' . self::GALLERY_FILE . '"', $result);
         $this->assertStringContainsString('data-jaco-editable-image-gallery', $result);
         $this->assertStringNotContainsString('data-jaco-gallery-full', $result);
         $this->assertStringNotContainsString('base64', $result);
@@ -147,8 +147,8 @@ final class EmbeddedImagesTest extends TestCase
         [$status, $result] = html\handle_embedded_data_url_images($config, $html);
 
         $this->assertTrue($status);
-        $this->assertSame('thumb-bytes', file_get_contents($config->uploadDir . '/' . self::GALLERY_FILE));
-        $this->assertFileDoesNotExist($config->uploadDir . '/' . self::GALLERY_FULL_FILE);
+        $this->assertSame('thumb-bytes', file_get_contents($config->mediaDir . '/' . self::GALLERY_FILE));
+        $this->assertFileDoesNotExist($config->mediaDir . '/' . self::GALLERY_FULL_FILE);
         $this->assertStringNotContainsString('<a href=', (string) $result);
     }
 
@@ -165,7 +165,7 @@ final class EmbeddedImagesTest extends TestCase
 
         $this->assertTrue($status);
         $this->assertStringContainsString('<a href="/keep.html"', (string) $result);
-        $this->assertFileDoesNotExist($config->uploadDir . '/' . self::GALLERY_FULL_FILE);
+        $this->assertFileDoesNotExist($config->mediaDir . '/' . self::GALLERY_FULL_FILE);
     }
 
     public function testBrokenGalleryFullIsReported(): void

@@ -25,7 +25,7 @@ final class ApiPageUpdateTest extends ApiTestCase
 
         $this->watchDir($this->config->webDir);
         $this->watchDir($this->config->backupDir);
-        $this->watchDir($this->config->uploadDir);
+        $this->watchDir($this->config->mediaDir);
 
         $this->originalContent = "<!DOCTYPE html>\n<html lang=\"en\"><head><title>Update test</title></head>"
             . "<body><p>before</p></body></html>\n";
@@ -108,7 +108,7 @@ final class ApiPageUpdateTest extends ApiTestCase
         $this->assertSame(Status::CREATED, $response->status);
 
         $content = (string) file_get_contents($this->config->webDir . '/' . self::PAGE);
-        $this->assertStringContainsString('upload/api-update-image', $content);
+        $this->assertStringContainsString('media/api-update-image', $content);
         $this->assertStringNotContainsString('data:image', $content);
         $this->assertStringNotContainsString('data-jaco-editable-image-file', $content);
 
@@ -116,12 +116,12 @@ final class ApiPageUpdateTest extends ApiTestCase
         $this->assertCount(1, $newBackups, 'exactly one backup is expected');
         $this->assertSame($this->originalContent, file_get_contents($this->config->backupDir . '/' . $newBackups[0]));
 
-        $newUploads = $this->newEntriesIn($this->config->uploadDir);
+        $newUploads = $this->newEntriesIn($this->config->mediaDir);
         $this->assertCount(1, $newUploads, 'exactly one extracted image is expected');
         $this->assertStringStartsWith('api-update-image', $newUploads[0]);
         $this->assertSame(
             base64_decode(self::PNG_BASE64, true),
-            file_get_contents($this->config->uploadDir . '/' . $newUploads[0]),
+            file_get_contents($this->config->mediaDir . '/' . $newUploads[0]),
         );
     }
 

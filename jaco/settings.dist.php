@@ -32,7 +32,7 @@
 //         ],
 //     ],
 //
-// Directories, both relative to the web root: 'uploadDir' stores editor
+// Directories, both relative to the web root: 'mediaDir' stores editor
 // uploads (default 'media'), 'dataDir' stores templates and backups
 // (default 'jaco-data'). Keep them out of the jaco/ directory so replacing
 // the application never touches site data.
@@ -56,7 +56,7 @@ return [
         // 'admin' => ['password' => '<password-hash>', 'role' => 'admin'],
     ],
     'secretKey' => '',
-    'uploadDir' => 'media',
+    'mediaDir' => 'media',
     'dataDir' => 'jaco-data',
     'backupRetentionDays' => 90,
     'maintenanceMode' => false,
