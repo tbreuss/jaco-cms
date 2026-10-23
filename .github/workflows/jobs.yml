@@ -124,6 +124,7 @@ jobs:
                       .htaccess \
                       index.html 404.html features.html docs.html download.html \
                       privacy.html imprint.html elements.html \
+                      robots.txt sitemap.xml \
                       assets de \
                       deploy/site/
                   # Operator data stays on the server. Ship only the deny file and
@@ -150,6 +151,9 @@ jobs:
                   # the root .htaccess carries the Authorization forwarding for
                   # api.php and the cache rules: without it the admin breaks
                   test -f deploy/site/.htaccess
+                  # crawler entry points
+                  test -f deploy/site/robots.txt
+                  test -f deploy/site/sitemap.xml
                   test -f deploy/site/jaco-data/.htaccess
                   # the checkout's backups and uploads never travel with a deploy
                   test -z "$(find deploy/site/jaco-data/backups -type f ! -name '.gitignore' -print -quit)"

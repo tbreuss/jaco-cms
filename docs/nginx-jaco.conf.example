@@ -22,6 +22,10 @@ server {
         fastcgi_param HTTP_AUTHORIZATION $http_authorization;
     }
 
+    # Crawler entry points stay reachable and are never redirected.
+    location = /robots.txt  { try_files $uri =404; }
+    location = /sitemap.xml { try_files $uri =404; }
+
     # The admin shell and its ES modules are not content-hashed yet: make the
     # browser revalidate them so a release is picked up without a hard refresh.
     location ~* \.(html|css|js)$ {

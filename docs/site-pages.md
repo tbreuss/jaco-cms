@@ -21,3 +21,14 @@ templates under `jaco-data/templates/site/`.
 
 The language switch in `assets/nav.js` sends visitors to the other language's
 `index.html`, so no per-page link table is needed there.
+
+## Crawler entry points
+
+`robots.txt` keeps crawlers out of `/jaco/`, `/jaco-data/` and `/media/` and
+points at the sitemap. `sitemap.xml` lists every public page in both languages
+with `xhtml:link` alternates for `en`, `de` and `x-default`.
+
+Both files are hand maintained: a new page must be added to `sitemap.xml` and
+to the deploy payload in `.github/workflows/jobs.yml`. The staging guard in
+`.htaccess` (`X-Robots-Tag: noindex, nofollow`) still blocks indexing until it
+is removed for the go-live.
