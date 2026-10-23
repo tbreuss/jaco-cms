@@ -5,7 +5,20 @@
   <base href="/">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Flat-file CMS for static HTML sites – Jaco CMS</title>
+  <title>Make your existing HTML editable – Jaco CMS</title>
+  <meta name="description" content="Turn a small static HTML website – existing or new – into an editable site with Jaco CMS. Keep your design, URLs and files – no database, migration or build step.">
+  <link rel="canonical" href="https://jaco-cms.tebe.ch/">
+  <link rel="alternate" hreflang="en" href="https://jaco-cms.tebe.ch/">
+  <link rel="alternate" hreflang="de" href="https://jaco-cms.tebe.ch/de/">
+  <link rel="alternate" hreflang="x-default" href="https://jaco-cms.tebe.ch/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Jaco CMS">
+  <meta property="og:title" content="Make your existing HTML editable – Jaco CMS">
+  <meta property="og:description" content="Turn a small static HTML website – existing or new – into an editable site with Jaco CMS. Keep your design, URLs and files – no database, migration or build step.">
+  <meta property="og:url" content="https://jaco-cms.tebe.ch/">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:locale:alternate" content="de_CH">
+  <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="assets/site.css">
   <script src="assets/theme.js"></script>
   <script src="assets/nav.js"></script>
@@ -22,78 +35,140 @@
   </ul>
 
   <div class="hero">
-    <h1 data-jaco-editable-line>Jaco CMS</h1>
+    <h1 data-jaco-editable-line>Make your existing website editable.</h1>
     <div data-jaco-editable>
-      <p>The flat-file CMS that manages static HTML files directly in the web
-      directory. No database, no build step – PHP 8.2 on any shared host.
-      Edit pages inline on the live site, reorder draggable content lists by
-      drag and drop, and keep automatic backups of every change.</p>
+      <p>Keep your HTML, design and URLs – or start a new site from plain HTML.
+      Jaco CMS adds an editor for the parts you choose – no database, no
+      migration, no rebuild.</p>
     </div>
-    <a class="cta" href="download.html" data-jaco-editable-link>Download</a>
-    <a class="cta secondary" href="docs.html" data-jaco-editable-link>Try locally</a>
+    <a class="cta" href="/jaco/" data-jaco-editable-link>Open the live demo</a>
+    <a class="cta secondary" href="download.html" data-jaco-editable-link>Download Jaco CMS</a>
   </div>
 
-  <h2 data-jaco-editable-line>Why Jaco?</h2>
+  <h2 data-jaco-editable-line>Keep the site. Add editing.</h2>
+  <div data-jaco-editable>
+    <p>You do not need a new CMS project. Jaco CMS adds an editor to the static
+    HTML you already have – or to a new site you build from plain HTML.</p>
+  </div>
+  <div class="features">
+    <div class="feature">
+      <h3 data-jaco-editable-line>Keep your HTML</h3>
+      <div data-jaco-editable>
+        <p>Design, URLs and markup stay where they are. Existing pages remain
+        plain HTML files under your control.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Mark what editors change</h3>
+      <div data-jaco-editable>
+        <p>Add the editable markers once. Editors only see the areas they are
+        meant to update – the rest of the page stays fixed.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Edit in place</h3>
+      <div data-jaco-editable>
+        <p>Log in, click the text or image on the live page and save. Every
+        write keeps a timestamped backup.</p>
+      </div>
+    </div>
+  </div>
+  <div data-jaco-editable>
+    <p>No migration. No database. No lock-in. Remove Jaco CMS and the HTML still
+    works. Starting fresh? Use any static HTML template and mark the editable
+    regions once.</p>
+  </div>
+
+  <h2 data-jaco-editable-line>Why Jaco CMS?</h2>
   <div class="features" data-jaco-content-list data-jaco-fragment="feature_en.html" data-jaco-title="Add feature" data-jaco-pos="draggable">
     <div data-jaco-content-item>
       <div class="feature">
-        <h3 data-jaco-editable-line>Inline editing</h3>
+        <h3 data-jaco-editable-line>Edit in place, without HTML</h3>
         <div data-jaco-editable>
-          <p>Edit pages on the live site, in place. Rich text, images, links and embedded videos – no separate backend screen.</p>
+          <p>Change text, images, links and videos directly on the live page. Recurring sections can be added and reordered as content blocks – no separate backend screen.</p>
         </div>
       </div>
     </div>
     <div data-jaco-content-item>
       <div class="feature">
-        <h3 data-jaco-editable-line>Content blocks</h3>
+        <h3 data-jaco-editable-line>Your HTML stays yours</h3>
         <div data-jaco-editable>
-          <p>Recurring sections that editors add, fill and reorder by drag and drop in draggable lists. No HTML knowledge required.</p>
+          <p>No database and no export. Every page remains a plain HTML file you can inspect, version and move to another host.</p>
         </div>
       </div>
     </div>
     <div data-jaco-content-item>
       <div class="feature">
-        <h3 data-jaco-editable-line>Automatic backups</h3>
+        <h3 data-jaco-editable-line>Safe to change</h3>
         <div data-jaco-editable>
-          <p>Every overwrite or delete keeps a timestamped copy. Restoring is one click.</p>
+          <p>Every overwrite or delete keeps a timestamped backup. Restoring is one click, so a mistake never has to be final.</p>
         </div>
       </div>
     </div>
-    <div data-jaco-content-item>
-      <div class="feature">
-        <h3 data-jaco-editable-line>No database</h3>
-        <div data-jaco-editable>
-          <p>The pages are the database. Everything lives in plain HTML files – portable, versionable, inspectable.</p>
-        </div>
-      </div>
-    </div>
-    <div data-jaco-content-item>
-      <div class="feature">
-        <h3 data-jaco-editable-line>Four languages</h3>
-        <div data-jaco-editable>
-          <p>The admin interface speaks English, German, French and Italian.</p>
-        </div>
-      </div>
-    </div>
-    <div data-jaco-content-item>
-      <div class="feature">
-        <h3 data-jaco-editable-line>Free and open</h3>
-        <div data-jaco-editable>
-          <p>Freeware, including commercial use. MIT-licensed source, no phone home, no licence validation.</p>
-        </div>
-      </div>
-    </div>
+  </div>
+  <div data-jaco-editable>
+    <p>Four admin languages, MIT-licensed source, no telemetry and no licence validation.</p>
   </div>
 
   <h2 data-jaco-editable-line>Who is it for?</h2>
   <div data-jaco-editable>
-    <p>Jaco fits small static sites whose owners — not developers — keep the content up to date: restaurants and cafés with menus and opening hours, hairdressers with price lists, clubs with news and events, small companies and freelancers with a company site or portfolio, and private individuals with a family or hobby site. The pattern is always the same: the editable regions are marked once, then editors work directly on the page, no HTML knowledge required.</p>
+    <p>Jaco CMS is for small static websites – existing sites that need editing,
+    or new sites built from plain HTML.</p>
+  </div>
+  <div class="features">
+    <div class="feature">
+      <h3 data-jaco-editable-line>Freelancers and agencies</h3>
+      <div data-jaco-editable>
+        <p>Keep an existing client site, add editing where the client needs it,
+        and hand over content updates without a new CMS project.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Restaurants and cafés</h3>
+      <div data-jaco-editable>
+        <p>Update the menu, opening hours and seasonal offers yourself – without
+        waiting for a developer or touching the layout.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Studios and practices</h3>
+      <div data-jaco-editable>
+        <p>Keep services, prices, team details and opening hours current while
+        the design and page structure stay fixed.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Clubs and associations</h3>
+      <div data-jaco-editable>
+        <p>Add news, events and photos as repeatable content blocks – no HTML
+        knowledge and no separate publishing system.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Small companies</h3>
+      <div data-jaco-editable>
+        <p>Keep services, locations, team details and opening hours current
+        without turning a simple company site into a CMS project.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <h3 data-jaco-editable-line>Private portfolio sites</h3>
+      <div data-jaco-editable>
+        <p>Run a small personal or portfolio site and update projects, text and
+        links yourself – without rebuilding the website.</p>
+      </div>
+    </div>
+  </div>
+  <div data-jaco-editable>
+    <p>Not a fit for large editorial teams, complex approval workflows or
+    applications that need real-time collaboration. Jaco CMS stays deliberately
+    small.</p>
   </div>
 
-  <h2 data-jaco-editable-line>This site runs on Jaco</h2>
+  <h2 data-jaco-editable-line>This site is the demo</h2>
   <div data-jaco-editable>
-    <p>Every page you are reading right now is a plain HTML file in this repository, edited through the Jaco admin panel. The headings and paragraphs carry <code>data-jaco-editable-line</code> and <code>data-jaco-editable</code> markers – the same mechanism your own site will use.</p>
-    <p>Try it: open <code>/jaco/</code> below this domain, log in with <code>demo</code> / <code>demo</code>, and edit this very text.</p>
+    <p>Every page you are reading right now is a plain HTML file in this repository, edited through the Jaco CMS admin panel. The headings and paragraphs carry <code>data-jaco-editable-line</code> and <code>data-jaco-editable</code> markers – the same mechanism your own site will use.</p>
+    <p>Open <code>/jaco/</code> and log in with <code>demo</code> / <code>demo</code> to try the interface. The public viewer can open the editor, but saving is intentionally disabled. Install Jaco CMS locally or on your own host to edit and save.</p>
   </div>
 
   <footer>

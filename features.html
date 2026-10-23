@@ -6,6 +6,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Features – Jaco CMS</title>
+  <meta name="description" content="Inline editing, content blocks, media management and backups for small static HTML sites – existing or new, without a database or build step.">
+  <link rel="canonical" href="https://jaco-cms.tebe.ch/features.html">
+  <link rel="alternate" hreflang="en" href="https://jaco-cms.tebe.ch/features.html">
+  <link rel="alternate" hreflang="de" href="https://jaco-cms.tebe.ch/de/features.html">
+  <link rel="alternate" hreflang="x-default" href="https://jaco-cms.tebe.ch/features.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Jaco CMS">
+  <meta property="og:title" content="Features – Jaco CMS">
+  <meta property="og:description" content="Inline editing, content blocks, media management and backups for small static HTML sites – existing or new, without a database or build step.">
+  <meta property="og:url" content="https://jaco-cms.tebe.ch/features.html">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:locale:alternate" content="de_CH">
+  <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="assets/site.css">
   <script src="assets/theme.js"></script>
   <script src="assets/nav.js"></script>
@@ -23,26 +36,46 @@
   <div class="page-head">
     <h1 data-jaco-editable-line>Jaco CMS features</h1>
     <div data-jaco-editable>
-      <p>Jaco CMS manages the static HTML files of a website directly in the web directory. The pages are the database: there is nothing to install besides PHP itself, no database server, no build step.</p>
+      <p>Jaco CMS is for small static websites: keep an existing site, or start a
+      new one from plain HTML. The editor is added only where content needs to
+      change.</p>
     </div>
   </div>
   <div data-jaco-editable>
-    <h2>Editing</h2>
+    <h2>Edit the site in place</h2>
+    <p>Open a page on the live site, click a marked region and edit it. There is
+    no separate content form and no publish step.</p>
     <ul>
-      <li><strong>Inline editor:</strong> edit pages on the live site, in place, with rich text, images, links and embedded videos.</li>
-      <li><strong>Page manager:</strong> create pages from templates, copy and delete them, with automatic backups before every change.</li>
-      <li><strong>Content blocks:</strong> recurring sections (news, teasers) that editors add, remove and reorder by drag and drop in draggable lists – no developer needed per entry.</li>
-      <li><strong>Image gallery:</strong> thumbnails link to full versions, generated from uploads.</li>
-      <li><strong>Stylesheets:</strong> edit the site CSS from the admin panel, with backups like pages.</li>
+      <li><strong>Inline editing:</strong> text, headings, links, images and embedded videos in the page itself.</li>
+      <li><strong>Rich text:</strong> headings, bold/italic, lists, quotes, code and links with a familiar toolbar.</li>
+      <li><strong>Content blocks:</strong> recurring sections that editors add, fill and reorder by drag and drop.</li>
+      <li><strong>Media library:</strong> reuse uploaded images and files instead of uploading duplicates.</li>
     </ul>
-    <h2>Operating</h2>
+    <h2>Manage pages and media</h2>
     <ul>
-      <li><strong>Backups:</strong> every overwrite or delete keeps a timestamped copy; one click restores.</li>
-      <li><strong>Uploads:</strong> images and files with extension checks and size limits.</li>
-      <li><strong>Login:</strong> token based (JWT), throttled against brute force, maintenance mode that locks writes in the admin.</li>
-      <li><strong>Languages:</strong> the admin interface speaks English, German, French and Italian.</li>
-      <li><strong>Requirements:</strong> PHP 8.2 or newer on any shared hoster. That is all.</li>
+      <li><strong>Page manager:</strong> create pages from templates, copy them and delete them; backups are taken before changes.</li>
+      <li><strong>Uploads:</strong> images and documents with extension checks and size limits; galleries create full-size versions.</li>
+      <li><strong>Stylesheets:</strong> edit the site CSS from the admin panel, with the same backup protection as pages.</li>
+      <li><strong>Roles:</strong> admin, editor and viewer accounts; viewers can inspect the site without changing it.</li>
     </ul>
+    <h2>Keep changes safe</h2>
+    <ul>
+      <li><strong>Backups:</strong> every overwrite or delete keeps a timestamped copy; restore with one click.</li>
+      <li><strong>Login:</strong> token-based authentication, throttled against repeated failures.</li>
+      <li><strong>Read-only handover:</strong> viewer accounts and maintenance mode keep accidental changes out.</li>
+    </ul>
+    <h2>Run it on your own host</h2>
+    <ul>
+      <li><strong>No database:</strong> the pages are the database. Everything lives in plain HTML files.</li>
+      <li><strong>No build step:</strong> PHP 8.2 or newer on a typical shared host with the required extensions.</li>
+      <li><strong>No lock-in:</strong> remove the markers and Jaco CMS, and the HTML still works.</li>
+      <li><strong>Four admin languages:</strong> English, German, French and Italian.</li>
+    </ul>
+    <h2>What Jaco CMS is not</h2>
+    <p>Jaco CMS is not a visual page builder, a database CMS or a multi-tenant
+    platform. It is a focused editor for small static sites. The HTML and design
+    are yours – existing or new. That constraint is what keeps the files
+    portable and the setup small.</p>
   </div>
   <footer>
     <a href="imprint.html">Imprint</a> · <a href="privacy.html">Privacy</a>

@@ -3,13 +3,13 @@ import {test, expect} from '@playwright/test'
 // Public pages are unauthenticated: check status, document title and the
 // visible top-level heading without touching the admin installation.
 const pages = [
-  {path: '/', title: 'Flat-file CMS for static HTML sites', h1: 'Jaco CMS'},
+  {path: '/', title: 'Make your existing HTML editable', h1: 'Make your existing website editable.'},
   {path: '/features.html', title: 'Features', h1: 'Jaco CMS features'},
   {path: '/docs.html', title: 'Docs', h1: 'Jaco CMS docs'},
   {path: '/download.html', title: 'Download', h1: 'Download Jaco CMS'},
   {path: '/privacy.html', title: 'Privacy', h1: 'Privacy policy'},
   {path: '/imprint.html', title: 'Imprint', h1: 'Imprint'},
-  {path: '/de/index.html', title: 'Flat-file-CMS für statische HTML-Websites', h1: 'Jaco CMS'},
+  {path: '/de/index.html', title: 'Bestehende HTML-Website editierbar machen', h1: 'Bestehende Website. Einfach editierbar.'},
   {path: '/de/features.html', title: 'Funktionen', h1: 'Jaco CMS Funktionen'},
   {path: '/de/docs.html', title: 'Doku', h1: 'Jaco CMS Doku'},
   {path: '/de/download.html', title: 'Download', h1: 'Jaco CMS herunterladen'},

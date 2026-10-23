@@ -6,6 +6,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Funktionen – Jaco CMS</title>
+  <meta name="description" content="Inline-Bearbeitung, Inhaltsblöcke, Medienverwaltung und Backups für kleine statische HTML-Websites – bestehende oder neue, ohne Datenbank oder Build-Schritt.">
+  <link rel="canonical" href="https://jaco-cms.tebe.ch/de/features.html">
+  <link rel="alternate" hreflang="de" href="https://jaco-cms.tebe.ch/de/features.html">
+  <link rel="alternate" hreflang="en" href="https://jaco-cms.tebe.ch/features.html">
+  <link rel="alternate" hreflang="x-default" href="https://jaco-cms.tebe.ch/features.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Jaco CMS">
+  <meta property="og:title" content="Funktionen – Jaco CMS">
+  <meta property="og:description" content="Inline-Bearbeitung, Inhaltsblöcke, Medienverwaltung und Backups für kleine statische HTML-Websites – bestehende oder neue, ohne Datenbank oder Build-Schritt.">
+  <meta property="og:url" content="https://jaco-cms.tebe.ch/de/features.html">
+  <meta property="og:locale" content="de_CH">
+  <meta property="og:locale:alternate" content="en_GB">
+  <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="../assets/site.css">
   <script src="../assets/theme.js"></script>
   <script src="../assets/nav.js"></script>
@@ -23,26 +36,47 @@
   <div class="page-head">
     <h1 data-jaco-editable-line>Jaco CMS Funktionen</h1>
     <div data-jaco-editable>
-      <p>Jaco CMS verwaltet die statischen HTML-Dateien einer Website direkt im Webverzeichnis. Die Seiten sind die Datenbank: Es gibt nichts zu installieren ausser PHP selbst – keinen Datenbankserver, keinen Build-Schritt.</p>
+      <p>Jaco CMS ist für kleine statische Websites gedacht: eine bestehende
+      Website behalten oder eine neue aus einfachem HTML starten. Der Editor kommt
+      nur dorthin, wo Inhalte geändert werden sollen.</p>
     </div>
   </div>
   <div data-jaco-editable>
-    <h2>Bearbeiten</h2>
+    <h2>Direkt auf der Website bearbeiten</h2>
+    <p>Eine Seite auf der live Website öffnen, einen markierten Bereich
+    anklicken und bearbeiten. Kein separates Inhaltsformular, kein
+    Veröffentlichungsschritt.</p>
     <ul>
-      <li><strong>Inline-Editor:</strong> Seiten auf der live Website bearbeiten, an Ort und Stelle, mit Rich Text, Bildern, Links und eingebetteten Videos.</li>
-      <li><strong>Seitenverwaltung:</strong> Seiten aus Vorlagen erstellen, kopieren und löschen – vor jeder Änderung automatisch gesichert.</li>
-      <li><strong>Inhaltsblöcke:</strong> wiederkehrende Bereiche (News, Teaser), die Redakteure selbst einfügen, ausfüllen und in Drag-and-Drop-Listen sortieren – ohne Entwickler pro Eintrag.</li>
-      <li><strong>Bildergalerie:</strong> Vorschaubilder verlinken auf Vollversionen, erzeugt aus Uploads.</li>
-      <li><strong>Stylesheets:</strong> das Site-CSS im Admin-Panel bearbeiten, mit Backups wie bei Seiten.</li>
+      <li><strong>Inline-Editor:</strong> Texte, Überschriften, Links, Bilder und eingebettete Videos direkt auf der Seite.</li>
+      <li><strong>Rich Text:</strong> Überschriften, Fett/Kursiv, Listen, Zitate, Code und Links mit einer vertrauten Werkzeugleiste.</li>
+      <li><strong>Inhaltsblöcke:</strong> wiederkehrende Bereiche, die Redakteure einfügen, ausfüllen und per Drag and Drop sortieren.</li>
+      <li><strong>Mediathek:</strong> bereits hochgeladene Bilder und Dateien wiederverwenden, statt Duplikate anzulegen.</li>
     </ul>
-    <h2>Betrieb</h2>
+    <h2>Seiten und Medien verwalten</h2>
+    <ul>
+      <li><strong>Seitenverwaltung:</strong> Seiten aus Vorlagen erstellen, kopieren und löschen; vor Änderungen wird gesichert.</li>
+      <li><strong>Uploads:</strong> Bilder und Dokumente mit Endungsprüfung und Grössenlimits; Galerien erzeugen Vollversionen.</li>
+      <li><strong>Stylesheets:</strong> das Site-CSS im Admin-Panel bearbeiten, mit demselben Backup-Schutz wie Seiten.</li>
+      <li><strong>Rollen:</strong> Admin-, Editor- und Viewer-Konten; Viewer können die Website ansehen, ohne sie zu ändern.</li>
+    </ul>
+    <h2>Änderungen absichern</h2>
     <ul>
       <li><strong>Backups:</strong> jedes Überschreiben oder Löschen behält eine zeitgestempelte Kopie; Wiederherstellen mit einem Klick.</li>
-      <li><strong>Uploads:</strong> Bilder und Dateien mit Endungsprüfung und Grössenlimits.</li>
-      <li><strong>Login:</strong> tokenbasiert (JWT), gedrosselt gegen Brute Force, Wartungsmodus, der Schreibzugriffe im Admin sperrt.</li>
-      <li><strong>Sprachen:</strong> die Admin-Oberfläche spricht Englisch, Deutsch, Französisch und Italienisch.</li>
-      <li><strong>Voraussetzungen:</strong> PHP 8.2 oder neuer auf jedem Shared Host. Das ist alles.</li>
+      <li><strong>Login:</strong> tokenbasierte Anmeldung, gedrosselt gegen wiederholte Fehlversuche.</li>
+      <li><strong>Read-only-Übergabe:</strong> Viewer-Konten und der Wartungsmodus halten versehentliche Änderungen fern.</li>
     </ul>
+    <h2>Auf dem eigenen Host betreiben</h2>
+    <ul>
+      <li><strong>Keine Datenbank:</strong> Die Seiten sind die Datenbank. Alles liegt in einfachen HTML-Dateien.</li>
+      <li><strong>Kein Build-Schritt:</strong> PHP 8.2 oder neuer auf einem typischen Shared Host mit den nötigen Erweiterungen.</li>
+      <li><strong>Kein Lock-in:</strong> Marker und Jaco CMS entfernen – das HTML funktioniert weiter.</li>
+      <li><strong>Vier Admin-Sprachen:</strong> Deutsch, Englisch, Französisch und Italienisch.</li>
+    </ul>
+    <h2>Was Jaco CMS nicht ist</h2>
+    <p>Jaco CMS ist kein visueller Page-Builder, kein Datenbank-CMS und keine
+    Multi-Tenant-Plattform. Es ist ein fokussierter Editor für kleine statische
+    Websites. HTML und Design gehören Ihnen – ob bestehend oder neu. Genau diese
+    Einschränkung hält die Dateien portabel und die Installation klein.</p>
   </div>
   <footer>
     <a href="de/impressum.html">Impressum</a> · <a href="de/datenschutz.html">Datenschutz</a>

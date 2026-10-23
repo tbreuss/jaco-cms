@@ -6,6 +6,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Doku – Jaco CMS</title>
+  <meta name="description" content="Die praktische Anleitung zu Jaco CMS: Seiten bearbeiten, Inhalte hinzufügen, Bilder ersetzen, Seiten erstellen und Backups wiederherstellen.">
+  <link rel="canonical" href="https://jaco-cms.tebe.ch/de/docs.html">
+  <link rel="alternate" hreflang="de" href="https://jaco-cms.tebe.ch/de/docs.html">
+  <link rel="alternate" hreflang="en" href="https://jaco-cms.tebe.ch/docs.html">
+  <link rel="alternate" hreflang="x-default" href="https://jaco-cms.tebe.ch/docs.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Jaco CMS">
+  <meta property="og:title" content="Doku – Jaco CMS">
+  <meta property="og:description" content="Die praktische Anleitung zu Jaco CMS: Seiten bearbeiten, Inhalte hinzufügen, Bilder ersetzen, Seiten erstellen und Backups wiederherstellen.">
+  <meta property="og:url" content="https://jaco-cms.tebe.ch/de/docs.html">
+  <meta property="og:locale" content="de_CH">
+  <meta property="og:locale:alternate" content="en_GB">
+  <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="../assets/site.css">
   <script src="../assets/theme.js"></script>
   <script src="../assets/nav.js"></script>
@@ -23,22 +36,37 @@
   <div class="page-head">
     <h1 data-jaco-editable-line>Jaco CMS Doku</h1>
     <div data-jaco-editable>
-      <p>Diese Seite wird selbst mit Jaco CMS bearbeitet – alles unten Beschriebene läuft auf genau dieser Website.</p>
+      <p>Diese Seite wird selbst mit Jaco CMS bearbeitet. Die Kurzfassung:
+      anmelden, markierten Bereich anklicken, ändern und speichern. Die Datei
+      wird direkt geschrieben.</p>
     </div>
   </div>
   <div data-jaco-editable>
-    <h2>Anmelden</h2>
-    <p><code>/jaco/</code> unter der Website-Adresse öffnen und anmelden. Zum lokalen Ausprobieren lautet der Login <code>demo</code> / <code>demo</code>.</p>
-    <h2>Seiten</h2>
-    <p>Seiten in der Seitenverwaltung aus einer Vorlage erstellen, oder inline bearbeiten: Seite auf der live Website öffnen, in einen markierten Bereich klicken und tippen. Speichern schreibt die HTML-Datei direkt – mit Backup zuvor.</p>
-    <h2>Inhaltsblöcke</h2>
-    <p>Wo die Vorlage einen Hinzufügen-Knopf anbietet, fügen Redakteure vorgefertigte Blöcke ein (News, Teaser), füllen sie aus und sortieren sie am Griff. Keine HTML-Kenntnisse nötig.</p>
-    <h2>Bilder und Dateien</h2>
-    <p>Bilder und Dokumente im Upload-Manager hochladen, dann in Bildbereiche einsetzen oder aus Text verlinken. Galerien paaren Vorschaubilder automatisch mit Vollversionen.</p>
-    <h2>Backups</h2>
-    <p>Jede Änderung behält eine zeitgestempelte Kopie in der Backup-Liste. Wiederherstellen mit einem Klick; ein Backup zu löschen ist die einzige unumkehrbare Aktion im Panel.</p>
-    <h2>Tastaturkürzel</h2>
-    <p>Speichern mit dem üblichen Kürzel der eigenen Plattform, wo immer ein Editor den Fokus hat.</p>
+    <h2>Die ersten 10 Minuten</h2>
+    <ol>
+      <li><strong>Admin öffnen:</strong> <code>/jaco/</code> unter der Website-Adresse öffnen und anmelden. Die öffentliche Demo nutzt ein Read-only-Viewer-Konto; zum Bearbeiten und Speichern Jaco CMS lokal oder auf dem eigenen Host installieren.</li>
+      <li><strong>Seite bearbeiten:</strong> die Seite auf der live Website öffnen, markierten Text anklicken und ändern. Danach <strong>Speichern</strong>.</li>
+      <li><strong>Inhalt hinzufügen:</strong> die Hinzufügen-Knöpfe einer Inhaltsliste verwenden, den neuen Block ausfüllen und am Griff an die gewünschte Position ziehen.</li>
+      <li><strong>Bild ersetzen:</strong> ein editierbares Bild anklicken, dann eine neue Datei hochladen oder ein vorhandenes Bild aus der Mediathek wählen. Erweiterte Bildmarker fragen zusätzlich nach Alternativtext und Skalierung.</li>
+      <li><strong>Seite erstellen:</strong> in der Seitenverwaltung eine Seite aus einer Vorlage erstellen oder bestehende Seiten kopieren und löschen.</li>
+      <li><strong>Fehler rückgängig machen:</strong> die Backup-Liste öffnen; jedes Überschreiben und Löschen behält eine zeitgestempelte Kopie. Wiederherstellen mit einem Klick.</li>
+    </ol>
+    <h2>So funktioniert das Speichern</h2>
+    <p>Speichern schreibt die HTML-Datei direkt. Zuvor wird ein Backup angelegt.
+    Es gibt keinen Build-Schritt, keine Datenbank und keine separate
+    Veröffentlichung – die Änderung ist live, sobald die Datei geschrieben ist.</p>
+    <h2>Wenn etwas nicht funktioniert</h2>
+    <ul>
+      <li><strong>Speichern ist deaktiviert:</strong> Das Konto ist ein Viewer. Mit einem Editor- oder Admin-Konto anmelden.</li>
+      <li><strong>Ein Bereich lässt sich nicht bearbeiten:</strong> Dort fehlt der <code>data-jaco-editable</code>-Marker.</li>
+      <li><strong>Es kann nichts geschrieben werden:</strong> Der Webserver braucht Schreibrechte für die Seiten- und <code>upload/</code>-Verzeichnisse.</li>
+      <li><strong>Die Mediathek ist leer:</strong> zuerst ein Bild hochladen oder das konfigurierte Upload-Verzeichnis prüfen.</li>
+    </ul>
+    <h2>Weiter</h2>
+    <p>Installation, Berechtigungen und die editierbaren Marker sind in
+    <code>INSTALL.md</code> im Release-Archiv beschrieben. CSS-Editor und
+    Backup-Liste sind im Admin-Panel erreichbar. Speichern mit dem üblichen
+    Tastaturkürzel der Plattform, während ein Editor den Fokus hat.</p>
   </div>
   <footer>
     <a href="de/impressum.html">Impressum</a> · <a href="de/datenschutz.html">Datenschutz</a>

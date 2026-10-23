@@ -6,6 +6,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Docs – Jaco CMS</title>
+  <meta name="description" content="A practical guide to Jaco CMS: edit pages, add content, replace images, create pages and restore backups.">
+  <link rel="canonical" href="https://jaco-cms.tebe.ch/docs.html">
+  <link rel="alternate" hreflang="en" href="https://jaco-cms.tebe.ch/docs.html">
+  <link rel="alternate" hreflang="de" href="https://jaco-cms.tebe.ch/de/docs.html">
+  <link rel="alternate" hreflang="x-default" href="https://jaco-cms.tebe.ch/docs.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Jaco CMS">
+  <meta property="og:title" content="Docs – Jaco CMS">
+  <meta property="og:description" content="A practical guide to Jaco CMS: edit pages, add content, replace images, create pages and restore backups.">
+  <meta property="og:url" content="https://jaco-cms.tebe.ch/docs.html">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:locale:alternate" content="de_CH">
+  <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="assets/site.css">
   <script src="assets/theme.js"></script>
   <script src="assets/nav.js"></script>
@@ -23,22 +36,36 @@
   <div class="page-head">
     <h1 data-jaco-editable-line>Jaco CMS docs</h1>
     <div data-jaco-editable>
-      <p>This page is itself edited with Jaco CMS – everything described below runs on this very site.</p>
+      <p>This page is itself edited with Jaco CMS. The short version: log in,
+      click a marked region, change it and save. The file is written directly.</p>
     </div>
   </div>
   <div data-jaco-editable>
-    <h2>Log in</h2>
-    <p>Open <code>/jaco/</code> below the website address and log in. For a local trial, the login is <code>demo</code> / <code>demo</code>.</p>
-    <h2>Pages</h2>
-    <p>Create pages from a template in the page manager, or edit them inline: open the page on the live site, click into a marked region and type. Saving writes the HTML file directly – with a backup taken first.</p>
-    <h2>Content blocks</h2>
-    <p>Where the template offers an add button, editors insert prebuilt blocks (news items, teasers), fill them in and reorder them with the grip handle. No HTML knowledge required.</p>
-    <h2>Images and files</h2>
-    <p>Upload images and documents in the upload manager, then swap them into image regions or link them from text. Galleries pair thumbnails with full versions automatically.</p>
-    <h2>Backups</h2>
-    <p>Every change keeps a timestamped copy in the backup list. Restoring is one click; deleting a backup is the only irreversible action in the panel.</p>
-    <h2>Keyboard shortcuts</h2>
-    <p>Save with the usual shortcut of your platform wherever an editor has focus.</p>
+    <h2>First 10 minutes</h2>
+    <ol>
+      <li><strong>Open the admin:</strong> go to <code>/jaco/</code> below the website address and log in. The public demo uses a read-only viewer account; for editing and saving, install Jaco CMS locally or on your own host.</li>
+      <li><strong>Edit a page:</strong> open the page on the live site, click marked text and change it. Use <strong>Save</strong> when you are done.</li>
+      <li><strong>Add content:</strong> use the add buttons offered by a content list, fill in the new block, then drag it by the grip to reorder.</li>
+      <li><strong>Replace an image:</strong> click an editable image, then upload a new file or choose an existing one from the media library. Extended image markers also ask for alt text and scaling.</li>
+      <li><strong>Create a page:</strong> use the page manager to create a page from a template, or copy and delete existing pages.</li>
+      <li><strong>Undo a mistake:</strong> open the backup list; every overwrite and delete keeps a timestamped copy. Restore with one click.</li>
+    </ol>
+    <h2>How saving works</h2>
+    <p>Saving writes the HTML file directly. A backup is taken first. There is no
+    build step, no database and no separate publish action – the change is live
+    as soon as the file is written.</p>
+    <h2>If something does not work</h2>
+    <ul>
+      <li><strong>Save is disabled:</strong> the account is a viewer. Log in with an editor or admin account.</li>
+      <li><strong>A region cannot be edited:</strong> the page does not carry a <code>data-jaco-editable</code> marker there.</li>
+      <li><strong>Nothing can be written:</strong> the web server needs write permission for the page and <code>upload/</code> directories.</li>
+      <li><strong>The media picker is empty:</strong> upload an image first, or check the configured upload directory.</li>
+    </ul>
+    <h2>Going further</h2>
+    <p>Installation details, permissions and the editable markers are described
+    in <code>INSTALL.md</code> inside the release archive. The CSS editor and
+    the backup list are available from the admin panel. Use the usual platform
+    shortcut to save while an editor has focus.</p>
   </div>
   <footer>
     <a href="imprint.html">Imprint</a> · <a href="privacy.html">Privacy</a>

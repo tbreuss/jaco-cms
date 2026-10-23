@@ -6,6 +6,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Download – Jaco CMS</title>
+  <meta name="description" content="Jaco CMS herunterladen: Voraussetzungen, Installation und was vor dem Einbau in eine bestehende statische Website zu prüfen ist.">
+  <link rel="canonical" href="https://jaco-cms.tebe.ch/de/download.html">
+  <link rel="alternate" hreflang="de" href="https://jaco-cms.tebe.ch/de/download.html">
+  <link rel="alternate" hreflang="en" href="https://jaco-cms.tebe.ch/download.html">
+  <link rel="alternate" hreflang="x-default" href="https://jaco-cms.tebe.ch/download.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Jaco CMS">
+  <meta property="og:title" content="Download – Jaco CMS">
+  <meta property="og:description" content="Jaco CMS herunterladen: Voraussetzungen, Installation und was vor dem Einbau in eine bestehende statische Website zu prüfen ist.">
+  <meta property="og:url" content="https://jaco-cms.tebe.ch/de/download.html">
+  <meta property="og:locale" content="de_CH">
+  <meta property="og:locale:alternate" content="en_GB">
+  <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="../assets/site.css">
   <script src="../assets/theme.js"></script>
   <script src="../assets/nav.js"></script>
@@ -23,24 +36,35 @@
   <div class="page-head">
     <h1 data-jaco-editable-line>Jaco CMS herunterladen</h1>
     <div data-jaco-editable>
-      <p>Jaco CMS ist Freeware: gratis nutzbar, einschliesslich kommerzieller Websites, die Sie damit umsetzen. Die genauen Bedingungen stehen in der LICENSE-Datei im Release-Archiv.</p>
+      <p>Jaco CMS ist Freeware, auch für kommerzielle Websites, die Sie damit
+      umsetzen. Die genauen Bedingungen stehen in der LICENSE-Datei im
+      Release-Archiv.</p>
     </div>
   </div>
   <div data-jaco-editable>
     <h2>Voraussetzungen</h2>
     <ul>
-      <li>PHP 8.2 oder neuer mit den Extensions <code>dom</code>, <code>libxml</code> und <code>openssl</code></li>
-      <li>Beliebiger Webserver mit PHP – keine Datenbank, keine Build-Tools, kein Composer auf dem Server</li>
+      <li>PHP 8.2 oder neuer mit den Erweiterungen <code>dom</code>, <code>libxml</code> und <code>openssl</code></li>
+      <li>Ein Webserver mit PHP und Schreibzugriff auf die Website-Dateien</li>
+      <li>Keine Datenbank, keine Build-Tools und kein Composer auf dem Server</li>
     </ul>
-    <h2>Installieren</h2>
+    <h2>In drei Schritten installieren</h2>
     <ol>
-      <li>Aktuelles <code>jaco-dist-*.zip</code> von der <a href="https://github.com/tbreuss/jaco-cms/releases">Release-Seite</a> laden.</li>
-      <li>Ins Webverzeichnis entpacken, neben die HTML-Dateien.</li>
-      <li><code>INSTALL.md</code> aus dem Archiv folgen: <code>settings.dist.php</code> nach <code>settings.php</code> kopieren, Login setzen, Schreibrechte vergeben.</li>
-      <li><code>/jaco/</code> öffnen und anmelden. Bearbeitbare Bereiche markieren wie in <code>INSTALL.md</code> Schritt 5.</li>
+      <li>Das neueste <code>jaco-dist-*.zip</code> von der <a href="https://github.com/tbreuss/jaco-cms/releases">Releases-Seite</a> herunterladen.</li>
+      <li>Das Archiv im Webverzeichnis entpacken, neben den HTML-Dateien, die bearbeitet werden sollen.</li>
+      <li><code>INSTALL.md</code> befolgen: <code>settings.dist.php</code> nach <code>settings.php</code> kopieren, Login setzen und Schreibrechte vergeben. Danach <code>/jaco/</code> öffnen.</li>
     </ol>
-    <h2>Lokal ausprobieren</h2>
-    <p>Repository klonen, Docker-Image bauen und starten – Login <code>demo</code> / <code>demo</code>. Die drei Befehle stehen im README auf GitHub.</p>
+    <h2>Vor der Installation</h2>
+    <ul>
+      <li>Zuerst ein Backup der bestehenden Website anlegen.</li>
+      <li>Jaco CMS arbeitet mit statischen HTML-Dateien; für dynamische Anwendungen ist es nicht gedacht.</li>
+      <li>Editierbare Bereiche müssen einmal gemäss <code>INSTALL.md</code> markiert werden.</li>
+      <li>Die öffentliche Demo ist read-only; zum Bearbeiten und Speichern eine lokale oder separate Installation verwenden.</li>
+    </ul>
+    <h2>Zuerst ausprobieren</h2>
+    <p><code>/jaco/</code> auf dieser Website mit dem öffentlichen Viewer-Konto
+    öffnen, um die Oberfläche anzusehen. Für den lokalen Betrieb das Repository
+    klonen und die Docker-Befehle in der README auf GitHub befolgen.</p>
   </div>
   <footer>
     <a href="de/impressum.html">Impressum</a> · <a href="de/datenschutz.html">Datenschutz</a>
