@@ -250,5 +250,8 @@
     "Apply to all": "Apply to all",
     "Could not preview the template.": "Could not preview the template.",
     "Template": "Template",
-    "The current editor content is saved before applying.": "The current editor content is saved before applying."
+    "The current editor content is saved before applying.": "The current editor content is saved before applying.",
+    "Apply": "Apply",
+    "Save & apply to all pages": "Save & apply to all pages",
+    "Preview & apply": "Preview & apply"
 }

@@ -250,5 +250,8 @@
     "Apply to all": "Appliquer à toutes",
     "Could not preview the template.": "Impossible de prévisualiser le modèle.",
     "Template": "Modèle",
-    "The current editor content is saved before applying.": "Le contenu actuel de l’éditeur est enregistré avant l’application."
+    "The current editor content is saved before applying.": "Le contenu actuel de l’éditeur est enregistré avant l’application.",
+    "Apply": "Appliquer",
+    "Save & apply to all pages": "Enregistrer et appliquer à toutes les pages",
+    "Preview & apply": "Aperçu & appliquer"
 }

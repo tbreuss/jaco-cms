@@ -250,5 +250,8 @@
     "Apply to all": "Auf alle anwenden",
     "Could not preview the template.": "Die Vorschau der Vorlage konnte nicht geladen werden.",
     "Template": "Vorlage",
-    "The current editor content is saved before applying.": "Der aktuelle Editorinhalt wird vor dem Anwenden gespeichert."
+    "The current editor content is saved before applying.": "Der aktuelle Editorinhalt wird vor dem Anwenden gespeichert.",
+    "Apply": "Anwenden",
+    "Save & apply to all pages": "Speichern & auf alle Seiten anwenden",
+    "Preview & apply": "Vorschau & Anwenden"
 }

@@ -262,7 +262,7 @@ const previewDialog = () => {
     m('p', t('No backups are created when applying to all pages.')),
     m(ButtonGroup, {wrap: 'div.row.text-right'},
       m(ButtonSecondary, {onclick: closePreview}, m('span', t('Cancel'))),
-      m(ButtonDanger, {onclick: confirmApply, disabled: files === 0}, m(Icon, {name: 'check'}), m('span', t('Apply to all')))
+      m(ButtonDanger, {onclick: confirmApply, disabled: files === 0}, m(Icon, {name: 'check'}), m('span', t('Save & apply to all pages')))
     )
   ))
 }
@@ -329,8 +329,8 @@ export const TemplateView = {
                 m(ButtonDanger, {
                   onclick: onApplyClicked,
                   disabled: !canEdit,
-                  title: canEdit ? t('Apply to all pages') + ' – ' + t('No backups are created when applying to all pages.') : t('Apply to all pages') + ' – ' + t('Your role does not allow this.'),
-                }, m(Icon, {name: 'copy'}), m('span', t('Apply to all pages')))
+                  title: canEdit ? t('Preview & apply') + ' – ' + t('No backups are created when applying to all pages.') : t('Preview & apply') + ' – ' + t('Your role does not allow this.'),
+                }, m(Icon, {name: 'copy'}), m('span', t('Preview & apply')))
               )
             )
       ),

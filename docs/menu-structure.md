@@ -74,7 +74,7 @@ a.html    Startseite      12.10.2026      [Edit] [Copy] [Delete]
 Templates live under `jaco/_template/site/` and are created through the file
 system. The admin lists and edits them under **Content → Templates**. The
 editor contains the template HTML and separate **Save**, **Save & Close** and
-**Apply to all pages** buttons. Applying first opens a preview with the affected
+**Preview & apply** buttons. Applying first opens a preview with the affected
 pages and elements; the admin confirms before applying. Applying uses atomic
 file writes, replaces every element with the matching `data-jaco-template`
 marker and creates no backups; the marker is preserved on the replacement root.
@@ -86,7 +86,7 @@ jaco/_template/site/footer-en.html  →  data-jaco-template="footer-en"
 jaco/_template/site/footer-de.html  →  data-jaco-template="footer-de"
 ```
 
-“Apply to all” then changes only the pages carrying that exact marker. There is
+“Preview & apply” then changes only the pages carrying that exact marker. There is
 no implicit language detection.
 
 ## Inline editor
