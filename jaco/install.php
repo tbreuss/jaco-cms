@@ -109,7 +109,10 @@ function install_protect_data(Config $config): void
     }
     @file_put_contents(
         $config->dataDir . '/.htaccess',
-        "# Operator data: templates and backups of the site. Never serve directly.\n"
+        "# Operator data: templates and backups of the site. Never serve directly, and\n"
+        . "# never expose a directory listing if the deny rule is overridden.\n"
+        . "Options -Indexes\n"
+        . "\n"
         . "Require all denied\n",
     );
 }

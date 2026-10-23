@@ -156,7 +156,10 @@ and every sensitive directory (`jaco-data/`, `jaco/runtime/`, `jaco/vendor/`,
 `jaco/backend/`, `jaco/test/`, `jaco/schema/`, `jaco/language/`) contains a
 `.htaccess` with `Require all denied`, and `media/` never executes PHP
 (the installer writes its `.htaccess` when creating the directory).
-Verify that hidden files are deployed (some SCP clients skip dotfiles).
+Verify that hidden files are deployed (some SCP clients skip dotfiles), and
+that Apache honours them: `AllowOverride` must at least allow `AuthConfig` and
+`FileInfo` (usually `AllowOverride All`). With `AllowOverride None` every
+`.htaccess` is ignored and `jaco-data/` becomes readable over the web.
 
 On Nginx `.htaccess` files are ignored: copy the location blocks from
 `nginx-jaco.conf.example` in this directory
