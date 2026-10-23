@@ -9,10 +9,11 @@ test('admin can open the site template editor', async ({page}) => {
 
   await page.goto('/jaco/#!/templates')
   await expect(page.locator('h1')).toHaveText('Site templates')
+  await page.locator('#templateFile').selectOption('e2e-footer.html')
   await expect(page.locator('#templateFile')).toHaveValue('e2e-footer.html')
   await expect(page.locator('#templateName')).toHaveValue('e2e-footer')
   await expect(page.locator('#ace')).toBeVisible()
-  await expect(page.locator('input[type=checkbox]')).toBeEnabled()
+  await expect(page.getByRole('button', {name: 'Apply to all pages'})).toBeEnabled()
 })
 
 
@@ -25,15 +26,22 @@ test('admin can preview and apply a site template', async ({page}) => {
 
   await page.goto('/jaco/#!/templates')
   await expect(page.locator('#ace')).toBeVisible()
+  await page.locator('#templateFile').selectOption('e2e-footer.html')
+  await expect(page.locator('#templateName')).toHaveValue('e2e-footer')
+  await expect(page.locator('#ace')).toContainText('E2E footer')
   await page.evaluate(() => {
     ace.edit('ace').setValue('<footer>After apply</footer>')
   })
-  await page.locator('input[type=checkbox]').check()
-  await page.getByRole('button', {name: 'Save'}).first().click()
+  await page.getByRole('button', {name: 'Apply to all pages'}).click()
 
   await expect(page.locator('.modal h2')).toHaveText('Apply template to all pages?')
   await expect(page.locator('.modal')).toContainText('1 pages with 1 elements')
-  await page.getByRole('button', {name: 'Apply to all'}).click()
+  const layers = await page.evaluate(() => ({
+    modal: Number(getComputedStyle(document.querySelector('.modal')).zIndex),
+    gutter: Number(getComputedStyle(document.querySelector('.ace_gutter')).zIndex),
+  }))
+  expect(layers.modal).toBeGreaterThan(layers.gutter)
+  await page.locator('.modal').getByRole('button', {name: 'Apply to all'}).click()
 
   const response = await page.request.get('/e2e-template-page.html')
   expect(response.ok()).toBeTruthy()

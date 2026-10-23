@@ -1,6 +1,7 @@
 import {t} from '../model/i18n.js'
 import {SiteTemplateModel} from '../model/SiteTemplateModel.js'
 import {ButtonSecondary} from '../component/ButtonSecondary.js'
+import {ButtonDanger} from '../component/ButtonDanger.js'
 import {ButtonPrimary} from '../component/ButtonPrimary.js'
 import {ButtonGroup} from '../component/ButtonGroup.js'
 import {Fieldset} from '../component/Fieldset.js'
@@ -23,10 +24,8 @@ export const state = {
   errors: [],
   file: '',
   savedContent: null,
-  applyToAll: false,
   initialized: false,
   preview: null,
-  previewClose: false,
 }
 
 const isDirty = () => editor && state.savedContent !== null && editor.getValue() !== state.savedContent
@@ -79,7 +78,6 @@ const selectFile = (file) => {
   state.file = file
   SiteTemplateModel.load(file).then(() => {
     state.savedContent = SiteTemplateModel.item.content
-    state.applyToAll = false
     state.initialized = true
     if (editor) {
       editor.setValue(SiteTemplateModel.item.content, 1)
@@ -98,8 +96,8 @@ const onInitComponent = () => {
   state.errors = []
   state.file = ''
   state.savedContent = null
-  state.applyToAll = false
   state.initialized = false
+  state.preview = null
   SiteTemplateModel.item = {}
   SiteTemplateModel.loadList().then(() => {
     if (SiteTemplateModel.list.length > 0) {
@@ -184,17 +182,16 @@ const performSave = (applyToAll, closeAfterSave) => {
 }
 
 const requestSave = (closeAfterSave) => {
+  return performSave(false, closeAfterSave)
+}
+
+const requestApply = () => {
   if (!auth.can('admin') || !editor) {
     return Promise.resolve()
   }
-  if (!state.applyToAll) {
-    return performSave(false, closeAfterSave)
-  }
-
   return SiteTemplateModel.preview()
     .then((preview) => {
       state.preview = preview
-      state.previewClose = closeAfterSave
       m.redraw()
     })
     .catch(() => {
@@ -208,6 +205,11 @@ export const onSaveButtonClicked = (event) => {
   return requestSave(false)
 }
 
+export const onApplyClicked = (event) => {
+  event.redraw = false
+  return requestApply()
+}
+
 const onSaveAndCloseButtonClicked = (event) => {
   event.redraw = false
   return requestSave(true)
@@ -215,22 +217,12 @@ const onSaveAndCloseButtonClicked = (event) => {
 
 const closePreview = () => {
   state.preview = null
-  state.previewClose = false
   m.redraw()
 }
 
 const confirmApply = () => {
-  const closeAfterSave = state.previewClose
   state.preview = null
-  state.previewClose = false
-  return performSave(true, closeAfterSave)
-}
-
-const saveWithoutApplying = () => {
-  const closeAfterSave = state.previewClose
-  state.preview = null
-  state.previewClose = false
-  return performSave(false, closeAfterSave)
+  return performSave(true, false)
 }
 
 const previewDialog = () => {
@@ -266,11 +258,11 @@ const previewDialog = () => {
         m('ul', state.preview.files.map((item) => m('li', item.file))),
       )
       : m('p', t('No elements with this marker were found.')),
+    m('p', t('The current editor content is saved before applying.')),
     m('p', t('No backups are created when applying to all pages.')),
     m(ButtonGroup, {wrap: 'div.row.text-right'},
       m(ButtonSecondary, {onclick: closePreview}, m('span', t('Cancel'))),
-      m(ButtonSecondary, {onclick: saveWithoutApplying}, m('span', t('Save without applying'))),
-      m(ButtonPrimary, {onclick: confirmApply, disabled: files === 0}, m(Icon, {name: 'check'}), m('span', t('Apply to all')))
+      m(ButtonDanger, {onclick: confirmApply, disabled: files === 0}, m(Icon, {name: 'check'}), m('span', t('Apply to all')))
     )
   ))
 }
@@ -320,20 +312,7 @@ export const TemplateView = {
                 m('label', {style: {width: '100%'}}, t('HTML')),
                 m('div#ace', {style: {width: '100%'}})
               ),
-              m('div.row',
-                m('label', {style: {width: '100%'}},
-                  m('input', {
-                    type: 'checkbox',
-                    checked: state.applyToAll,
-                    disabled: !canEdit,
-                    onchange: ({target}) => {
-                      state.applyToAll = target.checked
-                    },
-                  }),
-                  ' ' + t('Apply to all pages')
-                ),
-                m('p', t('No backups are created when applying to all pages.'))
-              ),
+              m('p', t('No backups are created when applying to all pages.')),
               m(FormErrors, {errors: state.errors}),
               m(ButtonGroup, {wrap: 'div.row.text-right'},
                 m(ButtonSecondary, {onclick: onCancelButtonClicked}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
@@ -346,7 +325,12 @@ export const TemplateView = {
                   onclick: onSaveAndCloseButtonClicked,
                   disabled: !canEdit,
                   title: canEdit ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
-                }, m(Icon, {name: 'check'}), m('span', t('Save & Close')))
+                }, m(Icon, {name: 'check'}), m('span', t('Save & Close'))),
+                m(ButtonDanger, {
+                  onclick: onApplyClicked,
+                  disabled: !canEdit,
+                  title: canEdit ? t('Apply to all pages') + ' – ' + t('No backups are created when applying to all pages.') : t('Apply to all pages') + ' – ' + t('Your role does not allow this.'),
+                }, m(Icon, {name: 'copy'}), m('span', t('Apply to all pages')))
               )
             )
       ),

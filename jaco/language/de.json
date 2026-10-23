@@ -248,5 +248,7 @@
     "No elements with this marker were found.": "Keine Elemente mit diesem Marker gefunden.",
     "Save without applying": "Ohne Anwenden speichern",
     "Apply to all": "Auf alle anwenden",
-    "Could not preview the template.": "Die Vorschau der Vorlage konnte nicht geladen werden."
+    "Could not preview the template.": "Die Vorschau der Vorlage konnte nicht geladen werden.",
+    "Template": "Vorlage",
+    "The current editor content is saved before applying.": "Der aktuelle Editorinhalt wird vor dem Anwenden gespeichert."
 }

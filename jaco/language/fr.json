@@ -248,5 +248,7 @@
     "No elements with this marker were found.": "Aucun élément avec ce marqueur n’a été trouvé.",
     "Save without applying": "Enregistrer sans appliquer",
     "Apply to all": "Appliquer à toutes",
-    "Could not preview the template.": "Impossible de prévisualiser le modèle."
+    "Could not preview the template.": "Impossible de prévisualiser le modèle.",
+    "Template": "Modèle",
+    "The current editor content is saved before applying.": "Le contenu actuel de l’éditeur est enregistré avant l’application."
 }

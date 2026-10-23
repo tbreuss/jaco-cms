@@ -248,5 +248,7 @@
     "No elements with this marker were found.": "No elements with this marker were found.",
     "Save without applying": "Save without applying",
     "Apply to all": "Apply to all",
-    "Could not preview the template.": "Could not preview the template."
+    "Could not preview the template.": "Could not preview the template.",
+    "Template": "Template",
+    "The current editor content is saved before applying.": "The current editor content is saved before applying."
 }
