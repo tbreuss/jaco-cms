@@ -51,6 +51,16 @@
     document.addEventListener('DOMContentLoaded', wire)
   }
 
+  // The language switch always goes to the other language's start page.
+  const setLanguageTarget = () => {
+    const link = document.querySelector('.nav-utility a')
+    if (!link) {
+      return
+    }
+    const isGerman = (document.documentElement.lang || 'en').toLowerCase().startsWith('de')
+    link.setAttribute('href', isGerman ? '/index.html' : '/de/index.html')
+  }
+
   // The active menu item is derived from the current URL, so every page can
   // ship the same navigation markup.
   const setActive = () => {
@@ -69,9 +79,14 @@
     })
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setActive)
-  } else {
+  const initNavigation = () => {
+    setLanguageTarget()
     setActive()
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNavigation)
+  } else {
+    initNavigation()
   }
 })()

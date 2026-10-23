@@ -89,6 +89,17 @@ jaco/_template/site/footer-de.html  →  data-jaco-template="footer-de"
 “Preview & apply” then changes only the pages carrying that exact marker. There is
 no implicit language detection.
 
+The site itself uses this pattern for both the top navigation and the footer:
+
+```text
+nav-en.html, nav-de.html
+footer-en.html, footer-de.html
+```
+
+`assets/nav.js` derives the active menu item from the current URL and sends
+the language switch to the other language's index page, so the navigation
+template can be identical on all pages of one language.
+
 ## Inline editor
 
 The inline editor toolbar offers **Page settings**, **Cancel** and **Save**.
