@@ -119,6 +119,12 @@ export const LoginView = {
     state.password = ''
     state.totpCode = ''
     state.errors = []
+    // The public demo link opts in to pre-filled credentials. Do not put the
+    // password itself in the URL; the viewer account is intentionally public.
+    if (m.route.param('demo') === '1') {
+      state.username = 'demo'
+      state.password = 'demo1234'
+    }
   },
   view: () => m(ModalSmall, {
       title: t('Login'),

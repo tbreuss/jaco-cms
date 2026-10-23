@@ -17,8 +17,20 @@
     --accent: light-dark(#2563eb, #60a5fa);
     --accent-soft: #eff6ff;
     --accent-soft: light-dark(#eff6ff, #1e293b);
+    --accent-2: #0f766e;
+    --accent-2: light-dark(#0f766e, #5eead4);
+    --accent-2-soft: #ecfdf5;
+    --accent-2-soft: light-dark(#ecfdf5, #123b34);
+    --accent-3: #b45309;
+    --accent-3: light-dark(#b45309, #fbbf24);
+    --accent-3-soft: #fffbeb;
+    --accent-3-soft: light-dark(#fffbeb, #3a2a12);
     --border: #e5e7eb;
     --border: light-dark(#e5e7eb, #2a2f3a);
+    --hero-glow: color-mix(in srgb, var(--accent) 12%, transparent);
+    --hero-glow-soft: color-mix(in srgb, var(--accent) 4%, transparent);
+    --section-wash: color-mix(in srgb, var(--accent) 3%, var(--bg));
+    --section-edge: color-mix(in srgb, var(--accent) 10%, var(--border));
     --radius: 8px;
     --max: 64rem;
 }
@@ -37,7 +49,15 @@
     --muted: #9ca3af;
     --accent: #60a5fa;
     --accent-soft: #1e293b;
+    --accent-2: #5eead4;
+    --accent-2-soft: #123b34;
+    --accent-3: #fbbf24;
+    --accent-3-soft: #3a2a12;
     --border: #2a2f3a;
+    --hero-glow: color-mix(in srgb, var(--accent) 27%, transparent);
+    --hero-glow-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+    --section-wash: color-mix(in srgb, var(--accent) 5%, var(--bg));
+    --section-edge: color-mix(in srgb, var(--accent) 16%, var(--border));
 }
 
 * {
@@ -184,9 +204,17 @@ li {
 
 /* Hero */
 .hero {
-    padding: 3rem 0 2rem;
+    padding: 3rem 1rem 2rem;
     border-bottom: 1px solid var(--border);
     margin-bottom: 2rem;
+    margin-inline: -1rem;
+    background:
+        radial-gradient(ellipse 58% 110% at 94% 4%,
+            var(--hero-glow),
+            transparent 66%),
+        radial-gradient(ellipse 48% 90% at 8% 106%,
+            var(--hero-glow-soft),
+            transparent 70%);
 }
 
 .hero h1 {
@@ -205,20 +233,28 @@ li {
     display: inline-block;
     margin-top: 1rem;
     padding: 0.6rem 1.2rem;
-    background: var(--accent);
+    background-color: var(--accent);
+    background-image: none;
     color: #fff;
     border-radius: var(--radius);
     font-weight: 500;
+    position: relative;
+    z-index: 1;
 }
 
 .hero .cta:hover {
     text-decoration: none;
-    opacity: 0.9;
+    background-color: color-mix(in srgb, var(--accent) 88%, #000);
 }
 
 .hero .cta.secondary {
-    background: var(--border);
+    background-color: var(--border);
+    background-image: none;
     color: var(--fg);
+}
+
+.hero .cta.secondary:hover {
+    background-color: color-mix(in srgb, var(--border) 82%, var(--fg));
 }
 
 /* Page header on subpages */
@@ -513,6 +549,25 @@ th {
         padding-top: 0.5rem;
         margin-top: 0.25rem;
     }
+}
+
+/* Colored section bands and icon accents */
+.section-tint {
+    margin: 2rem -1rem;
+    padding: 1.5rem 1rem;
+    background: var(--bg);
+    background: var(--section-wash);
+    border-block: 1px solid var(--section-edge);
+}
+
+.features-why .feature-icon {
+    background: var(--accent-2-soft);
+    color: var(--accent-2);
+}
+
+.features-who .feature-icon {
+    background: var(--accent-3-soft);
+    color: var(--accent-3);
 }
 
 /* Feature icons */
