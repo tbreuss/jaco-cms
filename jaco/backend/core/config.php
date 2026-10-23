@@ -55,7 +55,14 @@ function write_settings(string $appDir, array $settings): bool
 
     $content .= '];' . PHP_EOL;
 
-    return file_put_contents($appDir . '/settings.php', $content) !== false;
+    $written = file_put_contents($appDir . '/settings.php', $content) !== false;
+
+    // keep credentials unreadable for other users on shared hosts
+    if ($written) {
+        @chmod($appDir . '/settings.php', 0640);
+    }
+
+    return $written;
 }
 
 /**

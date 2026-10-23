@@ -230,6 +230,11 @@ if ($isPost && !$checksFailed) {
                         . ($deleted
                             ? '<p>The installer deleted itself as expected.</p>'
                             : '<p class="fail">The installer could NOT delete itself, please remove <code>jaco/install.php</code> by hand right now.</p>')
+                        . '<p><strong>Next steps:</strong></p>'
+                        . '<ul>'
+                        . '<li>Make sure <code>jaco/settings.php</code> is <strong>not writable</strong> by the web server user.</li>'
+                        . '<li>Verify the <code>secretKey</code> in <code>jaco/settings.php</code> is at least 32 random characters.</li>'
+                        . '</ul>'
                         . '<p><a href="index.html">Open the admin panel</a></p>',
                 );
                 exit(0);

@@ -106,5 +106,56 @@ function security_checks(Config $config): array
         $checks[] = ['label' => $label, 'ok' => \is_file($file), 'detail' => $file];
     }
 
+    // Installer must not be reachable after setup
+    $checks[] = [
+        'label' => 'Installer removed',
+        'ok' => !\is_file($config->appDir . '/install.php'),
+        'detail' => $config->appDir . '/install.php',
+    ];
+
+    // settings.php must not be writable by the web user
+    $settingsFile = $config->appDir . '/settings.php';
+    $checks[] = [
+        'label' => 'Settings not writable',
+        'ok' => !\is_file($settingsFile) || !\is_writable($settingsFile),
+        'detail' => $settingsFile,
+    ];
+
+    // secretKey must be set and long enough
+    $secretKey = $config->secretKey;
+    $checks[] = [
+        'label' => 'Secret key set',
+        'ok' => \is_string($secretKey) && \strlen($secretKey) >= 32,
+        'detail' => $secretKey ? \strlen($secretKey) . ' chars' : 'not set',
+    ];
+
+    // Upload directory must exist and be writable
+    $checks[] = [
+        'label' => 'Upload directory writable',
+        'ok' => \is_dir($config->uploadDir) && \is_writable($config->uploadDir),
+        'detail' => $config->uploadDir,
+    ];
+
+    // Directory permissions should not be world-writable (0777)
+    $dirsToCheck = [
+        $config->uploadDir,
+        $config->backupDir,
+        \dirname($config->loginHistoryFile),
+    ];
+    $tooOpen = [];
+    foreach ($dirsToCheck as $dir) {
+        if (\is_dir($dir)) {
+            $perms = \fileperms($dir) & 0777;
+            if ($perms === 0777) {
+                $tooOpen[] = $dir . ' (' . \decoct($perms) . ')';
+            }
+        }
+    }
+    $checks[] = [
+        'label' => 'Directory permissions not too open',
+        'ok' => \count($tooOpen) === 0,
+        'detail' => \count($tooOpen) > 0 ? \implode(', ', $tooOpen) : 'all ok',
+    ];
+
     return $checks;
 }
