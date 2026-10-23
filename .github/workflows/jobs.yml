@@ -86,14 +86,6 @@ jobs:
                   php-version: 8.4
                   tools: composer:v2
 
-            - name: Install PHP dependencies
-              run: composer install --working-dir jaco --no-dev --prefer-dist --no-progress --no-suggest --optimize-autoloader
-
-            - name: Cleanup directory
-              run: |
-                  rm -rf .git .github jaco/test
-                  rm .editorconfig .gitignore Dockerfile jaco/.php-cs-fixer.php
-
             - name: Create settings.php file
               env:
                   SETTINGS_PHP_FILE_CONTENT: ${{ secrets.SETTINGS_PHP_FILE_CONTENT }}
@@ -102,14 +94,89 @@ jobs:
                   # "$2y$..." and the shell would expand those dollar signs.
                   printf '%s\n' "$SETTINGS_PHP_FILE_CONTENT" > jaco/settings.php
 
-            - name: Deploy code to ${{ vars.SSH_TARGET }} on server ${{ vars.SSH_HOST }} with scp
+            # The checkout is the source tree, not the deployment: stage only what
+            # belongs on the server. jaco-data/ and media/ are operator data that
+            # the server owns - a deploy must never overwrite or delete them.
+            - name: Stage application
+              run: |
+                  mkdir -p deploy/app
+                  rsync -a --delete \
+                      --exclude 'test/' --exclude '.php-cs-fixer.php' \
+                      --exclude '.php-cs-fixer.cache' --exclude '.deptrac.cache' \
+                      --exclude '.phpunit.cache' --exclude '.phpunit.result.cache' \
+                      --exclude 'phpunit.xml' --exclude 'phpstan.neon' --exclude 'deptrac.yaml' \
+                      --exclude 'composer.json' --exclude 'composer.lock' --exclude 'api.http' \
+                      --exclude '/vendor/' \
+                      --exclude '/.htaccess' \
+                      --exclude '.DS_Store' \
+                      jaco/ deploy/app/jaco/
+                  # Dependencies for the runtime, without dev packages.
+                  composer install --working-dir deploy/app/jaco --no-dev --prefer-dist --no-progress --optimize-autoloader
+                  # Protect the installed dependencies: vendor/ is not served.
+                  printf '%s\n' '# Third-party code: never serve directly.' 'Require all denied' > deploy/app/jaco/vendor/.htaccess
+
+            - name: Stage website
+              run: |
+                  mkdir -p deploy/site
+                  rsync -a \
+                      .htaccess \
+                      index.html 404.html features.html docs.html download.html \
+                      privacy.html imprint.html elements.html \
+                      assets de \
+                      deploy/site/
+                  # Operator data stays on the server. Ship only the deny file and
+                  # the template samples; backups and uploads are never deployed.
+                  mkdir -p deploy/site/jaco-data/backups deploy/site/media
+                  rsync -a jaco-data/.htaccess jaco-data/templates/ deploy/site/jaco-data/
+                  rsync -a media/.htaccess deploy/site/media/
+
+            - name: Verify staged application
+              run: |
+                  test -f deploy/app/jaco/api.php
+                  test -f deploy/app/jaco/vendor/autoload.php
+                  test -f deploy/app/jaco/settings.php
+                  test ! -d deploy/app/jaco/test
+                  # operator data must never be part of the application payload
+                  test ! -d deploy/app/jaco-data
+                  test ! -d deploy/app/jaco/_backup
+                  test ! -d deploy/app/jaco/_template
+
+            - name: Verify staged website
+              run: |
+                  test -f deploy/site/index.html
+                  test -f deploy/site/de/index.html
+                  # the root .htaccess carries the Authorization forwarding for
+                  # api.php and the cache rules: without it the admin breaks
+                  test -f deploy/site/.htaccess
+                  test -f deploy/site/jaco-data/.htaccess
+                  # the checkout's backups and uploads never travel with a deploy
+                  test -z "$(find deploy/site/jaco-data/backups -type f ! -name '.gitignore' -print -quit)"
+                  test -z "$(find deploy/site/media -type f ! -name '.htaccess' -print -quit)"
+
+            - name: Deploy application to ${{ vars.SSH_TARGET }}/jaco
               uses: appleboy/scp-action@master
               with:
                   host: ${{ vars.SSH_HOST }}
                   username: ${{ secrets.SSH_USERNAME }}
                   password: ${{ secrets.SSH_PASSWORD }}
                   port: 22
-                  source: .
+                  source: deploy/app/
                   target: ${{ vars.SSH_TARGET }}
+                  # Replaces the application only: jaco-data/ and media/ live
+                  # next to this directory and stay untouched.
                   rm: true
-                  strip_components: 1
+                  strip_components: 2
+
+            - name: Deploy website to ${{ vars.SSH_TARGET }}
+              uses: appleboy/scp-action@master
+              with:
+                  host: ${{ vars.SSH_HOST }}
+                  username: ${{ secrets.SSH_USERNAME }}
+                  password: ${{ secrets.SSH_PASSWORD }}
+                  port: 22
+                  source: deploy/site/
+                  target: ${{ vars.SSH_TARGET }}
+                  # Overwrites pages and assets, never deletes: operator data
+                  # (jaco-data/, media/) is untouched because it is not in the payload.
+                  rm: false
+                  strip_components: 2
