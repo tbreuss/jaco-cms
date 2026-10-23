@@ -105,13 +105,15 @@ jobs:
                       --exclude '.php-cs-fixer.cache' --exclude '.deptrac.cache' \
                       --exclude '.phpunit.cache' --exclude '.phpunit.result.cache' \
                       --exclude 'phpunit.xml' --exclude 'phpstan.neon' --exclude 'deptrac.yaml' \
-                      --exclude 'composer.json' --exclude 'composer.lock' --exclude 'api.http' \
+                      --exclude 'api.http' \
                       --exclude '/vendor/' \
                       --exclude '/.htaccess' \
                       --exclude '.DS_Store' \
                       jaco/ deploy/app/jaco/
                   # Dependencies for the runtime, without dev packages.
                   composer install --working-dir deploy/app/jaco --no-dev --prefer-dist --no-progress --optimize-autoloader
+                  # composer.json and composer.lock are build inputs, not runtime files.
+                  rm -f deploy/app/jaco/composer.json deploy/app/jaco/composer.lock
                   # Protect the installed dependencies: vendor/ is not served.
                   printf '%s\n' '# Third-party code: never serve directly.' 'Require all denied' > deploy/app/jaco/vendor/.htaccess
 
