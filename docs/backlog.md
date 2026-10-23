@@ -22,7 +22,6 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Consolidate component CSS under a `.j-` prefix | Component classes (`.modal`, `.field-error`, `.form-errors`, `.list-filter`, `.m-notification`) have no namespace while Quill (`.ql-*`), Ace (`.ace_*`) and QUnit (`.qunit-*`) all do. Rename component-owned classes to `.j-*` to avoid collisions if a third-party library ever ships the same class. Note: `.m-*` was likely meant as "message", not a namespace — do not extend it. | M |
 | open | Paginate lists, collapse admin navigation on mobile | Filter/sort only, no limit/offset; full navbar without a mobile menu. Lists slow down and the admin is barely usable on phones. | M |
 | open | Skeleton tables for list loading states | Lists pop in after loading instead of rendering in a stable frame. Build one `SkeletonTable` component (rows × columns matching each view) shown during `isLoading`, used by every list. Deliberately no route-level blocking on data (would trade shift for silence on slow connections). | M |
-| open | Dark mode for the Quill editor chrome | Toolbars, link/image dialogs and the media picker use fixed light colors (`#fff`, `#eee`, `#ccc`), while the website and admin follow `--bg`/`--fg`/`--border`. In dark mode the editor is a bright island. Theme the Quill chrome and its dialogs from the same tokens (or add a dark override) and verify toolbar, picker, dialogs and embedded media in both themes. | M |
 | open | Tables in the rich-text editor | The sanitizer allows `table`/`tr`/`td`, but the Quill toolbar has no table tool. Menus and price lists cannot be built without hand-written HTML. | M |
 | open | Duplicate content blocks | Blocks can only be added empty (from fragment) or deleted. Duplicating a filled block as a template for the next entry is the most common click for recurring content. | S |
 | open | Reorder blocks without draggable | Only `draggable` lists reorder; `top`/`bottom`/`any` have no grip and no up/down buttons. Changing order means delete plus recreate. | S |
@@ -43,6 +42,7 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 
 | Item | Commit |
 | --- | --- |
+| Dark mode for the Quill editor chrome | `feat: theme the Quill editor chrome` |
 | 404 page for the public website | `feat: finish the public 404 page` |
 | Translate the inline editor and media picker | `feat: translate the inline editor and media picker` |
 | Choose uploaded images in the editor | `feat: add a media picker for image markers` |

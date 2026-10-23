@@ -1,12 +1,12 @@
 [data-jaco-editable] {
-    outline: 1px solid #ddd;
+    outline: 1px solid var(--border, #ddd);
     border: 1px solid rgba(255, 255, 255, 0);
     min-height: 1rem;
     margin-bottom: 1rem;
 }
 
 [data-jaco-editable-line] {
-    outline: 1px solid #ddd;
+    outline: 1px solid var(--border, #ddd);
     min-height: 1rem;
 }
 
@@ -43,15 +43,15 @@
 }
 
 [data-jaco-editable-image] {
-    outline: 1px solid #ddd;
+    outline: 1px solid var(--border, #ddd);
 }
 
 [data-jaco-editable-image-extended] {
-    outline: 1px solid #ddd;
+    outline: 1px solid var(--border, #ddd);
 }
 
 [data-jaco-editable-link] {
-    outline: 1px solid #ddd;
+    outline: 1px solid var(--border, #ddd);
     display: inline-block;
 }
 
@@ -80,9 +80,9 @@
 #editableLink {
     position: absolute;
     z-index: 20;
-    background: #eee;
-    color: #222;
-    outline: 1px solid #ccc;
+    background: var(--bg, #eee);
+    color: var(--fg, #222);
+    outline: 1px solid var(--border, #ccc);
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
     padding: 8px;
     display: flex;
@@ -90,15 +90,15 @@
 }
 
 #editableLink label {
-    color: #555;
+    color: var(--muted, #555);
     font-size: 0.9rem;
 }
 
 #editableLink input[type=text] {
     display: inline;
-    background-color: #fff;
-    color: #222;
-    border: 1px solid #ccc;
+    background-color: var(--bg, #fff);
+    color: var(--fg, #222);
+    border: 1px solid var(--border, #ccc);
     line-height: 1rem;
     font-size: 0.9rem;
     margin: 0;
@@ -106,9 +106,9 @@
 
 #editableLink select {
     display: inline;
-    background-color: #fff;
-    color: #222;
-    border: 1px solid #ccc;
+    background-color: var(--bg, #fff);
+    color: var(--fg, #222);
+    border: 1px solid var(--border, #ccc);
     line-height: 1rem;
     font-size: 0.9rem;
     margin: 0;
@@ -117,9 +117,9 @@
 #editableImageExtended {
     position: absolute;
     z-index: 20;
-    background: #eee;
-    color: #222;
-    outline: 1px solid #ccc;
+    background: var(--bg, #eee);
+    color: var(--fg, #222);
+    outline: 1px solid var(--border, #ccc);
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
     padding: 8px;
     display: flex;
@@ -128,15 +128,15 @@
 
 #editableImageExtended label {
     display: inline;
-    color: #555;
+    color: var(--muted, #555);
     font-size: 0.9rem;
 }
 
 #editableImageExtended input[type=text] {
     display: inline;
-    background-color: #fff;
-    color: #222;
-    border: 1px solid #ccc;
+    background-color: var(--bg, #fff);
+    color: var(--fg, #222);
+    border: 1px solid var(--border, #ccc);
     line-height: 1rem;
     font-size: 0.9rem;
     margin: 0;
@@ -144,9 +144,9 @@
 
 #editableImageExtended input[type=file] {
     display: inline;
-    background-color: #fff;
-    color: #222;
-    border: 1px solid #ccc;
+    background-color: var(--bg, #fff);
+    color: var(--fg, #222);
+    border: 1px solid var(--border, #ccc);
     line-height: 1rem;
     font-size: 0.9rem;
     margin: 0;
@@ -272,13 +272,13 @@
 }
 
 a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
-    color: #363636;
+    color: var(--muted, #363636);
     cursor: default;
     text-decoration: none;
 }
 
 .ql-toolbar.ql-snow {
-    background-color: #eee;
+    background-color: var(--bg, #eee);
     white-space: nowrap;
     z-index: 20;
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
@@ -293,31 +293,31 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
     align-items: center;
     gap: 6px;
     padding: 8px;
-    background: #eee;
-    color: #222;
-    outline: 1px solid #ccc;
+    background: var(--bg, #eee);
+    color: var(--fg, #222);
+    outline: 1px solid var(--border, #ccc);
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
     transform: translate(-50%, -50%);
 }
 
 #editableVideo label {
-    color: #555;
+    color: var(--muted, #555);
     font-size: 0.9rem;
 }
 
 #editableVideo input[type=text] {
     width: min(42vw, 420px);
     padding: 2px 4px;
-    border: 1px solid #ccc;
-    background: #fff;
-    color: #222;
+    border: 1px solid var(--border, #ccc);
+    background: var(--bg, #fff);
+    color: var(--fg, #222);
     font-size: 0.9rem;
 }
 
 #editableVideo button {
-    border: 1px solid #ccc;
-    background: #fff;
-    color: #222;
+    border: 1px solid var(--border, #ccc);
+    background: var(--bg, #fff);
+    color: var(--fg, #222);
     cursor: pointer;
     padding: 2px 8px;
 }
@@ -339,9 +339,9 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
 #editableLink button,
 #editableImageExtended button,
 #editableVideo button {
-    border: 1px solid #ccc;
-    background: #fff;
-    color: #222;
+    border: 1px solid var(--border, #ccc);
+    background: var(--bg, #fff);
+    color: var(--fg, #222);
     cursor: pointer;
     padding: 3px 8px;
     font: inherit;
@@ -352,8 +352,8 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
 #editableLink button:hover,
 #editableImageExtended button:hover,
 #editableVideo button:hover {
-    background: #e8e8e8;
-    border-color: #999;
+    background: var(--accent-soft, #e8e8e8);
+    border-color: var(--muted, #999);
 }
 
 /* Media picker for image markers: choose an existing upload instead of
@@ -374,9 +374,9 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
     max-height: calc(100vh - 2rem);
     overflow: auto;
     padding: 1rem;
-    background: #f7f7f7;
-    color: #222;
-    outline: 1px solid #ccc;
+    background: var(--bg, #f7f7f7);
+    color: var(--fg, #222);
+    outline: 1px solid var(--border, #ccc);
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
 }
 
@@ -394,9 +394,9 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
 }
 
 .jaco-media-header button {
-    border: 1px solid #ccc;
-    background: #fff;
-    color: #222;
+    border: 1px solid var(--border, #ccc);
+    background: var(--bg, #fff);
+    color: var(--fg, #222);
     cursor: pointer;
     font-size: 1.2rem;
     line-height: 1;
@@ -408,15 +408,15 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
 }
 
 .jaco-media-actions button {
-    border: 1px solid #ccc;
-    background: #fff;
-    color: #222;
+    border: 1px solid var(--border, #ccc);
+    background: var(--bg, #fff);
+    color: var(--fg, #222);
     cursor: pointer;
     padding: 0.35rem 0.7rem;
 }
 
 .jaco-media-status {
-    color: #555;
+    color: var(--muted, #555);
     margin: 0;
 }
 
@@ -429,17 +429,17 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
 .jaco-media-item {
     min-width: 0;
     padding: 0.25rem;
-    border: 1px solid #ccc;
-    background: #fff;
-    color: #222;
+    border: 1px solid var(--border, #ccc);
+    background: var(--bg, #fff);
+    color: var(--fg, #222);
     cursor: pointer;
     text-align: left;
 }
 
 .jaco-media-item:hover,
 .jaco-media-item:focus-visible {
-    border-color: #888;
-    background: #e8e8e8;
+    border-color: var(--muted, #888);
+    background: var(--accent-soft, #e8e8e8);
 }
 
 .jaco-media-item img {
@@ -460,15 +460,15 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
 /* Quill's link/video tooltip is part of the editor chrome; match the spacing
    and light control palette of the custom dialogs. */
 .ql-snow .ql-tooltip {
-    background: #eee;
-    border: 1px solid #ccc;
+    background: var(--bg, #eee);
+    border: 1px solid var(--border, #ccc);
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
-    color: #222;
+    color: var(--fg, #222);
     padding: 6px 8px;
 }
 
 .ql-snow .ql-tooltip::before {
-    color: #555;
+    color: var(--muted, #555);
     font-size: 0.9rem;
     margin-right: 6px;
 }
@@ -476,14 +476,14 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
 .ql-snow .ql-tooltip input[type=text] {
     height: 24px;
     padding: 2px 4px;
-    border: 1px solid #ccc;
-    background: #fff;
-    color: #222;
+    border: 1px solid var(--border, #ccc);
+    background: var(--bg, #fff);
+    color: var(--fg, #222);
     font-size: 0.9rem;
 }
 
 .ql-snow .ql-tooltip a {
-    color: #222;
+    color: var(--fg, #222);
 }
 
 .ql-snow .ql-tooltip a.ql-action,
@@ -491,16 +491,16 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
     display: inline-block;
     margin-left: 6px;
     padding: 3px 8px;
-    border: 1px solid #ccc;
-    background: #fff;
+    border: 1px solid var(--border, #ccc);
+    background: var(--bg, #fff);
     font-size: 0.9rem;
     line-height: 1.2;
 }
 
 .ql-snow .ql-tooltip a.ql-action:hover,
 .ql-snow .ql-tooltip a.ql-remove:hover {
-    background: #e8e8e8;
-    border-color: #999;
+    background: var(--accent-soft, #e8e8e8);
+    border-color: var(--muted, #999);
 }
 
 .ql-snow .ql-tooltip a.ql-action::after {
@@ -511,4 +511,69 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
 
 .ql-snow .ql-tooltip a.ql-remove::before {
     margin-left: 0;
+}
+
+/* Quill's own snow chrome and icons follow the site theme as well. */
+.ql-toolbar.ql-snow {
+    outline: 1px solid var(--border, #ccc);
+}
+
+.ql-snow .ql-stroke,
+.ql-snow .ql-stroke-miter {
+    stroke: var(--fg, #444);
+}
+
+.ql-snow .ql-fill,
+.ql-snow .ql-stroke.ql-fill {
+    fill: var(--fg, #444);
+}
+
+.ql-snow .ql-picker {
+    color: var(--fg, #444);
+}
+
+.ql-snow .ql-picker-options,
+.ql-snow .ql-picker.ql-expanded .ql-picker-options {
+    background-color: var(--bg, #fff);
+    border-color: var(--border, #ccc);
+}
+
+.ql-snow .ql-picker.ql-expanded .ql-picker-label {
+    color: var(--muted, #ccc);
+}
+
+.ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-fill {
+    fill: var(--muted, #ccc);
+}
+
+.ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-stroke {
+    stroke: var(--muted, #ccc);
+}
+
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) button:hover .ql-stroke,
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) button:focus .ql-stroke,
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) button.ql-active .ql-stroke,
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) .ql-picker-label:hover .ql-stroke,
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) .ql-picker-label.ql-active .ql-stroke,
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) .ql-picker-item:hover .ql-stroke,
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) .ql-picker-item.ql-selected .ql-stroke {
+    stroke: var(--accent, #06c);
+}
+
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) button:hover .ql-fill,
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) button:focus .ql-fill,
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) button.ql-active .ql-fill,
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) .ql-picker-label:hover .ql-fill,
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) .ql-picker-label.ql-active .ql-fill,
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) .ql-picker-item:hover .ql-fill,
+:is(.ql-snow.ql-toolbar, .ql-snow .ql-toolbar) .ql-picker-item.ql-selected .ql-fill {
+    fill: var(--accent, #06c);
+}
+
+.ql-container.ql-snow {
+    outline-color: var(--border, #ccc);
+}
+
+.ql-editor.ql-blank::before {
+    color: var(--muted, #999);
 }
