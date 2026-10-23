@@ -1,8 +1,8 @@
-# Jaco CMS – https://jaco-cms.tebe.ch/
+# Jaco CMS – https://jaco.tebe.ch/
 # The admin area is not content: keep crawlers out of it.
 User-agent: *
 Disallow: /jaco/
 Disallow: /jaco-data/
 Disallow: /media/
 
-Sitemap: https://jaco-cms.tebe.ch/sitemap.xml
+Sitemap: https://jaco.tebe.ch/sitemap.xml
