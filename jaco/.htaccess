@@ -1,15 +1,15 @@
-# Jaco application directory. Only two files and the admin shell are public,
-# everything else is denied - including files that nobody listed here.
+# Jaco application directory. Only the API entry point and the admin shell are
+# public, everything else is denied - including files that nobody listed here.
 # This file must not enable the rewrite engine: the Authorization forwarding
 # for /jaco/api.php lives in the root .htaccess and child rewrite rules would
 # override it.
 Options -Indexes
 
-# The API entry point and the admin shell.
+# Everything is internal. The two public entry points are granted afterwards:
+# while this file is evaluated the requested name is not known yet, so the
+# order of the sections decides. A deny that comes last would win for them too.
+Require all denied
+
 <FilesMatch "^(api\.php|index\.html)$">
     Require all granted
 </FilesMatch>
-
-# Everything else in this directory is internal. jaco/frontend/ overrides this
-# with its own list; the other subdirectories carry their own deny file.
-Require all denied

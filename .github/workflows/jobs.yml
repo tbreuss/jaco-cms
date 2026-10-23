@@ -107,7 +107,6 @@ jobs:
                       --exclude 'phpunit.xml' --exclude 'phpstan.neon' --exclude 'deptrac.yaml' \
                       --exclude 'api.http' \
                       --exclude '/vendor/' \
-                      --exclude '/.htaccess' \
                       --exclude '.DS_Store' \
                       jaco/ deploy/app/jaco/
                   # Dependencies for the runtime, without dev packages.
@@ -138,6 +137,9 @@ jobs:
                   test -f deploy/app/jaco/api.php
                   test -f deploy/app/jaco/vendor/autoload.php
                   test -f deploy/app/jaco/settings.php
+                  # without this file settings.php, cli.php and install.php
+                  # would be served: the whitelist lives here
+                  test -f deploy/app/jaco/.htaccess
                   test ! -d deploy/app/jaco/test
                   # operator data must never be part of the application payload
                   test ! -d deploy/app/jaco-data
