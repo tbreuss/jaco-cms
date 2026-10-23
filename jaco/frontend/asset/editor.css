@@ -155,6 +155,8 @@
 /* Quill drops the iframe width/height attributes while editing; restore the
    intended 16:9 box so the block does not jump in height. */
 .ql-editor iframe.ql-video {
+    pointer-events: none;
+    cursor: pointer;
     display: block;
     width: 100%;
     max-width: 560px;
@@ -280,6 +282,44 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
     white-space: nowrap;
     z-index: 20;
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
+}
+
+#editableVideo {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    background: #eee;
+    color: #222;
+    outline: 1px solid #ccc;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
+    transform: translate(-50%, -50%);
+}
+
+#editableVideo label {
+    color: #555;
+    font-size: 0.9rem;
+}
+
+#editableVideo input[type=text] {
+    width: min(42vw, 420px);
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #222;
+    font-size: 0.9rem;
+}
+
+#editableVideo button {
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    padding: 2px 8px;
 }
 
 /* Media picker for image markers: choose an existing upload instead of

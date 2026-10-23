@@ -307,9 +307,70 @@ window.openMediaPicker = async (targetImage, onUpload = null) => {
     })
 }
 
+
+window.removeVideoDialog = () => {
+  document.getElementById('editableVideo')?.remove()
+}
+
+const findVideoAtPoint = (event) => {
+  const editor = event.target.closest('.ql-editor')
+  if (!editor) {
+    return null
+  }
+  return [...editor.querySelectorAll('iframe.ql-video')].find((frame) => {
+    const rect = frame.getBoundingClientRect()
+    return event.clientX >= rect.left && event.clientX <= rect.right
+      && event.clientY >= rect.top && event.clientY <= rect.bottom
+  }) || null
+}
+
+window.openVideoDialog = (frame) => {
+  window.removeVideoDialog()
+
+  const dialog = document.createElement('div')
+  dialog.id = 'editableVideo'
+  dialog.setAttribute('role', 'dialog')
+  dialog.setAttribute('aria-label', t('Video URL', 'Video URL'))
+
+  const label = document.createElement('label')
+  label.innerText = t('Video URL', 'Video URL')
+
+  const input = document.createElement('input')
+  input.type = 'text'
+  input.value = frame.getAttribute('src') || ''
+  input.oninput = (event) => {
+    frame.setAttribute('src', event.target.value)
+  }
+
+  const remove = document.createElement('button')
+  remove.type = 'button'
+  remove.innerText = t('Remove video', 'Remove video')
+  remove.onclick = () => {
+    frame.remove()
+    dialog.remove()
+  }
+
+  const close = document.createElement('button')
+  close.type = 'button'
+  close.innerText = t('Close', 'Close')
+  close.onclick = () => dialog.remove()
+
+  dialog.append(label, input, remove, close)
+  document.body.appendChild(dialog)
+  input.focus()
+}
+
 window.addClickHandler = () => {
   document.addEventListener('click', async (event) => {
-    if (event.target.closest('.ql-container, .ql-toolbar, [data-jaco-is-editing], #editableImageExtended, #editableLink, #editableMedia, .jaco-content-add-button, .jaco-content-item-bar')) {
+    const video = findVideoAtPoint(event)
+    if (video) {
+      event.preventDefault()
+      await editorMessagesReady
+      window.openVideoDialog(video)
+      return
+    }
+
+    if (event.target.closest('.ql-container, .ql-toolbar, [data-jaco-is-editing], #editableImageExtended, #editableLink, #editableMedia, #editableVideo, .jaco-content-add-button, .jaco-content-item-bar')) {
       //event.stopPropagation()
       return
     }
@@ -688,6 +749,7 @@ window.removeLinks = () => {
 
 window.removeRichTextEditorElements = () => {
   window.removeMediaPicker?.()
+  window.removeVideoDialog?.()
   document.querySelectorAll('.ql-editor').forEach((element) => {
     element.parentElement.classList.remove('ql-container', 'ql-snow')
     // remove empty class attribute
