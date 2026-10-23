@@ -214,5 +214,15 @@
     "Add block here": "Block hier hinzufügen",
     "Add draggable block": "Verschiebbaren Block hinzufügen",
     "Video URL": "Video-URL",
-    "Remove": "Entfernen"
+    "Remove": "Entfernen",
+    "Normal": "Normal",
+    "Visit URL:": "URL besuchen:",
+    "Enter link:": "Link eingeben:",
+    "Enter video:": "Video eingeben:",
+    "Heading 1": "Überschrift 1",
+    "Heading 2": "Überschrift 2",
+    "Heading 3": "Überschrift 3",
+    "Heading 4": "Überschrift 4",
+    "Heading 5": "Überschrift 5",
+    "Heading 6": "Überschrift 6"
 }

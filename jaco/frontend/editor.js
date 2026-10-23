@@ -360,6 +360,36 @@ window.openVideoDialog = (frame) => {
   input.focus()
 }
 
+
+const cssString = (value) => JSON.stringify(String(value))
+
+const localizeQuillChrome = () => {
+  let style = document.getElementById('jacoQuillTranslations')
+  if (!style) {
+    style = document.createElement('style')
+    style.id = 'jacoQuillTranslations'
+    document.head.appendChild(style)
+  }
+  style.textContent = `
+.ql-snow .ql-tooltip::before { content: ${cssString(t('Visit URL:', 'Visit URL:'))}; }
+.ql-snow .ql-tooltip[data-mode=link]::before { content: ${cssString(t('Enter link:', 'Enter link:'))}; }
+.ql-snow .ql-tooltip[data-mode=video]::before { content: ${cssString(t('Enter video:', 'Enter video:'))}; }
+.ql-snow .ql-tooltip a.ql-action::after { content: ${cssString(t('Edit', 'Edit'))}; }
+.ql-snow .ql-tooltip.ql-editing a.ql-action::after { content: ${cssString(t('Save', 'Save'))}; }
+.ql-snow .ql-tooltip a.ql-remove::before { content: ${cssString(t('Remove', 'Remove'))}; }
+`
+
+  document.querySelectorAll('.ql-picker.ql-header').forEach((picker) => {
+    picker.querySelectorAll('.ql-picker-label, .ql-picker-item').forEach((item) => {
+      const value = item.getAttribute('data-value')
+      item.setAttribute('data-label',
+        value ? t('Heading ' + value, 'Heading ' + value) : t('Normal', 'Normal'))
+    })
+  })
+}
+
+window.localizeQuillChrome = localizeQuillChrome
+
 window.addClickHandler = () => {
   document.addEventListener('click', async (event) => {
     const video = findVideoAtPoint(event)
@@ -401,6 +431,8 @@ window.addClickHandler = () => {
         theme: 'snow'
       }
       new Quill(editable, editorOptions)
+      localizeQuillChrome()
+      editorMessagesReady.then(localizeQuillChrome)
       handlePosition(editable)
       return
     }
@@ -440,6 +472,8 @@ window.addClickHandler = () => {
         },
         theme: 'snow'
       })
+      localizeQuillChrome()
+      editorMessagesReady.then(localizeQuillChrome)
       handlePosition(editableLine)
       return
     }

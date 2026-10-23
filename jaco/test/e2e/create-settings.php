@@ -17,6 +17,11 @@ $settings = [
             'password' => password_hash('test-password', PASSWORD_DEFAULT),
             'role' => 'viewer',
         ],
+        'admin_de' => [
+            'password' => password_hash('test-password', PASSWORD_DEFAULT),
+            'role' => 'admin',
+            'language' => 'de',
+        ],
     ],
     'secretKey' => bin2hex(random_bytes(32)),
     'defaultLanguage' => 'en',

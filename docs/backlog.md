@@ -30,7 +30,7 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | open | Restore recently deleted blocks | A deleted block is gone (page-level restore only via backup). A per-list trash buffer would defuse misclicks. | S |
 | open | Semantic heading inside the line editor | The line editor wraps text in a `<p>` (Quill default block); a CSS override in `editor.css` keeps the heading look while editing. Alternative: a clipboard matcher (`P` → `header` level from the host tag) for real `<h1>`–`<h6>` during edit. Only worth it if DevTools-semantics while editing ever matter. | S |
 | open | Share one Ace editor helper across views | `PageEditView`, `CssEditView` and `BackupEditView` copy the same `ace.edit` setup with slightly different lifecycles (single instance twice, recreate-per-update once). Every lifecycle fix has to be thought through three times. Bundle creation, theme watching and destroy in one `lib/` helper; views keep only their save and content logic. | S |
-| open | Light theme flash on hard refresh | Briefly shows the light theme on hard refresh in dark mode. Not reproducible headless (admin boot, editors and preview are dark from the first frame); needs the exact spot (admin chrome, preview iframe, editor toolbar, window) plus theme setting and browser to narrow down. | S |
+| open | Light theme flash on hard refresh | Briefly shows the light theme on hard refresh in dark mode. Not reproducible headless (admin boot, editors and preview are dark from the first frame); needs the exact spot (admin chrome, preview iframe, editor toolbar, window) plus theme setting and browser to narrow down. Deferred: explicitly not a release blocker. | S |
 | done | Triage the unmerged feature branches | All feature branches were deleted: `feat/content-templates`, `feat/js-editor`, `feat/draggable-content-blocks` and `feat/configurable-upload-dir` were never merged, `feat/password-hashing` and `feat/role-aware-ui` had already been merged as pull requests, `json-schema` is three and a half years old, and `feat/process-runner` was closed without merging (the process runner was not needed). `git branch` is a signal again. | S |
 | open | Shortcuts in the command palette | The palette lists the commands but binds no keys: every command is reached by typing or by clicking. The registry has no `shortcut` field and the palette shows no shortcut column. Alt+letter is out (browsers reserve several combinations), so the candidates are Ctrl/Cmd+letter or a modifier-free key. | S |
 | open | Recently used commands on top of the palette | The palette always shows the registry order. Commands that are used often should float to the top, so the two or three that matter are one keypress away. Needs a place to keep the history (session or local storage) and a cap. | S |
@@ -42,6 +42,7 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 
 | Item | Commit |
 | --- | --- |
+| Translate Quill's internal labels | `feat: translate Quill toolbar labels` |
 | Dark mode for the Quill editor chrome | `feat: theme the Quill editor chrome` |
 | 404 page for the public website | `feat: finish the public 404 page` |
 | Translate the inline editor and media picker | `feat: translate the inline editor and media picker` |
