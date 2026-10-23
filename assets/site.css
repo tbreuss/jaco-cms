@@ -25,6 +25,10 @@
     --accent-3: light-dark(#b45309, #fbbf24);
     --accent-3-soft: #fffbeb;
     --accent-3-soft: light-dark(#fffbeb, #3a2a12);
+    --accent-4: #7c3aed;
+    --accent-4: light-dark(#7c3aed, #c4b5fd);
+    --accent-4-soft: #f5f3ff;
+    --accent-4-soft: light-dark(#f5f3ff, #2e2140);
     --border: #e5e7eb;
     --border: light-dark(#e5e7eb, #2a2f3a);
     --hero-glow: color-mix(in srgb, var(--accent) 12%, transparent);
@@ -53,6 +57,8 @@
     --accent-2-soft: #123b34;
     --accent-3: #fbbf24;
     --accent-3-soft: #3a2a12;
+    --accent-4: #c4b5fd;
+    --accent-4-soft: #2e2140;
     --border: #2a2f3a;
     --hero-glow: color-mix(in srgb, var(--accent) 27%, transparent);
     --hero-glow-soft: color-mix(in srgb, var(--accent) 12%, transparent);
@@ -560,14 +566,19 @@ th {
     border-block: 1px solid var(--section-edge);
 }
 
+.features-keep .feature-icon {
+    background: var(--accent-3-soft);
+    color: var(--accent-3);
+}
+
 .features-why .feature-icon {
     background: var(--accent-2-soft);
     color: var(--accent-2);
 }
 
 .features-who .feature-icon {
-    background: var(--accent-3-soft);
-    color: var(--accent-3);
+    background: var(--accent-4-soft);
+    color: var(--accent-4);
 }
 
 /* Feature icons */
