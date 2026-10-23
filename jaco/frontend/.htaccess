@@ -1,0 +1,13 @@
+# The admin shell is loaded by the browser, so this directory stays reachable.
+# A whitelist keeps it to what the app actually serves: JavaScript and
+# stylesheets. Anything else - a PHP file, a backup, a note, a dotfile - is
+# not public, whatever ends up here.
+Options -Indexes
+
+<FilesMatch "(?i)\.(js|mjs|css)$">
+    Require all granted
+</FilesMatch>
+
+<FilesMatch "(?i)^(?!.*\.(js|mjs|css)$).+">
+    Require all denied
+</FilesMatch>

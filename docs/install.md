@@ -165,8 +165,17 @@ Jaco lives entirely in the web root, so the web server must deny direct
 access to the internals. On Apache this ships with the project: `jaco/`
 and every sensitive directory (`jaco-data/`, `jaco/runtime/`, `jaco/vendor/`,
 `jaco/backend/`, `jaco/test/`, `jaco/schema/`, `jaco/language/`) contains a
-`.htaccess` with `Require all denied`, and `media/` never executes PHP
-(the installer writes its `.htaccess` when creating the directory).
+`.htaccess` with `Require all denied`. `jaco/frontend/` stays reachable for the
+admin shell but serves only static files. `media/` serves images and PDFs and
+never executes PHP (the installer writes its `.htaccess` when creating the
+directory).
+
+`jaco/vendor/` only gets its `.htaccess` from `composer install`; a manual
+install that skips it shows up as a red **Vendor protection (.htaccess)** check
+on the System page. Create it by hand if needed:
+
+    printf '%s\n' '# Third-party code: never serve directly.' 'Require all denied' > jaco/vendor/.htaccess
+
 Verify that hidden files are deployed (some SCP clients skip dotfiles), and
 that Apache honours them: `AllowOverride` must at least allow `AuthConfig` and
 `FileInfo` (usually `AllowOverride All`). With `AllowOverride None` every

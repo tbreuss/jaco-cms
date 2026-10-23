@@ -5,7 +5,8 @@
 Options -Indexes
 
 # Credentials, installer, CLI entry and build metadata. api.php and index.html
-# in this directory stay public, jaco/frontend/ is served normally.
-<FilesMatch "^(settings\.php|install\.php|cli\.php|routes\.php|autoload\.php|composer\.(json|lock)|phpunit\.xml|api\.http|.*\.(neon|yaml|dist|md))$">
+# in this directory stay public, jaco/frontend/ is served normally. Keep this
+# list complete: a file that is not listed here is served if it appears.
+<FilesMatch "^(settings\.php|install\.php|cli\.php|routes\.php|autoload\.php|composer\.(json|lock)|phpunit\.xml|api\.http|.*\.(neon|yaml|dist|md|log|txt|json|bak|orig|swp))$">
     Require all denied
 </FilesMatch>

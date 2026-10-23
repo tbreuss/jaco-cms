@@ -35,10 +35,12 @@ server {
     }
 
     # Everything except the entry points and public assets is internal.
-    # Order matters: specific denies first, the frontend regex last.
+    # Order matters: specific denies first, the frontend block last.
     location = /jaco/settings.php { deny all; }
     location = /jaco/install.php  { deny all; }
     location = /jaco/cli.php      { deny all; }
+    # Everything in jaco/ except the two entry points and frontend/.
+    location ~ ^/jaco/.+\.(neon|yaml|dist|md|log|txt|json|bak|orig|swp)$ { deny all; }
     location ^~ /jaco-data/      { deny all; }
     location ^~ /jaco/runtime/   { deny all; }
     location ^~ /jaco/vendor/    { deny all; }
@@ -49,6 +51,17 @@ server {
 
     # Editor uploads: serve, never execute PHP through them.
     location ~ ^/media/.*\.ph(p|ar|tml|t|ps)$ { deny all; }
+
+    # The admin shell stays reachable, but only as a whitelist: JavaScript and
+    # stylesheets. Anything else in frontend/ is denied, whatever it is.
+    location ^~ /jaco/frontend/ {
+        location ~* \.(js|mjs|css)$ {
+            try_files $uri =404;
+        }
+        location / {
+            deny all;
+        }
+    }
 
     # Behind a reverse proxy also forward the header:
     # proxy_set_header Authorization $http_authorization;
