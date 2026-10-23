@@ -8,6 +8,13 @@
 server {
     # ... server_name, root, listen directives ...
 
+    # Public-site 404. Keep the response status 404 and do not expose the
+    # error page as a directly editable/normal 200 URL.
+    error_page 404 /404.html;
+    location = /404.html {
+        internal;
+    }
+
     # The API authenticates via "Authorization: Bearer <jwt>": without this
     # line PHP never sees the header and every authenticated call answers 403.
     location ~ \.php$ {

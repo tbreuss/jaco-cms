@@ -173,6 +173,8 @@ The Playwright smoke suite covers every admin route for the admin, editor and
 viewer roles, including role-specific read-only views and redirects: start,
 pages and page editor, the inline editor and page modals, media and upload
 detail, backups and backup detail, CSS, password, the system pages and logout.
+It also covers the public English and German pages, the editable elements
+reference and the branded 404 page.
 It needs Node ≥ 22, an installed Google Chrome (the same browser the QUnit
 runner uses) and a test-only `settings.php`:
 

@@ -23,7 +23,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   webServer: {
-    command: 'php -S 127.0.0.1:8899 -t ../../..',
+    command: 'php -S 127.0.0.1:8899 -t ../../.. router.php',
     url: 'http://127.0.0.1:8899/jaco/',
     reuseExistingServer: !process.env.CI,
     timeout: 30000,
