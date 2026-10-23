@@ -182,6 +182,40 @@ router\get(
 );
 
 router\get(
+    route: 'template/site/list',
+    callback: jaco\api\template\site\list\action(...),
+    authenticated: true,
+    role: 'viewer',
+    responseSchema: 'template/site/list/response.json',
+);
+
+router\get(
+    route: 'template/site/view',
+    callback: jaco\api\template\site\view\action(...),
+    authenticated: true,
+    role: 'viewer',
+    responseSchema: 'template/site/view/response.json',
+);
+
+router\post(
+    route: 'template/site/preview',
+    callback: jaco\api\template\site\preview\action(...),
+    authenticated: true,
+    role: 'admin',
+    requestSchema: 'template/site/preview/request.json',
+    responseSchema: 'template/site/preview/response.json',
+);
+
+router\post(
+    route: 'template/site/update',
+    callback: jaco\api\template\site\update\action(...),
+    authenticated: true,
+    role: 'admin',
+    requestSchema: 'template/site/update/request.json',
+    responseSchema: 'template/site/update/response.json',
+);
+
+router\get(
     route: 'template/pages',
     callback: jaco\api\template\pages\action(...),
     authenticated: true,

@@ -77,6 +77,20 @@ final class FileSystemNamingTest extends TestCase
         $this->assertSame(self::DIR . '/noext-2', filesystem\file_name_to_write($config->webDir, self::DIR . '/noext'));
     }
 
+    public function testAtomicWriteReplacesTheFileWithoutLeavingTemporaryFiles(): void
+    {
+        $config = test_config();
+        $file = 'naming-atomic.html';
+        $this->assertTrue(filesystem\write_file_atomic($config, $config->webDir, $file, 'before'));
+        $this->assertSame('before', file_get_contents($config->webDir . '/' . $file));
+
+        $this->assertTrue(filesystem\write_file_atomic($config, $config->webDir, $file, 'after'));
+        $this->assertSame('after', file_get_contents($config->webDir . '/' . $file));
+        $this->assertSame([], glob($config->webDir . '/.jaco-*') ?: []);
+
+        @unlink($config->webDir . '/' . $file);
+    }
+
     public function testValidateFilenameAllowsSubdirectoriesButNoSpaces(): void
     {
         $this->assertTrue(filesystem\validate_filename('x.html'));

@@ -14,6 +14,7 @@ is one click.
 
 - Inline editor on the live site: rich text, single lines, links, images, YouTube embeds
 - Media library: upload once and reuse images and PDFs from the image picker
+- Site templates: reuse HTML fragments across pages, with separate names/markers for language variants, and apply one to all marked elements at once; the public navigation and footer use this mechanism
 - Page manager: create from templates, copy and delete — with backups
 - Page settings: title, meta description and robots, without editing HTML by hand
 - Content blocks: editors add, remove and reorder recurring sections by drag and drop

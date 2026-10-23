@@ -33,7 +33,7 @@
 </head>
 
 <body>
-  <ul class="navigation">
+  <ul class="navigation" data-jaco-template="nav-en">
     <li class="nav-toggle-item"><button type="button" class="nav-toggle" aria-expanded="false" aria-label="Open the navigation" title="Open the navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></li>
     <li><a href="index.html">Home</a></li>
     <li><a href="features.html">Features</a></li>
@@ -65,6 +65,7 @@
       <li><strong>Uploads:</strong> images and documents with extension checks and size limits; galleries create full-size versions.</li>
       <li><strong>Stylesheets:</strong> edit the site CSS from the admin panel, with the same backup protection as pages.</li>
       <li><strong>Page settings:</strong> edit the page title, meta description and robots value without touching the HTML source.</li>
+      <li><strong>Site templates:</strong> maintain reusable HTML fragments under <code>jaco/_template/site/</code> and apply one to every marked element across the public pages.</li>
       <li><strong>Roles:</strong> admin, editor and viewer accounts; viewers can inspect the site without changing it.</li>
     </ul>
     <h2>Keep changes safe</h2>
@@ -86,7 +87,7 @@
     are yours – existing or new. That constraint is what keeps the files
     portable and the setup small.</p>
   </div>
-  <footer>
+  <footer data-jaco-template="footer-en">
     <a href="imprint.html">Imprint</a> · <a href="privacy.html">Privacy</a>
   </footer>
 </body>

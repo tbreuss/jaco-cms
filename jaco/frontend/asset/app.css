@@ -1483,3 +1483,26 @@ a.list-group-item {
     background-color: var(--color-toast-success-bg);
     border-color: var(--color-toast-success-border);
 }
+
+/* Modal action rows: align destructive and secondary buttons on one baseline
+   instead of letting inline-flex heights shift the row. */
+.modal-inner .row.text-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.modal-inner .row.text-right button {
+    margin: 0;
+    min-height: 42px;
+}
+
+/* Ace draws its gutter at z-index 4; modals must stay above editor chrome. */
+.modal {
+    z-index: 5;
+}
+
+.m-notifications {
+    z-index: 6;
+}

@@ -92,3 +92,168 @@ function find_content_template(Config $config, string $file): Payload
         'content' => $content,
     ]);
 }
+
+const SITE_TEMPLATE_DIR = '_template/site';
+
+function site_template_dir(Config $config): string
+{
+    return $config->appDir . '/' . SITE_TEMPLATE_DIR;
+}
+
+function site_template_name(string $file): string
+{
+    return \pathinfo($file, PATHINFO_FILENAME);
+}
+
+function validate_site_template_file(string $file): array
+{
+    $file = data\sanitize_value($file, [['to_filename']]);
+    if ($file === '' || \pathinfo($file, PATHINFO_EXTENSION) !== 'html' || \basename($file) !== $file) {
+        return [null, [['file', 'Invalid template file.']]];
+    }
+
+    return [$file, []];
+}
+
+function find_site_templates(Config $config): Payload
+{
+    if (!\is_dir(site_template_dir($config))) {
+        return Payload::success([]);
+    }
+
+    $files = filesystem\find_files(site_template_dir($config), ['html']);
+    $items = [];
+    foreach ($files as $file) {
+        $items[] = [
+            'file' => $file->file,
+            'name' => site_template_name($file->file),
+            'created' => $file->modified,
+        ];
+    }
+
+    return Payload::success($items);
+}
+
+function find_site_template(Config $config, string $file): Payload
+{
+    [$file, $errors] = validate_site_template_file($file);
+    if ($file === null) {
+        return Payload::invalid($errors);
+    }
+    if (!\is_file(site_template_dir($config) . '/' . $file)) {
+        return Payload::invalid([['file', 'Template does not exist.']]);
+    }
+
+    $content = filesystem\read_file(site_template_dir($config), $file);
+    if ($content === null) {
+        return Payload::error([['file', 'Could not read template.']]);
+    }
+
+    return Payload::success([
+        'file' => $file,
+        'name' => site_template_name($file),
+        'created' => filesystem\file_mtime($file, site_template_dir($config)),
+        'content' => $content,
+    ]);
+}
+
+/**
+ * @return array{files: list<array{file: string, elements: int}>, elements: int}
+ */
+function preview_site_template(Config $config, string $name): array
+{
+    $files = filesystem\find_files_rec($config->webDir, $config->pageExtensions, [$config->appDir]);
+    $matches = [];
+    $elements = 0;
+    foreach ($files as $file) {
+        $html = filesystem\read_file($config->webDir, $file->file);
+        if ($html === null) {
+            continue;
+        }
+        $count = html\count_template_elements($html, $name);
+        if ($count > 0) {
+            $matches[] = ['file' => $file->file, 'elements' => $count];
+            $elements += $count;
+        }
+    }
+
+    return ['files' => $matches, 'elements' => $elements];
+}
+
+/**
+ * Apply one template to every public HTML page. This deliberately writes
+ * without a backup; the caller asked for a "no backup" operation.
+ *
+ * @return array{files: int, elements: int, failed: list<string>}
+ */
+function apply_site_template(Config $config, string $name): array
+{
+    $template = find_site_template($config, $name . '.html');
+    if (!$template->isSuccess) {
+        return ['files' => 0, 'elements' => 0, 'failed' => []];
+    }
+
+    $withMarker = html\template_with_marker($template->data['content'], $name);
+    if ($withMarker === null) {
+        return ['files' => 0, 'elements' => 0, 'failed' => []];
+    }
+
+    $files = filesystem\find_files_rec($config->webDir, $config->pageExtensions, [$config->appDir]);
+    $changedFiles = 0;
+    $changedElements = 0;
+    $failed = [];
+
+    foreach ($files as $file) {
+        $html = filesystem\read_file($config->webDir, $file->file);
+        if ($html === null) {
+            $failed[] = $file->file;
+            continue;
+        }
+        [$updated, $count] = html\replace_template_elements($html, $name, $withMarker);
+        if ($count === 0) {
+            continue;
+        }
+        if (!filesystem\write_file_atomic($config, $config->webDir, $file->file, $updated)) {
+            $failed[] = $file->file;
+            continue;
+        }
+        $changedFiles++;
+        $changedElements += $count;
+    }
+
+    return ['files' => $changedFiles, 'elements' => $changedElements, 'failed' => $failed];
+}
+
+function update_site_template(Config $config, string $file, string $content, bool $applyToAll): Payload
+{
+    [$file, $errors] = validate_site_template_file($file);
+    if ($file === null) {
+        return Payload::invalid($errors);
+    }
+    if (html\template_with_marker($content, site_template_name($file)) === null) {
+        return Payload::invalid([['content', 'Template must contain exactly one root element.']]);
+    }
+
+    $dir = site_template_dir($config);
+    if (!\is_dir($dir) && !filesystem\make_dir_rec($config, $config->appDir, SITE_TEMPLATE_DIR)) {
+        return Payload::error([['file', 'Could not create template directory.']]);
+    }
+    if (!filesystem\write_file_atomic($config, $dir, $file, $content)) {
+        return Payload::error([['file', 'Could not write template.']]);
+    }
+
+    $applied = ['files' => 0, 'elements' => 0, 'failed' => []];
+    if ($applyToAll) {
+        $applied = apply_site_template($config, site_template_name($file));
+    }
+
+    return Payload::success([
+        'file' => $file,
+        'name' => site_template_name($file),
+        'created' => filesystem\file_mtime($file, $dir),
+        'content' => $content,
+        'appliedFiles' => $applied['files'],
+        'appliedElements' => $applied['elements'],
+        'failed' => $applied['failed'],
+    ]);
+}

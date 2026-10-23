@@ -33,7 +33,7 @@
 </head>
 
 <body>
-  <ul class="navigation">
+  <ul class="navigation" data-jaco-template="nav-de">
     <li class="nav-toggle-item"><button type="button" class="nav-toggle" aria-expanded="false" aria-label="Navigation öffnen" title="Navigation öffnen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></li>
     <li><a href="de/index.html">Startseite</a></li>
     <li><a href="de/features.html">Funktionen</a></li>
@@ -66,6 +66,7 @@
       <li><strong>Uploads:</strong> Bilder und Dokumente mit Endungsprüfung und Grössenlimits; Galerien erzeugen Vollversionen.</li>
       <li><strong>Stylesheets:</strong> das Site-CSS im Admin-Panel bearbeiten, mit demselben Backup-Schutz wie Seiten.</li>
       <li><strong>Seiteneinstellungen:</strong> Seitentitel, Meta-Beschreibung und Robots-Wert bearbeiten, ohne den HTML-Quelltext zu öffnen.</li>
+      <li><strong>Website-Vorlagen:</strong> wiederverwendbare HTML-Fragmente unter <code>jaco/_template/site/</code> verwalten und eine Vorlage auf alle markierten Elemente der öffentlichen Seiten anwenden.</li>
       <li><strong>Rollen:</strong> Admin-, Editor- und Viewer-Konten; Viewer können die Website ansehen, ohne sie zu ändern.</li>
     </ul>
     <h2>Änderungen absichern</h2>
@@ -87,7 +88,7 @@
     Websites. HTML und Design gehören Ihnen – ob bestehend oder neu. Genau diese
     Einschränkung hält die Dateien portabel und die Installation klein.</p>
   </div>
-  <footer>
+  <footer data-jaco-template="footer-de">
     <a href="de/impressum.html">Impressum</a> · <a href="de/datenschutz.html">Datenschutz</a>
   </footer>
 </body>

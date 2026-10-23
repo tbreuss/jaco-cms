@@ -1,0 +1,11 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "fileName": {"type": "string"},
+        "content": {"type": "string"},
+        "applyToAll": {"type": "boolean"}
+    },
+    "required": ["fileName", "content", "applyToAll"],
+    "additionalProperties": false
+}
