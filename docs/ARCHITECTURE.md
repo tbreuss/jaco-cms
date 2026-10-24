@@ -90,3 +90,40 @@ flowchart TD
 ```
 
 This second diagram focuses on the user-access path: credentials are validated, the role is checked, a JWT/session is issued, and each protected action is gated by permission checks before any write is committed.
+
+## Permission split by feature area
+
+```mermaid
+flowchart TB
+    subgraph Editor[Editor role]
+        E1[Content pages]
+        E2[Media library]
+        E3[Page and block templates]
+        E4[Password change for own account]
+    end
+
+    subgraph Admin[Admin role]
+        A1[Design / CSS]
+        A2[Backups and restore]
+        A3[Site templates]
+        A4[System pages]
+        A5[Navigation and global settings]
+    end
+
+    User[Authenticated user] --> Route[Route check by purpose]
+    Route --> Editor
+    Route --> Admin
+
+    E1 --> ContentEdit[Edit page content]
+    E2 --> MediaOps[Upload and manage media]
+    E3 --> TemplateOps[Create or adjust templates]
+    E4 --> SelfPassword[Change own password]
+
+    A1 --> DesignOps[Modify design assets]
+    A2 --> BackupOps[Restore and manage backups]
+    A3 --> SiteTemplateOps[Manage site template fragments]
+    A4 --> SystemOps[Status and system diagnostics]
+    A5 --> AdminSettings[Admin-level configuration]
+```
+
+This third diagram reflects the role split described in the project: editors can work on content and templates, while administrators retain design, backup, system, and template-management access. Both roles can change their own password, but only the relevant role receives access to a given feature group.
