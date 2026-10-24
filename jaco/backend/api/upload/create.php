@@ -8,14 +8,10 @@ use jaco\domain\Payload;
 
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
-use function jaco\core\responder\maintenance_response;
 use function jaco\domain\upload\create_upload;
 
 function action(Config $config): Response
 {
-    if (($blocked = maintenance_response($config->maintenanceMode)) !== null) {
-        return $blocked;
-    }
 
     // multipart uploads are not JSON, the file comes from $_FILES
     $file = $_FILES['file'] ?? [];

@@ -41,8 +41,14 @@ These are the invariants and edge cases that tests cannot express on their own.
   `text/css` carries no script vector. Only `.css` files below the web root are accepted,
   `jaco/` is out of reach, and the previous version is backed up first
   (`jaco/backend/domain/css.php`).
-- **Maintenance mode blocks writes, not reads.** With `maintenanceMode` in
-  `settings.php` every mutating route (page create, update, update body, delete, copy,
+- **Maintenance mode blocks writes, not reads, and it is enforced centrally.**
+  Every route that changes data is a POST, so `router\dispatch()` blocks POST
+  requests with 503 while `maintenanceMode` is on; actions carry no check of
+  their own. Only the two routes in `router\MAINTENANCE_EXCEPTIONS` stay
+  available: `login` and `system/change-password`, the way back in.
+  `ApiMaintenanceTest` walks the route table and fails for any non-exempt POST
+  route that is not blocked. With
+  `maintenanceMode` in `settings.php` every mutating route (page create, update, update body, delete, copy,
   `css/update`, `upload/create`, `upload/delete`, `backup/restore`, `backup/delete`)
   answers with the maintenance response, while lists and views keep working. Every api
   response also carries the flag as an `X-Maintenance-Mode` header (`jaco/api.php`);

@@ -8,10 +8,17 @@ use jaco\core\config\Config;
 use jaco\core\http\Request;
 use jaco\core\http\Response;
 use jaco\core\http\Status;
+use jaco\core\responder;
 
 use function jaco\core\http\json_response;
 use function jaco\core\http\validate_request;
 use function jaco\core\http\validate_response;
+
+/**
+ * Routes that keep working while maintenanceMode is on. Everything else that
+ * changes data goes through a POST and is blocked there.
+ */
+const MAINTENANCE_EXCEPTIONS = ['login', 'system/change-password'];
 
 function &routes(): array
 {
@@ -79,6 +86,17 @@ function dispatch(Request $request, Config $config): Response
                 [['title' => '403 Forbidden', 'detail' => 'Your role does not allow this.']],
                 Status::FORBIDDEN,
             );
+        }
+    }
+
+    // Maintenance mode lives here, not in every action. Every route that changes
+    // data is a POST, so the method decides and a new writing route cannot slip
+    // past the brake by forgetting its own check. The two exceptions are the way
+    // back in: the login itself and changing the password.
+    if ($requestMethod === 'POST' && !\in_array($actionQuery, MAINTENANCE_EXCEPTIONS, true)) {
+        $blocked = responder\maintenance_response($config->maintenanceMode);
+        if ($blocked !== null) {
+            return $blocked;
         }
     }
 

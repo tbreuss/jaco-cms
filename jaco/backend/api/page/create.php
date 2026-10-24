@@ -10,14 +10,10 @@ use jaco\domain\Payload;
 
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
-use function jaco\core\responder\maintenance_response;
 use function jaco\domain\page\create_page;
 
 function action(Config $config, Request $request): Response
 {
-    if (($blocked = maintenance_response($config->maintenanceMode)) !== null) {
-        return $blocked;
-    }
 
     $payload = create_page(
         $config,

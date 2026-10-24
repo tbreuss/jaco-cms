@@ -16,8 +16,9 @@ use function jaco\domain\system\change_password;
 
 function action(Config $config, Request $request): Response
 {
-    // not behind maintenance_response(): changing the password is the way back in when
-    // something went wrong, and the owner needs it most while the mode is on
+    // exempt from maintenance mode through the route table: changing the password
+    // is the way back in when something went wrong, and the owner needs it most
+    // while the mode is on
     $claims = read_token($config, trim(substr(get_authorization_header($request), strlen('Bearer'))));
 
     // a demo account with a public password must not be able to lock the other
