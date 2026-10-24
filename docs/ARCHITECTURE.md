@@ -1,36 +1,36 @@
 # Jaco CMS Architecture Overview
 
-This project is a flat-file CMS: the public site remains static HTML, while the Jaco application manages editable regions, user accounts, media, templates, and backups without a database.
+Jaco keeps the public site as static HTML while the Jaco application handles inline editing, media, templates, backups, and roles. The website files stay portable and versionable, and the PHP backend manages the editing workflows through file-based storage instead of a database.
 
 ```mermaid
 flowchart LR
-    User[Website owner / editor]
+    User[Editor / owner]
     Browser[Browser]
 
-    subgraph PublicSite[Public website root]
+    subgraph PublicSite[Public site]
         HTML[Static HTML pages]
-        Markers[data-jaco-* edit markers]
+        Markers[data-jaco-* markers]
     end
 
-    subgraph JacoApp[Jaco application]
-        Frontend[Frontend UI\nMithril/JS + editor widgets]
-        API[PHP API layer\nbackend/api]
-        Domain[Domain logic\ncontent, auth, routing, settings]
-        Core[Core services\nconfig, HTTP, payload, auth helpers]
+    subgraph JacoApp[Jaco app]
+        Frontend[Frontend UI\nJS + editing widgets]
+        API[PHP API\nbackend/api]
+        Domain[Domain logic\ncontent, auth, settings]
+        Core[Core services\nconfig, HTTP, payload]
     end
 
-    subgraph Data[File-based storage]
-        Pages[Editable page files]
-        Templates[Site templates / fragments]
-        Media[Media library uploads]
-        Backups[Timestamped backups]
+    subgraph Storage[File-based storage]
+        Pages[Page files]
+        Templates[Templates / fragments]
+        Media[Media uploads]
+        Backups[Backups]
         State[jaco-data / runtime / logs]
     end
 
     subgraph Auth[Access control]
-        Users[User accounts]
-        Roles[Roles: admin / editor\nreadOnly + password rules]
-        JWT[JWT login + optional TOTP]
+        Accounts[User accounts]
+        Roles[Roles / permissions]
+        JWT[JWT + optional TOTP]
     end
 
     User --> Browser
@@ -39,10 +39,9 @@ flowchart LR
     API --> Domain
     Domain --> Core
 
-    Domain --> Users
+    Domain --> Accounts
     Domain --> Roles
     Domain --> JWT
-
     Domain --> Pages
     Domain --> Templates
     Domain --> Media
@@ -53,34 +52,19 @@ flowchart LR
     Pages --> HTML
     Markers --> Frontend
 
-    WebServer[Apache / Nginx / PHP runtime] --> Browser
+    WebServer[Apache / Nginx + PHP] --> Browser
     WebServer --> JacoApp
     WebServer --> PublicSite
-
-    classDef app fill:#dfefff,stroke:#3b82f6,stroke-width:1px;
-    classDef data fill:#e8f5e9,stroke:#22c55e,stroke-width:1px;
-    classDef auth fill:#fff3cd,stroke:#f59e0b,stroke-width:1px;
-    classDef user fill:#f3e8ff,stroke:#8b5cf6,stroke-width:1px;
-
-    class Frontend,API,Domain,Core app;
-    class Pages,Templates,Media,Backups,State,HTML data;
-    class Users,Roles,JWT auth;
-    class User,Browser,WebServer user;
 ```
 
-## How it fits together
+## Core runtime
 
-- The public site is plain HTML and remains portable and static.
-- Jaco marks editable regions with `data-jaco-*` attributes, which the frontend reads and edits inline.
-- The PHP backend exposes JSON APIs for page content, media, settings, templates, and user actions.
-- The domain layer handles business rules such as authorization, backup creation, and page updates.
-- Files on disk become the system of record: pages, templates, media, and backups are stored in the filesystem instead of a database.
-- The web server serves the public site and routes requests to the Jaco application, which protects internal/admin areas and manages content.
+- The public site remains plain HTML and can be served from a normal static hosting setup.
+- Markers such as `data-jaco-*` identify editable regions that the frontend can manipulate inline.
+- The PHP backend exposes JSON endpoints for page content, settings, templates, media, and system actions.
 
-## Key design characteristics
+## Storage and business logic
 
-- Flat-file architecture: no database required.
-- Inline editing directly on the live site.
-- Backup-first change flow: each mutation keeps a timestamped backup.
-- Role-based access control for admin/editor behavior.
-- PHP-based runtime with the application living beside the website content.
+- The domain layer applies the CMS rules: backups before updates, role checks, and page/settings workflows.
+- Page files, templates, media, and backups are stored on disk rather than in a database, which keeps the system portable and easy to version.
+- Access control is enforced through user accounts, roles, and JWT-based login with optional second-factor authentication.
