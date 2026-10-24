@@ -93,6 +93,12 @@ const onCreateComponent = () => {
 }
 
 const onInitComponent = () => {
+  // design is an admin area. No redirect here: a view must not navigate while it
+  // renders (that breaks tests and looks like a jump), so view() explains instead.
+  if (!auth.can('admin')) {
+    return
+  }
+
   window.addEventListener('beforeunload', beforeUnloadHandler)
   dirty.set(isDirty)
   if (!app.hasAuthToken()) {
@@ -200,7 +206,12 @@ export const CssEditView = {
   oncreate: onCreateComponent,
   onupdate: onUpdateComponent,
   onremove: onRemoveComponent,
-  view: () => m('div.main',
+  view: () => !auth.can('admin')
+    ? m('div.main', m('.content',
+      m('h1', t('Design')),
+      m('p', t('This page needs admin rights.')),
+    ))
+    : m('div.main',
     m('.content',
       m('h1', t(auth.can('admin') ? 'Edit CSS' : 'CSS'), CssEditModel.item.file ? ': ' + CssEditModel.item.file : ''),
       CssEditModel.isLoading

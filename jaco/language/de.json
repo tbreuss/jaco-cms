@@ -88,7 +88,6 @@
     "Pages": "Seiten",
     "Password": "Passwort",
     "Password changes are disabled for this account.": "Passwortänderungen sind für dieses Konto deaktiviert.",
-    "Read-only access: changes are not saved.": "Nur-Lesen-Zugriff: Änderungen werden nicht gespeichert.",
     "Requirements": "Anforderungen",
     "Restore": "Wiederherstellen",
     "Save & Close": "Speichern & Schliessen",
@@ -253,5 +252,7 @@
     "The current editor content is saved before applying.": "Der aktuelle Editorinhalt wird vor dem Anwenden gespeichert.",
     "Apply": "Anwenden",
     "Save & apply to all pages": "Speichern & auf alle Seiten anwenden",
-    "Preview & apply": "Vorschau & Anwenden"
+    "Preview & apply": "Vorschau & Anwenden",
+    "Demo: nothing is saved here. Log in with a regular account to make changes.": "Demo: hier wird nichts gespeichert. Zum Bearbeiten mit einem regulären Konto anmelden.",
+    "This page needs admin rights.": "Diese Seite ist Administratoren vorbehalten."
 }

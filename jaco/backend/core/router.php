@@ -20,6 +20,12 @@ use function jaco\core\http\validate_response;
  */
 const MAINTENANCE_EXCEPTIONS = ['login', 'system/change-password'];
 
+/**
+ * Routes a read-only account may still use although they are a POST. Everything
+ * else that changes data is refused for it; reading stays available.
+ */
+const READ_ONLY_EXCEPTIONS = ['template/site/preview'];
+
 function &routes(): array
 {
     static $routes = [];
@@ -72,6 +78,8 @@ function dispatch(Request $request, Config $config): Response
     // take the first one if multiple routes exist
     $route = reset($routes_by_method);
 
+    $claims = null;
+
     if ($route['authenticated'] === true) {
         $claims = check_authorization($config, $authorizationHeader);
 
@@ -87,6 +95,15 @@ function dispatch(Request $request, Config $config): Response
                 Status::FORBIDDEN,
             );
         }
+    }
+
+    // A read-only account keeps its role - usually admin - and only may not store:
+    // the routes, the role and the editor stay the same, so the whole interface can
+    // be shown while nothing can change.
+    if ($claims !== null && $claims['readOnly'] === true
+        && $requestMethod === 'POST'
+        && !\in_array($actionQuery, READ_ONLY_EXCEPTIONS, true)) {
+        return responder\read_only_response();
     }
 
     // Maintenance mode lives here, not in every action. Every route that changes
@@ -156,7 +173,7 @@ function call_action(Closure $action, Request $request, Config $config, ?string 
 /**
  * Claims of the token, or null when the header is missing or the token invalid.
  *
- * @return array{user: string, role: string, language: string, passwordChange: bool}|null
+ * @return array{user: string, role: string, language: string, readOnly: bool}|null
  */
 function check_authorization(Config $config, string $authorizationHeader): ?array
 {

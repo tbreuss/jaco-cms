@@ -17,12 +17,13 @@
 //             // ui language, empty falls back to defaultLanguage below
 //             'language' => 'de',
 //         ],
-//         'demo' => [
+//         'readonly' => [
 //             'password' => '<password-hash>',
-//             'role' => 'viewer',
-//             // a public demo must keep its seeded password, so visitors cannot
-//             // lock each other out by changing it; missing means true
-//             'passwordChange' => false,
+//             // a real admin, so the whole interface can be shown; 'readOnly'
+//             // keeps the role but refuses every write - the password included,
+//             // so a public demo keeps its seeded credentials
+//             'role' => 'admin',
+//             'readOnly' => true,
 //         ],
 //         'admin' => [
 //             'password' => '<password-hash>',

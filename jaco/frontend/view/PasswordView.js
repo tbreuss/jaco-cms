@@ -63,12 +63,6 @@ export const PasswordView = {
       m.route.set('/logout')
       return
     }
-    // a demo account may be forbidden to change its public password; the link is
-    // hidden, this keeps a stale direct link from opening the form
-    if (!auth.canChangePassword()) {
-      m.route.set('/')
-      return
-    }
     // never keep a password from a previous visit in memory or in the form
     state.current = ''
     state.next = ''

@@ -61,44 +61,44 @@ final class AuthTest extends TestCase
         $this->assertSame('', $claims['language']);
     }
 
-    public function testTokenCarriesThePasswordChangePermission(): void
+    public function testTokenCarriesTheReadOnlyFlag(): void
     {
         $config = test_config_with(['users' => [
-            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'viewer', 'passwordChange' => false],
+            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'admin', 'readOnly' => true],
         ]]);
 
         $token = (string) auth\authenticate($config, TEST_USERNAME, TEST_PASSWORD);
         $claims = auth\read_token($config, $token);
 
         $this->assertIsArray($claims);
-        $this->assertFalse($claims['passwordChange'], 'the current record forbids the change');
-        $this->assertFalse($this->decode($token)['passwordChange'], 'the claim carries the permission');
+        $this->assertTrue($claims['readOnly'], 'the current record is read-only');
+        $this->assertTrue($this->decode($token)['readOnly'], 'the claim carries the flag');
     }
 
-    public function testRevokingPasswordChangeAppliesToExistingTokens(): void
+    public function testRevokingReadOnlyAppliesToExistingTokens(): void
     {
-        $allowed = test_config_with(['users' => [
-            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'viewer', 'passwordChange' => true],
+        $readOnly = test_config_with(['users' => [
+            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'admin', 'readOnly' => true],
         ]]);
-        $token = (string) auth\authenticate($allowed, TEST_USERNAME, TEST_PASSWORD);
-        $this->assertTrue($this->decode($token)['passwordChange']);
+        $token = (string) auth\authenticate($readOnly, TEST_USERNAME, TEST_PASSWORD);
+        $this->assertTrue($this->decode($token)['readOnly']);
 
-        $revoked = test_config_with(['users' => [
-            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'viewer', 'passwordChange' => false],
+        $regular = test_config_with(['users' => [
+            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'admin'],
         ]]);
 
-        // the record wins over the claim, so revoking does not wait for the token to expire
-        $this->assertFalse(auth\read_token($revoked, $token)['passwordChange'] ?? true);
+        // the record wins over the claim, so a change does not wait for the token to expire
+        $this->assertFalse(auth\read_token($regular, $token)['readOnly'] ?? true);
     }
 
-    public function testPasswordChangeIsAllowedByDefault(): void
+    public function testAnAccountIsWritableByDefault(): void
     {
         $config = test_config();
 
         $token = (string) auth\authenticate($config, TEST_USERNAME, TEST_PASSWORD);
 
-        $this->assertTrue($this->decode($token)['passwordChange']);
-        $this->assertTrue(auth\read_token($config, $token)['passwordChange'] ?? false);
+        $this->assertFalse($this->decode($token)['readOnly']);
+        $this->assertFalse(auth\read_token($config, $token)['readOnly'] ?? true);
     }
 
     public function testTokenIsSignedWithTheConfiguredAlgorithm(): void
@@ -191,27 +191,28 @@ final class AuthTest extends TestCase
         ])));
     }
 
-    public function testTokenWithoutRoleFallsBackToViewer(): void
+    public function testTokenWithoutRoleIsRejected(): void
     {
         $config = test_config();
 
-        // a token issued before roles existed (or one that still carries the old admin
-        // flag) keeps working, but only with the least privilege
-        $claims = auth\read_token($config, $this->tokenWithoutAdminClaim());
-
-        $this->assertNotNull($claims);
-        $this->assertSame(auth\ROLE_VIEWER, $claims['role']);
-        $this->assertFalse(auth\role_allows($claims['role'], auth\ROLE_EDITOR));
+        // a token without a role claim is rejected instead of falling back
+        $this->assertNull(auth\read_token($config, $this->tokenWithoutAdminClaim()));
     }
 
-    public function testAnUnknownRoleFallsBackToViewer(): void
+    public function testAnUnknownRoleIsRejected(): void
     {
         $config = test_config();
 
-        $claims = auth\read_token($config, $this->tokenWith(claims: ['role' => 'boss']));
+        $this->assertNull(auth\read_token($config, $this->tokenWith(claims: ['role' => 'boss'])));
+    }
 
-        $this->assertNotNull($claims);
-        $this->assertSame(auth\ROLE_VIEWER, $claims['role']);
+    public function testAnAccountWithAnUnknownRoleCannotLogIn(): void
+    {
+        $config = test_config_with(['users' => [
+            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'boss'],
+        ]]);
+
+        $this->assertNull(auth\authenticate($config, TEST_USERNAME, TEST_PASSWORD));
     }
 
     public function testGarbageIsRejected(): void

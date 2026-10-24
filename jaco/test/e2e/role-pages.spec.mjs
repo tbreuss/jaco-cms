@@ -9,14 +9,12 @@ import {test, expect} from '@playwright/test'
 const passwords = {
   admin: 'test-password',
   editor: 'test-password',
-  viewer: 'test-password',
 }
 
 const view = (selector, text = null) => ({selector, text})
 const everyRole = (selector, text = null) => ({
   admin: view(selector, text),
   editor: view(selector, text),
-  viewer: view(selector, text),
 })
 
 const routes = [
@@ -28,7 +26,6 @@ const routes = [
     roles: {
       admin: view('h1', 'Edit page'),
       editor: view('h1', 'Edit page'),
-      viewer: view('h1', 'View page'),
     },
   },
   {name: 'Inline editor', path: '/page-edit', roles: everyRole('.dialog', 'Save')},
@@ -65,8 +62,8 @@ const routes = [
     path: '/css',
     roles: {
       admin: view('h1', 'Edit CSS'),
-      editor: view('h1', 'CSS'),
-      viewer: view('h1', 'CSS'),
+      // design is an admin area: an editor sees a message, no redirect
+      editor: view('p', 'This page needs admin rights.'),
     },
   },
   {

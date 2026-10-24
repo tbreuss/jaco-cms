@@ -7,12 +7,13 @@ const TOKEN_ISSUER = 'ch.tebe.jaco';
 const TOKEN_TTL = 86400; // tokens are valid for 24 hours
 const TOKEN_ALGORITHM = 'HS256';
 
-// roles, lowest privilege first. A route names the role it needs, role_allows()
-// compares the rank, and an unknown role in settings.php falls back to viewer.
-const ROLE_VIEWER = 'viewer';
+// roles, lowest privilege first. A route names the role it needs and role_allows()
+// compares the rank. There are two: editor writes content, admin also owns design,
+// backups, templates and the system pages. An unknown role is rejected on login
+// instead of falling back to something - a typo must not grant access.
 const ROLE_EDITOR = 'editor';
 const ROLE_ADMIN = 'admin';
-const ROLE_RANK = [ROLE_VIEWER => 1, ROLE_EDITOR => 2, ROLE_ADMIN => 3];
+const ROLE_RANK = [ROLE_EDITOR => 1, ROLE_ADMIN => 2];
 
 // login throttle: three failures from one address within ten minutes block that address
 // for ten minutes. The bucket is the address, not the username, so rotating names does
@@ -44,7 +45,7 @@ function authenticate(Config $config, string $username, string $password): ?stri
         return null;
     }
 
-    return create_token($config, $username, $user['role'], $user['language'], $user['passwordChange']);
+    return create_token($config, $username, $user['role'], $user['language'], $user['readOnly']);
 }
 
 /**
@@ -62,7 +63,7 @@ function verify_password(Config $config, string $username, string $password): bo
  * The user with this name, or null. The users list in settings.php is the only source;
  * there is no separate username/password pair any more.
  *
- * @return array{password: string, role: string, language: string, totpSecret: string, passwordChange: bool}|null
+ * @return array{password: string, role: string, language: string, totpSecret: string, readOnly: bool}|null
  */
 function find_user(Config $config, string $username): ?array
 {
@@ -73,18 +74,23 @@ function find_user(Config $config, string $username): ?array
     }
 
     $role = $user['role'] ?? '';
-    // missing means allowed; only an explicit boolean true enables the change, so a
-    // typo in a record disables the action instead of silently keeping it open
-    $passwordChange = $user['passwordChange'] ?? true;
+
+    // fail closed: a missing or unknown role rejects the account, so a typo in
+    // settings.php cannot hand out access
+    if (!is_string($role) || !isset(ROLE_RANK[$role])) {
+        return null;
+    }
+
+    // only an explicit boolean true makes the account read-only
+    $readOnly = $user['readOnly'] ?? false;
 
     return [
         'password' => $user['password'],
-        // fail closed: an unknown role gets the least privilege
-        'role' => is_string($role) && isset(ROLE_RANK[$role]) ? $role : ROLE_VIEWER,
+        'role' => $role,
         // per user preferences, empty means "fall back" (language) or "off" (second factor)
         'language' => is_string($user['language'] ?? null) ? $user['language'] : '',
         'totpSecret' => is_string($user['totpSecret'] ?? null) ? $user['totpSecret'] : '',
-        'passwordChange' => $passwordChange === true,
+        'readOnly' => $readOnly === true,
     ];
 }
 
@@ -95,10 +101,10 @@ function role_allows(string $actual, string $required): bool
 
 /**
  * Claims of a valid token, or null. The role comes from the signed payload; an
- * unknown claim falls back to viewer, and a token whose user no longer exists is
- * rejected (removing a user ends their sessions).
+ * unknown claim or a token whose user no longer exists is rejected (removing a
+ * user ends their sessions).
  *
- * @return array{user: string, role: string, language: string, passwordChange: bool}|null
+ * @return array{user: string, role: string, language: string, readOnly: bool}|null
  */
 function read_token(Config $config, string $token): ?array
 {
@@ -122,13 +128,18 @@ function read_token(Config $config, string $token): ?array
 
     $role = (string) ($payload->role ?? '');
 
+    // a token without a known role is as dead as one for a removed user
+    if (!isset(ROLE_RANK[$role])) {
+        return null;
+    }
+
     return [
         'user' => $user,
-        'role' => isset(ROLE_RANK[$role]) ? $role : ROLE_VIEWER,
+        'role' => $role,
         'language' => (string) ($payload->language ?? ''),
         // the current record wins over the claim, so revoking the permission takes
         // effect without waiting for the token to expire
-        'passwordChange' => $record['passwordChange'],
+        'readOnly' => $record['readOnly'],
     ];
 }
 
@@ -137,7 +148,7 @@ function is_authenticated(Config $config, string $token): bool
     return read_token($config, $token) !== null;
 }
 
-function create_token(Config $config, string $username, string $role, string $language = '', bool $passwordChange = true): string
+function create_token(Config $config, string $username, string $role, string $language = '', bool $readOnly = false): string
 {
     $now = time();
 
@@ -150,7 +161,7 @@ function create_token(Config $config, string $username, string $role, string $la
         'user' => $username,
         'role' => $role,
         'language' => $language,
-        'passwordChange' => $passwordChange,
+        'readOnly' => $readOnly,
     ];
 
     return JWT::encode($payload, $config->secretKey, TOKEN_ALGORITHM);

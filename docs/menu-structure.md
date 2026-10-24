@@ -123,7 +123,7 @@ The inline editor toolbar offers **Page settings**, **Cancel** and **Save**.
 | This page: Page settings | active | active | visible-disabled |
 | Admin entries | active | visible-disabled | visible-disabled |
 | Account: About, Logout | active | active | active |
-| Account: Change password | active | active | active unless `passwordChange => false` |
+| Account: Change password | active | active | active; a `readOnly` account reaches the form and is refused on save |
 | Theme | active | active | active |
 | Jump to page (Commands) | active | active | active |
 | Commands | active | active | active |

@@ -35,7 +35,7 @@ final class ApiLoginTotpTest extends ApiTestCase
 
     private function configWithTwoUsers(bool $secondHasSecret = true): \jaco\core\config\Config
     {
-        $second = ['password' => test_config_password_hash(), 'role' => 'viewer'];
+        $second = ['password' => test_config_password_hash(), 'role' => 'editor'];
 
         if ($secondHasSecret) {
             $second['totpSecret'] = self::OTHER_SECRET;

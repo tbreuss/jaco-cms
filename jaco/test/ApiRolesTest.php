@@ -45,7 +45,6 @@ final class ApiRolesTest extends ApiTestCase
                 'users' => [
                     'boss' => ['password' => '{$this->digest}', 'role' => 'admin'],
                     'ed' => ['password' => '{$this->digest}', 'role' => 'editor'],
-                    'watch' => ['password' => '{$this->digest}', 'role' => 'viewer'],
                     'mystery' => ['password' => '{$this->digest}', 'role' => 'boss'],
                 ],
             ];
@@ -67,7 +66,6 @@ final class ApiRolesTest extends ApiTestCase
             'users' => [
                 'boss' => ['password' => $this->digest, 'role' => auth\ROLE_ADMIN],
                 'ed' => ['password' => $this->digest, 'role' => auth\ROLE_EDITOR],
-                'watch' => ['password' => $this->digest, 'role' => auth\ROLE_VIEWER],
                 'mystery' => ['password' => $this->digest, 'role' => 'boss'],
             ],
         ]);
@@ -109,36 +107,32 @@ final class ApiRolesTest extends ApiTestCase
         $this->assertSame(Status::FORBIDDEN, $this->call($config, 'ed', 'css/update', ['fileName' => 'x'])->status);
     }
 
-    public function testTheViewerReadsButMayNotWrite(): void
+    public function testTheEditorMayNotReachTheAdminRoutes(): void
     {
         $config = $this->config();
 
-        $this->assertSame(Status::OK, $this->call($config, 'watch', 'page/list', [], 'GET')->status);
-
-        $response = $this->call($config, 'watch', 'page/update', ['fileName' => 'x', 'html' => '<html></html>']);
-
-        $this->assertSame(Status::FORBIDDEN, $response->status);
-
-        $body = json_decode((string) $response->body, true);
-        $this->assertSame('Your role does not allow this.', $body[0]['detail']);
+        // the editor owns content; design, backups and the system pages are admin
+        foreach (['css/list', 'backup/list', 'template/site/list', 'system'] as $route) {
+            $this->assertSame(Status::FORBIDDEN, $this->call($config, 'ed', $route, [], 'GET')->status, $route);
+        }
     }
 
-    public function testTheViewerMayChangeTheirOwnPassword(): void
+    public function testTheEditorMayChangeTheirOwnPassword(): void
     {
-        $response = $this->call($this->config(), 'watch', 'system/change-password', [
+        $response = $this->call($this->config(), 'ed', 'system/change-password', [
             'withPassword' => self::PASSWORD,
-            'withNewPassword' => 'viewer-new-pass',
+            'withNewPassword' => 'editor-new-pass',
         ]);
 
         $this->assertSame(Status::OK, $response->status);
     }
 
-    public function testAnUnknownRoleGetsTheLeastPrivilege(): void
+    public function testAnAccountWithAnUnknownRoleCannotLogIn(): void
     {
         $config = $this->config();
 
-        $this->assertSame(Status::OK, $this->call($config, 'mystery', 'page/list', [], 'GET')->status);
-        $this->assertSame(Status::FORBIDDEN, $this->call($config, 'mystery', 'page/update', ['fileName' => 'x'])->status);
+        // fail closed: a typo in settings.php must not hand out the least privilege
+        $this->assertNull(auth\authenticate($config, 'mystery', self::PASSWORD));
     }
 
     public function testAnInvalidTokenIsUnauthorizedNotForbidden(): void
@@ -174,6 +168,6 @@ final class ApiRolesTest extends ApiTestCase
         $claims = auth\read_token($config, $this->tokenFor($config, 'ed'));
 
         $this->assertNotNull($claims);
-        $this->assertFalse(auth\role_allows(auth\ROLE_VIEWER, auth\ROLE_EDITOR));
+        $this->assertFalse(auth\role_allows(auth\ROLE_EDITOR, auth\ROLE_ADMIN));
     }
 }

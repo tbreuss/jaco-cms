@@ -79,7 +79,7 @@ return [
             'password' => '<password-hash>',
             'role' => 'admin',
             // optional: 'language' => 'de', 'totpSecret' => '<base32-secret>',
-            // for a public demo: 'passwordChange' => false
+            // for a public demo: 'readOnly' => true
         ],
     ],
     'secretKey' => 'at-least-32-random-characters',
@@ -90,12 +90,11 @@ return [
 ];
 ```
 
-A public demo account should set `passwordChange` to `false`: its password is
-known, and without the flag the first visitor would lock everyone else out by
-changing it. The flag is per account, not a role, so ordinary viewers keep the
-right to change their own password. A viewer can still try the inline editor,
-but its save button is disabled, the save shortcuts are not bound, and nothing
-is written.
+A public demo account sets `readOnly` to `true` and keeps `role: admin`: the
+visitor sees the whole admin - editors, media, backups, templates - and every
+write is refused with 403, the password change included. The password stays the
+seeded one, so nobody can lock the others out. A plain `viewer` would hide most
+of the admin, which defeats the purpose of a demo.
 
 Hash a password you choose with:
 

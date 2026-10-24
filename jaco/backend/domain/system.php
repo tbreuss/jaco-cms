@@ -129,11 +129,11 @@ function change_password(
         return Payload::invalid([['withPassword', 'Authentication failed.']]);
     }
 
-    // a public demo account must keep its seeded password, otherwise the first
-    // visitor locks everyone else out; the api turns this into 403
+    // a read-only account may not store anything, this route included; the router
+    // answers such a request with 403 before it reaches here
     $user = auth\find_user($config, $username);
 
-    if ($user === null || !$user['passwordChange']) {
+    if ($user === null) {
         return Payload::invalid([['', 'Password changes are disabled for this account.']]);
     }
 

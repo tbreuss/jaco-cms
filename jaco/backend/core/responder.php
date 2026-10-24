@@ -26,6 +26,18 @@ function maintenance_response(?bool $enabled = null): ?Response
 }
 
 /**
+ * 403 response when a read-only account tries to write. The account keeps its
+ * role, so the routes and the editor work as usual - only storing is refused.
+ */
+function read_only_response(): Response
+{
+    return json_response(
+        [['title' => 'Saving is disabled for this account', 'detail' => 'This account shows the interface without storing changes. Log in with a regular account to edit.']],
+        Status::FORBIDDEN,
+    );
+}
+
+/**
  * @param array<string, string> $mapping mapping of domain input variables to query parameters
  */
 function api_errors(domain\Payload $payload, array $mapping = []): Response
