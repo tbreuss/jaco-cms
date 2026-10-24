@@ -1,6 +1,6 @@
 # Jaco CMS Architecture Overview
 
-Jaco keeps the public site as static HTML while the Jaco application handles inline editing, media, templates, backups, and roles. The website files stay portable and versionable, and the PHP backend handles the editing workflows through file-based storage instead of a database.
+This document is intentionally a system overview, not a second installation guide or feature reference. It complements the rest of the docs in `docs/` by showing how the main runtime parts fit together and where the role and write boundaries sit.
 
 ## 1) System overview
 
@@ -79,7 +79,7 @@ flowchart TD
     Backup --> Persist[Write to file-based storage]
 ```
 
-This diagram focuses on the user-access path: credentials are validated, the role is checked, a JWT/session is issued, and each protected action is gated by permission checks before any write is committed.
+This flow shows the decision path after login: the role is checked before a session is granted, and route-level permission checks determine whether a write is allowed.
 
 ## 3) Permission split by feature area
 
@@ -116,7 +116,7 @@ flowchart TB
     A5 --> AdminSettings[Admin-level configuration]
 ```
 
-This diagram reflects the role split described in the project: editors can work on content and templates, while administrators retain design, backup, system, and template-management access. Both roles can change their own password, but only the relevant role receives access to a given feature group.
+This reflects the reduced role model: editors can handle content workflows, while administrators keep system, design, backup and global configuration responsibilities. Both roles may change their own password.
 
 ## 4) Page save flow with automatic backups
 
@@ -135,7 +135,7 @@ flowchart LR
     Error --> Browser
 ```
 
-This is the operational core of the CMS: every write is treated as a state-changing action, so the backup step happens before the file is updated.
+The write path is intentionally safety-first: a backup is created before the new content is written to disk.
 
 ## 5) File-system and deployment layout
 
@@ -160,7 +160,7 @@ flowchart TB
     App -->|read/write| MediaDir
 ```
 
-This layout highlights the separation between the public static site and the private CMS workspace: the application and the editable data live next to the site, but they are intentionally kept outside the normal public browsing flow.
+This layout shows the split between the public site and the private CMS workspace. The application and the editable data live beside the site, but are separated from normal public browsing by design.
 
 ## 6) Role capability matrix
 
@@ -193,17 +193,16 @@ flowchart LR
     A4 --> Yes8[Yes]
     A5 --> Yes9[Yes]
     A6 --> Yes10[Yes]
-
-    Editor --> Admin
 ```
 
-This view makes the role model explicit: the editor has focused content and media permissions, while the admin keeps the broader system and design responsibilities. Both can manage their own account password, but no role receives access to areas outside its purpose.
+This is a compact summary of who can do what. It complements the more operational diagrams without repeating the installation or feature documentation already present elsewhere in `docs/`.
 
-## Core runtime summary
+## Scope and boundaries
 
-- The public site remains plain HTML and can be served from a normal static hosting setup.
-- Markers such as `data-jaco-*` identify editable regions that the frontend can manipulate inline.
-- The PHP backend exposes JSON endpoints for page content, settings, templates, media, and system actions.
-- The domain layer applies CMS rules: backup creation before writes, role checks, and page/settings workflows.
-- Page files, templates, media, and backups are stored on disk rather than in a database, which keeps the system portable and easy to version.
-- Access control is enforced through user accounts, roles, and JWT-based login with optional second-factor authentication.
+This page is intentionally narrow in scope:
+
+- it explains how the moving parts fit together
+- it highlights permission boundaries and write safety
+- it visualizes the static-site + CMS split
+
+It does not repeat the installation, contributor workflow, or product feature guides already covered in the rest of the documentation.
