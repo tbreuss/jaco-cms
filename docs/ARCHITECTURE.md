@@ -1,6 +1,6 @@
 # Jaco CMS Architecture Overview
 
-Jaco keeps the public site as static HTML while the Jaco application handles inline editing, media, templates, backups, and roles. The website files stay portable and versionable, and the PHP backend manages the editing workflows through file-based storage instead of a database.
+Jaco keeps the public site as static HTML while the Jaco application handles inline editing, media, templates, backups, and roles. The website files stay portable and versionable, and the PHP backend handles the editing workflows through file-based storage instead of a database.
 
 ```mermaid
 flowchart LR
@@ -68,3 +68,25 @@ flowchart LR
 - The domain layer applies the CMS rules: backups before updates, role checks, and page/settings workflows.
 - Page files, templates, media, and backups are stored on disk rather than in a database, which keeps the system portable and easy to version.
 - Access control is enforced through user accounts, roles, and JWT-based login with optional second-factor authentication.
+
+## Authentication and authorization flow
+
+```mermaid
+flowchart TD
+    User[User tries to log in] --> Login[Login request]
+    Login --> Validate[Validate credentials]
+    Validate --> RoleCheck{Role known and allowed?}
+
+    RoleCheck -- No --> Reject[Reject login]
+    RoleCheck -- Yes --> IssueJWT[Issue JWT / session]
+    IssueJWT --> Routes[Protected routes check scope]
+
+    Routes --> Allowed{Action allowed for role?}
+    Allowed -- Yes --> Action[Edit page / template / media]
+    Allowed -- No --> Block[403 / disabled navigation]
+
+    Action --> Backup[Create backup before write]
+    Backup --> Persist[Write to file-based storage]
+```
+
+This second diagram focuses on the user-access path: credentials are validated, the role is checked, a JWT/session is issued, and each protected action is gated by permission checks before any write is committed.
