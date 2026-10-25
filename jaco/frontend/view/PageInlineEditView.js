@@ -140,10 +140,12 @@ const savePageSettings = (e) => {
     })
     .catch(({code, response}) => {
       pageSettings.saving = false
+      // validation errors belong under the fields; everything else is toasted by the
+      // api layer already - a second toast would repeat the same message
+      // validation errors belong under the fields; everything else is toasted by the
+      // api layer already - a second toast would repeat the same message
       if (code === 422) {
-        pageSettings.errors = response
-      } else {
-        addDanger(t('Could not save page settings.'))
+        pageSettings.errors = Array.isArray(response) ? response : []
       }
       m.redraw()
     })

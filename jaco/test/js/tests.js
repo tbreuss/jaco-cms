@@ -265,7 +265,8 @@ const stubRequest = (respond) => {
   const original = m.request
   m.request = (options) => {
     calls.push(options)
-    return respond()
+    // the handler receives the same options as the real request
+    return respond(options)
   }
 
   return {
@@ -3945,6 +3946,55 @@ QUnit.test('a viewer can open the inline editor but gets no save button', (asser
   const save = buttons.find((button) => button.textContent.trim() === t('Save'))
   assert.ok(save, 'the save button is rendered')
   assert.ok(isAriaDisabled(save), 'save is disabled for a viewer')
+})
+
+QUnit.test('a refused page-settings save shows one toast, not two', async (assert) => {
+  // the api layer already toasts a 403; the view used to add its own message on
+  // top, so the user saw the same failure twice
+  const stub = stubRequest((options) => String(options.url).includes('action=page/view')
+    ? Promise.resolve({file: 'index.html', title: 'Title', description: '', robots: ''})
+    : Promise.reject({
+      code: 403,
+      response: [{
+        title: 'Saving is disabled for this account',
+        detail: 'This account shows the interface without storing changes.',
+      }],
+    }))
+
+  try {
+    m.render(fixture(), m(PageInlineEditView))
+
+    const settingsButton = [...fixture().querySelectorAll('button')]
+      .find((button) => button.textContent.includes(t('Page settings')))
+    assert.ok(settingsButton, 'the settings button is rendered')
+    settingsButton.click()
+
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    m.render(fixture(), m(PageInlineEditView))
+
+    // the dialog carries the page-settings form; the inline toolbar has its own
+    // Save button, so scope the lookup to the dialog
+    const dialogSave = fixture().querySelector('.modal button.primary')
+    assert.ok(dialogSave, 'the dialog save button is rendered')
+
+    const before = state.list.length
+    dialogSave.click()
+
+    await new Promise((resolve) => setTimeout(resolve, 30))
+
+    const saveCalls = stub.calls.filter((call) => String(call.url).includes('action=page/settings'))
+    assert.strictEqual(saveCalls.length, 1, 'the settings endpoint was called once')
+
+    const added = state.list.slice(before).filter((entry) => entry.type === 'danger')
+    assert.strictEqual(added.length, 1, 'exactly one danger toast for one failed save')
+    assert.ok(
+      !added.some((entry) => entry.text === t('Could not save page settings.')),
+      'the view adds no message of its own',
+    )
+  } finally {
+    stub.restore()
+    m.render(fixture(), null)
+  }
 })
 
 QUnit.test('viewer edits do not trigger the discard guard', (assert) => {
