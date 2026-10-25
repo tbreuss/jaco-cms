@@ -259,7 +259,7 @@ const previewDialog = () => {
       )
       : m('p', t('No elements with this marker were found.')),
     m('p', t('The current editor content is saved before applying.')),
-    m('p', t('No backups are created when applying to all pages.')),
+    m('p', t('Every page that is rewritten is backed up first.')),
     m(ButtonGroup, {wrap: 'div.row.text-right'},
       m(ButtonSecondary, {onclick: closePreview}, m('span', t('Cancel'))),
       m(ButtonDanger, {onclick: confirmApply, disabled: files === 0}, m(Icon, {name: 'check'}), m('span', t('Save & apply to all pages')))
@@ -312,7 +312,6 @@ export const TemplateView = {
                 m('label', {style: {width: '100%'}}, t('HTML')),
                 m('div#ace', {style: {width: '100%'}})
               ),
-              m('p', t('No backups are created when applying to all pages.')),
               m(FormErrors, {errors: state.errors}),
               m(ButtonGroup, {wrap: 'div.row.text-right'},
                 m(ButtonSecondary, {onclick: onCancelButtonClicked}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
@@ -329,7 +328,7 @@ export const TemplateView = {
                 m(ButtonDanger, {
                   onclick: onApplyClicked,
                   disabled: !canEdit,
-                  title: canEdit ? t('Preview & apply') + ' – ' + t('No backups are created when applying to all pages.') : t('Preview & apply') + ' – ' + t('Your role does not allow this.'),
+                  title: canEdit ? t('Preview & apply') + ' – ' + t('Every page that is rewritten is backed up first.') : t('Preview & apply') + ' – ' + t('Your role does not allow this.'),
                 }, m(Icon, {name: 'copy'}), m('span', t('Preview & apply')))
               )
             )

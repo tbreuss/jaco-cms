@@ -75,7 +75,6 @@
     "Some pages could not be updated: {files}": "Some pages could not be updated: {files}",
     "Template applied to {files} pages ({elements} elements).": "Template applied to {files} pages ({elements} elements).",
     "Template was successfully saved.": "Template was successfully saved.",
-    "No backups are created when applying to all pages.": "No backups are created when applying to all pages.",
     "Apply to all pages": "Apply to all pages",
     "No templates found. Create HTML files under jaco-data/templates/site/ to get started.": "No templates found. Create HTML files under jaco-data/templates/site/ to get started.",
     "Site templates": "Site templates",
@@ -257,5 +256,6 @@
     "Access denied": "Access denied",
     "This page needs a higher role. Log in with an account that may open it.": "This page needs a higher role. Log in with an account that may open it.",
     "Not available in the demo": "Not available in the demo",
-    "This page shows details of the server. Open it with a regular account.": "This page shows details of the server. Open it with a regular account."
+    "This page shows details of the server. Open it with a regular account.": "This page shows details of the server. Open it with a regular account.",
+    "Every page that is rewritten is backed up first.": "Every page that is rewritten is backed up first."
 }

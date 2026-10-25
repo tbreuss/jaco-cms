@@ -75,7 +75,6 @@
     "Site templates": "Modelli del sito",
     "No templates found. Create HTML files under jaco-data/templates/site/ to get started.": "Nessun modello trovato. Creare file HTML in jaco-data/templates/site/.",
     "Apply to all pages": "Applica a tutte le pagine",
-    "No backups are created when applying to all pages.": "Non vengono creati backup durante l’applicazione a tutte le pagine.",
     "Template was successfully saved.": "Il modello è stato salvato.",
     "Template applied to {files} pages ({elements} elements).": "Modello applicato a {files} pagine ({elements} elementi).",
     "Some pages could not be updated: {files}": "Alcune pagine non sono state aggiornate: {files}",
@@ -257,5 +256,6 @@
     "Access denied": "Accesso negato",
     "This page needs a higher role. Log in with an account that may open it.": "Questa pagina richiede un ruolo superiore. Accedi con un account autorizzato.",
     "Not available in the demo": "Non disponibile nella demo",
-    "This page shows details of the server. Open it with a regular account.": "Questa pagina mostra dettagli del server. Aprila con un account regolare."
+    "This page shows details of the server. Open it with a regular account.": "Questa pagina mostra dettagli del server. Aprila con un account regolare.",
+    "Every page that is rewritten is backed up first.": "Ogni pagina riscritta viene salvata in backup prima."
 }

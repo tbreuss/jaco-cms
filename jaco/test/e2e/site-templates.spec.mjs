@@ -48,3 +48,22 @@ test('admin can preview and apply a site template', async ({page}) => {
   const html = await response.text()
   expect(html).toContain('<footer data-jaco-template="e2e-footer">After apply</footer>')
 })
+
+test('the apply dialog does not claim there is no backup', async ({page}) => {
+  // applying backs every rewritten page up, so the old warning told the opposite
+  await page.goto('/jaco/#!/login')
+  await page.fill('#username', 'admin')
+  await page.fill('#password', 'test-password')
+  await page.locator('form button').click()
+  await expect(page).toHaveURL(/\/jaco\/#!\/$/)
+
+  await page.evaluate(() => window.m.route.set('/templates'))
+  await expect(page.locator('#templateFile')).toBeVisible()
+
+  await page.getByRole('button', {name: 'Preview & apply'}).click()
+
+  const dialog = page.locator('.modal')
+  await expect(dialog).toBeVisible()
+  await expect(dialog).toContainText('Every page that is rewritten is backed up first.')
+  await expect(dialog).not.toContainText('No backups are created')
+})
