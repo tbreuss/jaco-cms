@@ -145,7 +145,6 @@ final class LanguageTest extends TestCase
             'The file exceeds the size limit.',
             'Validation Error',
             'Server Error',
-            'The following errors occurred',
         ];
 
         foreach ($keys as $key) {

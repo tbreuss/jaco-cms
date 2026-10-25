@@ -3987,8 +3987,9 @@ QUnit.test('a refused page-settings save shows one toast, not two', async (asser
 
     const added = state.list.slice(before).filter((entry) => entry.type === 'danger')
     assert.strictEqual(added.length, 1, 'exactly one danger toast for one failed save')
+    // the api layer's message is the only one; the view used to add a second
     assert.ok(
-      !added.some((entry) => entry.text === t('Could not save page settings.')),
+      !added.some((entry) => String(entry.text).includes('could not be saved')),
       'the view adds no message of its own',
     )
   } finally {
