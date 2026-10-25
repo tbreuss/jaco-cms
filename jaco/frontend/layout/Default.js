@@ -358,9 +358,9 @@ export const DefaultLayout = {
               dropdown('content', t('Content'), [
                 roleLink('editor', '/pages', t('Pages')),
                 roleLink('editor', '/uploads', t('Media')),
-                // site templates can be applied to every page: admin only, like
-                // design and backups
-                roleLink('admin', '/templates', t('Templates')),
+                // an editor reads and applies site templates, only the markup is
+                // the admin's
+                roleLink('editor', '/templates', t('Templates')),
                 roleLink('admin', '/backups', t('Backups')),
                 roleLink('admin', '/css', t('Design')),
               ]),

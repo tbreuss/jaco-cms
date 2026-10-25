@@ -112,9 +112,27 @@ final class ApiRolesTest extends ApiTestCase
         $config = $this->config();
 
         // the editor owns content; design, backups and the system pages are admin
-        foreach (['css/list', 'backup/list', 'template/site/list', 'system'] as $route) {
+        foreach (['css/list', 'backup/list', 'system'] as $route) {
             $this->assertSame(Status::FORBIDDEN, $this->call($config, 'ed', $route, [], 'GET')->status, $route);
         }
+    }
+
+    public function testTheEditorReadsAndAppliesSiteTemplatesButMayNotChangeThem(): void
+    {
+        // the markup belongs to the admin, rolling it out is the editor's job
+        $config = $this->config();
+
+        $this->assertSame(
+            Status::OK,
+            $this->call($config, 'ed', 'template/site/list', [], 'GET')->status,
+            'the editor sees which templates exist',
+        );
+
+        $this->assertSame(
+            Status::FORBIDDEN,
+            $this->call($config, 'ed', 'template/site/update', ['fileName' => 'x.html', 'content' => '<p>x</p>'])->status,
+            'the editor may not change the markup',
+        );
     }
 
     public function testTheEditorMayChangeTheirOwnPassword(): void

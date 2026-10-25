@@ -5,11 +5,8 @@
         "file": {"type": "string"},
         "name": {"type": "string"},
         "created": {"type": "integer"},
-        "content": {"type": "string"},
-        "appliedFiles": {"type": "integer"},
-        "appliedElements": {"type": "integer"},
-        "failed": {"type": "array", "items": {"type": "string"}}
+        "content": {"type": "string"}
     },
-    "required": ["file", "name", "created", "content", "appliedFiles", "appliedElements", "failed"],
+    "required": ["file", "name", "created", "content"],
     "additionalProperties": false
 }

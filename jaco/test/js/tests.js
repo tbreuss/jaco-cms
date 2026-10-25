@@ -630,12 +630,12 @@ QUnit.test('the layout greys out what the role may not do', (assert) => {
     const dropdowns = [...fixture().querySelectorAll('.dropdown-content')]
     assert.deepEqual(
       [...dropdowns[0].querySelectorAll('a')].map((link) => link.textContent),
-      [t('Pages'), t('Media')],
+      [t('Pages'), t('Media'), t('Templates')],
       'the content sections an editor owns stay active',
     )
     assert.deepEqual(
       [...dropdowns[0].querySelectorAll('.nav-disabled')].map((item) => item.textContent),
-      [t('Templates'), t('Backups'), t('Design')],
+      [t('Backups'), t('Design')],
       'admin content stays visible but disabled',
     )
     assert.deepEqual(

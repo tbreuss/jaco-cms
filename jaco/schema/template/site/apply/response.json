@@ -1,0 +1,13 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "file": {"type": "string"},
+        "name": {"type": "string"},
+        "appliedFiles": {"type": "integer"},
+        "appliedElements": {"type": "integer"},
+        "failed": {"type": "array", "items": {"type": "string"}}
+    },
+    "required": ["file", "name", "appliedFiles", "appliedElements", "failed"],
+    "additionalProperties": false
+}

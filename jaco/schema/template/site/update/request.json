@@ -3,9 +3,8 @@
     "type": "object",
     "properties": {
         "fileName": {"type": "string"},
-        "content": {"type": "string"},
-        "applyToAll": {"type": "boolean"}
+        "content": {"type": "string"}
     },
-    "required": ["fileName", "content", "applyToAll"],
+    "required": ["fileName", "content"],
     "additionalProperties": false
 }

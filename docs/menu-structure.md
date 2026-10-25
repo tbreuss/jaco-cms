@@ -72,12 +72,16 @@ a.html    Startseite      12.10.2026      [Edit] [Copy] [Delete]
 ## Site templates
 
 Templates live under `jaco-data/templates/site/` and are created through the file
-system. The admin lists and edits them under **Content → Templates**. The
-editor contains the template HTML and separate **Save**, **Save & Close** and
-**Preview & apply** buttons. Applying first opens a preview with the affected
-pages and elements; the admin confirms before applying. Applying uses atomic
-file writes, replaces every element with the matching `data-jaco-template`
-marker; every rewritten page is backed up first, and the marker is preserved on the replacement root.
+system. Admins and editors open them under **Content → Templates**. An admin edits
+the markup and saves with **Save** or **Save & Close**; an editor sees the same
+editor read-only, so the markup is the admin's and the rollout is not.
+
+**Preview & apply** is available to both. It opens a preview with the affected
+pages and elements, and the confirm button applies. An admin saves the editor
+content first, so the rollout uses the new text; an editor applies the template
+as it is stored. Applying uses atomic file writes, replaces every element with
+the matching `data-jaco-template` marker; every rewritten page is backed up
+first, and the marker is preserved on the replacement root.
 
 For a bilingual footer, use separate names and markers:
 

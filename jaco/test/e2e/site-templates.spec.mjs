@@ -41,7 +41,12 @@ test('admin can preview and apply a site template', async ({page}) => {
     gutter: Number(getComputedStyle(document.querySelector('.ace_gutter')).zIndex),
   }))
   expect(layers.modal).toBeGreaterThan(layers.gutter)
+  // saving and applying are two requests since they became two rights: wait for
+  // the second one instead of reading the page while it is still in flight
+  const applied = page.waitForResponse((response) =>
+    response.url().includes('action=template/site/apply') && response.status() === 200)
   await page.locator('.modal').getByRole('button', {name: 'Save & apply to all pages'}).click()
+  await applied
 
   const response = await page.request.get('/e2e-template-page.html')
   expect(response.ok()).toBeTruthy()
@@ -66,4 +71,30 @@ test('the apply dialog does not claim there is no backup', async ({page}) => {
   await expect(dialog).toBeVisible()
   await expect(dialog).toContainText('Every page that is rewritten is backed up first.')
   await expect(dialog).not.toContainText('No backups are created')
+})
+
+test('an editor may apply a template but not change it', async ({page}) => {
+  // the markup belongs to the admin, rolling it out is the editor's job
+  await page.goto('/jaco/#!/login')
+  await page.fill('#username', 'editor')
+  await page.fill('#password', 'test-password')
+  await page.locator('form button').click()
+  await expect(page).toHaveURL(/\/jaco\/#!\/$/)
+
+  await page.evaluate(() => window.m.route.set('/templates'))
+  await expect(page.locator('#templateFile')).toBeVisible()
+
+  // a disabled button carries the reason as its accessible name, so locate the
+  // labels by their visible text instead
+  const save = page.locator('button', {hasText: 'Save'}).first()
+  await expect(save).toHaveAttribute('aria-disabled', 'true')
+
+  const apply = page.locator('button', {hasText: 'Preview & apply'})
+  await expect(apply).toBeVisible()
+  await expect(apply).not.toHaveAttribute('aria-disabled', 'true')
+
+  await apply.click()
+  const dialog = page.locator('.modal')
+  await expect(dialog).toBeVisible()
+  await expect(dialog).toContainText('The template is applied as it is stored.')
 })

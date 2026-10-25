@@ -228,7 +228,11 @@ function apply_site_template(Config $config, string $name): array
     return ['files' => $changedFiles, 'elements' => $changedElements, 'failed' => $failed];
 }
 
-function update_site_template(Config $config, string $file, string $content, bool $applyToAll): Payload
+/**
+ * Write the template and nothing else. Applying is its own call since the two
+ * need different rights: an admin owns the markup, an editor may roll it out.
+ */
+function update_site_template(Config $config, string $file, string $content): Payload
 {
     [$file, $errors] = validate_site_template_file($file);
     if ($file === null) {
@@ -246,16 +250,36 @@ function update_site_template(Config $config, string $file, string $content, boo
         return Payload::error([['file', 'Could not write template.']]);
     }
 
-    $applied = ['files' => 0, 'elements' => 0, 'failed' => []];
-    if ($applyToAll) {
-        $applied = apply_site_template($config, site_template_name($file));
-    }
-
     return Payload::success([
         'file' => $file,
         'name' => site_template_name($file),
         'created' => filesystem\file_mtime($file, $dir),
         'content' => $content,
+    ]);
+}
+
+/**
+ * Write the template to every page that carries its marker. The save route does
+ * not do this any more: applying is the step an editor may take without being
+ * allowed to change the markup.
+ */
+function apply_site_template_to_all(Config $config, string $file): Payload
+{
+    [$file, $errors] = validate_site_template_file($file);
+    if ($file === null) {
+        return Payload::invalid($errors);
+    }
+
+    $template = find_site_template($config, $file);
+    if (!$template->isSuccess) {
+        return Payload::error([['file', 'Could not read template.']]);
+    }
+
+    $applied = apply_site_template($config, site_template_name($file));
+
+    return Payload::success([
+        'file' => $file,
+        'name' => site_template_name($file),
         'appliedFiles' => $applied['files'],
         'appliedElements' => $applied['elements'],
         'failed' => $applied['failed'],

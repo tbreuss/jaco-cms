@@ -29,13 +29,19 @@ export const SiteTemplateModel = {
       body: {fileName: SiteTemplateModel.item.file}
     })
   },
-  save: (applyToAll) => {
+  save: () => {
     return api.post('template/site/update', {}, {
       body: {
         fileName: SiteTemplateModel.item.file,
         content: SiteTemplateModel.item.content,
-        applyToAll,
       }
+    })
+  },
+  // applying is a right of its own: an editor may roll a template out without
+  // being allowed to change its markup
+  apply: () => {
+    return api.post('template/site/apply', {}, {
+      body: {fileName: SiteTemplateModel.item.file}
     })
   }
 }

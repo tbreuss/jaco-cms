@@ -18,7 +18,6 @@ function action(Config $config, Request $request): Response
         $config,
         $request->post->strVal('fileName'),
         $request->post->strVal('content'),
-        $request->post->val('applyToAll') === true || $request->post->strVal('applyToAll') === '1',
     ));
 }
 

@@ -230,7 +230,8 @@ end.
 | Change page title, meta description and robots | ✓ | ✓ |
 | Add and delete uploads | ✓ | ✓ |
 | Read stylesheets, backups and site templates | – | ✓ |
-| Manage and apply site templates | – | ✓ |
+| Read and apply site templates | ✓ | ✓ |
+| Change the markup of a site template | – | ✓ |
 | Change a stylesheet | – | ✓ |
 | Restore and delete backups | – | ✓ |
 | Environment, error log and php-info | – | ✓ |
@@ -248,10 +249,10 @@ falling back to something, so a typo cannot hand out access.
 - `editor`: `about`, `page/list`, `page/view`, `page/create`, `page/update`,
   `page/update-body`, `page/settings`, `page/copy`, `page/delete`, `upload/list`,
   `upload/create`, `upload/delete`, `template/pages`, `template/content`,
-  `template/content/view` and `system/change-password`
+  `template/content/view`, `template/site/list`, `template/site/view`,
+  `template/site/preview`, `template/site/apply` and `system/change-password`
 - `admin`: everything, notably `css/list`, `css/view`, `css/update`, `backup/list`,
-  `backup/view`, `backup/restore`, `backup/delete`, `template/site/list`,
-  `template/site/view`, `template/site/preview`, `template/site/update`, `system`,
+  `backup/view`, `backup/restore`, `backup/delete`, `template/site/update`, `system`,
   `system/log`, `system/log/clear` and `system/php-info`
 
 An invalid or missing token answers **401**: the session is gone and the frontend returns

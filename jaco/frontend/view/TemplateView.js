@@ -144,27 +144,17 @@ const onRemoveComponent = () => {
   app.makeIframeScrollable()
 }
 
-const performSave = (applyToAll, closeAfterSave) => {
+const performSave = (closeAfterSave) => {
   if (!auth.can('admin') || !editor) {
     return Promise.resolve()
   }
   SiteTemplateModel.item.content = editor.getValue()
-  return SiteTemplateModel.save(applyToAll)
+  return SiteTemplateModel.save()
     .then((data) => {
       state.errors = []
       state.savedContent = editor.getValue()
       state.preview = null
-      if (applyToAll) {
-        addSuccess(t('Template applied to {files} pages ({elements} elements).', {
-          files: data.appliedFiles,
-          elements: data.appliedElements,
-        }))
-        if (data.failed.length > 0) {
-          addDanger(t('Some pages could not be updated: {files}', {files: data.failed.join(', ')}))
-        }
-      } else {
-        addSuccess(t('Template was successfully saved.'))
-      }
+      addSuccess(t('Template was successfully saved.'))
       if (closeAfterSave) {
         m.route.set('/')
       } else {
@@ -182,11 +172,13 @@ const performSave = (applyToAll, closeAfterSave) => {
 }
 
 const requestSave = (closeAfterSave) => {
-  return performSave(false, closeAfterSave)
+  return performSave(closeAfterSave)
 }
 
 const requestApply = () => {
-  if (!auth.can('admin') || !editor) {
+  // an editor applies without saving: the markup is the admin's, rolling it out
+  // is the editor's. Only an admin saves first, so the rollout uses the new text.
+  if (!editor) {
     return Promise.resolve()
   }
   return SiteTemplateModel.preview()
@@ -222,7 +214,30 @@ const closePreview = () => {
 
 const confirmApply = () => {
   state.preview = null
-  return performSave(true, false)
+  // an admin saves the editor first, so the rollout uses the new markup; the
+  // save closes the dialog, therefore the apply reads the freshly saved state
+  const saveFirst = auth.can('admin') && editor
+    ? new Promise((resolve, reject) => {
+      SiteTemplateModel.item.content = editor.getValue()
+      performSave(false).then(resolve, reject)
+    })
+    : Promise.resolve()
+  return saveFirst
+    .then(() => SiteTemplateModel.apply())
+    .then((data) => {
+      addSuccess(t('Template applied to {files} pages ({elements} elements).', {
+        files: data.appliedFiles,
+        elements: data.appliedElements,
+      }))
+      if (data.failed.length > 0) {
+        addDanger(t('Some pages could not be updated: {files}', {files: data.failed.join(', ')}))
+      }
+      m.redraw()
+      return data
+    })
+    .catch(() => {
+      m.redraw()
+    })
 }
 
 const previewDialog = () => {
@@ -258,7 +273,9 @@ const previewDialog = () => {
         m('ul', state.preview.files.map((item) => m('li', item.file))),
       )
       : m('p', t('No elements with this marker were found.')),
-    m('p', t('The current editor content is saved before applying.')),
+    auth.can('admin')
+      ? m('p', t('The current editor content is saved before applying.'))
+      : m('p', t('The template is applied as it is stored.')),
     m('p', t('Every page that is rewritten is backed up first.')),
     m(ButtonGroup, {wrap: 'div.row.text-right'},
       m(ButtonSecondary, {onclick: closePreview}, m('span', t('Cancel'))),
@@ -325,10 +342,11 @@ export const TemplateView = {
                   disabled: !canEdit,
                   title: canEdit ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
                 }, m(Icon, {name: 'check'}), m('span', t('Save & Close'))),
+                // applying is an editor's right: the markup above stays read-only
+                // for that role, the rollout does not need the admin
                 m(ButtonDanger, {
                   onclick: onApplyClicked,
-                  disabled: !canEdit,
-                  title: canEdit ? t('Preview & apply') + ' – ' + t('Every page that is rewritten is backed up first.') : t('Preview & apply') + ' – ' + t('Your role does not allow this.'),
+                  title: t('Preview & apply') + ' – ' + t('Every page that is rewritten is backed up first.'),
                 }, m(Icon, {name: 'copy'}), m('span', t('Preview & apply')))
               )
             )

@@ -250,5 +250,6 @@
     "This page needs a higher role. Log in with an account that may open it.": "Cette page demande un rôle supérieur. Connectez-vous avec un compte autorisé.",
     "Not available in the demo": "Non disponible dans la démo",
     "This page shows details of the server. Open it with a regular account.": "Cette page montre des détails du serveur. Ouvrez-la avec un compte régulier.",
-    "Every page that is rewritten is backed up first.": "Chaque page réécrite est sauvegardée au préalable."
+    "Every page that is rewritten is backed up first.": "Chaque page réécrite est sauvegardée au préalable.",
+    "The template is applied as it is stored.": "Le modèle est appliqué tel qu’il est enregistré."
 }

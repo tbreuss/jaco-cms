@@ -44,11 +44,12 @@ final class ApiSiteTemplateTest extends ApiTestCase
         $response = $this->api('template/site/update', [
             'fileName' => 'footer.html',
             'content' => '<footer><a href="de/impressum.html">Impressum</a></footer>',
-            'applyToAll' => true,
         ]);
+        $applied = $this->api('template/site/apply', ['fileName' => 'footer.html']);
 
         $this->assertSame(Status::OK, $response->status);
-        $body = json_decode((string) $response->body, true);
+        $this->assertSame(Status::OK, $applied->status);
+        $body = json_decode((string) $applied->body, true);
         $this->assertSame(1, $body['appliedFiles']);
         $this->assertSame(1, $body['appliedElements']);
 
@@ -67,8 +68,8 @@ final class ApiSiteTemplateTest extends ApiTestCase
         $this->api('template/site/update', [
             'fileName' => 'footer.html',
             'content' => '<footer>new</footer>',
-            'applyToAll' => true,
         ]);
+        $this->api('template/site/apply', ['fileName' => 'footer.html']);
 
         $backups = $this->newEntriesIn($this->config->backupDir);
         $this->assertCount(1, $backups);
@@ -83,11 +84,11 @@ final class ApiSiteTemplateTest extends ApiTestCase
         $response = $this->api('template/site/update', [
             'fileName' => 'footer.html',
             'content' => '<footer>new</footer>',
-            'applyToAll' => true,
         ]);
+        $applied = $this->api('template/site/apply', ['fileName' => 'footer.html']);
 
         $this->assertSame(Status::OK, $response->status);
-        $body = json_decode((string) $response->body, true);
+        $body = json_decode((string) $applied->body, true);
         $this->assertSame(1, $body['appliedFiles'], 'only the marked page is touched');
 
         foreach ($this->newEntriesIn($this->config->backupDir) as $backup) {
@@ -106,16 +107,19 @@ final class ApiSiteTemplateTest extends ApiTestCase
         $en = $this->api('template/site/update', [
             'fileName' => 'footer-en.html',
             'content' => '<footer>English footer</footer>',
-            'applyToAll' => true,
         ]);
         $de = $this->api('template/site/update', [
             'fileName' => 'footer-de.html',
             'content' => '<footer>Deutscher Footer</footer>',
-            'applyToAll' => true,
         ]);
+
+        $applyEn = $this->api('template/site/apply', ['fileName' => 'footer-en.html']);
+        $applyDe = $this->api('template/site/apply', ['fileName' => 'footer-de.html']);
 
         $this->assertSame(Status::OK, $en->status);
         $this->assertSame(Status::OK, $de->status);
+        $this->assertSame(Status::OK, $applyEn->status);
+        $this->assertSame(Status::OK, $applyDe->status);
         $this->assertStringContainsString('<footer data-jaco-template="footer-en">English footer</footer>', (string) file_get_contents($this->config->webDir . '/' . $enPage));
         $this->assertStringContainsString('<footer data-jaco-template="footer-de">Deutscher Footer</footer>', (string) file_get_contents($this->config->webDir . '/' . $dePage));
         $this->assertStringNotContainsString('Deutscher Footer', (string) file_get_contents($this->config->webDir . '/' . $enPage));
@@ -165,7 +169,6 @@ final class ApiSiteTemplateTest extends ApiTestCase
         $response = $this->api('template/site/update', [
             'fileName' => 'footer.html',
             'content' => '<footer>one</footer><footer>two</footer>',
-            'applyToAll' => true,
         ]);
 
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);

@@ -83,8 +83,8 @@ const routes = [
     path: '/templates',
     roles: {
       admin: view('h1', 'Site templates'),
-      // site templates are an admin area: the load answers 403
-      editor: view('h1', 'Access denied'),
+      // an editor reads and applies site templates, only the markup stays admin
+      editor: view('h1', 'Site templates'),
     },
   },
   {name: 'Password', path: '/password', roles: everyRole('h1', 'Change password')},

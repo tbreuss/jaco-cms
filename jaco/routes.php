@@ -185,7 +185,7 @@ router\get(
     route: 'template/site/list',
     callback: jaco\api\template\site\list\action(...),
     authenticated: true,
-    role: 'admin',
+    role: 'editor',
     responseSchema: 'template/site/list/response.json',
 );
 
@@ -193,7 +193,7 @@ router\get(
     route: 'template/site/view',
     callback: jaco\api\template\site\view\action(...),
     authenticated: true,
-    role: 'admin',
+    role: 'editor',
     responseSchema: 'template/site/view/response.json',
 );
 
@@ -201,11 +201,12 @@ router\post(
     route: 'template/site/preview',
     callback: jaco\api\template\site\preview\action(...),
     authenticated: true,
-    role: 'admin',
+    role: 'editor',
     requestSchema: 'template/site/preview/request.json',
     responseSchema: 'template/site/preview/response.json',
 );
 
+// an admin owns the markup of the site templates, an editor may roll one out
 router\post(
     route: 'template/site/update',
     callback: jaco\api\template\site\update\action(...),
@@ -213,6 +214,15 @@ router\post(
     role: 'admin',
     requestSchema: 'template/site/update/request.json',
     responseSchema: 'template/site/update/response.json',
+);
+
+router\post(
+    route: 'template/site/apply',
+    callback: jaco\api\template\site\apply\action(...),
+    authenticated: true,
+    role: 'editor',
+    requestSchema: 'template/site/apply/request.json',
+    responseSchema: 'template/site/apply/response.json',
 );
 
 router\get(
