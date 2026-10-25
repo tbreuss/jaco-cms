@@ -296,6 +296,7 @@ each account gets its own UI language without a separate setting endpoint.
 | Two-factor setup writes one user's secret | `jaco/test/CliTotpTest.php` |
 | CLI entry point: web requests are refused | `jaco/test/CliEntryPointTest.php` |
 | Roles in the docs match the route table | `jaco/test/DocsRolesTest.php` |
+| Roles in the navigation match the route table | `jaco/test/MenuRoleTest.php` |
 | Role matrix over the api (admin, editor, unknown role) | `jaco/test/ApiRolesTest.php` |
 | Own password change and the read-only account | `jaco/test/ApiChangePasswordTest.php`, `jaco/test/ApiReadOnlyAccountTest.php` |
 | Roles in the admin UI: menus, buttons and the demo banner | `jaco/test/js/tests.js` (`role claims`, layout tests) |
