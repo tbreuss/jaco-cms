@@ -47,52 +47,81 @@ survives a save; everything else is stripped silently.
 
 ## The design
 
-One rule, no value grammar:
+One rule, and it is a rule about **roles**, not about values:
 
 ```
-data-jaco-<marker>                     the element the editor owns
-data-jaco-<marker>-<key>[="value"]     a property of it
-                                       no value = boolean
+data-jaco-<name>[="value"]
+
+Every name is a role (the editor acts on the element)
+or a property of a role (it configures it).
+Whether the value is absent (boolean), optional, required
+or forbidden is a property of the name, not of the grammar.
 ```
 
-Markers are nouns that name an element; keys describe it. An attribute that is
-present is on – nothing has to be parsed, nothing can be misspelled inside a
-value.
+A name that is present is on. A name that carries a value is configured. The
+two are independent axes: a role can carry a value (`data-jaco-template="footer"`
+— the role is "template instance", the value is its name), and a property can be
+boolean (`data-jaco-image-resizable`).
 
-### Markers
+> **Why this replaced "no value grammar".** An earlier revision split the
+> namespace into "markers carry no value, keys carry a value". That split was a
+> rule about syntax, not about meaning, and it forced every role that is
+> parameterised by identity (`template`) into a two-attribute form whose marker
+> was meaningless on its own. The current rule puts the boundary where it belongs:
+> between roles and properties.
 
-| Marker | Meaning |
-| --- | --- |
-| `data-jaco-block` | rich text block |
-| `data-jaco-line` | single line of text |
-| `data-jaco-link` | link, edited in a dialog |
-| `data-jaco-image` | image, replace |
-| `data-jaco-repeater` | container of repeatable blocks |
-| `data-jaco-repeater-item` | one block inside such a container |
-| `data-jaco-template` | site template instance |
+### Consequences
 
-### Keys
+The grammar is **syntactically ambiguous**: `data-jaco-<word>-<word>` can be a
+role with a compound name (`repeater-item`) or a property of a role
+(`image-resizable`). The disambiguation is the **closed list of names** below,
+not the syntax. This is a deliberate trade: an extensible namespace cannot be
+parsed by shape alone. The server validates against the list; an unknown name is
+an error (see [What the server validates](#what-the-server-validates)).
 
-| Key | On | Type | Meaning |
+### Roles
+
+A role is what the editor does to the element. Roles may be parameterised by
+identity; the table says whether a value is optional, required or forbidden.
+
+| Role | Value | Meaning |
+| --- | --- | --- |
+| `data-jaco-block` | forbidden | rich text block |
+| `data-jaco-line` | forbidden | single line of text |
+| `data-jaco-link` | forbidden | link, edited in a dialog |
+| `data-jaco-image` | forbidden | image, replace |
+| `data-jaco-repeater` | forbidden | container of repeatable blocks |
+| `data-jaco-repeater-item` | forbidden | one block inside such a container |
+| `data-jaco-template` | **required** | site template instance; the value is the template name |
+
+### Properties
+
+A property configures a role. It is only valid on its role (see
+[What the server validates](#what-the-server-validates)).
+
+| Property | On | Value | Meaning |
 | --- | --- | --- | --- |
-| `data-jaco-image-resizable` | `data-jaco-image` | boolean | width and height editable |
-| `data-jaco-image-lightbox` | `data-jaco-image` | boolean | write `name-full.ext` and link the thumbnail to it |
-| `data-jaco-repeater-fragment` | `data-jaco-repeater` | value, required | file in `jaco-data/templates/content/` that provides a new block |
-| `data-jaco-repeater-label` | `data-jaco-repeater` | value | label of the add button |
-| `data-jaco-repeater-add` | `data-jaco-repeater` | value | where the add button goes: `top` (default), `bottom`, `any` |
-| `data-jaco-repeater-sortable` | `data-jaco-repeater` | boolean | blocks can be reordered by the grip |
-| `data-jaco-template-name` | `data-jaco-template` | value, required | name of the file in `jaco-data/templates/site/` |
+| `data-jaco-image-resizable` | `data-jaco-image` | forbidden | width and height editable |
+| `data-jaco-image-lightbox` | `data-jaco-image` | forbidden | write `name-full.ext` and link the thumbnail to it |
+| `data-jaco-repeater-fragment` | `data-jaco-repeater` | required | file in `jaco-data/templates/content/` that provides a new block |
+| `data-jaco-repeater-label` | `data-jaco-repeater` | optional | label of the add button |
+| `data-jaco-repeater-add` | `data-jaco-repeater` | optional, closed set | where the add button goes: `top` (default), `bottom`, `any` |
+| `data-jaco-repeater-sortable` | `data-jaco-repeater` | forbidden | blocks can be reordered by the grip |
 
 ### Transient
 
-Written by the editor, never present in a template, removed before saving.
+Transient attributes are roles and properties like any other. They follow the same
+grammar; the only difference is that their names are not in the whitelist, so a
+forgotten entry cannot persist editor state. The `transient-` prefix makes them
+recognisable in a saved page, which is the point: a transient attribute that
+survives is a bug that announces itself.
 
-| Attribute | On | Meaning |
-| --- | --- | --- |
-| `data-jaco-transient-active` | block, line | editing is active |
-| `data-jaco-transient-badge` | the size badge | editor-inserted element, removed before saving |
-| `data-jaco-transient-filename` | image | file name the upload is stored under |
-| `data-jaco-transient-full` | image | full-size data URL for the lightbox |
+| Role / property | On | Value | Meaning |
+| --- | --- | --- | --- |
+| `data-jaco-transient-active` | block, line | forbidden | editing is active |
+| `data-jaco-transient-badge` | the size badge | forbidden | editor-inserted element, removed before saving |
+| `data-jaco-transient-filename` | image | required | file name the upload is stored under |
+| `data-jaco-transient-full` | image | required | full-size data URL for the lightbox |
 
 ## Elements
 
@@ -117,7 +146,7 @@ Written by the editor, never present in a template, removed before saving.
   </div>
 </section>
 
-<footer data-jaco-template data-jaco-template-name="footer">…</footer>
+<footer data-jaco-template="footer">…</footer>
 ```
 
 ## Image
@@ -127,7 +156,7 @@ Written by the editor, never present in a template, removed before saving.
 | `data-jaco-image` | replace the file, keep `width` and `height` |
 | `+ data-jaco-image-resizable` | width and height editable |
 | `+ data-jaco-image-lightbox` | full version written, thumbnail linked |
-| both keys | all of it |
+| both properties | all of it |
 
 A lightbox image after saving:
 
@@ -142,7 +171,8 @@ wrapped.
 
 ## Repeater
 
-Where the add button goes and whether blocks can be sorted are two properties:
+Where the add button goes and whether blocks can be sorted are **independent**
+properties. Neither implies the other.
 
 | `data-jaco-repeater-add` | Behaviour |
 | --- | --- |
@@ -151,12 +181,17 @@ Where the add button goes and whether blocks can be sorted are two properties:
 | `any` | add button before every block and at the end |
 
 `data-jaco-repeater-sortable` adds the grip and lets blocks be moved; without it
-they stay where they are. A sortable repeater places its button like `top`.
+they stay where they are. It does **not** change the add position — a sortable
+repeater with no `-add` places its button like `top`, because `top` is the
+default, not because sorting implies it. To place the button elsewhere, write
+`-add` explicitly.
 
 Today one value mixes both: `data-jaco-pos="draggable"` means "button on top and
 blocks sortable". The merge also makes the fallback for an unknown value `any`;
 with the split the default is `top`, and a repeater that wants a button before
-every block says `any` explicitly.
+every block says `any` explicitly. The split removes the hidden coupling: the
+old value had two meanings that happened to coincide, the new attributes have
+one meaning each.
 
 `data-jaco-repeater-item` marks a direct child as one block. A heading inside the
 container is ignored and gets no delete button.
@@ -164,13 +199,22 @@ container is ignored and gets no delete button.
 ## Template
 
 ```html
-<footer data-jaco-template data-jaco-template-name="footer">…</footer>
-<footer data-jaco-template data-jaco-template-name="footer-en">…</footer>
+<footer data-jaco-template="footer">…</footer>
+<footer data-jaco-template="footer-en">…</footer>
 ```
 
 Apply-to-all replaces every instance with that name across the project. The name
 is the file name without its extension; file names are sanitized, so the value is
-a single token.
+a single token. On save the name is checked against `jaco-data/templates/site/`:
+an unknown name produces a **warning**, not an error, because a page may reference a
+template before its file is uploaded. "Apply to all" then simply finds nothing.
+
+The value is **required**: a template without a name is not a template, because
+"apply-to-all" has no group to apply to. This is why `data-jaco-template` is the
+only role that carries a value — the name is the identity of the element, not a
+configuration of it. The earlier two-attribute form
+(`data-jaco-template data-jaco-template-name="…"`) was a workaround for the
+old "roles carry no value" rule; with that rule gone, it has no reason to exist.
 
 ## Length
 
@@ -189,10 +233,12 @@ a single token.
 | Button label | `data-jaco-title="…"` | `data-jaco-repeater-label="…"` | 29 → 38 |
 | Add position | `data-jaco-pos="…"` | `data-jaco-repeater-add="…"` | 25 → 31 |
 | Sortable | – | `data-jaco-repeater-sortable` | – → 27 |
-| Template | `data-jaco-template="footer"` | `data-jaco-template data-jaco-template-name="footer"` | 27 → 51 |
+| Template | `data-jaco-template="footer"` | `data-jaco-template="footer"` | 27 → 27 |
 
 Counted in the pages: 75 plain images, 31 resizable, 2 lightbox, 0 with both. The
-common case gets nine characters shorter; the expensive cases are rare.
+common case gets nine characters shorter; the expensive cases are rare. The
+"image, both" row is the only one that grows by more than a few characters
+(44 → 66); it occurs on zero pages today, so the cost is theoretical.
 
 A repeater with fragment and label, using the default add position:
 
@@ -204,23 +250,37 @@ proposal 101 characters (two attributes)
 With a non-default position it grows to 132, with sorting to 159. The common case
 gets shorter; `repeater` costs six characters in every name it prefixes.
 
+The migration writes the add position out, so a migrated repeater is 132
+characters, not 101: the short form is what a page looks like once the explicit
+`top` is dropped. Both numbers describe the same element.
+
+The template row is now neutral: the value moves from a second attribute onto
+the role, so the two-attribute form (`data-jaco-template data-jaco-template-name="footer"`,
+51 characters) is gone. The 27-character row is the whole cost.
+
 ## What the server validates
 
 | Rule | Message |
 | --- | --- |
-| `data-jaco-image-*` only with `data-jaco-image` | setting without its element |
-| `data-jaco-repeater-*` only with `data-jaco-repeater` | key on an element that is no repeater |
-| `data-jaco-template-name` only with `data-jaco-template` | name without a template |
+| `data-jaco-image-*` only with `data-jaco-image` | property without its role |
+| `data-jaco-repeater-*` only with `data-jaco-repeater` | property on an element that is no repeater |
 | `data-jaco-repeater-item` only inside a repeater | item outside a repeater |
-| `data-jaco-repeater` and `data-jaco-repeater-item` never on one element | conflicting markers |
+| `data-jaco-repeater` and `data-jaco-repeater-item` never on one element | conflicting roles |
 | `data-jaco-repeater-fragment` required on a repeater | repeater without a fragment |
 | `data-jaco-repeater-add` one of three values | unknown add position |
 | `data-jaco-repeater-sortable` carries no value | unexpected value |
+| `data-jaco-template` without a value | template without a name |
+| `data-jaco-template` value matches a file in `jaco-data/templates/site/` | warning: unknown template, the page is still saved |
+| `data-jaco-block`, `-line`, `-link`, `-image`, `-repeater`, `-repeater-item` carry no value | unexpected value on a role |
 | `data-jaco-transient-full` only with `data-jaco-image-lightbox` | full image without a lightbox |
 | `data-jaco-transient-*` never saved | transient attribute survived |
-| unknown `data-jaco-*` name | unknown marker |
+| unknown `data-jaco-*` name | unknown name |
 
 Errors are reported before saving, not silently dropped.
+
+> **Value rules are per name, not per grammar.** Each row above is a property of
+> the name in the closed list. The grammar itself does not know which names take
+> values; the validator does.
 
 ## Where the contract lives
 
@@ -232,9 +292,11 @@ Errors are reported before saving, not silently dropped.
 A test that reads the names from the whitelist and checks them against the
 frontend selectors and the pages would catch a rename that is only half done. The
 repository already has this pattern: `IgnoreRulesTest`, `MenuRoleTest`,
-`PaletteRoleTest`.
+`PaletteRoleTest`. The page check parses HTML; that is more work than the
+constant-to-constant checks in `IgnoreRulesTest`, and is the reason the contract
+test is its own step.
 
-The whitelist holds fourteen names and no transient attribute:
+The whitelist holds thirteen names and no transient attribute:
 
 ```php
 'data-jaco-block', 'data-jaco-line', 'data-jaco-link', 'data-jaco-image',
@@ -242,8 +304,10 @@ The whitelist holds fourteen names and no transient attribute:
 'data-jaco-image-resizable', 'data-jaco-image-lightbox',
 'data-jaco-repeater-fragment', 'data-jaco-repeater-label',
 'data-jaco-repeater-add', 'data-jaco-repeater-sortable',
-'data-jaco-template-name',
 ```
+
+> `data-jaco-template-name` is gone: the name is the value of
+> `data-jaco-template`. Thirteen names, one rule.
 
 ## Migration
 
@@ -260,7 +324,54 @@ manual edit. An alias period would double every selector and every test for a
 compatibility nobody here needs.
 
 The migration also writes the add position explicitly, because the default
-changes from `any` to `top`.
+changes from `any` to `top`, and splits `pos="draggable"` into `add="top"` plus
+`sortable`.
+
+### Mapping
+
+The rename is mechanical per attribute, but three cases carry a semantic change
+and need a human decision:
+
+| Old | New | Notes |
+| --- | --- | --- |
+| `data-jaco-editable` | `data-jaco-block` | mechanical |
+| `data-jaco-editable-line` | `data-jaco-line` | mechanical |
+| `data-jaco-editable-link` | `data-jaco-link` | mechanical |
+| `data-jaco-editable-image` | `data-jaco-image` | mechanical |
+| `data-jaco-editable-image-extended` | `data-jaco-image data-jaco-image-resizable` | one attribute becomes two |
+| `data-jaco-editable-image-gallery` | `data-jaco-image data-jaco-image-lightbox` | one attribute becomes two |
+| `data-jaco-content-list` | `data-jaco-repeater` | mechanical |
+| `data-jaco-content-item` | `data-jaco-repeater-item` | mechanical |
+| `data-jaco-fragment="…"` | `data-jaco-repeater-fragment="…"` | mechanical |
+| `data-jaco-title="…"` | `data-jaco-repeater-label="…"` | mechanical |
+| `data-jaco-pos="draggable"` | `data-jaco-repeater-add="top" data-jaco-repeater-sortable` | **split**: one value carried two meanings |
+| `data-jaco-pos="top"` | `data-jaco-repeater-add="top"` | default is now `top`, but write it out |
+| `data-jaco-pos="bottom"` | `data-jaco-repeater-add="bottom"` | mechanical |
+| `data-jaco-pos="any"` | `data-jaco-repeater-add="any"` | mechanical |
+| *(no `pos`)* | `data-jaco-repeater-add="any"` | **preserve** the old fallback; `top` would change behaviour |
+| `data-jaco-template="x"` | `data-jaco-template="x"` | unchanged — the rename fixes the whitelist entry instead |
+| `data-jaco-editable-image-file` | `data-jaco-transient-filename` | runtime; not in pages |
+| `data-jaco-gallery-full` | `data-jaco-transient-full` | runtime; not in pages |
+| `data-jaco-is-editing` | `data-jaco-transient-active` | runtime; not in pages |
+| `data-jaco-editable-image-temp` | `data-jaco-transient-badge` | runtime; not in pages |
+
+The three **semantic** cases:
+
+1. **`pos="draggable"` → `add="top"` + `sortable`.** The old value meant both
+   "button on top" and "blocks sortable". Both must be written out.
+2. **No `pos` → `add="any"`.** The old fallback for a missing or unknown value was
+   `any`; the new default is `top`. Writing `any` keeps the behaviour, and a
+   repeater that wants the new default can drop the attribute afterwards.
+3. **Images with both capabilities** (`-extended` + `-gallery`) become three
+   attributes. Today zero pages have both, so the case is theoretical — but the
+   rewrite script must handle it.
+
+### Order
+
+Pages and templates are rewritten by a script, not by hand, because 22 pages and
+12 templates are too many for a manual pass that must be consistent. The script
+is a one-off; it is not checked in. Its output is verified by the contract test
+(step 1) and by the Playwright suite.
 
 ### Decisions taken
 
@@ -269,8 +380,11 @@ changes from `any` to `top`.
 | Alias period or hard break | hard break |
 | Default add position | `top` (today an unknown value falls back to `any`) |
 | Inline `style` for editable values | not supported, see [Block configuration](#block-configuration) |
-| Template marker | explicit: `data-jaco-template data-jaco-template-name="…"` |
+| Template marker | `data-jaco-template="…"` — the role carries its identity as value |
 | List of repeatable blocks | called `repeater`, because `list` reads like `<ul>` |
+| Roles vs. properties | roles and properties are the same kind of name; value rules are per name |
+| `sortable` and `add` | independent; `sortable` does not imply an add position |
+| Unknown template name | warning, not an error: the page is saved and apply-to-all finds nothing |
 
 ## Removed bug class
 
@@ -283,7 +397,10 @@ sanitize_html('<footer data-jaco-template="footer">x</footer>')
 ```
 
 A page that is edited once loses its template binding. The rename touches the
-template attribute anyway, so the whitelist entry comes with it.
+template attribute anyway, so the whitelist entry comes with it. Note that the
+old form (`data-jaco-template="footer"`) and the new form are the same string —
+the bug is in the whitelist, not in the name. The rename fixes the whitelist; it
+does not rename the attribute.
 
 ## Appendix: every form
 
@@ -402,14 +519,14 @@ Two repeaters on one page, the second inside a wrapper:
 ### Template
 
 ```html
-<footer data-jaco-template data-jaco-template-name="footer">…</footer>
+<footer data-jaco-template="footer">…</footer>
 
-<footer data-jaco-template data-jaco-template-name="footer-en">…</footer>
-<footer data-jaco-template data-jaco-template-name="footer-de">…</footer>
+<footer data-jaco-template="footer-en">…</footer>
+<footer data-jaco-template="footer-de">…</footer>
 
 <!-- several instances of the same name on one page -->
-<footer data-jaco-template data-jaco-template-name="footer">…</footer>
-<footer data-jaco-template data-jaco-template-name="footer">…</footer>
+<footer data-jaco-template="footer">…</footer>
+<footer data-jaco-template="footer">…</footer>
 ```
 
 ### Transient, while it runs
@@ -468,13 +585,14 @@ Each of these has to produce a message on save instead of being ignored.
 
 | Form | Why it is rejected |
 | --- | --- |
-| `<img data-jaco-image-resizable>` | setting without its element |
+| `<img data-jaco-image-resizable>` | property without its role |
 | `<section data-jaco-repeater data-jaco-repeater-add="top">` | repeater without a fragment |
 | `<section data-jaco-repeater data-jaco-repeater-add="middle" …>` | unknown add position |
 | `<div data-jaco-repeater-item>` outside a repeater | item outside its container |
-| `<section data-jaco-repeater data-jaco-repeater-item>` | both markers on one element |
-| `<div data-jaco-repeater-item data-jaco-repeater-fragment="x.html">` | key on an item |
-| `<footer data-jaco-template>` | template without a name |
+| `<section data-jaco-repeater data-jaco-repeater-item>` | both roles on one element |
+| `<div data-jaco-repeater-item data-jaco-repeater-fragment="x.html">` | property on an item |
+| `<footer data-jaco-template>` | role without its required value |
+| `<div data-jaco-block="x">` | value on a role that takes none |
 | `<img data-jaco-image data-jaco-transient-full="…">` | full image without a lightbox |
 
 ## Block configuration
@@ -514,7 +632,10 @@ rename. **Decided: no `style` support.** Free values are not offered for blocks;
 images keep using the `width` and `height` attributes they already have.
 
 If block settings are added later, they follow the same shape as the rest:
-a key on the marker with a closed set of values.
+a property on the role with a closed set of values. The fact that a role can carry
+a value (`data-jaco-template="…"`) does not open the door to free values: the
+value rule is per name, and a new name is added to the closed list before it is
+used.
 
 ## Implementation order
 
@@ -524,7 +645,7 @@ to fail until the rest agrees.
 
 | # | Step | Where |
 | --- | --- | --- |
-| 1 | Contract test: read the fourteen names from the whitelist, compare them with the frontend selectors and with every page | new test next to `IgnoreRulesTest` |
+| 1 | Contract test: read the thirteen names from the whitelist, compare them with the frontend selectors and with every page | new test next to `IgnoreRulesTest` |
 | 2 | Whitelist and validation rules | `backend/core/html.php` |
 | 3 | Selectors | `frontend/editor.js`, `frontend/contentlists.js` |
 | 4 | Pages, add position written out | 14 files in the root and `de/` |
@@ -532,30 +653,42 @@ to fail until the rest agrees.
 | 6 | Fix the template marker (see `docs/backlog.md`) | `backend/core/html.php` |
 | 7 | Suites | PHPUnit, QUnit, Playwright |
 
+**The contract test runs after every step and must be green before the next step
+starts.** With a hard break, the intermediate states are inconsistent by design
+(old names in code, new names in the whitelist, or vice versa); the test is what
+keeps the inconsistency bounded to one step. A step that leaves the test red is a
+step that is not finished.
+
 **Step 1** checks three places against each other, the same way `IgnoreRulesTest`
 guards the ignore rules and `MenuRoleTest` the menu. Without it a rename that
-missed one selector looks green.
+missed one selector looks green. The page check parses HTML, which is more work
+than the constant-to-constant checks; this is why it is a step of its own.
 
-**Step 2** holds the fourteen persistent names and deliberately none of the
+**Step 2** holds the thirteen persistent names and deliberately none of the
 transient ones, so a transient attribute cannot survive a save. The pairing rules
 from [What the server validates](#what-the-server-validates) go in the same place:
-a key without its marker, an item outside a repeater, a repeater without a
-fragment, an unknown add position, an unknown name.
+a property without its role, an item outside a repeater, a repeater without a
+fragment, an unknown add position, a value on a role that takes none, a missing
+value on a role that requires one, an unknown name.
 
 **Step 3** replaces every selector. With a hard break there is no old name to fall
 back to, so a missed selector silently stops working - the contract test from step
-1 is what catches it.
+1 is what catches it. One behaviour changes with the split: `makeSortable` in
+`frontend/contentlists.js` runs today only when the position is `draggable`. It has
+to run whenever `data-jaco-repeater-sortable` is present, for every add position,
+otherwise `add="bottom"` with sorting silently stays fixed.
 
 **Step 4** rewrites 14 pages. The add position becomes explicit (`top` was
-implicit `any` before), sorting becomes its own attribute, image capabilities
-become two attributes, the template marker becomes the two-attribute form.
+implicit `any` before), `pos="draggable"` splits into `add="top"` plus `sortable`,
+image capabilities become two properties, the template marker keeps its string
+but loses its second attribute.
 
 **Step 5** touches 12 templates: six content fragments, two page templates, four
 site templates. They carry the same attributes as the pages.
 
 **Step 6** is the bug from `docs/backlog.md`: `data-jaco-template` is missing from
-the whitelist and is stripped on every save. The rename touches this marker
-anyway, so the entry comes with it.
+the whitelist and is stripped on every save. The rename touches the whitelist
+anyway (thirteen names, no `-name`), so the entry comes with it.
 
 **Step 7** runs everything: PHPUnit (400 tests), QUnit (180), Playwright (35), and
 `./build-dist.sh` plus `./verify-dist-archive.sh`.
@@ -565,7 +698,8 @@ anyway, so the entry comes with it.
 With a hard break, a page that still carries `data-jaco-editable` does not fail
 loudly - the sanitizer strips the attribute and the page quietly stops being
 editable. A test that compares the three sources is the only thing that makes the
-rename verifiable instead of hopeful.
+rename verifiable instead of hopeful. Running it after every step is the
+difference between "the rename is done" and "the rename looks done".
 
 ## Out of scope
 
@@ -575,11 +709,15 @@ rename verifiable instead of hopeful.
 - Deriving the add-button label from the fragment name, which would make
   `data-jaco-repeater-label` optional in practice. It fixes the "labels carry the page
   language" item in `docs/backlog.md` and belongs in its own change.
+- Deriving a template name when it is absent. The value is required because an
+  anonymous template has no apply-to-all group; if that changes, it is a new
+  decision, not a rename.
 
 ## Changelog
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 0.10.0 | 2026-10-25 | One rule about roles, not about values: roles may carry a required value (`data-jaco-template="…"`), so `-template-name` is gone. `sortable` no longer implies an add position. Transient attributes follow the same grammar; the `transient-` prefix is a recognisability aid, not a second scheme. Role/property ambiguity documented. Migration mapping and per-step contract gate added. Whitelist is thirteen names. Corrections after review: the template value rule was inverted, a missing `pos` maps to `any` to keep the old behaviour, an unknown template name is a warning, and `makeSortable` has to run for every add position. |
 | 0.9.0 | 2026-10-25 | Four names fixed: `repeater-label` (was `title`), `repeater-add` plus `repeater-sortable` (was `repeater-position` with `draggable` inside), `transient-filename` (was `transient-target`), `transient-badge` (was `transient-temp`). |
 | 0.8.0 | 2026-10-25 | Implementation order written down; step 1 is the contract test. |
 | 0.7.0 | 2026-10-25 | Decisions recorded: hard break, default `top`, no `style` support, block settings only as closed vocabularies. |
