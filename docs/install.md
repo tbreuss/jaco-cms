@@ -34,7 +34,7 @@ in the archive root; in the git repository it lives here as `docs/install.md`.
 
    | Directory | Role | Access |
    |---|---|---|
-   | `jaco/` | The application: admin UI, `api.php`, PHP code, `vendor/`, `runtime/` logs and `settings.php` | Only the entry points and `frontend/` assets are reachable, everything else answers 403 |
+   | `jaco/` | The application: admin UI, `api.php`, PHP code, `vendor/`, `runtime/` logs | Only the entry points and `frontend/` assets are reachable, everything else answers 403 |
    | `jaco-data/` | Operator data written by the app: page, content and site templates plus the backups of every save | Never reachable over the web (`.htaccess`: `Require all denied`, `Options -Indexes`) |
    | `media/` | Uploads from the editor (images, PDFs), referenced from your pages as `media/<file>` | Reachable as static files, but never executed |
 
@@ -44,7 +44,7 @@ in the archive root; in the git repository it lives here as `docs/install.md`.
 3. Open the installer in the browser: `https://example.com/jaco/install.php`.
    Enter username (anything you like) and password (at least 8 characters),
    pick a language, and leave two-factor authentication enabled unless you
-   deliberately want password-only login. Submitting writes `jaco/settings.php`
+   deliberately want password-only login. Submitting writes `jaco-data/settings.php`
    (with a generated secret key) and the installer deletes itself afterwards.
    If it cannot delete itself, remove `jaco/install.php` by hand right away.
 
@@ -55,7 +55,7 @@ in the archive root; in the git repository it lives here as `docs/install.md`.
 4. Log in at `/jaco/` with the credentials you just created. Jaco automatically
    creates a backup under `jaco-data/backups/` before every save.
 
-The installer refuses to run once `jaco/settings.php` exists, so nobody else
+The installer refuses to run once `jaco-data/settings.php` exists, so nobody else
 can claim the installation afterwards. A lost TOTP secret is replaced through
 `php jaco/cli.php auth:totp-setup -u <user>` (needs server access), so keep the secret
 from the installer screen in your authenticator app.
@@ -69,7 +69,7 @@ from the installer screen in your authenticator app.
     composer install -d jaco/ --no-dev
 
 3. Either run the browser installer as in step A3, or create the login by hand:
-   copy `jaco/settings.dist.php` to `jaco/settings.php` and fill it in:
+   copy `jaco/settings.dist.php` to `jaco-data/settings.php` and fill it in:
 
 ```php
 return [
@@ -238,7 +238,7 @@ files exist. On Nginx they stay green once the files are deployed; the
 location blocks themselves cannot be verified from PHP and must be
 checked once by hand:
 
-    curl -I https://example.com/jaco/settings.php  # expect 403
+    curl -I https://example.com/jaco-data/settings.php  # expect 403
     curl -I https://example.com/jaco-data/backups/      # expect 403
 
 ## File upload limits
@@ -335,5 +335,5 @@ browser's own save dialog is suppressed while an edit view is open.
 ## Log in
 
 Open `/jaco/` in the browser and log in with the credentials you created in
-the installer (or in `settings.php` for a manual install). Jaco automatically
+the installer (or in `jaco-data/settings.php` for a manual install). Jaco automatically
 creates a backup under `jaco-data/backups/` before every save.

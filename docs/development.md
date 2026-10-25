@@ -187,7 +187,7 @@ Use a disposable checkout, or just generate the separate test settings:
     npm --prefix jaco/test/e2e run test:e2e
 
 `create-settings.php` writes a gitignored `jaco/test/e2e/settings.php`; the real
-`jaco/settings.php` is never touched. The test server receives it through
+`jaco-data/settings.php` is never touched. The test server receives it through
 `JACO_SETTINGS_FILE`. Its users all use the password `test-password`; the file
 must never be deployed. CI generates it automatically and runs the E2E suite
 only on PHP 8.4.
@@ -237,7 +237,7 @@ UI structure and roles: [menu-structure.md](menu-structure.md).
 
 ## Security reminders
 
-- Never commit `jaco/settings.php` or real credentials.
+- Never commit `jaco-data/settings.php` or real credentials.
 - The API is the authority for roles; disabled UI is not a security boundary.
 - Upload paths and maintenance mode are documented in [install.md](install.md).
 

@@ -187,7 +187,7 @@ These are the invariants and edge cases that tests cannot express on their own.
 - **The cli entry point is command line only.** `jaco/cli.php` answers a web request with
   403 before it loads anything (a `PHP_SAPI` guard): it prints version and log output and
   would hand that to anyone asking. `install.php` is the deliberate opposite – it is meant
-  to be opened in the browser once, refuses to run as soon as `settings.php` exists and
+  to be opened in the browser once, refuses to run as soon as `jaco-data/settings.php` exists and
   deletes itself on success.
 
 ## Roles

@@ -32,7 +32,7 @@ User-visible strings in the admin UI belong in **all** language files under
 
 ## What not to commit
 
-- `jaco/settings.php`, tokens, passwords, or other secrets
+- `jaco-data/settings.php`, tokens, passwords, or other secrets
 - Local test sites or scratch HTML under the web root unless the change requires it
 - Vendored asset updates without a deliberate upgrade (Ace, Mithril, etc.)
 
