@@ -119,23 +119,21 @@ jobs:
 
             - name: Stage website
               run: |
+                  # Everything that belongs on the server is in the repository:
+                  # pages, assets, media/ and jaco-data/. git archive takes exactly
+                  # what the commit contains, so nothing left over from local work
+                  # can travel, and operator data git never saw cannot either.
+                  #
+                  # The one exception is jaco-data/settings.php: it is not in git and
+                  # it exists on the server. Because the archive holds only committed
+                  # files it never reaches the payload, and the upload overwrites
+                  # without deleting (rm: false) - both together keep it untouched.
                   mkdir -p deploy/site
-                  rsync -a \
-                      .htaccess \
-                      index.html 404.html features.html docs.html download.html \
-                      privacy.html imprint.html elements.html \
-                      robots.txt sitemap.xml \
-                      assets de \
-                      deploy/site/
-                  # jaco-data/ is a repository directory: everything git knows about
-                  # is staged. Only the credentials are left out - they exist on the
-                  # server, not in git, and a deploy must never overwrite them.
-                  mkdir -p deploy/site/jaco-data
-                  rsync -a --delete \
-                      --exclude 'settings.php' \
-                      jaco-data/ deploy/site/jaco-data/
-                  mkdir -p deploy/site/media
-                  rsync -a media/.htaccess deploy/site/media/
+                  git archive HEAD \
+                      .htaccess 404.html docs.html download.html elements.html \
+                      features.html imprint.html index.html privacy.html \
+                      robots.txt sitemap.xml assets de media jaco-data \
+                      | tar -x -C deploy/site/
 
             - name: Verify staged application
               run: |
@@ -164,13 +162,16 @@ jobs:
                   # crawler entry points
                   test -f deploy/site/robots.txt
                   test -f deploy/site/sitemap.xml
-                  # jaco-data/ comes from the repository, the credentials do not
+                  # what git tracks arrives, the credentials do not
                   test -f deploy/site/jaco-data/.htaccess
                   test -f deploy/site/jaco-data/templates/site/footer-en.html
                   test -f deploy/site/jaco-data/templates/site/nav-de.html
                   test ! -f deploy/site/jaco-data/settings.php
-                  test ! -f deploy/site/settings.php
                   test -f deploy/site/media/.htaccess
+                  test -f deploy/site/media/demo-elements.svg
+                  test -f deploy/site/media/social-card-en.png
+                  test -f deploy/site/media/social-card-de.png
+                  test ! -f deploy/site/settings.php
 
             - name: Deploy application to ${{ vars.SSH_TARGET }}/jaco
               uses: appleboy/scp-action@master
@@ -186,6 +187,17 @@ jobs:
                   rm: true
                   # deploy/app/api.php -> <target>/jaco/api.php
                   strip_components: 2
+
+            # The upload overwrites files and never deletes (rm: false), and
+            # settings.php is not in the payload: the deploy cannot touch it.
+            - name: Protect settings.php
+              run: |
+                  # fail early, and make the guarantee visible in the log
+                  if [ -e deploy/site/jaco-data/settings.php ]; then
+                      echo "deploy/site/jaco-data/settings.php must not be part of the payload" >&2
+                      exit 1
+                  fi
+                  echo "settings.php is not in the payload; the server copy stays untouched"
 
             - name: Deploy website to ${{ vars.SSH_TARGET }}
               uses: appleboy/scp-action@master
