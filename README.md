@@ -68,8 +68,10 @@ Full guide with markers reference: [`docs/install.md`](docs/install.md).
 ```
 
 The three directories next to your pages: `jaco/` is the application (replaced on
-update), `jaco-data/` holds templates and backups (never publicly reachable),
-`media/` holds editor uploads.
+update), `jaco-data/` holds templates, backups, the runtime logs and the
+credentials (never publicly reachable), `media/` holds editor uploads. An update
+replaces `jaco/`, the pages and `jaco-data/templates/`; `settings.php`, `backups/`
+and `runtime/` stay as they are on the server.
 
 Heads-up for servers: on Nginx copy the blocks from `docs/nginx-jaco.conf.example`
 into the server context (`.htaccess` is Apache-only). With a dist archive on

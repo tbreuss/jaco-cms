@@ -40,11 +40,16 @@ in the archive root; in the git repository it lives here as `docs/install.md`.
 
    Replacing `jaco/` with a new version never touches `jaco-data/` or `media/`,
    so code updates cannot lose content, backups or credentials. A deployment
-   uploads the application to `jaco/` and the public pages next to it - it never
-   writes into `jaco-data/`. If a server still carries `settings.php`,
-   `runtime/` or a nested `jaco/` inside the application directory, move the
-   settings to `jaco-data/settings.php` before the next deployment: removing
-   the application directory would delete them with it.
+   replaces the application in `jaco/`, the public pages next to it and the
+   templates under `jaco-data/templates/` - nothing else. Three entries in
+   `jaco-data/` are never part of a deployment and are never deleted by it:
+   `settings.php`, `backups/` and `runtime/`. They are created on the server
+   (the installer writes `settings.php`), not shipped with the code.
+
+   If a server still carries `settings.php`, `runtime/` or a nested `jaco/`
+   inside the application directory, move the settings to
+   `jaco-data/settings.php` before the next deployment: replacing the
+   application directory would delete them with it.
 
 3. Open the installer in the browser: `https://example.com/jaco/install.php`.
    Enter username (anything you like) and password (at least 8 characters),

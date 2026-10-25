@@ -88,17 +88,10 @@ jobs:
                   php-version: 8.4
                   tools: composer:v2
 
-            - name: Create settings.php file
-              env:
-                  SETTINGS_PHP_FILE_CONTENT: ${{ secrets.SETTINGS_PHP_FILE_CONTENT }}
-              run: |
-                  # Do not interpolate the secret into the shell command: hashes contain
-                  # "$2y$..." and the shell would expand those dollar signs.
-                  printf '%s\n' "$SETTINGS_PHP_FILE_CONTENT" > jaco-data/settings.php
-
             # The checkout is the source tree, not the deployment: stage only what
-            # belongs on the server. jaco-data/ and media/ are operator data that
-            # the server owns - a deploy must never overwrite or delete them.
+            # belongs on the server. jaco-data/settings.php, backups/ and runtime/
+            # are not in git - they exist on the server and a deploy leaves them
+            # alone. Everything else under jaco-data/ comes from the repository.
             - name: Stage application
               run: |
                   # The payload is the content of jaco/, so the archive holds
@@ -134,10 +127,13 @@ jobs:
                       robots.txt sitemap.xml \
                       assets de \
                       deploy/site/
-                  # Operator data (jaco-data/ with settings.php, backups, runtime and
-                  # templates, and the media uploads) belongs to the server. A deploy
-                  # must never write into jaco-data/: it would overwrite credentials
-                  # and delete backups or templates that only exist there.
+                  # jaco-data/ is a repository directory: everything git knows about
+                  # is staged. Only the credentials are left out - they exist on the
+                  # server, not in git, and a deploy must never overwrite them.
+                  mkdir -p deploy/site/jaco-data
+                  rsync -a --delete \
+                      --exclude 'settings.php' \
+                      jaco-data/ deploy/site/jaco-data/
                   mkdir -p deploy/site/media
                   rsync -a media/.htaccess deploy/site/media/
 
@@ -168,9 +164,11 @@ jobs:
                   # crawler entry points
                   test -f deploy/site/robots.txt
                   test -f deploy/site/sitemap.xml
-                  # operator data is never part of the payload: no credentials, no
-                  # backups, no runtime state, no templates
-                  test ! -d deploy/site/jaco-data
+                  # jaco-data/ comes from the repository, the credentials do not
+                  test -f deploy/site/jaco-data/.htaccess
+                  test -f deploy/site/jaco-data/templates/site/footer-en.html
+                  test -f deploy/site/jaco-data/templates/site/nav-de.html
+                  test ! -f deploy/site/jaco-data/settings.php
                   test ! -f deploy/site/settings.php
                   test -f deploy/site/media/.htaccess
 
