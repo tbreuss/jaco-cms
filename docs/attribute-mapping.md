@@ -78,8 +78,9 @@ value.
 | `data-jaco-image-resizable` | `data-jaco-image` | boolean | width and height editable |
 | `data-jaco-image-lightbox` | `data-jaco-image` | boolean | write `name-full.ext` and link the thumbnail to it |
 | `data-jaco-repeater-fragment` | `data-jaco-repeater` | value, required | file in `jaco-data/templates/content/` that provides a new block |
-| `data-jaco-repeater-title` | `data-jaco-repeater` | value | label of the add button |
-| `data-jaco-repeater-position` | `data-jaco-repeater` | value | `top` (default), `bottom`, `any`, `draggable` |
+| `data-jaco-repeater-label` | `data-jaco-repeater` | value | label of the add button |
+| `data-jaco-repeater-add` | `data-jaco-repeater` | value | where the add button goes: `top` (default), `bottom`, `any` |
+| `data-jaco-repeater-sortable` | `data-jaco-repeater` | boolean | blocks can be reordered by the grip |
 | `data-jaco-template-name` | `data-jaco-template` | value, required | name of the file in `jaco-data/templates/site/` |
 
 ### Transient
@@ -89,8 +90,8 @@ Written by the editor, never present in a template, removed before saving.
 | Attribute | On | Meaning |
 | --- | --- | --- |
 | `data-jaco-transient-active` | block, line | editing is active |
-| `data-jaco-transient-temp` | the inserted badge | temporary element |
-| `data-jaco-transient-target` | image | file name for the upload |
+| `data-jaco-transient-badge` | the size badge | editor-inserted element, removed before saving |
+| `data-jaco-transient-filename` | image | file name the upload is stored under |
 | `data-jaco-transient-full` | image | full-size data URL for the lightbox |
 
 ## Elements
@@ -107,8 +108,8 @@ Written by the editor, never present in a template, removed before saving.
 
 <section data-jaco-repeater
          data-jaco-repeater-fragment="feature_en.html"
-         data-jaco-repeater-title="Add feature"
-         data-jaco-repeater-position="draggable">
+         data-jaco-repeater-label="Add feature"
+         data-jaco-repeater-add="top" data-jaco-repeater-sortable>
   <h2 data-jaco-line>Why Jaco CMS?</h2>
   <div data-jaco-repeater-item>
     <h3 data-jaco-line>Edit in place</h3>
@@ -141,16 +142,21 @@ wrapped.
 
 ## Repeater
 
-| Position | Behaviour |
+Where the add button goes and whether blocks can be sorted are two properties:
+
+| `data-jaco-repeater-add` | Behaviour |
 | --- | --- |
 | `top` (default) | add button before the first block |
 | `bottom` | add button after the last block |
 | `any` | add button before every block and at the end |
-| `draggable` | like `top`, blocks can be reordered by the grip |
 
-Today the fallback for an unknown value is `any`; the default becomes `top`, so a
-repeater that wants a button before every block says `any` explicitly. The migration
-writes it out.
+`data-jaco-repeater-sortable` adds the grip and lets blocks be moved; without it
+they stay where they are. A sortable repeater places its button like `top`.
+
+Today one value mixes both: `data-jaco-pos="draggable"` means "button on top and
+blocks sortable". The merge also makes the fallback for an unknown value `any`;
+with the split the default is `top`, and a repeater that wants a button before
+every block says `any` explicitly.
 
 `data-jaco-repeater-item` marks a direct child as one block. A heading inside the
 container is ignored and gets no delete button.
@@ -180,22 +186,23 @@ a single token.
 | Repeater | `data-jaco-content-list` | `data-jaco-repeater` | 22 → 18 |
 | Repeater item | `data-jaco-content-item` | `data-jaco-repeater-item` | 22 → 23 |
 | Fragment | `data-jaco-fragment="…"` | `data-jaco-repeater-fragment="…"` | 36 → 45 |
-| Title | `data-jaco-title="…"` | `data-jaco-repeater-title="…"` | 29 → 38 |
-| Position | `data-jaco-pos="…"` | `data-jaco-repeater-position="…"` | 25 → 39 |
+| Button label | `data-jaco-title="…"` | `data-jaco-repeater-label="…"` | 29 → 38 |
+| Add position | `data-jaco-pos="…"` | `data-jaco-repeater-add="…"` | 25 → 31 |
+| Sortable | – | `data-jaco-repeater-sortable` | – → 27 |
 | Template | `data-jaco-template="footer"` | `data-jaco-template data-jaco-template-name="footer"` | 27 → 51 |
 
 Counted in the pages: 75 plain images, 31 resizable, 2 lightbox, 0 with both. The
 common case gets nine characters shorter; the expensive cases are rare.
 
-A repeater with position, fragment and title:
+A repeater with fragment and label, using the default add position:
 
 ```text
-today    112 characters (four attributes)
-proposal 140 characters (three attributes)
+today    112 characters (four attributes, the position is always written)
+proposal 101 characters (two attributes)
 ```
 
-The repeater carries the price of the rename: `repeater` is six characters longer
-than `list` in every name it prefixes.
+With a non-default position it grows to 132, with sorting to 159. The common case
+gets shorter; `repeater` costs six characters in every name it prefixes.
 
 ## What the server validates
 
@@ -207,7 +214,8 @@ than `list` in every name it prefixes.
 | `data-jaco-repeater-item` only inside a repeater | item outside a repeater |
 | `data-jaco-repeater` and `data-jaco-repeater-item` never on one element | conflicting markers |
 | `data-jaco-repeater-fragment` required on a repeater | repeater without a fragment |
-| `data-jaco-repeater-position` one of four values | unknown position |
+| `data-jaco-repeater-add` one of three values | unknown add position |
+| `data-jaco-repeater-sortable` carries no value | unexpected value |
 | `data-jaco-transient-full` only with `data-jaco-image-lightbox` | full image without a lightbox |
 | `data-jaco-transient-*` never saved | transient attribute survived |
 | unknown `data-jaco-*` name | unknown marker |
@@ -226,13 +234,14 @@ frontend selectors and the pages would catch a rename that is only half done. Th
 repository already has this pattern: `IgnoreRulesTest`, `MenuRoleTest`,
 `PaletteRoleTest`.
 
-The whitelist holds thirteen names and no transient attribute:
+The whitelist holds fourteen names and no transient attribute:
 
 ```php
 'data-jaco-block', 'data-jaco-line', 'data-jaco-link', 'data-jaco-image',
 'data-jaco-repeater', 'data-jaco-repeater-item', 'data-jaco-template',
 'data-jaco-image-resizable', 'data-jaco-image-lightbox',
-'data-jaco-repeater-fragment', 'data-jaco-repeater-title', 'data-jaco-repeater-position',
+'data-jaco-repeater-fragment', 'data-jaco-repeater-label',
+'data-jaco-repeater-add', 'data-jaco-repeater-sortable',
 'data-jaco-template-name',
 ```
 
@@ -250,15 +259,15 @@ rename, every page in this repository is rewritten, and a customer's page needs 
 manual edit. An alias period would double every selector and every test for a
 compatibility nobody here needs.
 
-The migration also writes the position explicitly, because the default changes
-from `any` to `top`.
+The migration also writes the add position explicitly, because the default
+changes from `any` to `top`.
 
 ### Decisions taken
 
 | Question | Decision |
 | --- | --- |
 | Alias period or hard break | hard break |
-| Default position | `top` (today an unknown value falls back to `any`) |
+| Default add position | `top` (today an unknown value falls back to `any`) |
 | Inline `style` for editable values | not supported, see [Block configuration](#block-configuration) |
 | Template marker | explicit: `data-jaco-template data-jaco-template-name="…"` |
 | List of repeatable blocks | called `repeater`, because `list` reads like `<ul>` |
@@ -329,30 +338,31 @@ Link and image side by side, two edits:
 
 ### Repeater
 
-Every position, including the default:
+Every add position, including the default:
 
 ```html
 <section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html">…</section>
-<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html" data-jaco-repeater-position="top">…</section>
-<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html" data-jaco-repeater-position="bottom">…</section>
-<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html" data-jaco-repeater-position="any">…</section>
-<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html" data-jaco-repeater-position="draggable">…</section>
+<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html" data-jaco-repeater-add="top">…</section>
+<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html" data-jaco-repeater-add="bottom">…</section>
+<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html" data-jaco-repeater-add="any">…</section>
+<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html"
+         data-jaco-repeater-add="top" data-jaco-repeater-sortable>…</section>
 ```
 
-With and without a title:
+With and without a label:
 
 ```html
 <section data-jaco-repeater
          data-jaco-repeater-fragment="news_item.html"
-         data-jaco-repeater-position="draggable"
-         data-jaco-repeater-title="Add news">…</section>
+         data-jaco-repeater-add="top" data-jaco-repeater-sortable
+         data-jaco-repeater-label="Add news">…</section>
 
 <section data-jaco-repeater
          data-jaco-repeater-fragment="news_item.html">…</section>
 ```
 
-Without a title the add button carries no label. Deriving one from the fragment
-name is listed under [Out of scope](#out-of-scope).
+Without `data-jaco-repeater-label` the add button carries no text. Deriving one
+from the fragment name is listed under [Out of scope](#out-of-scope).
 
 A complete repeater. The heading is not an item: no delete button, not moved when
 blocks are sorted.
@@ -360,8 +370,8 @@ blocks are sorted.
 ```html
 <section data-jaco-repeater
          data-jaco-repeater-fragment="feature_en.html"
-         data-jaco-repeater-title="Add feature"
-         data-jaco-repeater-position="draggable">
+         data-jaco-repeater-label="Add feature"
+         data-jaco-repeater-add="top" data-jaco-repeater-sortable>
   <h2 data-jaco-line>Why Jaco CMS?</h2>
 
   <div data-jaco-repeater-item>
@@ -380,12 +390,12 @@ Two repeaters on one page, the second inside a wrapper:
 
 ```html
 <section data-jaco-repeater data-jaco-repeater-fragment="news_item.html"
-         data-jaco-repeater-title="Add news">…</section>
+         data-jaco-repeater-label="Add news">…</section>
 
 <div class="team">
   <section data-jaco-repeater data-jaco-repeater-fragment="member.html"
-           data-jaco-repeater-title="Add member"
-           data-jaco-repeater-position="draggable">…</section>
+           data-jaco-repeater-label="Add member"
+           data-jaco-repeater-add="top" data-jaco-repeater-sortable>…</section>
 </div>
 ```
 
@@ -407,12 +417,12 @@ Two repeaters on one page, the second inside a wrapper:
 ```html
 <!-- upload without lightbox -->
 <img data-jaco-image
-     data-jaco-transient-target="IMG_0042.jpg"
+     data-jaco-transient-filename="IMG_0042.jpg"
      src="media/team.jpg" width="800">
 
 <!-- upload with lightbox -->
 <img data-jaco-image data-jaco-image-lightbox
-     data-jaco-transient-target="IMG_0042.jpg"
+     data-jaco-transient-filename="IMG_0042.jpg"
      data-jaco-transient-full="data:image/jpeg;base64,/9j/4AAQSkZJRg…"
      src="media/cake.jpg" width="400">
 
@@ -425,12 +435,12 @@ Two repeaters on one page, the second inside a wrapper:
 
 <!-- the size badge, inline or block depending on the parent -->
 <p>Text <img data-jaco-image src="media/icon.svg" width="24">
-   <span data-jaco-transient-temp>Image size: HTML 24x24, …</span>
+   <span data-jaco-transient-badge>Image size: HTML 24x24, …</span>
 </p>
 
 <div class="figure">
   <img data-jaco-image src="media/team.jpg" width="800">
-  <div data-jaco-transient-temp>Image size: HTML 800x600, …</div>
+  <div data-jaco-transient-badge>Image size: HTML 800x600, …</div>
 </div>
 ```
 
@@ -442,7 +452,7 @@ One image through the whole cycle:
 
 <!-- while uploading -->
 <img data-jaco-image data-jaco-image-lightbox
-     data-jaco-transient-target="IMG_0042.jpg"
+     data-jaco-transient-filename="IMG_0042.jpg"
      data-jaco-transient-full="data:image/jpeg;base64,…"
      src="media/cake.jpg" width="400">
 
@@ -454,18 +464,18 @@ One image through the whole cycle:
 
 ### Rejected forms
 
-Each of these has to produce a message on save instead of being ignored:
+Each of these has to produce a message on save instead of being ignored.
 
-```html
-<img data-jaco-image-resizable>                                       setting without its element
-<section data-jaco-repeater data-jaco-repeater-position="top">…</section>     repeater without a fragment
-<section data-jaco-repeater data-jaco-repeater-position="middle">…</section>  unknown position
-<div data-jaco-repeater-item>…</div>                                      item outside a repeater
-<section data-jaco-repeater data-jaco-repeater-item>…</section>               both markers
-<div data-jaco-repeater-item data-jaco-repeater-fragment="x.html">…</div>     key on an item
-<footer data-jaco-template>…</footer>                                 template without a name
-<img data-jaco-image data-jaco-transient-full="data:…">               full image without a lightbox
-```
+| Form | Why it is rejected |
+| --- | --- |
+| `<img data-jaco-image-resizable>` | setting without its element |
+| `<section data-jaco-repeater data-jaco-repeater-add="top">` | repeater without a fragment |
+| `<section data-jaco-repeater data-jaco-repeater-add="middle" …>` | unknown add position |
+| `<div data-jaco-repeater-item>` outside a repeater | item outside its container |
+| `<section data-jaco-repeater data-jaco-repeater-item>` | both markers on one element |
+| `<div data-jaco-repeater-item data-jaco-repeater-fragment="x.html">` | key on an item |
+| `<footer data-jaco-template>` | template without a name |
+| `<img data-jaco-image data-jaco-transient-full="…">` | full image without a lightbox |
 
 ## Block configuration
 
@@ -514,10 +524,10 @@ to fail until the rest agrees.
 
 | # | Step | Where |
 | --- | --- | --- |
-| 1 | Contract test: read the thirteen names from the whitelist, compare them with the frontend selectors and with every page | new test next to `IgnoreRulesTest` |
+| 1 | Contract test: read the fourteen names from the whitelist, compare them with the frontend selectors and with every page | new test next to `IgnoreRulesTest` |
 | 2 | Whitelist and validation rules | `backend/core/html.php` |
 | 3 | Selectors | `frontend/editor.js`, `frontend/contentlists.js` |
-| 4 | Pages, position written out | 14 files in the root and `de/` |
+| 4 | Pages, add position written out | 14 files in the root and `de/` |
 | 5 | Templates | 12 files under `jaco-data/templates/` |
 | 6 | Fix the template marker (see `docs/backlog.md`) | `backend/core/html.php` |
 | 7 | Suites | PHPUnit, QUnit, Playwright |
@@ -526,19 +536,19 @@ to fail until the rest agrees.
 guards the ignore rules and `MenuRoleTest` the menu. Without it a rename that
 missed one selector looks green.
 
-**Step 2** holds the thirteen persistent names and deliberately none of the
+**Step 2** holds the fourteen persistent names and deliberately none of the
 transient ones, so a transient attribute cannot survive a save. The pairing rules
 from [What the server validates](#what-the-server-validates) go in the same place:
 a key without its marker, an item outside a repeater, a repeater without a
-fragment, an unknown position, an unknown name.
+fragment, an unknown add position, an unknown name.
 
 **Step 3** replaces every selector. With a hard break there is no old name to fall
 back to, so a missed selector silently stops working - the contract test from step
 1 is what catches it.
 
-**Step 4** rewrites 14 pages. The position becomes explicit (`top` was implicit
-`any` before), image capabilities become two attributes, the template marker
-becomes the two-attribute form.
+**Step 4** rewrites 14 pages. The add position becomes explicit (`top` was
+implicit `any` before), sorting becomes its own attribute, image capabilities
+become two attributes, the template marker becomes the two-attribute form.
 
 **Step 5** touches 12 templates: six content fragments, two page templates, four
 site templates. They carry the same attributes as the pages.
@@ -563,13 +573,14 @@ rename verifiable instead of hopeful.
 - `data-jaco-transient-full` carries base64 image data in a DOM attribute; the
   rename does not make that cheaper.
 - Deriving the add-button label from the fragment name, which would make
-  `data-jaco-repeater-title` optional in practice. It fixes the "labels carry the page
+  `data-jaco-repeater-label` optional in practice. It fixes the "labels carry the page
   language" item in `docs/backlog.md` and belongs in its own change.
 
 ## Changelog
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 0.9.0 | 2026-10-25 | Four names fixed: `repeater-label` (was `title`), `repeater-add` plus `repeater-sortable` (was `repeater-position` with `draggable` inside), `transient-filename` (was `transient-target`), `transient-badge` (was `transient-temp`). |
 | 0.8.0 | 2026-10-25 | Implementation order written down; step 1 is the contract test. |
 | 0.7.0 | 2026-10-25 | Decisions recorded: hard break, default `top`, no `style` support, block settings only as closed vocabularies. |
 | 0.6.0 | 2026-10-25 | `list` becomes `repeater`: the name no longer reads like `<ul>`/`<ol>`. |
