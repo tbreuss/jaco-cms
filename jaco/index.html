@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JACO</title>
     <script>
+      // The admin never belongs inside a frame: the site preview loads the start
+      // page, and its demo link leads back here - the shell would nest into
+      // itself. Links that intend it carry target="_top"; this breaks any other
+      // way in as well.
+      if (window.top !== window.self) {
+        try {
+          window.top.location.href = window.location.href
+        } catch (e) {
+          // a cross-origin parent cannot be navigated
+        }
+      }
+    </script>
+    <script>
       // set before CSS paints to avoid a theme flash (see lib/theme.js)
       try {
         var jacoTheme = localStorage.getItem('jaco-theme') || 'auto'

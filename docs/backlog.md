@@ -49,6 +49,7 @@ Status values: `open`, `doing`, `done`. Effort is a rough t-shirt size.
 | Item | Commit |
 | --- | --- |
 | Site templates with apply-to-all | `feat: add site templates with apply-to-all` |
+| The demo link nests the admin into itself | `fix: the demo link no longer nests the admin into itself` - the start page is the admin's preview and its demo link pointed back into `/jaco/`: followed inside the frame the whole shell loaded into the preview, with a second navbar and a second demo banner. The link carries `target="_top"` now and `jaco/index.html` refuses to render inside a frame. |
 | Page title, meta description and robots UI | `feat: add page settings for title, description and robots` |
 | Translate Quill's internal labels | `feat: translate Quill toolbar labels` |
 | Dark mode for the Quill editor chrome | `feat: theme the Quill editor chrome` |
