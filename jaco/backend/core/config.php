@@ -300,8 +300,8 @@ function create_default_config(string $appDir, array $settings = []): Config
         phpDisplayErrors: (int) ($settings['phpDisplayErrors'] ?? 0),
         phpDisplayStartupErrors: (int) ($settings['phpDisplayStartupErrors'] ?? 0),
         phpLogErrors: (int) ($settings['phpLogErrors'] ?? 1),
-        phpErrorLog: $appDir . '/runtime/log/error.log',
-        loginHistoryFile: $appDir . '/runtime/log/loginhistory.json',
+        phpErrorLog: $dataDir . '/runtime/log/error.log',
+        loginHistoryFile: $dataDir . '/runtime/log/loginhistory.json',
         maintenanceMode: (bool) ($settings['maintenanceMode'] ?? false),
         backupRetentionDays: (int) ($settings['backupRetentionDays'] ?? 90),
         // users in settings.php; empty means nobody can log in

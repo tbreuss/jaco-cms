@@ -36,6 +36,7 @@ function test_config_password_hash(): string
 function test_config(): Config
 {
     $dir = __DIR__ . '/asset/jaco';
+    $dataDir = dirname($dir) . '/jaco-data';
 
     return new Config(
         appVersion: '0.1.0',
@@ -44,11 +45,11 @@ function test_config(): Config
         webDir: dirname($dir),
         // next to the application, as in a real installation: keeping it inside the
         // app directory used to hide bugs where operator data was read as content
-        dataDir: dirname($dir) . '/jaco-data',
-        backupDir: dirname($dir) . '/jaco-data/backups',
-        templatePageDir: dirname($dir) . '/jaco-data/templates/page',
-        templateContentDir: dirname($dir) . '/jaco-data/templates/content',
-        templateSiteDir: dirname($dir) . '/jaco-data/templates/site',
+        dataDir: $dataDir,
+        backupDir: $dataDir . '/backups',
+        templatePageDir: $dataDir . '/templates/page',
+        templateContentDir: $dataDir . '/templates/content',
+        templateSiteDir: $dataDir . '/templates/site',
         mediaDir: dirname($dir) . '/media',
         uploadExtensions: ['png', 'gif', 'jpg', 'jpeg', 'svg', 'pdf'],
         mediaUrl: 'media',
@@ -64,8 +65,8 @@ function test_config(): Config
         phpDisplayErrors: 0,
         phpDisplayStartupErrors: 0,
         phpLogErrors: 1,
-        phpErrorLog: __DIR__ . '/runtime/log/error.log',
-        loginHistoryFile: __DIR__ . '/runtime/log/loginhistory.json',
+        phpErrorLog: $dataDir . '/runtime/log/error.log',
+        loginHistoryFile: $dataDir . '/runtime/log/loginhistory.json',
         maintenanceMode: false,
         backupRetentionDays: 90,
     );

@@ -104,10 +104,10 @@ await waitForServer(url)
 // run inside that window fails on an error the test never triggered, and the
 // red run says nothing about the change under test. The file holds failed
 // attempts only and is gitignored, so clearing it is safe.
-const loginHistory = join(import.meta.dirname, '../../runtime/log/loginhistory.json')
+const loginHistory = join(import.meta.dirname, '../../jaco-data/runtime/log/loginhistory.json')
 if (existsSync(loginHistory)) {
   rmSync(loginHistory, {force: true})
-  console.log('Reset the login throttle (runtime/log/loginhistory.json)')
+  console.log('Reset the login throttle (jaco-data/runtime/log/loginhistory.json)')
 }
 
 const port = await freePort()

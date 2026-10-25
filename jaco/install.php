@@ -95,7 +95,9 @@ $config = create_default_config($appDir, []);
 
 // Runtime directories may not exist in a fresh upload, create what is
 // creatable before checking: the checks below verify the result.
-@make_dir_rec($config, $appDir, 'runtime/log');
+// Logs and login history live next to the other operator data in jaco-data/,
+// so they survive replacing the jaco/ directory.
+@make_dir_rec($config, $config->dataDir, 'runtime/log');
 
 // jaco-data/ holds templates and backups, so no archive ships it: create the
 // directory and its deny file here. An existing file is never overwritten.

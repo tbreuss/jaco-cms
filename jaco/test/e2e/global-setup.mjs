@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const uploadFile = join(root, 'media', 'e2e-smoke.png')
 const backupFile = join(root, 'jaco-data', 'backups', '20260101_000000_e2e1_index.html')
-const loginHistoryFile = join(root, 'jaco', 'runtime', 'log', 'loginhistory.json')
+const loginHistoryFile = join(root, 'jaco-data', 'runtime', 'log', 'loginhistory.json')
 const siteTemplateFile = join(root, 'jaco-data', 'templates', 'site', 'e2e-footer.html')
 const siteTemplatePage = join(root, 'e2e-template-page.html')
 

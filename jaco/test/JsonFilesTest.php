@@ -9,9 +9,9 @@ use PHPUnit\Framework\TestCase;
  * Every json file below jaco/ must parse: a broken schema or translation file is then
  * caught by the test suite and the pipeline instead of at runtime.
  *
- * Dependencies and generated runtime data are skipped: vendor/ holds the json files of
- * the libraries, runtime/ the login history. composer.lock does not match "*.json" and
- * is checked by composer itself.
+ * Dependencies are skipped: vendor/ holds the json files of
+ * the libraries. composer.lock does not match "*.json" and is checked
+ * by composer itself.
  */
 #[TestDox('Json files')]
 final class JsonFilesTest extends TestCase
@@ -41,7 +41,7 @@ final class JsonFilesTest extends TestCase
             $directory,
             static function (\SplFileInfo $current): bool {
                 if ($current->isDir()) {
-                    return !in_array($current->getFilename(), ['vendor', 'runtime'], true);
+                    return !in_array($current->getFilename(), ['vendor'], true);
                 }
 
                 return str_ends_with($current->getFilename(), '.json');

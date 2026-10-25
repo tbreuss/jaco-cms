@@ -94,16 +94,37 @@ function security_checks(Config $config): array
 {
     $logDir = \dirname($config->loginHistoryFile);
 
+    // Apache .htaccess wirkt rekursiv: Ein .htaccess in einem Elternverzeichnis
+    // schützt auch alle Unterverzeichnisse. Für den Log-Schutz genügt daher ein
+    // .htaccess irgendwo zwischen dem Log-Verzeichnis und der App (exkl. App).
+    // Darüber hinaus liegt bereits die eigene App-Prüfung.
+    $htaccessProtects = function (string $dir, string $stopAt): bool {
+        while ($dir !== $stopAt && $dir !== \dirname($dir)) {
+            if (\is_file($dir . '/.htaccess')) {
+                return true;
+            }
+            $dir = \dirname($dir);
+        }
+        return false;
+    };
+
     $files = [
         'App protection (.htaccess)' => $config->appDir . '/.htaccess',
         'Data protection (.htaccess)' => $config->dataDir . '/.htaccess',
-        'Log protection (.htaccess)' => \dirname($logDir) . '/.htaccess',
+        'Log protection (.htaccess)' => $logDir,
         'Vendor protection (.htaccess)' => $config->appDir . '/vendor/.htaccess',
     ];
 
     $checks = [];
-    foreach ($files as $label => $file) {
-        $checks[] = ['label' => $label, 'ok' => \is_file($file), 'detail' => $file];
+    foreach ($files as $label => $check) {
+        if ($label === 'Log protection (.htaccess)') {
+            $ok = $htaccessProtects($check, $config->appDir);
+            $detail = $check . '/.htaccess';
+        } else {
+            $ok = \is_file($check);
+            $detail = $check;
+        }
+        $checks[] = ['label' => $label, 'ok' => $ok, 'detail' => $detail];
     }
 
     // Installer must not be reachable after setup

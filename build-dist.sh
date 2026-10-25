@@ -53,8 +53,9 @@ rm -f "$WORK/jaco/settings.php"
 rm -f "$WORK/jaco/api.http" "$WORK/jaco/phpstan.neon" "$WORK/jaco/deptrac.yaml"
 find "$WORK" -name ".DS_Store" -delete
 
-# leere Laufzeitverzeichnisse sicherstellen (braucht die App zum Schreiben)
-mkdir -p "$WORK/jaco/runtime/log"
+# leere Laufzeitverzeichnisse sicherstellen (braucht die App zum Schreiben).
+# runtime/ liegt unter jaco-data/ (Betriebsdaten), nicht unter jaco/ (App):
+mkdir -p "$WORK/jaco-data/runtime/log"
 
 # jaco-data/ (Vorlagen und Backups) und media/ (Uploads) sind Nutzerdaten und
 # kommen nicht mit: der Installer legt sie samt Schutzdatei an, wo sie fehlen.
