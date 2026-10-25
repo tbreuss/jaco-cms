@@ -186,7 +186,7 @@ function get_overview(Config $config): array
 
     return [
         'pages' => count(page\find_public_pages($config)),
-        'uploads' => count(filesystem\find_files_rec($config->webDir, $config->uploadExtensions, [$config->appDir])),
+        'uploads' => count(filesystem\find_files_rec($config->webDir, $config->uploadExtensions, [$config->appDir, $config->dataDir])),
         'backups' => count(filesystem\find_files($config->backupDir, array_merge($config->uploadExtensions, $config->pageExtensions))),
         'projectSize' => dir_size($config->webDir),
         'logSize' => $logSize,

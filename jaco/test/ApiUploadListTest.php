@@ -11,6 +11,7 @@ final class ApiUploadListTest extends ApiTestCase
     private const UPLOAD = 'media/api-upload-list.jpg';
     private const TEXT = 'media/api-upload-list.txt';
     private const HIDDEN = 'api-upload-hidden.jpg';
+    private const SITE_IMAGE = 'api-upload-site.png';
 
     protected function setUp(): void
     {
@@ -20,6 +21,9 @@ final class ApiUploadListTest extends ApiTestCase
         $this->watchDir($this->config->mediaDir);
         file_put_contents($this->config->webDir . '/' . self::UPLOAD, 'image bytes');
         file_put_contents($this->config->webDir . '/' . self::TEXT, 'not an upload');
+        // an image that lives next to the pages: Jaco makes an existing HTML site
+        // editable, so the library has to offer it
+        file_put_contents($this->config->webDir . '/' . self::SITE_IMAGE, 'site image');
     }
 
     public function testOnlyAllowedFilesOutsideTheAppDirAreListed(): void
@@ -38,6 +42,7 @@ final class ApiUploadListTest extends ApiTestCase
             $files = array_column($body['items'], 'file');
             $this->assertNotContains(self::TEXT, $files, 'a file without an allowed extension must not be listed');
             $this->assertNotContains($this->config->appDirName . '/' . self::HIDDEN, $files, 'the app dir must stay invisible');
+            $this->assertContains(self::SITE_IMAGE, $files, 'an image of the site is listed as well');
 
             $item = $this->itemWithFile($body['items'], self::UPLOAD);
             $this->assertSame('jpg', $item['extension']);
@@ -46,6 +51,28 @@ final class ApiUploadListTest extends ApiTestCase
             $this->assertIsInt($item['created']);
         } finally {
             @unlink($this->config->appDir . '/' . self::HIDDEN);
+        }
+    }
+
+    public function testOperatorDataAndApplicationStayOutOfTheLibrary(): void
+    {
+        // backups of deleted uploads live under jaco-data: listing them would offer
+        // copies that no page references
+        @mkdir($this->config->backupDir, 0755, true);
+        $backup = $this->config->backupDir . '/20260101_000000_aaaa_media|foto.jpg';
+        file_put_contents($backup, 'old image');
+
+        try {
+            $body = (array) json_decode((string) $this->api('upload/list', method: 'GET')->body, true);
+            $files = array_column($body['items'], 'file');
+
+            $this->assertSame([], array_filter(
+                $files,
+                static fn(string $file): bool => str_starts_with($file, 'jaco-data/'),
+            ), 'nothing below the operator data is an image of the site');
+            $this->assertNotContains($this->config->appDirName . '/' . self::HIDDEN, $files);
+        } finally {
+            @unlink($backup);
         }
     }
 

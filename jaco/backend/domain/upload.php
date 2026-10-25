@@ -45,7 +45,16 @@ function find_uploads(Config $config, string $filteredBy, string $sortedBy): Pay
         return Payload::error([['', 'Dir does not exist.']]);
     }
 
-    $files = filesystem\find_files_rec($config->webDir, $config->uploadExtensions, [$config->appDir]);
+    // The library lists every image of the site, not only the ones uploaded here:
+    // Jaco makes an existing HTML site editable, and its images live wherever the
+    // author put them. New uploads go to the media directory, an existing image is
+    // maintained and deleted like a page. The application and the operator data
+    // hold no site image - walking them would list backups of deleted uploads.
+    $files = filesystem\find_files_rec(
+        $config->webDir,
+        $config->uploadExtensions,
+        [$config->appDir, $config->dataDir],
+    );
 
     $sort = list\parse_sort($sortedBy, SORT_PARAMETERS);
     $uploads = create_list($files);
