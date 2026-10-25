@@ -110,16 +110,16 @@ jobs:
                       --exclude 'api.http' \
                       --exclude '/vendor/' \
                       --exclude '.DS_Store' \
-                      jaco/ deploy/app/jaco/
+                      jaco/ deploy/app/
                   # Dependencies for the runtime, without dev packages.
-                  composer install --working-dir deploy/app/jaco --no-dev --prefer-dist --no-progress --optimize-autoloader
+                  composer install --working-dir deploy/app --no-dev --prefer-dist --no-progress --optimize-autoloader
                   # Build inputs and the installer are not runtime files: the
                   # deployment is already installed, and install.php must never
                   # be reachable on the server.
-                  rm -f deploy/app/jaco/composer.json deploy/app/jaco/composer.lock
-                  rm -f deploy/app/jaco/install.php
+                  rm -f deploy/app/composer.json deploy/app/composer.lock
+                  rm -f deploy/app/install.php
                   # Protect the installed dependencies: vendor/ is not served.
-                  printf '%s\n' '# Third-party code: never serve directly.' 'Require all denied' > deploy/app/jaco/vendor/.htaccess
+                  printf '%s\n' '# Third-party code: never serve directly.' 'Require all denied' > deploy/app/vendor/.htaccess
 
             - name: Stage website
               run: |
@@ -139,18 +139,18 @@ jobs:
 
             - name: Verify staged application
               run: |
-                  test -f deploy/app/jaco/api.php
-                  test -f deploy/app/jaco/vendor/autoload.php
+                  test -f deploy/app/api.php
+                  test -f deploy/app/vendor/autoload.php
                   # without this file settings.php, cli.php and install.php
                   # would be served: the whitelist lives here
-                  test -f deploy/app/jaco/.htaccess
-                  test ! -f deploy/app/jaco/install.php
-                  test ! -f deploy/app/jaco/settings.php
-                  test ! -d deploy/app/jaco/test
+                  test -f deploy/app/.htaccess
+                  test ! -f deploy/app/install.php
+                  test ! -f deploy/app/settings.php
+                  test ! -d deploy/app/test
                   # operator data must never be part of the application payload
                   test ! -d deploy/app/jaco-data
-                  test ! -d deploy/app/jaco/_backup
-                  test ! -d deploy/app/jaco/_template
+                  test ! -d deploy/app/_backup
+                  test ! -d deploy/app/_template
 
             - name: Verify staged website
               run: |
@@ -174,11 +174,11 @@ jobs:
                   password: ${{ secrets.SSH_PASSWORD }}
                   port: 22
                   source: deploy/app/
-                  target: ${{ vars.SSH_TARGET }}
-                  # Replaces the application only: jaco-data/ and media/ live
-                  # next to this directory and stay untouched.
+                  target: ${{ vars.SSH_TARGET }}/jaco
+                  # Replaces ONLY the jaco/ application directory.
+                  # jaco-data/ and media/ live next to it and stay untouched.
                   rm: true
-                  strip_components: 2
+                  strip_components: 1
 
             - name: Deploy website to ${{ vars.SSH_TARGET }}
               uses: appleboy/scp-action@master
