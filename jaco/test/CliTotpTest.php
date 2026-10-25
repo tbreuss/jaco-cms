@@ -23,11 +23,13 @@ final class CliTotpTest extends TestCase
     {
         $this->dir = sys_get_temp_dir() . '/jaco-cli-totp-' . bin2hex(random_bytes(6));
         mkdir($this->dir, 0755, true);
+        mkdir($this->dir . '/jaco-data', 0755, true);
     }
 
     protected function tearDown(): void
     {
-        @unlink($this->dir . '/settings.php');
+        @unlink($this->dir . '/jaco-data/settings.php');
+        @rmdir($this->dir . '/jaco-data');
         @rmdir($this->dir);
     }
 
@@ -36,7 +38,7 @@ final class CliTotpTest extends TestCase
         $anna = "'password' => 'hash-a', 'role' => 'admin'"
             . ($annaHasSecret ? ", 'totpSecret' => 'ANNASECRET'" : '');
 
-        file_put_contents($this->dir . '/settings.php', <<<PHP
+        file_put_contents($this->dir . '/jaco-data/settings.php', <<<PHP
             <?php declare(strict_types=1);
 
             // keep me, I explain the file
@@ -52,7 +54,7 @@ final class CliTotpTest extends TestCase
 
     private function writeOneUser(): void
     {
-        file_put_contents($this->dir . '/settings.php', <<<'PHP'
+        file_put_contents($this->dir . '/jaco-data/settings.php', <<<'PHP'
             <?php declare(strict_types=1);
 
             // keep me, I explain the file
@@ -70,6 +72,7 @@ final class CliTotpTest extends TestCase
     {
         return test_config_with([
             'appDir' => $this->dir,
+            'dataDir' => $this->dir . '/jaco-data',
             'users' => $users,
         ]);
     }
@@ -77,7 +80,7 @@ final class CliTotpTest extends TestCase
     /** @return array<string, mixed> */
     private function settings(): array
     {
-        return (array) include $this->dir . '/settings.php';
+        return (array) include $this->dir . '/jaco-data/settings.php';
     }
 
     public function testSetupWritesTheSecretIntoTheNamedUser(): void
@@ -89,7 +92,7 @@ final class CliTotpTest extends TestCase
         $this->assertSame(0, $code);
         $this->assertStringContainsString('Two-factor authentication is now required for "anna".', $output);
 
-        $source = (string) file_get_contents($this->dir . '/settings.php');
+        $source = (string) file_get_contents($this->dir . '/jaco-data/settings.php');
         $this->assertStringContainsString('// keep me, I explain the file', $source, 'comments survive');
         $this->assertStringContainsString("'secretKey' => 'do-not-touch'", $source);
 
@@ -117,13 +120,13 @@ final class CliTotpTest extends TestCase
     public function testWithoutAUserTheCommandRefusesToGuess(): void
     {
         $this->writeTwoUsers();
-        $before = (string) file_get_contents($this->dir . '/settings.php');
+        $before = (string) file_get_contents($this->dir . '/jaco-data/settings.php');
 
         [$output, $code] = setup_command($this->config($this->settings()['users']));
 
         $this->assertSame(1, $code);
         $this->assertStringContainsString('--user', $output);
-        $this->assertSame($before, (string) file_get_contents($this->dir . '/settings.php'), 'nothing is written');
+        $this->assertSame($before, (string) file_get_contents($this->dir . '/jaco-data/settings.php'), 'nothing is written');
     }
 
     public function testAnUnknownUserIsRejected(): void
@@ -139,13 +142,13 @@ final class CliTotpTest extends TestCase
     public function testASingleUserAlsoNeedsAName(): void
     {
         $this->writeOneUser();
-        $before = (string) file_get_contents($this->dir . '/settings.php');
+        $before = (string) file_get_contents($this->dir . '/jaco-data/settings.php');
 
         [$output, $code] = setup_command($this->config($this->settings()['users']));
 
         $this->assertSame(1, $code);
         $this->assertStringContainsString('--user', $output);
-        $this->assertSame($before, (string) file_get_contents($this->dir . '/settings.php'), 'nothing is written');
+        $this->assertSame($before, (string) file_get_contents($this->dir . '/jaco-data/settings.php'), 'nothing is written');
     }
 
     public function testASingleUserIsEnrolledWhenNamed(): void

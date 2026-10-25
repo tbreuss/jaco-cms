@@ -135,7 +135,7 @@ function security_checks(Config $config): array
     ];
 
     // settings.php must not be writable by the web user
-    $settingsFile = $config->appDir . '/settings.php';
+    $settingsFile = $config->dataDir . '/settings.php';
     $checks[] = [
         'label' => 'Settings not writable',
         'ok' => !\is_file($settingsFile) || !\is_writable($settingsFile),

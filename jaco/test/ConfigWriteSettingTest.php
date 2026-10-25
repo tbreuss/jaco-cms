@@ -20,28 +20,30 @@ final class ConfigWriteSettingTest extends TestCase
     {
         $this->dir = sys_get_temp_dir() . '/jaco-settings-' . bin2hex(random_bytes(6));
         mkdir($this->dir, 0755, true);
+        mkdir($this->dir . '/jaco-data', 0755, true);
     }
 
     protected function tearDown(): void
     {
-        @unlink($this->dir . '/settings.php');
+        @unlink($this->dir . '/jaco-data/settings.php');
+        @rmdir($this->dir . '/jaco-data');
         @rmdir($this->dir);
     }
 
     private function writeSource(string $source): void
     {
-        file_put_contents($this->dir . '/settings.php', $source);
+        file_put_contents($this->dir . '/jaco-data/settings.php', $source);
     }
 
     private function readSource(): string
     {
-        return (string) file_get_contents($this->dir . '/settings.php');
+        return (string) file_get_contents($this->dir . '/jaco-data/settings.php');
     }
 
     /** @return array<string, mixed> */
     private function settings(): array
     {
-        return (array) include $this->dir . '/settings.php';
+        return (array) include $this->dir . '/jaco-data/settings.php';
     }
 
     public function testReplacesAStringAndKeepsTheComments(): void
@@ -58,7 +60,7 @@ final class ConfigWriteSettingTest extends TestCase
             ];
             PHP);
 
-        $this->assertTrue(write_setting($this->dir, 'password', 'new-digest'));
+        $this->assertTrue(write_setting($this->dir . '/jaco-data', 'password', 'new-digest'));
 
         $source = $this->readSource();
         $this->assertStringContainsString('// keep me, I explain the secret below', $source);
@@ -78,7 +80,7 @@ final class ConfigWriteSettingTest extends TestCase
             ];
             PHP);
 
-        $this->assertTrue(write_setting($this->dir, 'maintenanceMode', true));
+        $this->assertTrue(write_setting($this->dir . '/jaco-data', 'maintenanceMode', true));
 
         $this->assertTrue($this->settings()['maintenanceMode']);
         $this->assertStringContainsString("'maintenanceMode' => true,", $this->readSource());
@@ -94,7 +96,7 @@ final class ConfigWriteSettingTest extends TestCase
             ];
             PHP);
 
-        $this->assertTrue(write_setting($this->dir, 'backupRetentionDays', 30));
+        $this->assertTrue(write_setting($this->dir . '/jaco-data', 'backupRetentionDays', 30));
 
         $this->assertSame(30, $this->settings()['backupRetentionDays']);
     }
@@ -109,7 +111,7 @@ final class ConfigWriteSettingTest extends TestCase
             ];
             PHP);
 
-        $this->assertTrue(write_setting($this->dir, 'maintenanceMode', true));
+        $this->assertTrue(write_setting($this->dir . '/jaco-data', 'maintenanceMode', true));
 
         $settings = $this->settings();
         $this->assertTrue($settings['maintenanceMode']);
@@ -130,15 +132,15 @@ final class ConfigWriteSettingTest extends TestCase
 
         $value = "pa'ss\\word";
 
-        $this->assertTrue(write_setting($this->dir, 'password', $value));
+        $this->assertTrue(write_setting($this->dir . '/jaco-data', 'password', $value));
 
         $this->assertSame($value, $this->settings()['password']);
     }
 
     public function testFailsWithoutAFileAndCreatesNothing(): void
     {
-        $this->assertFalse(write_setting($this->dir, 'password', 'x'));
-        $this->assertFileDoesNotExist($this->dir . '/settings.php');
+        $this->assertFalse(write_setting($this->dir . '/jaco-data', 'password', 'x'));
+        $this->assertFileDoesNotExist($this->dir . '/jaco-data/settings.php');
     }
 
     public function testFailsForAValueItCannotReplaceLineWise(): void
@@ -155,7 +157,7 @@ final class ConfigWriteSettingTest extends TestCase
             PHP;
         $this->writeSource($source);
 
-        $this->assertFalse(write_setting($this->dir, 'uploadExtensions', 'png'));
+        $this->assertFalse(write_setting($this->dir . '/jaco-data', 'uploadExtensions', 'png'));
         $this->assertSame($source, $this->readSource(), 'the file is left untouched');
     }
 }

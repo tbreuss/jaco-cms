@@ -15,7 +15,7 @@ register_shutdown_function('jaco\core\error\fatal_handler');
 $settings = [];
 
 // Tests can point the API at a disposable settings file without touching the
-// real jaco/settings.php. An explicitly set but unreadable path fails closed
+// real jaco-data/settings.php. An explicitly set but unreadable path fails closed
 // instead of silently falling back to the live configuration.
 $settingsFile = getenv('JACO_SETTINGS_FILE');
 if (is_string($settingsFile) && $settingsFile !== '') {
@@ -25,8 +25,8 @@ if (is_string($settingsFile) && $settingsFile !== '') {
     if (is_readable($settingsFile)) {
         $settings = require $settingsFile;
     }
-} elseif (is_readable('settings.php')) {
-    $settings = require('settings.php');
+} elseif (is_readable(__DIR__ . '/../jaco-data/settings.php')) {
+    $settings = require __DIR__ . '/../jaco-data/settings.php';
 }
 
 $config = create_default_config(__DIR__, is_array($settings) ? $settings : []);

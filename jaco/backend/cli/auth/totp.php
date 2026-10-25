@@ -23,7 +23,7 @@ function setup_command(Config $config, string $username = ''): array
 
     $secret = generate_secret();
 
-    if (!write_user_field($config->appDir, $account, 'totpSecret', $secret)) {
+    if (!write_user_field($config->dataDir, $account, 'totpSecret', $secret)) {
         return ["Could not write settings.\n", 1];
     }
 
@@ -50,7 +50,7 @@ function disable_command(Config $config, string $username = ''): array
 
     // null removes the field entirely, so the record does not keep a secret that is
     // switched off; an empty string would still be a value in the file
-    if (!write_user_field($config->appDir, $account, 'totpSecret', null)) {
+    if (!write_user_field($config->dataDir, $account, 'totpSecret', null)) {
         return ["Could not write settings.\n", 1];
     }
 

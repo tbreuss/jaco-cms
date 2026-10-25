@@ -80,18 +80,18 @@ use function jaco\core\totp\generate_secret;
 use function jaco\core\totp\provisioning_uri;
 use function jaco\core\totp\qr_svg;
 
-if (is_file($appDir . '/settings.php')) {
+$config = create_default_config($appDir, []);
+
+if (is_file($config->dataDir . '/settings.php')) {
     install_page(
         'Jaco CMS installer',
         '<p class="ok">Jaco is already installed.</p>'
             . '<p>The installer refuses to overwrite an existing installation. '
-            . 'Delete <code>jaco/settings.php</code> by hand if you really want to start over.</p>'
+            . 'Delete <code>jaco-data/settings.php</code> by hand if you really want to start over.</p>'
             . '<p><a href="index.html">Open the admin panel</a></p>',
     );
     exit(0);
 }
-
-$config = create_default_config($appDir, []);
 
 // Runtime directories may not exist in a fresh upload, create what is
 // creatable before checking: the checks below verify the result.
@@ -219,7 +219,7 @@ if ($isPost && !$checksFailed) {
             $errors[] = 'Could not generate a secret key, please reload and try again.';
         } elseif ($totp && !is_string($totpSecret)) {
             $errors[] = 'Could not generate a two-factor secret, please reload and try again.';
-        } elseif (!write_settings($appDir, [
+        } elseif (!write_settings($config->dataDir, [
             // one admin user: settings.php lists users, there is no separate
             // username/password pair any more
             'users' => [$username => $user],
@@ -227,14 +227,14 @@ if ($isPost && !$checksFailed) {
             'defaultLanguage' => $language,
             'mediaDir' => $mediaDir,
         ])) {
-            $errors[] = 'Could not write jaco/settings.php, please check write permissions.';
+            $errors[] = 'Could not write jaco-data/settings.php, please check write permissions.';
         } else {
-            $written = require $appDir . '/settings.php';
+            $written = require $config->dataDir . '/settings.php';
             $installed = create_default_config($appDir, is_array($written) ? $written : []);
             $token = authenticate($installed, $username, $password);
 
             if (!is_string($token)) {
-                $errors[] = 'Settings written, but the login check failed. Please delete jaco/settings.php and start over.';
+                $errors[] = 'Settings written, but the login check failed. Please delete jaco-data/settings.php and start over.';
             } else {
                 @unlink(__FILE__);
                 $deleted = !is_file(__FILE__);
@@ -243,7 +243,7 @@ if ($isPost && !$checksFailed) {
                     $totpBlock = '<p class="ok">Two-factor authentication is enabled for login <strong>'
                         . install_escape($username) . '</strong>.</p>'
                         . '<p>Scan this code with the authenticator app. The secret is also stored in '
-                        . '<code>jaco/settings.php</code> and can be shown again with '
+                        . '<code>jaco-data/settings.php</code> and can be shown again with '
                         . '<code>php jaco/cli.php auth:totp-setup -u ' . install_escape($username) . '</code>.</p>'
                         . '<div style="max-width:220px">' . qr_svg(provisioning_uri($totpSecret, $username)) . '</div>';
                 }
@@ -256,8 +256,8 @@ if ($isPost && !$checksFailed) {
                             : '<p class="fail">The installer could NOT delete itself, please remove <code>jaco/install.php</code> by hand right now.</p>')
                         . '<p><strong>Next steps:</strong></p>'
                         . '<ul>'
-                        . '<li>Make sure <code>jaco/settings.php</code> is <strong>not writable</strong> by the web server user.</li>'
-                        . '<li>Verify the <code>secretKey</code> in <code>jaco/settings.php</code> is at least 32 random characters.</li>'
+                        . '<li>Make sure <code>jaco-data/settings.php</code> is <strong>not writable</strong> by the web server user.</li>'
+                        . '<li>Verify the <code>secretKey</code> in <code>jaco-data/settings.php</code> is at least 32 random characters.</li>'
                         . '</ul>'
                         . '<p><a href="index.html">Open the admin panel</a></p>',
                 );
@@ -304,7 +304,7 @@ if ($checksFailed) {
         . '<label class="checkbox"><input type="checkbox" name="totp" value="1"' . ($totp ? ' checked' : '') . '> '
         . 'Enable two-factor authentication (needs an authenticator app)</label>'
         . '<button class="submit" type="submit">Install</button></form>'
-        . '<p class="hint">The installer writes <code>jaco/settings.php</code> with your credentials '
+        . '<p class="hint">The installer writes <code>jaco-data/settings.php</code> with your credentials '
         . 'and a generated secret key for the login tokens, creates the media directory, '
         . 'and then deletes itself.</p>';
 }

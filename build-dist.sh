@@ -49,7 +49,7 @@ rm -f "$WORK/jaco/.deptrac.cache"
 rm -rf "$WORK/jaco/_backup" "$WORK/jaco/_template"
 rm -f "$WORK/jaco/phpunit.xml" "$WORK/jaco/.phpunit.cache" "$WORK/jaco/.phpunit.result.cache"
 rm -f "$WORK/jaco/composer.json" "$WORK/jaco/composer.lock"
-rm -f "$WORK/jaco/settings.php"
+rm -f "$WORK/jaco-data/settings.php"
 rm -f "$WORK/jaco/api.http" "$WORK/jaco/phpstan.neon" "$WORK/jaco/deptrac.yaml"
 find "$WORK" -name ".DS_Store" -delete
 

@@ -58,7 +58,7 @@ echo "target: $BASE"
 echo
 echo "internals must be unreachable"
 check 403 "/jaco/.htaccess"                 "application deny file"
-check 403 "/jaco/settings.php"              "credentials"
+check 403 "/jaco-data/settings.php"              "credentials"
 check 403 "/jaco/cli.php"                   "cli entry"
 check 403 "/jaco/install.php"               "installer"
 check 403 "/jaco/backend/.htaccess"         "source deny file"

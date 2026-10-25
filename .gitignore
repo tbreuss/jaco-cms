@@ -5,7 +5,7 @@
 /jaco/.php-cs-fixer.cache
 /jaco/.phpunit.cache
 /jaco/.phpunit.result.cache
-/jaco/settings.php
+/jaco-data/settings.php
 /jaco/test/e2e/settings.php
 /jaco/test/e2e/settings.test.php
 /jaco/test/e2e/node_modules

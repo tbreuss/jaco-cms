@@ -47,7 +47,7 @@ final readonly class Config
  *
  * @param array<string, mixed> $settings scalars and the users list
  */
-function write_settings(string $appDir, array $settings): bool
+function write_settings(string $dataDir, array $settings): bool
 {
     $content = '<?php declare(strict_types=1);' . PHP_EOL . PHP_EOL . 'return [' . PHP_EOL;
 
@@ -58,11 +58,11 @@ function write_settings(string $appDir, array $settings): bool
 
     $content .= '];' . PHP_EOL;
 
-    $written = file_put_contents($appDir . '/settings.php', $content) !== false;
+    $written = file_put_contents($dataDir . '/settings.php', $content) !== false;
 
     // keep credentials unreadable for other users on shared hosts
     if ($written) {
-        @chmod($appDir . '/settings.php', 0640);
+        @chmod($dataDir . '/settings.php', 0640);
     }
 
     return $written;
@@ -78,9 +78,9 @@ function write_settings(string $appDir, array $settings): bool
  * rename; the temporary file carries a .php suffix, so a request to it executes it
  * instead of serving the settings as text.
  */
-function write_setting(string $appDir, string $key, mixed $value): bool
+function write_setting(string $dataDir, string $key, mixed $value): bool
 {
-    $file = $appDir . '/settings.php';
+    $file = $dataDir . '/settings.php';
 
     if (!is_file($file)) {
         return false;
@@ -128,7 +128,7 @@ function write_setting(string $appDir, string $key, mixed $value): bool
         }
     }
 
-    return write_source($appDir, $file, $patched);
+    return write_source($file, $patched);
 }
 
 /**
@@ -139,13 +139,13 @@ function write_setting(string $appDir, string $key, mixed $value): bool
  * A null value removes the field again, which is how the second factor is turned off
  * without leaving a misleading "totpSecret => null" in the file.
  */
-function write_user_field(string $appDir, string $username, string $field, ?string $value): bool
+function write_user_field(string $dataDir, string $username, string $field, ?string $value): bool
 {
     if ($field === '') {
         return false;
     }
 
-    $file = $appDir . '/settings.php';
+    $file = $dataDir . '/settings.php';
 
     if (!is_file($file)) {
         return false;
@@ -183,7 +183,7 @@ function write_user_field(string $appDir, string $username, string $field, ?stri
         $users[$username][$field] = $value;
     }
 
-    return write_source($appDir, $file, substr($source, 0, $open) . var_export($users, true) . substr($source, $close + 1));
+    return write_source($file, substr($source, 0, $open) . var_export($users, true) . substr($source, $close + 1));
 }
 
 /**
@@ -212,7 +212,7 @@ function matching_bracket(string $source, int $open): ?int
  * Writes a generated settings source: parsed first, so a broken edit never reaches the
  * disk, then written to a temporary .php file and renamed over the target.
  */
-function write_source(string $appDir, string $file, string $content): bool
+function write_source(string $file, string $content): bool
 {
     try {
         // the tokens are unused: the call only has to throw on a syntax error
@@ -223,7 +223,7 @@ function write_source(string $appDir, string $file, string $content): bool
     unset($tokens);
 
     $mode = fileperms($file);
-    $temporary = tempnam($appDir, '.settings-');
+    $temporary = tempnam(dirname($file), '.settings-');
 
     if ($temporary === false) {
         return false;

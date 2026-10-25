@@ -28,6 +28,7 @@ final class ApiChangePasswordTest extends ApiTestCase
 
         $this->dir = sys_get_temp_dir() . '/jaco-pw-' . bin2hex(random_bytes(6));
         mkdir($this->dir, 0755, true);
+        mkdir($this->dir . '/jaco-data', 0755, true);
 
         $this->digest = (string) password_hash(self::CURRENT, PASSWORD_DEFAULT, ['cost' => 4]);
         file_put_contents($this->settingsPath(), <<<PHP
@@ -45,6 +46,7 @@ final class ApiChangePasswordTest extends ApiTestCase
     protected function tearDown(): void
     {
         @unlink($this->settingsPath());
+        @rmdir($this->dir . '/jaco-data');
         @rmdir($this->dir);
 
         auth\clear_login_history($this->config);
@@ -54,7 +56,7 @@ final class ApiChangePasswordTest extends ApiTestCase
 
     private function settingsPath(): string
     {
-        return $this->dir . '/settings.php';
+        return $this->dir . '/jaco-data/settings.php';
     }
 
     /** @param array<string, mixed> $overrides */
@@ -62,6 +64,7 @@ final class ApiChangePasswordTest extends ApiTestCase
     {
         return test_config_with(array_merge([
             'appDir' => $this->dir,
+            'dataDir' => $this->dir . '/jaco-data',
             'users' => [TEST_USERNAME => ['password' => $this->digest, 'role' => 'admin']],
         ], $overrides));
     }

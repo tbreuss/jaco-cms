@@ -141,7 +141,7 @@ function change_password(
     $digest = password_hash($withNewPassword, PASSWORD_DEFAULT);
 
     // a new digest in place, keeping the rest of the file and the other users untouched
-    if (!write_user_field($config->appDir, $username, 'password', $digest)) {
+    if (!write_user_field($config->dataDir, $username, 'password', $digest)) {
         return Payload::error([['', 'Could not write settings.']]);
     }
 

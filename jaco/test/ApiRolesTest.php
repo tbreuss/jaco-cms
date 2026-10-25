@@ -33,11 +33,12 @@ final class ApiRolesTest extends ApiTestCase
 
         $this->dir = sys_get_temp_dir() . '/jaco-roles-' . bin2hex(random_bytes(6));
         mkdir($this->dir, 0755, true);
+        mkdir($this->dir . '/jaco-data', 0755, true);
 
         $this->digest = (string) password_hash(self::PASSWORD, PASSWORD_DEFAULT, ['cost' => 4]);
 
         // the settings file mirrors the config, so a password change has a block to edit
-        file_put_contents($this->dir . '/settings.php', <<<PHP
+        file_put_contents($this->dir . '/jaco-data/settings.php', <<<PHP
             <?php declare(strict_types=1);
 
             // keep me
@@ -53,7 +54,8 @@ final class ApiRolesTest extends ApiTestCase
 
     protected function tearDown(): void
     {
-        @unlink($this->dir . '/settings.php');
+        @unlink($this->dir . '/jaco-data/settings.php');
+        @rmdir($this->dir . '/jaco-data');
         @rmdir($this->dir);
 
         parent::tearDown();
@@ -63,6 +65,7 @@ final class ApiRolesTest extends ApiTestCase
     {
         return test_config_with([
             'appDir' => $this->dir,
+            'dataDir' => $this->dir . '/jaco-data',
             'users' => [
                 'boss' => ['password' => $this->digest, 'role' => auth\ROLE_ADMIN],
                 'ed' => ['password' => $this->digest, 'role' => auth\ROLE_EDITOR],

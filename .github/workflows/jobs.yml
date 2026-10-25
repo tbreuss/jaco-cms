@@ -94,7 +94,7 @@ jobs:
               run: |
                   # Do not interpolate the secret into the shell command: hashes contain
                   # "$2y$..." and the shell would expand those dollar signs.
-                  printf '%s\n' "$SETTINGS_PHP_FILE_CONTENT" > jaco/settings.php
+                  printf '%s\n' "$SETTINGS_PHP_FILE_CONTENT" > jaco-data/settings.php
 
             # The checkout is the source tree, not the deployment: stage only what
             # belongs on the server. jaco-data/ and media/ are operator data that
@@ -141,11 +141,11 @@ jobs:
               run: |
                   test -f deploy/app/jaco/api.php
                   test -f deploy/app/jaco/vendor/autoload.php
-                  test -f deploy/app/jaco/settings.php
                   # without this file settings.php, cli.php and install.php
                   # would be served: the whitelist lives here
                   test -f deploy/app/jaco/.htaccess
                   test ! -f deploy/app/jaco/install.php
+                  test ! -f deploy/app/jaco/settings.php
                   test ! -d deploy/app/jaco/test
                   # operator data must never be part of the application payload
                   test ! -d deploy/app/jaco-data

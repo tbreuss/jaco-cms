@@ -18,6 +18,7 @@ final class InstallTest extends TestCase
         $this->dir = sys_get_temp_dir() . '/jaco-install-test';
         $this->removeDir($this->dir);
         mkdir($this->dir);
+        mkdir($this->dir . '/jaco-data');
     }
 
     protected function tearDown(): void
@@ -77,9 +78,9 @@ final class InstallTest extends TestCase
             'secretKey' => 'key',
         ];
 
-        $this->assertTrue(config\write_settings($this->dir, $settings));
+        $this->assertTrue(config\write_settings($this->dir . '/jaco-data', $settings));
 
-        $written = require $this->dir . '/settings.php';
+        $written = require $this->dir . '/jaco-data/settings.php';
         $config = config\create_default_config($this->dir, is_array($written) ? $written : []);
         $this->assertSame($settings, $written);
         $this->assertIsString(auth\authenticate($config, "ad'min", 'sec\\ret123'));
