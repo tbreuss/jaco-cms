@@ -26,7 +26,8 @@ export const BackupEditView = {
     }
     const editor = ace.edit('ace', {
       theme: aceThemeName(),
-      mode: 'ace/mode/html',
+      // stylesheets are shown in the same editor, so the mode follows the type
+      mode: BackupViewModel.item.type === 'stylesheet' ? 'ace/mode/css' : 'ace/mode/html',
       maxLines: Infinity,  // this is going to be very slow on large documents
       wrap: true,   // wrap text to view
       indentedSoftWrap: false,
@@ -69,9 +70,11 @@ export const BackupEditView = {
           title: BackupViewModel.item.backedUp ? BackupViewModel.item.backedUp.toDateTimeFull() : '',
           disabled: true
         }),
-        BackupViewModel.item.type === 'page'
+        // a stylesheet is text as well: show it in the editor under its own label
+        // instead of the upload placeholder, where nothing can be read
+        BackupViewModel.item.type === 'page' || BackupViewModel.item.type === 'stylesheet'
           ? m('.row',
-            m('label', {style: {width: '100%'}}, t('HTML')),
+            m('label', {style: {width: '100%'}}, t(BackupViewModel.item.type === 'page' ? 'HTML' : 'CSS')),
             m('div#ace', {style: {width: '100%'}})
           )
           : m('.row',

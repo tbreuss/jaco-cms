@@ -11,6 +11,30 @@ use jaco\domain\Payload;
 
 const SORT_PARAMETERS = ['backedUp', 'created', 'name', 'title', 'type'];
 
+/**
+ * Stylesheets are backed up by `css/update` as well, and their extension is
+ * neither a page nor an upload. Without this type they counted as uploads, so a
+ * rule such as "editors may restore pages and media, not stylesheets" could not
+ * be expressed.
+ */
+const BACKUP_TYPE_PAGE = 'page';
+const BACKUP_TYPE_UPLOAD = 'upload';
+const BACKUP_TYPE_STYLESHEET = 'stylesheet';
+
+/**
+ * Extensions a backup can hold. Stylesheets are written by `css/update` and
+ * backed up there, but `css` is in neither the page nor the upload extensions -
+ * without it a stylesheet backup was written and never listed.
+ *
+ * @param string[] $uploadExtensions
+ * @param string[] $pageExtensions
+ * @return list<string>
+ */
+function get_backup_extensions(array $uploadExtensions, array $pageExtensions): array
+{
+    return \array_values(\array_merge($uploadExtensions, $pageExtensions, ['css']));
+}
+
 final class Backup
 {
     public function __construct(
@@ -47,7 +71,7 @@ function find_backups(Config $config, string $filteredBy, string $sortedBy): Pay
         return Payload::error([['', 'Dir does not exist.']]);
     }
 
-    $files = filesystem\find_files($config->backupDir, array_merge($config->uploadExtensions, $config->pageExtensions));
+    $files = filesystem\find_files($config->backupDir, get_backup_extensions($config->uploadExtensions, $config->pageExtensions));
 
     // retention is lazy: every listing drops backups older than the
     // configured days, so no cron job is needed
@@ -65,6 +89,26 @@ function find_backups(Config $config, string $filteredBy, string $sortedBy): Pay
     ]);
 }
 
+/**
+ * Which kind of file a backup holds, taken from its extension: a page, a
+ * stylesheet or an upload. Used for the listing, for the detail view and to
+ * decide what a role may restore.
+ *
+ * @param string[] $pageExtensions
+ */
+function get_backup_type(string $extension, array $pageExtensions): string
+{
+    if (\in_array($extension, $pageExtensions, true)) {
+        return BACKUP_TYPE_PAGE;
+    }
+
+    if ($extension === 'css') {
+        return BACKUP_TYPE_STYLESHEET;
+    }
+
+    return BACKUP_TYPE_UPLOAD;
+}
+
 function find_backup(Config $config, string $file): Payload
 {
     $file = data\sanitize_value($file, [
@@ -74,7 +118,7 @@ function find_backup(Config $config, string $file): Payload
     $errors = data\validate_value($file, 'file', [
         ['is_required'],
         ['is_file_present', 'dir' => $config->backupDir],
-        ['has_file_extension', 'allowedExtensions' => array_merge($config->pageExtensions, $config->uploadExtensions)],
+        ['has_file_extension', 'allowedExtensions' => get_backup_extensions($config->uploadExtensions, $config->pageExtensions)],
         ['has_html_file_name', 'isBackup' => true],
     ]);
 
@@ -89,7 +133,7 @@ function find_backup(Config $config, string $file): Payload
     }
 
     $extension = \pathinfo($file, PATHINFO_EXTENSION);
-    $type = in_array($extension, $config->pageExtensions) ? 'page' : 'upload';
+    $type = get_backup_type($extension, $config->pageExtensions);
     return Payload::success(
         (array) new Backup(
             $file,
@@ -98,7 +142,7 @@ function find_backup(Config $config, string $file): Payload
             filesystem\restore_timestamp_from_file_name($file),
             filesystem\file_mtime($file, $config->backupDir),
             $type,
-            $type === 'page' ? $content : base64_encode($content),
+            $type === BACKUP_TYPE_PAGE ? $content : base64_encode($content),
         ),
     );
 }
@@ -112,7 +156,7 @@ function restore_backup(Config $config, string $file): Payload
     $errors = data\validate_value($file, 'file', [
         ['is_required'],
         ['is_file_present', 'dir' => $config->backupDir],
-        ['has_file_extension', 'allowedExtensions' => array_merge($config->pageExtensions, $config->uploadExtensions)],
+        ['has_file_extension', 'allowedExtensions' => get_backup_extensions($config->uploadExtensions, $config->pageExtensions)],
         ['has_html_file_name', 'isBackup' => true],
     ]);
 
@@ -169,7 +213,7 @@ function create_list(array $files, string $dir, array $pageExtensions): array
             html\get_title($content),
             filesystem\restore_timestamp_from_file_name($file->file),
             $file->modified,
-            in_array($file->extension, $pageExtensions) ? 'page' : 'upload',
+            get_backup_type($file->extension, $pageExtensions),
         );
     }
     return $backups;
