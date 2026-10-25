@@ -43,6 +43,9 @@ must_not_contain " jaco/composer.json"
 must_not_contain " jaco-data/settings.php"
 must_not_contain " jaco/_backup/"
 must_contain " jaco-data/.htaccess"
+# the installer is the only way into a fresh installation, and jaco/.htaccess
+# grants it: an archive without it cannot be installed on Apache
+must_contain " jaco/install.php"
 must_not_contain " media/"
 
 WORK="$(mktemp -d)"
