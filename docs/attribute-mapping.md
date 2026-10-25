@@ -94,6 +94,11 @@ identity; the table says whether a value is optional, required or forbidden.
 | `data-jaco-repeater-item` | forbidden | one block inside such a container |
 | `data-jaco-template` | **required** | site template instance; the value is the template name |
 
+At most **one role per element**. Two roles on one element - `data-jaco-block`
+with `data-jaco-line`, `data-jaco-image` with `data-jaco-link` - are an error, not
+a combination. Properties belong to the role on the same element; an element
+without a role can carry none.
+
 ### Properties
 
 A property configures a role. It is only valid on its role (see
@@ -184,7 +189,8 @@ properties. Neither implies the other.
 they stay where they are. It does **not** change the add position — a sortable
 repeater with no `-add` places its button like `top`, because `top` is the
 default, not because sorting implies it. To place the button elsewhere, write
-`-add` explicitly.
+`-add` explicitly. The rule holds for every add position, `any` included: button
+before each block, grip on each block.
 
 Today one value mixes both: `data-jaco-pos="draggable"` means "button on top and
 blocks sortable". The merge also makes the fallback for an unknown value `any`;
@@ -193,8 +199,19 @@ every block says `any` explicitly. The split removes the hidden coupling: the
 old value had two meanings that happened to coincide, the new attributes have
 one meaning each.
 
-`data-jaco-repeater-item` marks a direct child as one block. A heading inside the
-container is ignored and gets no delete button.
+`data-jaco-repeater-fragment` takes the file **with** its extension
+(`feature_en.html`); the template name in `data-jaco-template` is the identifier
+**without** it (`footer`). The difference follows from what they name: a file to
+fetch, and a group to apply to.
+
+Both are checked on save, with different consequences. A fragment that does not
+exist is an **error** - without it the repeater cannot add anything. A template
+name that does not exist is a **warning** - the page still renders and only
+"apply to all" finds nothing.
+
+`data-jaco-repeater-item` marks a **direct child** as one block. An item nested
+deeper is an error, not silently ignored. A heading inside the container is
+ignored and gets no delete button.
 
 ## Template
 
@@ -264,9 +281,11 @@ the role, so the two-attribute form (`data-jaco-template data-jaco-template-name
 | --- | --- |
 | `data-jaco-image-*` only with `data-jaco-image` | property without its role |
 | `data-jaco-repeater-*` only with `data-jaco-repeater` | property on an element that is no repeater |
-| `data-jaco-repeater-item` only inside a repeater | item outside a repeater |
+| `data-jaco-repeater-item` only as a direct child of a repeater | item outside a repeater, or nested deeper |
+| at most one role per element | two roles on one element |
 | `data-jaco-repeater` and `data-jaco-repeater-item` never on one element | conflicting roles |
 | `data-jaco-repeater-fragment` required on a repeater | repeater without a fragment |
+| `data-jaco-repeater-fragment` names a file in `jaco-data/templates/content/` | error: unknown fragment |
 | `data-jaco-repeater-add` one of three values | unknown add position |
 | `data-jaco-repeater-sortable` carries no value | unexpected value |
 | `data-jaco-template` without a value | template without a name |
@@ -385,6 +404,9 @@ is a one-off; it is not checked in. Its output is verified by the contract test
 | Roles vs. properties | roles and properties are the same kind of name; value rules are per name |
 | `sortable` and `add` | independent; `sortable` does not imply an add position |
 | Unknown template name | warning, not an error: the page is saved and apply-to-all finds nothing |
+| Unknown fragment file | error: a repeater without its fragment can add nothing |
+| Roles per element | at most one; properties need their role on the same element |
+| `sortable` with `add="any"` | allowed: button before every block, grip on every block |
 
 ## Removed bug class
 
@@ -593,6 +615,9 @@ Each of these has to produce a message on save instead of being ignored.
 | `<div data-jaco-repeater-item data-jaco-repeater-fragment="x.html">` | property on an item |
 | `<footer data-jaco-template>` | role without its required value |
 | `<div data-jaco-block="x">` | value on a role that takes none |
+| `<div data-jaco-block data-jaco-line>` | two roles on one element |
+| `<section data-jaco-repeater data-jaco-repeater-fragment="nosuch.html">` | fragment file does not exist |
+| `<div><div data-jaco-repeater-item>` inside a repeater | item is not a direct child |
 | `<img data-jaco-image data-jaco-transient-full="…">` | full image without a lightbox |
 
 ## Block configuration
@@ -717,6 +742,7 @@ difference between "the rename is done" and "the rename looks done".
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 0.11.0 | 2026-10-25 | Five details settled: at most one role per element, fragment takes the extension while the template name does not, `sortable` works with every add position, an item must be a direct child, a missing fragment is an error while a missing template is a warning. |
 | 0.10.0 | 2026-10-25 | One rule about roles, not about values: roles may carry a required value (`data-jaco-template="…"`), so `-template-name` is gone. `sortable` no longer implies an add position. Transient attributes follow the same grammar; the `transient-` prefix is a recognisability aid, not a second scheme. Role/property ambiguity documented. Migration mapping and per-step contract gate added. Whitelist is thirteen names. Corrections after review: the template value rule was inverted, a missing `pos` maps to `any` to keep the old behaviour, an unknown template name is a warning, and `makeSortable` has to run for every add position. |
 | 0.9.0 | 2026-10-25 | Four names fixed: `repeater-label` (was `title`), `repeater-add` plus `repeater-sortable` (was `repeater-position` with `draggable` inside), `transient-filename` (was `transient-target`), `transient-badge` (was `transient-temp`). |
 | 0.8.0 | 2026-10-25 | Implementation order written down; step 1 is the contract test. |
