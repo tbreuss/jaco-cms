@@ -224,7 +224,7 @@ end.
 
 | Capability | `editor` | `admin` |
 | --- | --- | --- |
-| Read pages, uploads and page/blocks templates | ✓ | ✓ |
+| Read pages, uploads, backups, stylesheets and page/blocks templates | ✓ | ✓ |
 | Change the own password | ✓ | ✓ |
 | Create, update, copy and delete pages | ✓ | ✓ |
 | Change page title, meta description and robots | ✓ | ✓ |
@@ -232,8 +232,11 @@ end.
 | Read stylesheets, backups and site templates | – | ✓ |
 | Read and apply site templates | ✓ | ✓ |
 | Change the markup of a site template | – | ✓ |
+| List, view and restore backups | ✓ | ✓ |
+| Delete a backup | – | ✓ |
+| List and view stylesheets | ✓ | ✓ |
 | Change a stylesheet | – | ✓ |
-| Restore and delete backups | – | ✓ |
+| Change a stylesheet | – | ✓ |
 | Environment, error log and php-info | – | ✓ |
 
 `readOnly` is the one flag next to the role, because it is not a permission tier: the
@@ -250,10 +253,10 @@ falling back to something, so a typo cannot hand out access.
   `page/update-body`, `page/settings`, `page/copy`, `page/delete`, `upload/list`,
   `upload/create`, `upload/delete`, `template/pages`, `template/content`,
   `template/content/view`, `template/site/list`, `template/site/view`,
-  `template/site/preview`, `template/site/apply` and `system/change-password`
-- `admin`: everything, notably `css/list`, `css/view`, `css/update`, `backup/list`,
-  `backup/view`, `backup/restore`, `backup/delete`, `template/site/update`, `system`,
-  `system/log`, `system/log/clear` and `system/php-info`
+  `template/site/preview`, `template/site/apply`, `backup/list`, `backup/view`,
+  `backup/restore`, `css/list`, `css/view` and `system/change-password`
+- `admin`: everything, notably `backup/delete`, `css/update`, `template/site/update`,
+  `system`, `system/log`, `system/log/clear` and `system/php-info`
 
 An invalid or missing token answers **401**: the session is gone and the frontend returns
 to the login. A role that is too low answers **403**: the session stays, only that action
@@ -268,8 +271,10 @@ button in the Pages toolbar, Copy and Delete are row actions there. On a fine po
 with hover, entering a menu opens it and leaving closes it; touch and keyboard toggle it
 with click, Enter or Space. Escape and an outside click close it.
 
-Restricted entries stay visible but disabled: the admin entries (Backups, Design,
-Environment and the rest) below `admin`, and Copy/Delete below `editor`. One rule for
+Restricted entries stay visible but disabled: the three system entries below
+`admin`, and Copy/Delete below `editor`. Backups and Design are open to both roles:
+an editor restores his own work and reads the stylesheet, deleting a backup and
+changing the CSS stays with the admin. One rule for
 every menu: a missing role greys the entry out instead of hiding it. A read-only account
 is the exception - it reaches everything and learns on save that nothing is stored. The
 inline editor stays open as a playground: it is editable, the save button is visible but

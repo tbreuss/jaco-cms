@@ -56,8 +56,8 @@ const routes = [
     path: '/backups',
     roles: {
       admin: view('h1', 'Backups'),
-      // backups are an admin area: the load answers 403 and the layout explains it
-      editor: view('h1', 'Access denied'),
+      // an editor restores his own work
+      editor: view('h1', 'Backups'),
     },
   },
   {
@@ -65,8 +65,7 @@ const routes = [
     path: '/backups/view/20260101_000000_e2e1_index.html',
     roles: {
       admin: view('h1', 'View backup'),
-      // backups are an admin area: the load answers 403 and the layout explains it
-      editor: view('h1', 'Access denied'),
+      editor: view('h1', 'View backup'),
     },
   },
   {
@@ -74,8 +73,8 @@ const routes = [
     path: '/css',
     roles: {
       admin: view('h1', 'Edit CSS'),
-      // design is an admin area: the load answers 403 and the layout explains it
-      editor: view('h1', 'Access denied'),
+      // an editor reads the stylesheet, the heading says so
+      editor: view('h1', 'CSS'),
     },
   },
   {
@@ -150,7 +149,7 @@ test('a refused page explains itself without an uncaught error', async ({page}) 
   page.on('pageerror', (error) => uncaught.push(error.message))
 
   await login(page, 'editor')
-  await page.evaluate(() => window.m.route.set('/backups'))
+  await page.evaluate(() => window.m.route.set('/system/php-info'))
 
   await expect(page.locator('h1').first()).toContainText('Access denied')
   // the rejected request must be handled by the model, not left as an unhandled
@@ -161,7 +160,7 @@ test('a refused page explains itself without an uncaught error', async ({page}) 
 
 test('a denial does not survive a role change', async ({page}) => {
   await login(page, 'editor')
-  await page.evaluate(() => window.m.route.set('/backups'))
+  await page.evaluate(() => window.m.route.set('/system/php-info'))
   await expect(page.locator('h1').first()).toContainText('Access denied')
 
   // log in as an admin without reloading: a reload would reset the module state
@@ -176,8 +175,8 @@ test('a denial does not survive a role change', async ({page}) => {
   await page.locator('form button').click()
   await expect(page).toHaveURL(/\/jaco\/#!\/$/)
 
-  await page.evaluate(() => window.m.route.set('/backups'))
-  await expect(page.locator('h1').first()).toContainText('Backups')
+  await page.evaluate(() => window.m.route.set('/system/php-info'))
+  await expect(page.locator('h1').first()).toContainText('PHP info')
 })
 
 test('a read-only admin sees why the server pages stay closed', async ({page}) => {

@@ -630,13 +630,13 @@ QUnit.test('the layout greys out what the role may not do', (assert) => {
     const dropdowns = [...fixture().querySelectorAll('.dropdown-content')]
     assert.deepEqual(
       [...dropdowns[0].querySelectorAll('a')].map((link) => link.textContent),
-      [t('Pages'), t('Media'), t('Templates')],
-      'the content sections an editor owns stay active',
+      [t('Pages'), t('Media'), t('Templates'), t('Backups'), t('Design')],
+      'an editor reaches content, templates, backups and the design',
     )
     assert.deepEqual(
       [...dropdowns[0].querySelectorAll('.nav-disabled')].map((item) => item.textContent),
-      [t('Backups'), t('Design')],
-      'admin content stays visible but disabled',
+      [],
+      'nothing in the content menu is disabled any more',
     )
     assert.deepEqual(
       [...dropdowns[1].querySelectorAll('a')].map((link) => link.textContent),
@@ -1005,8 +1005,8 @@ QUnit.test('an editor sees the commands the palette gives the editor', (assert) 
   assert.ok(labels.includes(t('Add page')))
   assert.ok(labels.includes(t('List pages')))
   assert.ok(labels.includes(t('List templates')))
-  assert.notOk(labels.includes(t('List backups')), 'backups are an admin area')
-  assert.notOk(labels.includes(t('Edit CSS')), 'design is an admin area')
+  assert.ok(labels.includes(t('List backups')), 'an editor restores his own work')
+  assert.ok(labels.includes(t('Edit CSS')), 'an editor reads the stylesheet')
 })
 
 QUnit.test('the palette names the page the page commands act on', (assert) => {

@@ -49,7 +49,7 @@ router\get(
     route: 'backup/list',
     callback: jaco\api\backup\list\action(...),
     authenticated: true,
-    role: 'admin',
+    role: 'editor',
     responseSchema: 'backup/list/response.json',
 );
 
@@ -57,7 +57,7 @@ router\post(
     route: 'backup/restore',
     callback: jaco\api\backup\restore\action(...),
     authenticated: true,
-    role: 'admin',
+    role: 'editor',
     requestSchema: 'backup/restore/request.json',
     responseSchema: 'null.json',
 );
@@ -66,7 +66,7 @@ router\get(
     route: 'backup/view',
     callback: jaco\api\backup\view\action(...),
     authenticated: true,
-    role: 'admin',
+    role: 'editor',
     responseSchema: 'backup/view/response.json',
 );
 
@@ -253,7 +253,7 @@ router\get(
     route: 'css/view',
     callback: jaco\api\css\view\action(...),
     authenticated: true,
-    role: 'admin',
+    role: 'editor',
     responseSchema: 'css/view/response.json',
 );
 
@@ -261,7 +261,7 @@ router\get(
     route: 'css/list',
     callback: jaco\api\css\files\action(...),
     authenticated: true,
-    role: 'admin',
+    role: 'editor',
     responseSchema: 'css/list/response.json',
 );
 

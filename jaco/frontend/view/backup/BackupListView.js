@@ -179,8 +179,10 @@ export const BackupListView = {
                     e.redraw = false
                     restoreBackup(backup)
                   },
-                  disabled: !auth.can('admin'),
-                  title: auth.can('admin') ? t('Restore backup') : t('Restore backup') + ' – ' + t('Your role does not allow this.'),
+                  // an editor creates a backup with every change, so he may take
+                  // his own work back; deleting a backup stays with the admin
+                  disabled: !auth.can('editor'),
+                  title: auth.can('editor') ? t('Restore backup') : t('Restore backup') + ' – ' + t('Your role does not allow this.'),
                   'aria-label': t('Restore backup'),
                 }, m(Icon, {name: 'restore'}))
               )

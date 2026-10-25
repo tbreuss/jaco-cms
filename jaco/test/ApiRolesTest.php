@@ -112,7 +112,9 @@ final class ApiRolesTest extends ApiTestCase
         $config = $this->config();
 
         // the editor owns content; design, backups and the system pages are admin
-        foreach (['css/list', 'backup/list', 'system'] as $route) {
+        // the editor reads backups and the design, and restores a backup; only the
+        // system pages and the writing routes stay closed
+        foreach (['system'] as $route) {
             $this->assertSame(Status::FORBIDDEN, $this->call($config, 'ed', $route, [], 'GET')->status, $route);
         }
     }
@@ -132,6 +134,24 @@ final class ApiRolesTest extends ApiTestCase
             Status::FORBIDDEN,
             $this->call($config, 'ed', 'template/site/update', ['fileName' => 'x.html', 'content' => '<p>x</p>'])->status,
             'the editor may not change the markup',
+        );
+    }
+
+    public function testTheEditorRestoresButDoesNotDelete(): void
+    {
+        $config = $this->config();
+
+        $this->assertSame(Status::OK, $this->call($config, 'ed', 'backup/list', [], 'GET')->status);
+        $this->assertSame(Status::OK, $this->call($config, 'ed', 'css/list', [], 'GET')->status, 'the design is readable');
+        $this->assertSame(
+            Status::FORBIDDEN,
+            $this->call($config, 'ed', 'css/update', ['fileName' => 'x.css', 'css' => 'body{}'])->status,
+            'changing the design stays with the admin',
+        );
+        $this->assertSame(
+            Status::FORBIDDEN,
+            $this->call($config, 'ed', 'backup/delete', ['file' => 'x.html'])->status,
+            'deleting a backup stays with the admin',
         );
     }
 

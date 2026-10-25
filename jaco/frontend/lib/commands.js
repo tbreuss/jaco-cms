@@ -82,17 +82,15 @@ export const commands = [
     run: () => m.route.set('/templates'),
   },
   {
-    // backups are an admin area: without a role an editor saw the command and
-    // landed on the access-denied page
     id: 'nav.backups',
     labelKey: 'List backups',
-    roles: ['admin'],
+    roles: ['editor', 'admin'],
     run: () => m.route.set('/backups'),
   },
   {
     id: 'nav.design',
     labelKey: 'Edit CSS',
-    roles: ['admin'],
+    roles: ['editor', 'admin'],
     run: () => m.route.set('/css'),
   },
   {
