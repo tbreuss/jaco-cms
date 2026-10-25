@@ -255,5 +255,7 @@
     "Preview & apply": "Vorschau & Anwenden",
     "Demo: nothing is saved here. Log in with a regular account to make changes.": "Demo: hier wird nichts gespeichert. Zum Bearbeiten mit einem regulären Konto anmelden.",
     "Access denied": "Zugriff verweigert",
-    "This page needs a higher role. Log in with an account that may open it.": "Diese Seite braucht eine höhere Rolle. Mit einem berechtigten Konto anmelden."
+    "This page needs a higher role. Log in with an account that may open it.": "Diese Seite braucht eine höhere Rolle. Mit einem berechtigten Konto anmelden.",
+    "Not available in the demo": "In der Demo nicht verfügbar",
+    "This page shows details of the server. Open it with a regular account.": "Diese Seite zeigt Details des Servers. Mit einem regulären Konto öffnen."
 }

@@ -18,6 +18,12 @@ $settings = [
             'role' => 'admin',
             'language' => 'de',
         ],
+        // the demo account: a real admin that may not store anything
+        'readonly' => [
+            'password' => password_hash('test-password', PASSWORD_DEFAULT),
+            'role' => 'admin',
+            'readOnly' => true,
+        ],
     ],
     'secretKey' => bin2hex(random_bytes(32)),
     'defaultLanguage' => 'en',

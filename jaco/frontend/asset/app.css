@@ -1517,3 +1517,12 @@ a.list-group-item {
 .m-notifications {
     z-index: 6;
 }
+
+/* The access-denied notice: the reason from the server, then its explanation */
+.denied-reason {
+    font-weight: 600;
+}
+
+.denied-detail {
+    color: var(--color-text-muted, inherit);
+}

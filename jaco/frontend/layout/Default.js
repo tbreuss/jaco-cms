@@ -403,7 +403,15 @@ export const DefaultLayout = {
           denied.isActive()
             ? m('.main', m('.content',
               m('h1', t('Access denied')),
-              m('p', t('This page needs a higher role. Log in with an account that may open it.')),
+              // the server knows whether the role is too low or the account is
+              // read-only; both answer 403. Its wording wins, the generic sentence
+              // is only the fallback for a refusal without a body.
+              denied.reason === '' && denied.detail === ''
+                ? m('p', t('This page needs a higher role. Log in with an account that may open it.'))
+                : m('div',
+                  denied.reason !== '' ? m('p.denied-reason', t(denied.reason, null, denied.reason)) : null,
+                  denied.detail !== '' ? m('p.denied-detail', t(denied.detail, null, denied.detail)) : null,
+                ),
             ))
             : vnode.children,
         ]

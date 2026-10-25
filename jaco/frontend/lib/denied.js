@@ -14,9 +14,15 @@ export const denied = {
   action: '',
   route: '',
   token: '',
-  show: (action, route) => {
+  // the answer as the server worded it: a role that is too low and a read-only
+  // account both answer 403, and only the server knows which one it was
+  reason: '',
+  detail: '',
+  show: (action, route, reason = '', detail = '') => {
     denied.action = action
     denied.route = route
+    denied.reason = reason
+    denied.detail = detail
     // the session as well: after a logout and a fresh login the same route may be
     // allowed, and the old denial must not hide it
     denied.token = app.getAuthToken() ?? ''
@@ -25,6 +31,8 @@ export const denied = {
     denied.action = ''
     denied.route = ''
     denied.token = ''
+    denied.reason = ''
+    denied.detail = ''
   },
   // only the page that produced the denial, in the session that produced it
   isActive: () => denied.route !== ''

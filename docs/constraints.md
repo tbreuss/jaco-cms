@@ -46,9 +46,12 @@ These are the invariants and edge cases that tests cannot express on their own.
   record, so flipping the flag takes effect without waiting for the token to
   expire. `router\dispatch()` answers every POST of such an account with 403
   except the routes in `router\READ_ONLY_EXCEPTIONS` (`template/site/preview`,
-  which only counts matches). Reading and the whole admin therefore stay
-  available - the point of the account is to show the interface - while nothing
-  can change - the own password change included. The form still opens: the save
+  which only counts matches). The two reading routes in `router\READ_ONLY_DENIED`
+  (`system/log`, `system/php-info`) are refused as well, whatever the method:
+  they would print paths, versions and possibly environment variables to every
+  visitor of a public demo. The rest of the admin therefore stays available - the
+  point of the account is to show the interface - while nothing can change -
+  the own password change included. The form still opens: the save
   answers with the read-only message instead of the menu hiding the entry.
   The banner calls it a demo, because that is what the account is used for.
 - **Maintenance mode blocks writes, not reads, and it is enforced centrally.**

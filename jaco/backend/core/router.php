@@ -26,6 +26,15 @@ const MAINTENANCE_EXCEPTIONS = ['login', 'system/change-password'];
  */
 const READ_ONLY_EXCEPTIONS = ['template/site/preview'];
 
+/**
+ * Reading routes that stay closed to a read-only account. They leak the server
+ * environment - phpinfo() prints paths, versions and, depending on the server,
+ * environment variables - or the raw error log of the installation. On a public
+ * demo the account is known to everyone, so these two are not part of what it
+ * may show.
+ */
+const READ_ONLY_DENIED = ['system/log', 'system/php-info'];
+
 function &routes(): array
 {
     static $routes = [];
@@ -99,11 +108,16 @@ function dispatch(Request $request, Config $config): Response
 
     // A read-only account keeps its role - usually admin - and only may not store:
     // the routes, the role and the editor stay the same, so the whole interface can
-    // be shown while nothing can change.
-    if ($claims !== null && $claims['readOnly'] === true
-        && $requestMethod === 'POST'
-        && !\in_array($actionQuery, READ_ONLY_EXCEPTIONS, true)) {
-        return responder\read_only_response();
+    // be shown while nothing can change. The two reading routes below are the
+    // exception: they expose the server, which a public demo must not do.
+    if ($claims !== null && $claims['readOnly'] === true) {
+        if (\in_array($actionQuery, READ_ONLY_DENIED, true)) {
+            return responder\demo_restricted_response();
+        }
+
+        if ($requestMethod === 'POST' && !\in_array($actionQuery, READ_ONLY_EXCEPTIONS, true)) {
+            return responder\read_only_response();
+        }
     }
 
     // Maintenance mode lives here, not in every action. Every route that changes

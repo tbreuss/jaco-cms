@@ -179,3 +179,19 @@ test('a denial does not survive a role change', async ({page}) => {
   await page.evaluate(() => window.m.route.set('/backups'))
   await expect(page.locator('h1').first()).toContainText('Backups')
 })
+
+test('a read-only admin sees why the server pages stay closed', async ({page}) => {
+  // the demo restriction is not a missing role: the explanation has to say so
+  await page.goto('/jaco/#!/login')
+  await page.fill('#username', 'readonly')
+  await page.fill('#password', 'test-password')
+  await page.locator('form button').click()
+  await expect(page).toHaveURL(/\/jaco\/#!\/$/)
+
+  await page.evaluate(() => window.m.route.set('/system/php-info'))
+
+  const notice = page.locator('.main .content')
+  await expect(notice.locator('h1')).toContainText('Access denied')
+  await expect(notice.locator('.denied-reason')).toContainText('Not available in the demo')
+  await expect(notice.locator('.denied-detail')).toContainText('shows details of the server')
+})

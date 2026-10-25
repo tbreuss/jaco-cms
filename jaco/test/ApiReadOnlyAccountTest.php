@@ -109,7 +109,8 @@ final class ApiReadOnlyAccountTest extends ApiTestCase
 
     public function testAdminRoutesStayAvailableSoTheInterfaceCanBeShown(): void
     {
-        // system and css are admin routes: a read-only account has the role, only writing is blocked
+        // system and css are admin routes: a read-only account has the role, only
+        // writing is blocked; system/log and system/php-info are the exception
         foreach (['system', 'css/list', 'template/site/list'] as $action) {
             $response = $this->api(
                 $action,
@@ -122,6 +123,37 @@ final class ApiReadOnlyAccountTest extends ApiTestCase
 
             $this->assertSame(Status::OK, $response->status, $action . ' must stay readable for a read-only account');
         }
+    }
+
+    public function testTheServerPagesAreClosed(): void
+    {
+        // phpinfo() and the raw error log would show paths, versions and possibly
+        // environment variables to every visitor of a public demo
+        foreach (router\READ_ONLY_DENIED as $action) {
+            $response = $this->api(
+                $action,
+                [],
+                'GET',
+                false,
+                server: ['HTTP_AUTHORIZATION' => 'Bearer ' . $this->readOnlyToken()],
+                config: $this->readOnlyConfig(),
+            );
+
+            $this->assertSame(Status::FORBIDDEN, $response->status, $action . ' must stay closed');
+
+            $body = (array) json_decode((string) $response->body, true);
+            $this->assertSame('Not available in the demo', $body[0]['title']);
+        }
+    }
+
+    public function testTheServerPagesStayOpenForAnAdmin(): void
+    {
+        // the restriction is the read-only flag, not the role. Only the log is
+        // asserted here: phpinfo() writes into the output buffer of the test run
+        // and cannot be captured reliably.
+        $response = $this->api('system/log', [], 'GET', true, config: $this->readOnlyConfig());
+
+        $this->assertSame(Status::OK, $response->status, 'the log stays open for a regular admin');
     }
 
     public function testThePreviewIsStillAllowed(): void

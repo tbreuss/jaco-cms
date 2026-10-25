@@ -93,7 +93,8 @@ const request = method => (action, params = {}, options = {}) => {
       if (code === 403 && options.pageLoad === true) {
         // only the page that asked shows the denial
         if (m.route.get() === requestRoute) {
-          denied.show(action, requestRoute)
+          const answer = Array.isArray(err.response) ? err.response[0] : err.response
+          denied.show(action, requestRoute, answer?.title ?? '', answer?.detail ?? '')
           m.redraw()
         }
         throw err

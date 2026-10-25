@@ -38,6 +38,19 @@ function read_only_response(): Response
 }
 
 /**
+ * Reading routes a read-only account may not open: they would show the server
+ * (paths, versions, environment) or the raw error log to a visitor of a public
+ * demo.
+ */
+function demo_restricted_response(): Response
+{
+    return json_response(
+        [['title' => 'Not available in the demo', 'detail' => 'This page shows details of the server. Open it with a regular account.']],
+        Status::FORBIDDEN,
+    );
+}
+
+/**
  * @param array<string, string> $mapping mapping of domain input variables to query parameters
  */
 function api_errors(domain\Payload $payload, array $mapping = []): Response
