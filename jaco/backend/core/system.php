@@ -80,8 +80,8 @@ function install_checks(Config $config): array
         'detail' => display_path($vendor, $config),
     ];
 
-    // the settings live in the operator data since they moved out of the
-    // application; the check stays on the directory the installer writes to
+    // the installer writes settings.php into the operator data: measuring the
+    // application directory said "ok" while the write failed
     $checks[] = [
         'label' => 'Configuration writable',
         'ok' => is_writable($config->dataDir),

@@ -69,6 +69,57 @@ final class InstallTest extends TestCase
         $this->assertTrue($checks[8]['ok']);
     }
 
+    public function testTheWritabilityCheckMeasuresTheDirectoryThatIsWritten(): void
+    {
+        // settings.php goes into the operator data, not into the application:
+        // measuring the application said "ok" while the write failed.
+        // The app directory is a child of the web root, like jaco/ in a real
+        // installation - passing the root itself would point the data directory
+        // at its parent.
+        $appDir = $this->dir . '/jaco';
+        mkdir($appDir);
+        // make only the application readonly: a check that still measures it
+        // reports "not writable", the check on the data directory reports "ok"
+        chmod($appDir, 0500);
+
+        try {
+            $config = config\create_default_config($appDir, []);
+            $checks = [];
+
+            foreach (system\install_checks($config) as $check) {
+                $checks[$check['label']] = $check;
+            }
+
+            $this->assertTrue($checks['Configuration writable']['ok'], 'the data directory is writable');
+            $this->assertSame('jaco-data/settings.php', $checks['Configuration writable']['detail']);
+        } finally {
+            chmod($appDir, 0700);
+        }
+    }
+
+    public function testTheInstallerIsReachableThroughTheApacheWhitelist(): void
+    {
+        // jaco/.htaccess allows only the listed entry points: without install.php a
+        // fresh installation on Apache answers 403 and there is no way in
+        $htaccess = (string) \file_get_contents(\dirname(__DIR__) . '/.htaccess');
+
+        $this->assertSame(
+            1,
+            \preg_match('/<FilesMatch "\^\(([^)]+)\)\$">/', $htaccess, $matches),
+            'the whitelist is a FilesMatch pattern',
+        );
+
+        $allowed = \array_map(
+            static fn(string $name): string => \str_replace('\\.', '.', \trim($name)),
+            \explode('|', (string) ($matches[1] ?? '')),
+        );
+
+        $this->assertNotSame([], $allowed, 'the pattern names its entry points');
+        $this->assertContains('api.php', $allowed);
+        $this->assertContains('index.html', $allowed);
+        $this->assertContains('install.php', $allowed, 'the installer has to be reachable');
+    }
+
     public function testWrittenSettingsLogIn(): void
     {
         // quotes and backslashes prove the escaping roundtrips exactly; the

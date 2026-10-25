@@ -5,11 +5,15 @@
 # override it.
 Options -Indexes
 
-# Everything is internal. The two public entry points are granted afterwards:
-# while this file is evaluated the requested name is not known yet, so the
-# order of the sections decides. A deny that comes last would win for them too.
+# Everything is internal. The public entry points are granted afterwards: while
+# this file is evaluated the requested name is not known yet, so the order of the
+# sections decides. A deny that comes last would win for them too.
+#
+# install.php belongs to them: a fresh installation has no settings.php yet and
+# the installer is the only way in. It deletes itself once it has written the
+# settings, so the grant is empty afterwards.
 Require all denied
 
-<FilesMatch "^(api\.php|index\.html)$">
+<FilesMatch "^(api\.php|index\.html|install\.php)$">
     Require all granted
 </FilesMatch>
