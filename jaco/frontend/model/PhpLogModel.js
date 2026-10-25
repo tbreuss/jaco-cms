@@ -5,7 +5,7 @@ export const PhpLogModel = {
   data: [],
   load: () => {
     PhpLogModel.isLoading = true
-    return api.get('system/log')
+    return api.get('system/log', {}, {pageLoad: true})
       .then((data) => {
         PhpLogModel.data = data
         PhpLogModel.isLoading = false

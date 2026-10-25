@@ -6,7 +6,7 @@ export const SiteTemplateModel = {
   item: {},
   loadList: () => {
     SiteTemplateModel.isLoading = true
-    return api.get('template/site/list')
+    return api.get('template/site/list', {}, {pageLoad: true})
       .then((data) => {
         SiteTemplateModel.list = data
         SiteTemplateModel.isLoading = false
@@ -16,9 +16,11 @@ export const SiteTemplateModel = {
   },
   load: (file) => {
     SiteTemplateModel.isLoading = true
-    return api.get('template/site/view', {file})
+    return api.get('template/site/view', {file}, {pageLoad: true})
       .then((data) => {
         SiteTemplateModel.item = data
+        SiteTemplateModel.isLoading = false
+      }, () => {
         SiteTemplateModel.isLoading = false
       })
   },

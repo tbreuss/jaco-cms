@@ -629,12 +629,12 @@ QUnit.test('the layout greys out what the role may not do', (assert) => {
     const dropdowns = [...fixture().querySelectorAll('.dropdown-content')]
     assert.deepEqual(
       [...dropdowns[0].querySelectorAll('a')].map((link) => link.textContent),
-      [t('Pages'), t('Media'), t('Templates')],
+      [t('Pages'), t('Media')],
       'the content sections an editor owns stay active',
     )
     assert.deepEqual(
       [...dropdowns[0].querySelectorAll('.nav-disabled')].map((item) => item.textContent),
-      [t('Backups'), t('Design')],
+      [t('Templates'), t('Backups'), t('Design')],
       'admin content stays visible but disabled',
     )
     assert.deepEqual(
@@ -3222,8 +3222,9 @@ QUnit.test('CssEditView shows the form when stylesheets exist', (assert) => {
 
 
 
-QUnit.test('an editor sees a message instead of the design form', (assert) => {
-  // design is an admin area: nothing navigates, the page explains why
+QUnit.test('the design view never navigates while it renders', (assert) => {
+  // a view that redirects breaks the test page and surprises the user; the layout
+  // explains a 403 instead
   window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('editor'))
   const routeCalls = []
   const originalSet = m.route.set
@@ -3231,32 +3232,12 @@ QUnit.test('an editor sees a message instead of the design form', (assert) => {
 
   try {
     m.render(fixture(), CssEditView.view())
-
-    assert.deepEqual(routeCalls, [], 'rendering does not navigate')
-    assert.ok(fixture().textContent.includes(t('This page needs admin rights.')))
-
     CssEditView.oninit()
-    assert.deepEqual(routeCalls, [], 'oninit does not navigate either')
+
+    assert.deepEqual(routeCalls, [], 'neither view() nor oninit() navigates')
   } finally {
     m.route.set = originalSet
     m.render(fixture(), null)
-    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
-  }
-})
-
-QUnit.test('an admin sees the design form', (assert) => {
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
-  CssEditModel.isLoading = false
-  CssEditModel.list = []
-  CssEditModel.item = {}
-
-  try {
-    const text = JSON.stringify(CssEditView.view())
-
-    assert.notOk(text.includes(t('This page needs admin rights.')))
-  } finally {
-    CssEditModel.list = []
-    CssEditModel.item = {}
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
   }
 })

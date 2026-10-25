@@ -254,5 +254,6 @@
     "Save & apply to all pages": "Save & apply to all pages",
     "Preview & apply": "Preview & apply",
     "Demo: nothing is saved here. Log in with a regular account to make changes.": "Demo: nothing is saved here. Log in with a regular account to make changes.",
-    "This page needs admin rights.": "This page needs admin rights."
+    "Access denied": "Access denied",
+    "This page needs a higher role. Log in with an account that may open it.": "This page needs a higher role. Log in with an account that may open it."
 }

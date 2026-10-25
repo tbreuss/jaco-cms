@@ -1,6 +1,7 @@
 import {i18n, t} from '../model/i18n.js'
 import {app} from '../lib/app.js'
 import {auth} from '../lib/auth.js'
+import {denied} from '../lib/denied.js'
 import {iframe} from '../lib/iframe.js'
 import {maintenance} from '../lib/maintenance.js'
 import {getTheme, setTheme} from '../lib/theme.js'
@@ -357,7 +358,9 @@ export const DefaultLayout = {
               dropdown('content', t('Content'), [
                 roleLink('editor', '/pages', t('Pages')),
                 roleLink('editor', '/uploads', t('Media')),
-                roleLink('editor', '/templates', t('Templates')),
+                // site templates can be applied to every page: admin only, like
+                // design and backups
+                roleLink('admin', '/templates', t('Templates')),
                 roleLink('admin', '/backups', t('Backups')),
                 roleLink('admin', '/css', t('Design')),
               ]),
@@ -394,7 +397,15 @@ export const DefaultLayout = {
               }, t('Login'))
             ]),
           ),
-          vnode.children,
+          // A page that answered 403 could not be opened: explain instead of
+          // showing an empty view with a toast that disappears. The navigation
+          // stays, so the way out is visible.
+          denied.isActive()
+            ? m('.main', m('.content',
+              m('h1', t('Access denied')),
+              m('p', t('This page needs a higher role. Log in with an account that may open it.')),
+            ))
+            : vnode.children,
         ]
     ]
   }

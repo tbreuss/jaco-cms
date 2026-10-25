@@ -5,9 +5,11 @@ export const PageEditModel = {
   item: {},
   load: (file) => {
     PageEditModel.isLoading = true
-    return api.get('page/view', {file})
+    return api.get('page/view', {file}, {pageLoad: true})
       .then((data) => {
         PageEditModel.item = data
+        PageEditModel.isLoading = false
+      }, () => {
         PageEditModel.isLoading = false
       })
   },

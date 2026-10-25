@@ -254,5 +254,6 @@
     "Save & apply to all pages": "Speichern & auf alle Seiten anwenden",
     "Preview & apply": "Vorschau & Anwenden",
     "Demo: nothing is saved here. Log in with a regular account to make changes.": "Demo: hier wird nichts gespeichert. Zum Bearbeiten mit einem regulären Konto anmelden.",
-    "This page needs admin rights.": "Diese Seite ist Administratoren vorbehalten."
+    "Access denied": "Zugriff verweigert",
+    "This page needs a higher role. Log in with an account that may open it.": "Diese Seite braucht eine höhere Rolle. Mit einem berechtigten Konto anmelden."
 }

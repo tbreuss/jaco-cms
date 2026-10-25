@@ -5,9 +5,11 @@ export const PhpInfoModel = {
   data: [],
   load: () => {
     PhpInfoModel.isLoading = true
-    return api.get('system/php-info')
+    return api.get('system/php-info', {}, {pageLoad: true})
       .then((data) => {
         PhpInfoModel.data = data
+        PhpInfoModel.isLoading = false
+      }, () => {
         PhpInfoModel.isLoading = false
       })
   }

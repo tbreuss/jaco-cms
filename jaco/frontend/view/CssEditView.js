@@ -93,12 +93,9 @@ const onCreateComponent = () => {
 }
 
 const onInitComponent = () => {
-  // design is an admin area. No redirect here: a view must not navigate while it
-  // renders (that breaks tests and looks like a jump), so view() explains instead.
-  if (!auth.can('admin')) {
-    return
-  }
-
+  // No role check here: the list request answers 403 for anyone below admin, and
+  // the layout explains that. Letting the server decide keeps every page on the
+  // same path instead of mixing a view guard with a server answer.
   window.addEventListener('beforeunload', beforeUnloadHandler)
   dirty.set(isDirty)
   if (!app.hasAuthToken()) {
@@ -206,12 +203,7 @@ export const CssEditView = {
   oncreate: onCreateComponent,
   onupdate: onUpdateComponent,
   onremove: onRemoveComponent,
-  view: () => !auth.can('admin')
-    ? m('div.main', m('.content',
-      m('h1', t('Design')),
-      m('p', t('This page needs admin rights.')),
-    ))
-    : m('div.main',
+  view: () => m('div.main',
     m('.content',
       m('h1', t(auth.can('admin') ? 'Edit CSS' : 'CSS'), CssEditModel.item.file ? ': ' + CssEditModel.item.file : ''),
       CssEditModel.isLoading

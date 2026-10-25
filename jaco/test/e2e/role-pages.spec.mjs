@@ -51,41 +51,58 @@ const routes = [
     path: '/uploads/view/e2e-smoke.png',
     roles: everyRole('h1', 'View upload'),
   },
-  {name: 'Backups', path: '/backups', roles: everyRole('h1', 'Backups')},
+  {
+    name: 'Backups',
+    path: '/backups',
+    roles: {
+      admin: view('h1', 'Backups'),
+      // backups are an admin area: the load answers 403 and the layout explains it
+      editor: view('h1', 'Access denied'),
+    },
+  },
   {
     name: 'Backup detail',
     path: '/backups/view/20260101_000000_e2e1_index.html',
-    roles: everyRole('h1', 'View backup'),
+    roles: {
+      admin: view('h1', 'View backup'),
+      // backups are an admin area: the load answers 403 and the layout explains it
+      editor: view('h1', 'Access denied'),
+    },
   },
   {
     name: 'Design',
     path: '/css',
     roles: {
       admin: view('h1', 'Edit CSS'),
-      // design is an admin area: an editor sees a message, no redirect
-      editor: view('p', 'This page needs admin rights.'),
+      // design is an admin area: the load answers 403 and the layout explains it
+      editor: view('h1', 'Access denied'),
     },
   },
   {
     name: 'Templates',
     path: '/templates',
-    roles: everyRole('h1', 'Site templates'),
+    roles: {
+      admin: view('h1', 'Site templates'),
+      // site templates are an admin area: the load answers 403
+      editor: view('h1', 'Access denied'),
+    },
   },
   {name: 'Password', path: '/password', roles: everyRole('h1', 'Change password')},
   {
     name: 'Environment',
     path: '/system/env',
-    roles: {admin: view('h1', 'System environment')},
+    // admin area: the load answers 403 and the layout explains it
+    roles: {admin: view('h1', 'System environment'), editor: view('h1', 'Access denied')},
   },
   {
     name: 'PHP error log',
     path: '/system/log',
-    roles: {admin: view('h1', 'PHP error log')},
+    roles: {admin: view('h1', 'PHP error log'), editor: view('h1', 'Access denied')},
   },
   {
     name: 'PHP info',
     path: '/system/php-info',
-    roles: {admin: view('h1', 'PHP info')},
+    roles: {admin: view('h1', 'PHP info'), editor: view('h1', 'Access denied')},
   },
   {name: 'About', path: '/system/about', roles: everyRole('h1', 'About')},
   {name: 'Logout', path: '/logout', roles: everyRole('h2', 'Logged out')},
@@ -127,3 +144,38 @@ for (const role of Object.keys(passwords)) {
     }
   })
 }
+
+test('a refused page explains itself without an uncaught error', async ({page}) => {
+  const uncaught = []
+  page.on('pageerror', (error) => uncaught.push(error.message))
+
+  await login(page, 'editor')
+  await page.evaluate(() => window.m.route.set('/backups'))
+
+  await expect(page.locator('h1').first()).toContainText('Access denied')
+  // the rejected request must be handled by the model, not left as an unhandled
+  // rejection in the console
+  await page.waitForTimeout(500)
+  expect(uncaught).toEqual([])
+})
+
+test('a denial does not survive a role change', async ({page}) => {
+  await login(page, 'editor')
+  await page.evaluate(() => window.m.route.set('/backups'))
+  await expect(page.locator('h1').first()).toContainText('Access denied')
+
+  // log in as an admin without reloading: a reload would reset the module state
+  // that this test is about
+  await page.evaluate(() => {
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    window.m.route.set('/login')
+  })
+  await expect(page.locator('#username')).toBeVisible()
+  await page.fill('#username', 'admin')
+  await page.fill('#password', 'test-password')
+  await page.locator('form button').click()
+  await expect(page).toHaveURL(/\/jaco\/#!\/$/)
+
+  await page.evaluate(() => window.m.route.set('/backups'))
+  await expect(page.locator('h1').first()).toContainText('Backups')
+})

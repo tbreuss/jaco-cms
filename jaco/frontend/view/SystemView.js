@@ -2,7 +2,6 @@ import {SystemModel as SystemModel} from '../model/SystemModel.js'
 import {t} from '../model/i18n.js'
 import {formatBytes} from '../lib/format.js'
 import {app} from '../lib/app.js'
-import {auth} from '../lib/auth.js'
 
 const keyValueTable = (title, object) => object
   ? m('div',
@@ -56,12 +55,7 @@ export const SystemView = {
       m.route.set('/logout')
       return
     }
-    // the route itself is admin-only; the guard keeps a stale link from loading
-    // a page that only produces 403s
-    if (!auth.can('admin')) {
-      m.route.set('/')
-      return
-    }
+    // the route is admin-only: the load answers 403 and the layout explains it
     SystemModel.load()
   },
   oncreate: () => {
