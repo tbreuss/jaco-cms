@@ -43,7 +43,7 @@ final class CliTotpTest extends TestCase
             return [
                 'users' => [
                     'anna' => [{$anna}],
-                    'bob' => ['password' => 'hash-b', 'role' => 'viewer', 'totpSecret' => 'BOBSECRET'],
+                    'bob' => ['password' => 'hash-b', 'role' => 'editor', 'totpSecret' => 'BOBSECRET'],
                 ],
                 'secretKey' => 'do-not-touch',
             ];

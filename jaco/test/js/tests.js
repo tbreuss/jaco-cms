@@ -61,8 +61,8 @@ const fixture = () => document.getElementById('qunit-fixture')
 
 // The ui only reads the token payload; the signature is checked by the api. A
 // syntactically valid payload is enough to steer the role-aware controls.
-const tokenWithRole = (role, language = '', passwordChange = true, username = '') => {
-  const payload = btoa(JSON.stringify({user: username, role, language, passwordChange}))
+const tokenWithRole = (role, language = '', readOnly = false, username = '') => {
+  const payload = btoa(JSON.stringify({user: username, role, language, readOnly}))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '')
@@ -613,18 +613,15 @@ QUnit.test('the layout shows a banner only while the signal is on', (assert) => 
   }
 })
 
-QUnit.test('the layout tells a viewer it is read-only and disables write controls', (assert) => {
+QUnit.test('the layout greys out what the role may not do', (assert) => {
   const savedStatus = i18n.status
   i18n.status = 'idle'
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('editor'))
 
   try {
     m.render(fixture(), m(DefaultLayout, m('div')))
 
-    const banner = fixture().querySelector('.readonly-banner')
-    assert.ok(banner, 'the read-only hint is shown')
-    assert.strictEqual(banner.textContent, t('Read-only access: changes are not saved.'))
-    assert.strictEqual(banner.getAttribute('role'), 'status', 'announced to screen readers')
+    assert.strictEqual(fixture().querySelector('.readonly-banner'), null, 'no viewer banner exists any more')
 
     const menuLabels = [...fixture().querySelectorAll('.navbar .dropbtn')].map((button) => button.textContent)
     assert.deepEqual(menuLabels, [t('Content'), t('This page'), t('Admin'), t('Account')])
@@ -632,18 +629,23 @@ QUnit.test('the layout tells a viewer it is read-only and disables write control
     const dropdowns = [...fixture().querySelectorAll('.dropdown-content')]
     assert.deepEqual(
       [...dropdowns[0].querySelectorAll('a')].map((link) => link.textContent),
-      [t('Pages'), t('Media'), t('Backups'), t('Design'), t('Templates')],
-      'all content sections stay available',
+      [t('Pages'), t('Media')],
+      'the content sections an editor owns stay active',
+    )
+    assert.deepEqual(
+      [...dropdowns[0].querySelectorAll('.nav-disabled')].map((item) => item.textContent),
+      [t('Templates'), t('Backups'), t('Design')],
+      'admin content stays visible but disabled',
     )
     assert.deepEqual(
       [...dropdowns[1].querySelectorAll('a')].map((link) => link.textContent),
-      [t('Edit page')],
-      'the inline editor stays available',
+      [t('Edit page'), t('Copy page'), t('Delete page')],
+      'every page action is available to an editor',
     )
     assert.deepEqual(
       [...dropdowns[1].querySelectorAll('.nav-disabled')].map((item) => item.textContent),
-      [t('Copy page'), t('Delete page')],
-      'page writes stay visible but disabled',
+      [],
+      'nothing in "This page" is disabled',
     )
     assert.strictEqual(dropdowns[2].querySelectorAll('a').length, 0, 'no admin entry is active')
     assert.deepEqual(
@@ -664,10 +666,10 @@ QUnit.test('the layout tells a viewer it is read-only and disables write control
   }
 })
 
-QUnit.test('a demo viewer sees the password entry disabled', (assert) => {
+QUnit.test('a read-only account keeps the password entry active', (assert) => {
   const savedStatus = i18n.status
   i18n.status = 'idle'
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer', '', false))
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin', '', true))
 
   try {
     m.render(fixture(), m(DefaultLayout, m('div')))
@@ -676,15 +678,15 @@ QUnit.test('a demo viewer sees the password entry disabled', (assert) => {
     const account = dropdowns[3]
     assert.deepEqual(
       [...account.querySelectorAll('a')].map((link) => link.textContent),
-      [t('About'), t('Logout')],
-      'the password entry is not active',
+      [t('About'), t('Change password'), t('Logout')],
+      'the entry stays active: the form explains on save',
     )
     assert.deepEqual(
       [...account.querySelectorAll('.nav-disabled')].map((item) => item.textContent),
-      [t('Change password')],
-      'the password entry stays visible but disabled',
+      [],
+      'nothing is disabled in the account menu',
     )
-    assert.ok(fixture().querySelector('.readonly-banner'), 'the read-only hint stays')
+    assert.ok(fixture().querySelector('.maintenance-banner'), 'the demo hint is shown')
   } finally {
     i18n.status = savedStatus
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
@@ -1143,45 +1145,40 @@ QUnit.test('an admin token allows every role and carries the language', (assert)
   window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin', 'de'))
 
   assert.strictEqual(auth.role(), 'admin')
-  assert.ok(auth.can('viewer'), 'admin includes viewer')
   assert.ok(auth.can('editor'), 'admin includes editor')
   assert.ok(auth.can('admin'), 'admin includes admin')
-  assert.notOk(auth.isViewer())
   assert.strictEqual(auth.language(), 'de')
 })
 
 QUnit.test('an editor token writes content but not configuration', (assert) => {
   window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('editor'))
 
-  assert.ok(auth.can('viewer'))
   assert.ok(auth.can('editor'))
   assert.notOk(auth.can('admin'))
-  assert.notOk(auth.isViewer())
 })
 
-QUnit.test('a viewer token only reads', (assert) => {
+QUnit.test('an unknown role grants nothing', (assert) => {
   window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
 
-  assert.ok(auth.can('viewer'))
+  assert.strictEqual(auth.role(), '', 'no known role')
   assert.notOk(auth.can('editor'))
   assert.notOk(auth.can('admin'))
-  assert.ok(auth.isViewer())
-  assert.ok(auth.canChangePassword(), 'the own password stays changeable by default')
 })
 
-QUnit.test('a demo token can disable the own password change', (assert) => {
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer', '', false))
+QUnit.test('a read-only token keeps its role but is flagged', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin', '', true))
 
-  assert.ok(auth.isViewer(), 'the role is unchanged')
-  assert.notOk(auth.canChangePassword(), 'the demo password must stay as seeded')
+  assert.strictEqual(auth.role(), 'admin', 'the role is unchanged')
+  assert.ok(auth.isReadOnly(), 'the account is read-only')
 })
 
-QUnit.test('an unreadable token falls back to the least privilege', (assert) => {
+QUnit.test('an unreadable token grants nothing', (assert) => {
   window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'not-a-jwt')
 
-  assert.strictEqual(auth.role(), 'viewer')
+  assert.strictEqual(auth.role(), '', 'no role is derived from a broken token')
   assert.notOk(auth.can('editor'))
   assert.notOk(auth.can('admin'))
+  assert.notOk(auth.isReadOnly())
   assert.strictEqual(auth.language(), '')
 })
 
@@ -1707,15 +1704,44 @@ QUnit.test('cancel returns to the preview', (assert) => {
   }
 })
 
-QUnit.test('a demo user is sent away from the form', (assert) => {
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer', '', false))
+QUnit.test('cancel does not submit the form', (assert) => {
+  // a button without a type is a submit button: Cancel used to post the form with
+  // empty fields and produced a validation error
+  const stub = stubRequest(() => Promise.resolve({}))
+  const originalSet = m.route.set
+  const routeCalls = []
+  m.route.set = (path) => routeCalls.push(path)
+
+  try {
+    m.render(fixture(), m(PasswordView))
+    const cancel = [...fixture().querySelectorAll('button')]
+      .find((button) => button.textContent.includes(t('Cancel')))
+
+    assert.ok(cancel, 'cancel button rendered')
+    assert.strictEqual(cancel.getAttribute('type'), 'button', 'cancel is not a submit button')
+
+    cancel.click()
+
+    assert.deepEqual(routeCalls, ['/'], 'cancel navigates away')
+    assert.deepEqual(stub.calls, [], 'no request was sent')
+  } finally {
+    stub.restore()
+    m.route.set = originalSet
+  }
+})
+
+QUnit.test('a read-only user still reaches the password form', (assert) => {
+  // the form opens; the server answers the save with the read-only message, which
+  // explains more than a redirected link would
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin', '', true))
   const routeCalls = []
   const originalSet = m.route.set
   m.route.set = (path) => routeCalls.push(path)
 
   try {
     m.render(fixture(), m(PasswordView))
-    assert.deepEqual(routeCalls, ['/'], 'no form for a disabled password change')
+    assert.deepEqual(routeCalls, [], 'the form is not skipped')
+    assert.ok(fixture().querySelector('input[type=password]'), 'the fields are rendered')
   } finally {
     m.route.set = originalSet
   }
@@ -3181,6 +3207,7 @@ QUnit.test('every used component is imported or defined locally', async (assert)
 QUnit.test('CssEditView shows a notice when no stylesheet exists', (assert) => {
   // without a file the form has nothing to select or save; the empty
   // select and editor from the screenshot must not render
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   CssEditModel.isLoading = false
   CssEditModel.list = []
   CssEditModel.item = {}
@@ -3189,10 +3216,12 @@ QUnit.test('CssEditView shows a notice when no stylesheet exists', (assert) => {
   assert.ok(text.includes(t('No stylesheets found.')))
   assert.ok(text.includes(t('Stylesheets are .css files in the web root.')))
   assert.notOk(text.includes(t('Current stylesheet')))
+  window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
 })
 
 QUnit.test('CssEditView shows loading while the list arrives', (assert) => {
   // without this the notice flashes on every visit until the response lands
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   CssEditModel.isLoading = true
   CssEditModel.list = []
   CssEditModel.item = {}
@@ -3201,9 +3230,11 @@ QUnit.test('CssEditView shows loading while the list arrives', (assert) => {
   assert.ok(text.includes(t('Loading')))
   assert.notOk(text.includes(t('No stylesheets found.')))
   CssEditModel.isLoading = false
+  window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
 })
 
 QUnit.test('CssEditView shows the form when stylesheets exist', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   CssEditModel.isLoading = false
   CssEditModel.list = [{file: 'site.css'}]
   CssEditModel.item = {}
@@ -3212,35 +3243,27 @@ QUnit.test('CssEditView shows the form when stylesheets exist', (assert) => {
   assert.notOk(text.includes(t('No stylesheets found.')))
   assert.ok(text.includes(t('Current stylesheet')))
   CssEditModel.list = []
+  window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
 })
 
 
 
-QUnit.test('a non-admin opens the stylesheet read-only', (assert) => {
+QUnit.test('the design view never navigates while it renders', (assert) => {
+  // a view that redirects breaks the test page and surprises the user; the layout
+  // explains a 403 instead
   window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('editor'))
-  CssEditModel.isLoading = false
-  CssEditModel.list = [{file: 'site.css'}]
-  CssEditModel.item = {file: 'site.css', content: 'body{}'}
-  cssEditState.file = 'site.css'
+  const routeCalls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => routeCalls.push(path)
 
   try {
     m.render(fixture(), CssEditView.view())
+    CssEditView.oninit()
 
-    const text = fixture().textContent
-    assert.ok(text.includes(t('Back')), 'the cancel button becomes back')
-
-    const buttons = [...fixture().querySelectorAll('button')]
-    const save = buttons.find((button) => button.textContent.trim() === t('Save'))
-    const saveClose = buttons.find((button) => button.textContent.trim() === t('Save & Close'))
-    assert.ok(save, 'the save button stays visible')
-    assert.ok(isAriaDisabled(save), 'save is disabled')
-    assert.ok(saveClose, 'the save and close button stays visible')
-    assert.ok(isAriaDisabled(saveClose), 'save and close is disabled')
+    assert.deepEqual(routeCalls, [], 'neither view() nor oninit() navigates')
   } finally {
+    m.route.set = originalSet
     m.render(fixture(), null)
-    CssEditModel.list = []
-    CssEditModel.item = {}
-    cssEditState.file = ''
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
   }
 })
@@ -3262,7 +3285,7 @@ QUnit.test('CssEditView survives an empty list without an editor', (assert) => {
     appDiv.id = 'app'
     document.body.appendChild(appDiv)
   }
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', 'test-token')
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
   const origLoadList = CssEditModel.loadList
   const origLoad = CssEditModel.load
   CssEditModel.loadList = () => Promise.resolve()

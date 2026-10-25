@@ -35,7 +35,7 @@ final class DocsRolesTest extends TestCase
         $role = null;
 
         foreach (explode("\n", $section[1]) as $line) {
-            $found = preg_match('/`(' . implode('|', [auth\ROLE_VIEWER, auth\ROLE_EDITOR, auth\ROLE_ADMIN]) . ')`/', $line, $roleMatch) === 1
+            $found = preg_match('/`(' . implode('|', [auth\ROLE_EDITOR, auth\ROLE_ADMIN]) . ')`/', $line, $roleMatch) === 1
                 ? $roleMatch[1]
                 : null;
 
@@ -53,7 +53,7 @@ final class DocsRolesTest extends TestCase
             preg_match_all('/`([a-z][a-z\/-]*)`/', $line, $routes);
 
             foreach ($routes[1] as $route) {
-                if (in_array($route, [auth\ROLE_VIEWER, auth\ROLE_EDITOR, auth\ROLE_ADMIN], true)) {
+                if (in_array($route, [auth\ROLE_EDITOR, auth\ROLE_ADMIN], true)) {
                     continue;
                 }
                 $map[$route] = $role;
@@ -92,26 +92,26 @@ final class DocsRolesTest extends TestCase
         }
     }
 
-    public function testEveryRouteAboveViewerIsNamedInTheDocs(): void
+    public function testEveryRouteIsNamedInTheDocs(): void
     {
         $documented = $this->documented();
         $missing = [];
 
         foreach ($this->registered() as $route => $role) {
-            if ($role !== auth\ROLE_VIEWER && !array_key_exists($route, $documented)) {
+            if (!array_key_exists($route, $documented)) {
                 $missing[] = $route . ' (' . $role . ')';
             }
         }
 
-        $this->assertSame([], $missing, 'routes that need more than viewer belong in the docs');
+        $this->assertSame([], $missing, 'every route belongs in the docs');
     }
 
-    public function testTheDocsCoverAllThreeRoles(): void
+    public function testTheDocsCoverBothRoles(): void
     {
         $this->assertSame(
-            [auth\ROLE_VIEWER, auth\ROLE_EDITOR, auth\ROLE_ADMIN],
-            array_values(array_unique([auth\ROLE_VIEWER, auth\ROLE_EDITOR, auth\ROLE_ADMIN])),
-            'all three roles exist',
+            [auth\ROLE_EDITOR, auth\ROLE_ADMIN],
+            array_values(array_unique([auth\ROLE_EDITOR, auth\ROLE_ADMIN])),
+            'both roles exist',
         );
 
         $documented = $this->documented();

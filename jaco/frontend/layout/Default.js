@@ -1,6 +1,7 @@
 import {i18n, t} from '../model/i18n.js'
 import {app} from '../lib/app.js'
 import {auth} from '../lib/auth.js'
+import {denied} from '../lib/denied.js'
 import {iframe} from '../lib/iframe.js'
 import {maintenance} from '../lib/maintenance.js'
 import {getTheme, setTheme} from '../lib/theme.js'
@@ -89,6 +90,12 @@ const accountInfo = () => {
   return m('span.nav-account-info', {role: 'presentation'},
     username ? [username, ' ', roleNode] : roleNode)
 }
+
+// One rule for every menu: a missing role greys the entry out instead of hiding it,
+// so the interface keeps showing what the product can do. The read-only account is
+// the exception - it may open everything and learns on save that nothing is stored.
+const roleLink = (required, href, label) =>
+  auth.can(required) ? menuLink(href, label) : disabledNav(label)
 
 const menuLink = (href, label) => m(m.route.Link, {
   href: href,
@@ -202,11 +209,11 @@ const maintenanceBanner = () =>
   m('.maintenance-banner', {role: 'status'},
     t('Changes are disabled while maintenance mode is enabled.'))
 
-// A viewer cannot persist anything. That stays true when the inline editor is
-// open, so the hint says what actually happens instead of forbidding the editor.
-const readOnlyBanner = () =>
-  m('.readonly-banner', {role: 'status'},
-    t('Read-only access: changes are not saved.'))
+// A read-only account sees the whole admin, including the editors, but the server
+// refuses every write. The banner says so instead of letting a save fail.
+const readOnlyAccountBanner = () =>
+  m('.maintenance-banner', {role: 'status'},
+    t('Demo: nothing is saved here. Log in with a regular account to make changes.'))
 
 // Ctrl+K / Cmd+K opens the palette. The shortcut still must not steal keys
 // from the rich-text or Ace editors; modals are deliberately not blocked, so
@@ -345,29 +352,27 @@ export const DefaultLayout = {
           m('.toolbar',
             m.trust('<span id="loader" class="is-stoped"></span>'),
             maintenance.isActive() ? maintenanceBanner() : null,
-            app.hasAuthToken() && auth.isViewer() ? readOnlyBanner() : null,
+            app.hasAuthToken() && auth.isReadOnly() ? readOnlyAccountBanner() : null,
             app.hasAuthToken() ? m('.navbar', [
               title(),
               dropdown('content', t('Content'), [
-                menuLink('/pages', t('Pages')),
-                menuLink('/uploads', t('Media')),
-                menuLink('/backups', t('Backups')),
-                menuLink('/css', t('Design')),
-                menuLink('/templates', t('Templates')),
+                roleLink('editor', '/pages', t('Pages')),
+                roleLink('editor', '/uploads', t('Media')),
+                // site templates can be applied to every page: admin only, like
+                // design and backups
+                roleLink('admin', '/templates', t('Templates')),
+                roleLink('admin', '/backups', t('Backups')),
+                roleLink('admin', '/css', t('Design')),
               ]),
               dropdown('this-page', t('This page'), [
-                menuLink('/page-edit', t('Edit page')),
-                auth.can('editor') ? menuLink('/page-copy', t('Copy page')) : disabledNav(t('Copy page')),
-                auth.can('editor') ? menuLink('/page-delete', t('Delete page')) : disabledNav(t('Delete page')),
+                roleLink('editor', '/page-edit', t('Edit page')),
+                roleLink('editor', '/page-copy', t('Copy page')),
+                roleLink('editor', '/page-delete', t('Delete page')),
               ]),
-              dropdown('admin', t('Admin'), auth.can('admin') ? [
-                menuLink('/system/env', t('Environment')),
-                menuLink('/system/log', t('PHP error log')),
-                menuLink('/system/php-info', t('PHP info')),
-              ] : [
-                disabledNav(t('Environment')),
-                disabledNav(t('PHP error log')),
-                disabledNav(t('PHP info')),
+              dropdown('admin', t('Admin'), [
+                roleLink('admin', '/system/env', t('Environment')),
+                roleLink('admin', '/system/log', t('PHP error log')),
+                roleLink('admin', '/system/php-info', t('PHP info')),
               ]),
               m('button.palette-trigger', {
                 type: 'button',
@@ -378,7 +383,9 @@ export const DefaultLayout = {
               dropdown('account', t('Account'), [
                 accountInfo(),
                 menuLink('/system/about', t('About')),
-                auth.canChangePassword() ? menuLink('/password', t('Change password')) : disabledNav(t('Change password')),
+                // a read-only account reaches the form as well and learns on save that
+                // nothing is stored; hiding the entry would look like a missing feature
+                menuLink('/password', t('Change password')),
                 menuLink('/logout', t('Logout')),
               ], '.account-menu'),
               themeSwitch(),
@@ -390,7 +397,15 @@ export const DefaultLayout = {
               }, t('Login'))
             ]),
           ),
-          vnode.children,
+          // A page that answered 403 could not be opened: explain instead of
+          // showing an empty view with a toast that disappears. The navigation
+          // stays, so the way out is visible.
+          denied.isActive()
+            ? m('.main', m('.content',
+              m('h1', t('Access denied')),
+              m('p', t('This page needs a higher role. Log in with an account that may open it.')),
+            ))
+            : vnode.children,
         ]
     ]
   }

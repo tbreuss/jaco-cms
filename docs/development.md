@@ -170,8 +170,8 @@ After API/backend changes, add or adjust PHPUnit under `jaco/test/`.
 
 ## End-to-end smoke tests
 
-The Playwright smoke suite covers every admin route for the admin, editor and
-viewer roles, including role-specific read-only views and redirects: start,
+The Playwright smoke suite covers every admin route for the admin and editor
+roles, including the access-denied pages for admin-only routes: start,
 pages and page editor, the inline editor and page modals, media and upload
 detail, backups and backup detail, CSS, password, the system pages and logout.
 It also covers the public English and German pages, the editable elements

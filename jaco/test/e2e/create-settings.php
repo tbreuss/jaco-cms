@@ -13,10 +13,6 @@ $settings = [
             'password' => password_hash('test-password', PASSWORD_DEFAULT),
             'role' => 'editor',
         ],
-        'viewer' => [
-            'password' => password_hash('test-password', PASSWORD_DEFAULT),
-            'role' => 'viewer',
-        ],
         'admin_de' => [
             'password' => password_hash('test-password', PASSWORD_DEFAULT),
             'role' => 'admin',

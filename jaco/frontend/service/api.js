@@ -1,5 +1,6 @@
 import {addDanger} from '../state/actions.js'
 import {app} from '../lib/app.js'
+import {denied} from '../lib/denied.js'
 import {maintenance} from '../lib/maintenance.js'
 import {t, tError} from '../model/i18n.js'
 
@@ -16,6 +17,16 @@ const handlers = {
 // not trigger a logout/redirect.
 
 const request = method => (action, params = {}, options = {}) => {
+  // the route the request belongs to: a slow answer must not raise a denial on
+  // the page the user has navigated to in the meantime
+  const requestRoute = m.route.get()
+
+  // a new page load on this route starts clean; a stale denial from an earlier
+  // visit (or from before a role change) must not hide the page
+  if (options.pageLoad === true) {
+    denied.clear()
+  }
+
   const token = app.getAuthToken()
   if (token) {
     options.headers = {
@@ -35,7 +46,7 @@ const request = method => (action, params = {}, options = {}) => {
 
   const query = m.buildQueryString(params)
 
-  return m.request({
+  const response = m.request({
     method,
     url: 'api.php?action=' + action + (query ? '&' + query : ''),
     // Read the maintenance header on every response (success and error alike)
@@ -53,8 +64,21 @@ const request = method => (action, params = {}, options = {}) => {
       }
       return xhr
     },
-    ...options // might need Object.assign for Edge
+    // pageLoad is ours, not mithril's
+    ...Object.fromEntries(Object.entries(options).filter(([key]) => key !== 'pageLoad'))
   })
+
+  // a successful page load clears a denial that an earlier request left behind;
+  // the rejection handler stays a no-op so this side chain never turns into an
+  // unhandled rejection of its own
+  if (options.pageLoad === true) {
+    response.then(() => {
+      denied.clear()
+      m.redraw()
+    }, () => {})
+  }
+
+  return response
     .catch(err => {
       const code = err.code || 0
       // expired/invalid session: drop the token, tell the user, and send them
@@ -63,6 +87,17 @@ const request = method => (action, params = {}, options = {}) => {
       // means bad credentials, handled by LoginView).
       // only 401 means the session is gone; a 403 is the role refusing one action,
       // and logging out would throw away a perfectly valid session
+      // a page load that answers 403 could not be opened at all: the layout
+      // renders the explanation instead of the view. A refused action keeps its
+      // toast - the page is fine, only the click failed.
+      if (code === 403 && options.pageLoad === true) {
+        // only the page that asked shows the denial
+        if (m.route.get() === requestRoute) {
+          denied.show(action, requestRoute)
+          m.redraw()
+        }
+        throw err
+      }
       if (code === 401 && action !== 'login' && app.hasAuthToken()) {
         app.removeAuthToken()
         addDanger(t('Session expired', null, 'Session expired. Please log in again.'))

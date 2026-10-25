@@ -41,6 +41,16 @@ These are the invariants and edge cases that tests cannot express on their own.
   `text/css` carries no script vector. Only `.css` files below the web root are accepted,
   `jaco/` is out of reach, and the previous version is backed up first
   (`jaco/backend/domain/css.php`).
+- **A read-only account is a real admin that may not store anything.** The user
+  record carries `readOnly => true`; `read_token()` reads it from the current
+  record, so flipping the flag takes effect without waiting for the token to
+  expire. `router\dispatch()` answers every POST of such an account with 403
+  except the routes in `router\READ_ONLY_EXCEPTIONS` (`template/site/preview`,
+  which only counts matches). Reading and the whole admin therefore stay
+  available - the point of the account is to show the interface - while nothing
+  can change - the own password change included. The form still opens: the save
+  answers with the read-only message instead of the menu hiding the entry.
+  The banner calls it a demo, because that is what the account is used for.
 - **Maintenance mode blocks writes, not reads, and it is enforced centrally.**
   Every route that changes data is a POST, so `router\dispatch()` blocks POST
   requests with 503 while `maintenanceMode` is on; actions carry no check of
@@ -63,16 +73,17 @@ These are the invariants and edge cases that tests cannot express on their own.
   callers have no address and are not throttled. The history keeps at most
   `LOGIN_MAX_ADDRESSES` addresses and drops everything outside the window
   (`jaco/backend/core/auth.php`).
-- **Roles decide what a route may do.** A token carries `role`: `viewer` may read,
-  `editor` may also write pages and uploads, `admin` may also change the CSS, the
-  settings and the backups. The router compares the ranks (`role_allows`); a route
-  without an explicit role needs `admin`, and an unknown role in `settings.php` falls
-  back to `viewer`. There is no legacy single login any more: `settings.php` lists users,
+- **Roles decide what a route may do.** A token carries `role`: `editor` writes pages,
+  uploads and page/block templates, `admin` also changes the CSS, the site templates,
+  the backups and the system pages. The router compares the ranks (`role_allows`); a
+  route without an explicit role needs `admin`, and a missing or unknown role rejects
+  the account at login instead of granting the weakest one. There is no legacy single
+  login any more: `settings.php` lists users,
   and without one nobody can log in. A token whose user no longer exists is rejected,
   which ends their sessions when a user is removed. Each record carries `password` and
   `role`, plus the optional `language` (UI language, empty falls back to
-  `defaultLanguage`), `totpSecret` (that user's second factor) and `passwordChange`
-  (false disables the own password change)
+  `defaultLanguage`), `totpSecret` (that user's second factor) and `readOnly`
+  (true refuses every write for that account)
   (`jaco/backend/core/auth.php`, `jaco/backend/core/router.php`, `jaco/routes.php`).
 - **The password changes through the api, not by editing the file.**
   `system/change-password` takes the current password as proof – a wrong one counts
@@ -178,15 +189,15 @@ These are the invariants and edge cases that tests cannot express on their own.
 
 ## Roles
 
-Every route needs a role: `viewer` reads, `editor` also changes content, `admin` also
-changes the site's configuration. Users and roles live in `settings.php` (`users`), the
-token carries the role, and the router compares the ranks. A route without an explicit
-`role:` needs `admin`, and an unknown role in `settings.php` falls back to `viewer`.
+Every route needs a role: `editor` changes content, `admin` also changes the site's
+configuration. Users and roles live in `settings.php` (`users`), the token carries the
+role, and the router compares the ranks. A route without an explicit `role:` needs
+`admin`, and a missing or unknown role rejects the account at login.
 
 A user record is `['password' => '<digest>', 'role' => 'editor']`. Three optional fields
 can accompany it: `language` sets that account's UI language (empty means
-`defaultLanguage`), `totpSecret` holds that user's own TOTP secret, and `passwordChange`
-(default `true`) may be set to `false` to disable the own password change. Never share one
+`defaultLanguage`), `totpSecret` holds that user's own TOTP secret, and `readOnly`
+(default `false`) may be set to `true` to refuse every write. Never share one
 TOTP secret between accounts – a shared code would let one user in as another.
 
 To hash a password you choose, run the command with `--ask` and type the password twice.
@@ -204,40 +215,45 @@ php jaco/cli.php auth:password
 ```
 
 Keep the single quotes around the generated digest in PHP, otherwise the `$2y$` prefix
-is interpolated. The manual reset also works when `passwordChange` is `false`. A password
+is interpolated. The manual reset also works for a `readOnly` account. A password
 change does not revoke existing login tokens; rotate `secretKey` if every session must
 end.
 
-| Capability | `viewer` | `editor` | `admin` |
-| --- | --- | --- | --- |
-| Read pages, uploads, stylesheets, backups and templates | ✓ | ✓ | ✓ |
-| Change the own password | ✓ | ✓ | ✓ |
-| Create, update, copy and delete pages | – | ✓ | ✓ |
-| Change page title, meta description and robots | – | ✓ | ✓ |
-| Manage and apply site templates | – | – | ✓ |
-| Add and delete uploads | – | ✓ | ✓ |
-| Change a stylesheet | – | – | ✓ |
-| Restore and delete backups | – | – | ✓ |
-| Environment, error log and php-info | – | – | ✓ |
+| Capability | `editor` | `admin` |
+| --- | --- | --- |
+| Read pages, uploads and page/blocks templates | ✓ | ✓ |
+| Change the own password | ✓ | ✓ |
+| Create, update, copy and delete pages | ✓ | ✓ |
+| Change page title, meta description and robots | ✓ | ✓ |
+| Add and delete uploads | ✓ | ✓ |
+| Read stylesheets, backups and site templates | – | ✓ |
+| Manage and apply site templates | – | ✓ |
+| Change a stylesheet | – | ✓ |
+| Restore and delete backups | – | ✓ |
+| Environment, error log and php-info | – | ✓ |
 
-`passwordChange` is the one capability a record can switch off: a public demo account
-sets it to `false`, otherwise the first visitor locks everyone else out by changing the
-seeded password. It is a per-account flag, not a fourth role, because “demo” describes
-the purpose of an account, not a permission tier.
+`readOnly` is the one flag next to the role, because it is not a permission tier: the
+account keeps its role, usually `admin`, but the router refuses every write - see
+above. It replaces the former `passwordChange` flag: a password change is a write, so
+a read-only account cannot change it either.
 
 The routes behind it, `jaco/routes.php` being the source of truth:
 
-- reading: everything is `viewer`, except the three `system` routes, which are `admin`
-- `viewer` may call `system/change-password`
-- `editor` may call `page/create`, `page/update`, `page/update-body`, `page/settings`,
-  `page/copy`, `page/delete`, `upload/create` and `upload/delete`
-- `admin` may call `css/update`, `template/site/preview`, `template/site/update`,
-  `backup/restore`, `backup/delete`, `system`, `system/log`, `system/log/clear` and
-  `system/php-info`
+There are two roles. An unknown role in `settings.php` rejects the account instead of
+falling back to something, so a typo cannot hand out access.
+
+- `editor`: `about`, `page/list`, `page/view`, `page/create`, `page/update`,
+  `page/update-body`, `page/settings`, `page/copy`, `page/delete`, `upload/list`,
+  `upload/create`, `upload/delete`, `template/pages`, `template/content`,
+  `template/content/view` and `system/change-password`
+- `admin`: everything, notably `css/list`, `css/view`, `css/update`, `backup/list`,
+  `backup/view`, `backup/restore`, `backup/delete`, `template/site/list`,
+  `template/site/view`, `template/site/preview`, `template/site/update`, `system`,
+  `system/log`, `system/log/clear` and `system/php-info`
 
 An invalid or missing token answers **401**: the session is gone and the frontend returns
 to the login. A role that is too low answers **403**: the session stays, only that action
-is refused – a viewer must not be logged out for clicking a button they may not use.
+is refused – nobody is logged out for clicking a button they may not use.
 
 The admin UI groups its navigation into four areas: Content (Pages, Media, Backups,
 Design), This page (Edit, Copy and Delete for the page currently in the preview), Admin
@@ -248,19 +264,19 @@ button in the Pages toolbar, Copy and Delete are row actions there. On a fine po
 with hover, entering a menu opens it and leaving closes it; touch and keyboard toggle it
 with click, Enter or Space. Escape and an outside click close it.
 
-Restricted entries stay visible but disabled: Copy/Delete for a viewer, the admin entries
-below `admin`, and Change password when the record disables it. Design is read-only for a
-viewer and an editor. The page manager's Ace editor is read-only for a viewer. The inline
-editor stays open as a playground: it is editable, the save button is visible but
+Restricted entries stay visible but disabled: the admin entries (Backups, Design,
+Environment and the rest) below `admin`, and Copy/Delete below `editor`. One rule for
+every menu: a missing role greys the entry out instead of hiding it. A read-only account
+is the exception - it reaches everything and learns on save that nothing is stored. The
+inline editor stays open as a playground: it is editable, the save button is visible but
 disabled, the save shortcuts are not bound, and the dirty guard is off, so changes are
-never persisted and do not trap the user in a discard dialog. A viewer sees a **read-only
-banner** saying that changes are not saved. About is available to every role through a
-viewer-protected endpoint; the public index exposes only name and version. The own
-password has its own `/password` route for every role, because it used to live inside the
-admin-only system view; the menu entry is disabled and the route redirected when the
-account disables the change. This is guidance, not access control: the router still checks
-the signed token on every request, and the write endpoints answer **403** regardless of
-what the editor shows.
+never persisted and do not trap the user in a discard dialog. A `readOnly` account sees
+a **demo banner** saying that nothing is stored. About is available to every signed-in
+account; the public index exposes only name and version. The own password has its own
+`/password` route for every account, because it used to live inside the admin-only system
+view; a `readOnly` account reaches the form and the save answers **403**. This is
+guidance, not access control: the router still checks the signed token on every request,
+and the write endpoints answer **403** regardless of what the editor shows.
 
 The token also carries the user's language. The frontend asks the translations endpoint
 for it and falls back to the configured default language when the claim is empty. That way
@@ -276,9 +292,9 @@ each account gets its own UI language without a separate setting endpoint.
 | Two-factor setup writes one user's secret | `jaco/test/CliTotpTest.php` |
 | CLI entry point: web requests are refused | `jaco/test/CliEntryPointTest.php` |
 | Roles in the docs match the route table | `jaco/test/DocsRolesTest.php` |
-| Role matrix over the api (admin, editor, viewer, unknown role) | `jaco/test/ApiRolesTest.php` |
-| Own password change and the per-user opt-out | `jaco/test/ApiChangePasswordTest.php` |
-| Roles in the admin UI: menus, buttons and the read-only hint | `jaco/test/js/tests.js` (`role claims`, layout tests) |
+| Role matrix over the api (admin, editor, unknown role) | `jaco/test/ApiRolesTest.php` |
+| Own password change and the read-only account | `jaco/test/ApiChangePasswordTest.php`, `jaco/test/ApiReadOnlyAccountTest.php` |
+| Roles in the admin UI: menus, buttons and the demo banner | `jaco/test/js/tests.js` (`role claims`, layout tests) |
 | System environment and log clearing | `jaco/test/ApiSystemTest.php`, `jaco/test/ApiSystemLogClearTest.php` |
 | Route table: public/private, methods | `jaco/test/ApiRoutesTest.php` |
 | HTTP: request headers, query handling | `jaco/test/HttpRequestTest.php` |

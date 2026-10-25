@@ -121,9 +121,20 @@ body {
     position: fixed;
     top: 0;
     left: 0;
+    /* bottom makes the shell fill the viewport: without it #app is only as tall
+       as its content, so .main cannot stretch and a short page such as the
+       "access denied" notice shrank to a dialog-sized card. */
+    bottom: 0;
+    /* the shell spans the viewport so .main can stretch, but an empty area must
+       not swallow clicks and scrolls meant for the site preview underneath */
+    pointer-events: none;
     width: 100%;
     display: flex;
     flex-direction: column;
+}
+
+#app > * {
+    pointer-events: auto;
 }
 
 .main {

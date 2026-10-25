@@ -32,7 +32,7 @@ router\get(
     route: 'about',
     callback: jaco\api\about\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'editor',
     responseSchema: 'about/response.json',
 );
 
@@ -49,7 +49,7 @@ router\get(
     route: 'backup/list',
     callback: jaco\api\backup\list\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'admin',
     responseSchema: 'backup/list/response.json',
 );
 
@@ -66,7 +66,7 @@ router\get(
     route: 'backup/view',
     callback: jaco\api\backup\view\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'admin',
     responseSchema: 'backup/view/response.json',
 );
 
@@ -101,7 +101,7 @@ router\get(
     route: 'page/list',
     callback: jaco\api\page\list\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'editor',
     responseSchema: 'page/list/response.json',
 );
 
@@ -136,7 +136,7 @@ router\get(
     route: 'page/view',
     callback: jaco\api\page\view\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'editor',
     responseSchema: 'page/view/response.json',
 );
 
@@ -168,7 +168,7 @@ router\post(
     route: 'system/change-password',
     callback: jaco\api\system\change_password\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'editor',
     requestSchema: 'system/change-password/request.json',
     responseSchema: 'null.json',
 );
@@ -185,7 +185,7 @@ router\get(
     route: 'template/site/list',
     callback: jaco\api\template\site\list\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'admin',
     responseSchema: 'template/site/list/response.json',
 );
 
@@ -193,7 +193,7 @@ router\get(
     route: 'template/site/view',
     callback: jaco\api\template\site\view\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'admin',
     responseSchema: 'template/site/view/response.json',
 );
 
@@ -219,7 +219,7 @@ router\get(
     route: 'template/pages',
     callback: jaco\api\template\pages\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'editor',
     responseSchema: 'template/response.json',
 );
 
@@ -227,7 +227,7 @@ router\get(
     route: 'template/content',
     callback: jaco\api\template\content\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'editor',
     responseSchema: 'template/response.json',
 );
 
@@ -235,7 +235,7 @@ router\get(
     route: 'template/content/view',
     callback: jaco\api\template\content\view\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'editor',
     responseSchema: 'template/content/view/response.json',
 );
 
@@ -243,7 +243,7 @@ router\get(
     route: 'css/view',
     callback: jaco\api\css\view\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'admin',
     responseSchema: 'css/view/response.json',
 );
 
@@ -251,7 +251,7 @@ router\get(
     route: 'css/list',
     callback: jaco\api\css\files\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'admin',
     responseSchema: 'css/list/response.json',
 );
 
@@ -285,7 +285,7 @@ router\get(
     route: 'upload/list',
     callback: jaco\api\upload\list\action(...),
     authenticated: true,
-    role: 'viewer',
+    role: 'editor',
     responseSchema: 'upload/list/response.json',
 );
 

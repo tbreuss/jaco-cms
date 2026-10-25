@@ -5,9 +5,11 @@ export const BackupViewModel = {
   item: {},
   load: (file) => {
     BackupViewModel.isLoading = true
-    return api.get('backup/view', {file})
+    return api.get('backup/view', {file}, {pageLoad: true})
       .then((data) => {
         BackupViewModel.item = data
+        BackupViewModel.isLoading = false
+      }, () => {
         BackupViewModel.isLoading = false
       })
   }

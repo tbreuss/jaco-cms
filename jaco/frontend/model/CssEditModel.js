@@ -6,7 +6,7 @@ export const CssEditModel = {
   item: {},
   loadList: () => {
     CssEditModel.isLoading = true
-    return api.get('css/list')
+    return api.get('css/list', {}, {pageLoad: true})
       .then((data) => {
         CssEditModel.list = data
         CssEditModel.isLoading = false
@@ -16,9 +16,11 @@ export const CssEditModel = {
   },
   load: (file) => {
     CssEditModel.isLoading = true
-    return api.get('css/view', {file})
+    return api.get('css/view', {file}, {pageLoad: true})
       .then((data) => {
         CssEditModel.item = data
+        CssEditModel.isLoading = false
+      }, () => {
         CssEditModel.isLoading = false
       })
   },

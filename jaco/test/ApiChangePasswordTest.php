@@ -161,12 +161,12 @@ final class ApiChangePasswordTest extends ApiTestCase
         $this->assertSame('Too many attempts. Try again in 10 minute(s).', $body[0]['detail']);
     }
 
-    public function testADisabledPasswordChangeIsRejected(): void
+    public function testAReadOnlyAccountCannotChangeItsPassword(): void
     {
-        // a public demo account sets passwordChange to false, otherwise the first
-        // visitor locks everyone else out by changing the seeded password
+        // a read-only account is the public demo: the router refuses every write,
+        // so the first visitor cannot lock everyone else out by changing the password
         $this->config = $this->config(['users' => [
-            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'viewer', 'passwordChange' => false],
+            TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'admin', 'readOnly' => true],
         ]]);
         $before = (string) file_get_contents($this->settingsPath());
 
@@ -178,7 +178,7 @@ final class ApiChangePasswordTest extends ApiTestCase
         $this->assertSame(Status::FORBIDDEN, $response->status);
 
         $body = json_decode((string) $response->body, true);
-        $this->assertSame('Password changes are disabled for this account.', $body[0]['detail']);
+        $this->assertSame('Saving is disabled for this account', $body[0]['title']);
         $this->assertSame($before, (string) file_get_contents($this->settingsPath()), 'the file is untouched');
     }
 

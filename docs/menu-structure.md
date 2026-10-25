@@ -105,8 +105,8 @@ template can be identical on all pages of one language.
 The inline editor toolbar offers **Page settings**, **Cancel** and **Save**.
 
 - **Page settings** opens a modal for the page title, meta description and robots
-  value. It is available to editors and admins; viewers see the editor but not
-  the settings button.
+  value. It is available to editors and admins; a read-only account sees the
+  button but cannot save.
 - Saving the settings updates only the document head. Unsaved body changes stay
   in the editor.
 - The raw page editor exposes the same title, description and robots fields.
@@ -123,7 +123,7 @@ The inline editor toolbar offers **Page settings**, **Cancel** and **Save**.
 | This page: Page settings | active | active | visible-disabled |
 | Admin entries | active | visible-disabled | visible-disabled |
 | Account: About, Logout | active | active | active |
-| Account: Change password | active | active | active unless `passwordChange => false` |
+| Account: Change password | active | active | active; a `readOnly` account reaches the form and is refused on save |
 | Theme | active | active | active |
 | Jump to page (Commands) | active | active | active |
 | Commands | active | active | active |

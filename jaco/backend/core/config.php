@@ -32,7 +32,7 @@ final readonly class Config
         public string $loginHistoryFile,
         public bool $maintenanceMode,
         public int $backupRetentionDays,
-        /** @var array<string, array{password?: mixed, role?: mixed, language?: mixed, totpSecret?: mixed, passwordChange?: mixed}> name → digest, role and per user preferences */
+        /** @var array<string, array{password?: mixed, role?: mixed, language?: mixed, totpSecret?: mixed, readOnly?: mixed}> name → digest, role and per user preferences */
         public array $users = [],
         public bool $secretKeyIsConfigured = false,
     ) {}

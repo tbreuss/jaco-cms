@@ -93,6 +93,9 @@ const onCreateComponent = () => {
 }
 
 const onInitComponent = () => {
+  // No role check here: the list request answers 403 for anyone below admin, and
+  // the layout explains that. Letting the server decide keeps every page on the
+  // same path instead of mixing a view guard with a server answer.
   window.addEventListener('beforeunload', beforeUnloadHandler)
   dirty.set(isDirty)
   if (!app.hasAuthToken()) {

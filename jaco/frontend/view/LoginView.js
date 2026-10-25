@@ -154,7 +154,7 @@ export const LoginView = {
         }),
         m(ButtonGroup, {wrap: 'div.row.text-right'},
           m(ButtonSecondary, {onclick: backToLogin, type: 'button'}, m(Icon, {name: 'back'}), m('span', t('Back'))),
-          m(ButtonPrimary, {}, m(Icon, {name: 'check'}), m('span', t('Verify')))
+          m(ButtonPrimary, {type: 'submit'}, m(Icon, {name: 'check'}), m('span', t('Verify')))
         ),
         m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))})
       )
@@ -185,7 +185,7 @@ export const LoginView = {
           }
         }),
         m(ButtonGroup, {wrap: 'div.row.text-right'},
-          m(ButtonPrimary, {}, m(Icon, {name: 'login'}), m('span', t('Login')))
+          m(ButtonPrimary, {type: 'submit'}, m(Icon, {name: 'login'}), m('span', t('Login')))
         ),
         m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))})
       )

@@ -88,7 +88,6 @@
     "Pages": "Pages",
     "Password": "Password",
     "Password changes are disabled for this account.": "Password changes are disabled for this account.",
-    "Read-only access: changes are not saved.": "Read-only access: changes are not saved.",
     "Requirements": "Requirements",
     "Restore": "Restore",
     "Save & Close": "Save & Close",
@@ -253,5 +252,8 @@
     "The current editor content is saved before applying.": "The current editor content is saved before applying.",
     "Apply": "Apply",
     "Save & apply to all pages": "Save & apply to all pages",
-    "Preview & apply": "Preview & apply"
+    "Preview & apply": "Preview & apply",
+    "Demo: nothing is saved here. Log in with a regular account to make changes.": "Demo: nothing is saved here. Log in with a regular account to make changes.",
+    "Access denied": "Access denied",
+    "This page needs a higher role. Log in with an account that may open it.": "This page needs a higher role. Log in with an account that may open it."
 }

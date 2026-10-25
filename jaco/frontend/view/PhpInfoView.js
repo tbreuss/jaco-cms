@@ -1,6 +1,5 @@
 import {PhpInfoModel} from '../model/PhpInfoModel.js'
 import {app} from '../lib/app.js'
-import {auth} from '../lib/auth.js'
 import {t} from '../model/i18n.js'
 
 export const PhpInfoView = {
@@ -9,11 +8,7 @@ export const PhpInfoView = {
       m.route.set('/logout')
       return
     }
-    // the route is admin-only; a stale link must not load a 403 page
-    if (!auth.can('admin')) {
-      m.route.set('/')
-      return
-    }
+    // the route is admin-only: the load answers 403 and the layout explains it
     PhpInfoModel.load()
   },
   oncreate: () => {
