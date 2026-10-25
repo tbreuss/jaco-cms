@@ -131,10 +131,10 @@ jobs:
                       robots.txt sitemap.xml \
                       assets de \
                       deploy/site/
-                  # Operator data stays on the server. Ship only the deny file and
-                  # the template samples; backups and uploads are never deployed.
-                  mkdir -p deploy/site/jaco-data/backups deploy/site/media
-                  rsync -a jaco-data/.htaccess jaco-data/templates/ deploy/site/jaco-data/
+                  # Operator data (jaco-data/, media/) stays on the server.
+                  # The installer creates .htaccess and template structure on first run.
+                  # Deploys must never touch operator data.
+                  mkdir -p deploy/site/media
                   rsync -a media/.htaccess deploy/site/media/
 
             - name: Verify staged application
@@ -162,10 +162,9 @@ jobs:
                   # crawler entry points
                   test -f deploy/site/robots.txt
                   test -f deploy/site/sitemap.xml
-                  test -f deploy/site/jaco-data/.htaccess
-                  # the checkout's backups and uploads never travel with a deploy
-                  test -z "$(find deploy/site/jaco-data/backups -type f ! -name '.gitignore' -print -quit)"
-                  test -z "$(find deploy/site/media -type f ! -name '.htaccess' -print -quit)"
+                  # operator data (jaco-data/, media/) is not staged; installer creates it
+                  test ! -d deploy/site/jaco-data
+                  test -f deploy/site/media/.htaccess
 
             - name: Deploy application to ${{ vars.SSH_TARGET }}/jaco
               uses: appleboy/scp-action@master
@@ -192,5 +191,7 @@ jobs:
                   target: ${{ vars.SSH_TARGET }}
                   # Overwrites pages and assets, never deletes: operator data
                   # (jaco-data/, media/) is untouched because it is not in the payload.
+                  # The installer creates jaco-data/.htaccess, jaco-data/templates/,
+                  # media/.htaccess on first run. Deploys must never touch them.
                   rm: false
                   strip_components: 2
