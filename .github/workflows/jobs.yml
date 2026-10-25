@@ -17,6 +17,8 @@ jobs:
                   php-version: ${{ matrix.php-versions }}
                   extensions: json
                   coverage: ${{ matrix.php-versions == '8.4' && 'pcov' || 'none' }}
+            - name: Check that a fresh clone has the test directories
+              run: bash jaco/test/check-fixtures.sh
             - name: Install dependencies
               run: composer install -d jaco
             - name: Composer audit
