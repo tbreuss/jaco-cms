@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 // Browser based installer: upload Jaco, open this file, done. It writes
-// jaco/settings.php and deletes itself afterwards.
+// jaco-data/settings.php and deletes itself afterwards.
 //
 // Deliberately plain PHP without any 8.x syntax: this file has to parse
 // on older versions to report them instead of dying on them. Anyone who

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 // Write a disposable test configuration for the Playwright smoke tests. It
-// lives next to this script and is gitignored; the real jaco/settings.php is
+// lives next to this script and is gitignored; the real jaco-data/settings.php is
 // never touched. The password for every test account is "test-password".
 $settings = [
     'users' => [
