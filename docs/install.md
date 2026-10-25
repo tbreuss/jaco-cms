@@ -93,8 +93,9 @@ return [
 A public demo account sets `readOnly` to `true` and keeps `role: admin`: the
 visitor sees the whole admin - editors, media, backups, templates - and every
 write is refused with 403, the password change included. The password stays the
-seeded one, so nobody can lock the others out. A plain `viewer` would hide most
-of the admin, which defeats the purpose of a demo.
+seeded one, so nobody can lock the others out. A plain `editor` would hide
+backups, design, site templates and the system pages, which defeats the purpose
+of a demo.
 
 Hash a password you choose with:
 

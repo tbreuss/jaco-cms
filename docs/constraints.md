@@ -73,11 +73,12 @@ These are the invariants and edge cases that tests cannot express on their own.
   callers have no address and are not throttled. The history keeps at most
   `LOGIN_MAX_ADDRESSES` addresses and drops everything outside the window
   (`jaco/backend/core/auth.php`).
-- **Roles decide what a route may do.** A token carries `role`: `viewer` may read,
-  `editor` may also write pages and uploads, `admin` may also change the CSS, the
-  settings and the backups. The router compares the ranks (`role_allows`); a route
-  without an explicit role needs `admin`, and an unknown role in `settings.php` falls
-  back to `viewer`. There is no legacy single login any more: `settings.php` lists users,
+- **Roles decide what a route may do.** A token carries `role`: `editor` writes pages,
+  uploads and page/block templates, `admin` also changes the CSS, the site templates,
+  the backups and the system pages. The router compares the ranks (`role_allows`); a
+  route without an explicit role needs `admin`, and a missing or unknown role rejects
+  the account at login instead of granting the weakest one. There is no legacy single
+  login any more: `settings.php` lists users,
   and without one nobody can log in. A token whose user no longer exists is rejected,
   which ends their sessions when a user is removed. Each record carries `password` and
   `role`, plus the optional `language` (UI language, empty falls back to
@@ -188,12 +189,12 @@ These are the invariants and edge cases that tests cannot express on their own.
 
 ## Roles
 
-Every route needs a role: `viewer` reads, `editor` also changes content, `admin` also
-changes the site's configuration. Users and roles live in `settings.php` (`users`), the
-token carries the role, and the router compares the ranks. A route without an explicit
-`role:` needs `admin`, and an unknown role in `settings.php` falls back to `viewer`.
+Every route needs a role: `editor` changes content, `admin` also changes the site's
+configuration. Users and roles live in `settings.php` (`users`), the token carries the
+role, and the router compares the ranks. A route without an explicit `role:` needs
+`admin`, and a missing or unknown role rejects the account at login.
 
-A user record is `['password' => '<digest>', 'role' => 'editor']`. Two optional fields
+A user record is `['password' => '<digest>', 'role' => 'editor']`. Three optional fields
 can accompany it: `language` sets that account's UI language (empty means
 `defaultLanguage`), `totpSecret` holds that user's own TOTP secret, and `readOnly`
 (default `false`) may be set to `true` to refuse every write. Never share one
@@ -269,14 +270,13 @@ every menu: a missing role greys the entry out instead of hiding it. A read-only
 is the exception - it reaches everything and learns on save that nothing is stored. The
 inline editor stays open as a playground: it is editable, the save button is visible but
 disabled, the save shortcuts are not bound, and the dirty guard is off, so changes are
-never persisted and do not trap the user in a discard dialog. A viewer sees a **read-only
-banner** saying that changes are not saved. About is available to every role through a
-viewer-protected endpoint; the public index exposes only name and version. The own
-password has its own `/password` route for every role, because it used to live inside the
-admin-only system view; the menu entry is disabled and the route redirected when the
-account disables the change. This is guidance, not access control: the router still checks
-the signed token on every request, and the write endpoints answer **403** regardless of
-what the editor shows.
+never persisted and do not trap the user in a discard dialog. A `readOnly` account sees
+a **demo banner** saying that nothing is stored. About is available to every signed-in
+account; the public index exposes only name and version. The own password has its own
+`/password` route for every account, because it used to live inside the admin-only system
+view; a `readOnly` account reaches the form and the save answers **403**. This is
+guidance, not access control: the router still checks the signed token on every request,
+and the write endpoints answer **403** regardless of what the editor shows.
 
 The token also carries the user's language. The frontend asks the translations endpoint
 for it and falls back to the configured default language when the claim is empty. That way
@@ -292,9 +292,9 @@ each account gets its own UI language without a separate setting endpoint.
 | Two-factor setup writes one user's secret | `jaco/test/CliTotpTest.php` |
 | CLI entry point: web requests are refused | `jaco/test/CliEntryPointTest.php` |
 | Roles in the docs match the route table | `jaco/test/DocsRolesTest.php` |
-| Role matrix over the api (admin, editor, viewer, unknown role) | `jaco/test/ApiRolesTest.php` |
-| Own password change and the per-user opt-out | `jaco/test/ApiChangePasswordTest.php` |
-| Roles in the admin UI: menus, buttons and the read-only hint | `jaco/test/js/tests.js` (`role claims`, layout tests) |
+| Role matrix over the api (admin, editor, unknown role) | `jaco/test/ApiRolesTest.php` |
+| Own password change and the read-only account | `jaco/test/ApiChangePasswordTest.php`, `jaco/test/ApiReadOnlyAccountTest.php` |
+| Roles in the admin UI: menus, buttons and the demo banner | `jaco/test/js/tests.js` (`role claims`, layout tests) |
 | System environment and log clearing | `jaco/test/ApiSystemTest.php`, `jaco/test/ApiSystemLogClearTest.php` |
 | Route table: public/private, methods | `jaco/test/ApiRoutesTest.php` |
 | HTTP: request headers, query handling | `jaco/test/HttpRequestTest.php` |

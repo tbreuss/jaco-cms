@@ -105,8 +105,8 @@ template can be identical on all pages of one language.
 The inline editor toolbar offers **Page settings**, **Cancel** and **Save**.
 
 - **Page settings** opens a modal for the page title, meta description and robots
-  value. It is available to editors and admins; viewers see the editor but not
-  the settings button.
+  value. It is available to editors and admins; a read-only account sees the
+  button but cannot save.
 - Saving the settings updates only the document head. Unsaved body changes stay
   in the editor.
 - The raw page editor exposes the same title, description and robots fields.
