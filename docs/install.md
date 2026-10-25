@@ -23,7 +23,7 @@ in the archive root; in the git repository it lives here as `docs/install.md`.
     ├── index.html
     ├── foo.html
     ├── media/         <-- created by the installer
-    ├── jaco-data/     <-- templates and backups, created by the installer
+    ├── jaco-data/     <-- settings, templates, backups and runtime, created by the installer
     └── jaco/          <-- here
         ├── api.php
         ├── backend/
@@ -34,12 +34,17 @@ in the archive root; in the git repository it lives here as `docs/install.md`.
 
    | Directory | Role | Access |
    |---|---|---|
-   | `jaco/` | The application: admin UI, `api.php`, PHP code, `vendor/`, `runtime/` logs | Only the entry points and `frontend/` assets are reachable, everything else answers 403 |
-   | `jaco-data/` | Operator data written by the app: page, content and site templates plus the backups of every save | Never reachable over the web (`.htaccess`: `Require all denied`, `Options -Indexes`) |
+   | `jaco/` | The application: admin UI, `api.php`, PHP code and `vendor/` | Only the entry points and `frontend/` assets are reachable, everything else answers 403 |
+   | `jaco-data/` | Operator data written by the app: `settings.php`, page, content and site templates, the backups of every save and the runtime logs | Never reachable over the web (`.htaccess`: `Require all denied`, `Options -Indexes`) |
    | `media/` | Uploads from the editor (images, PDFs), referenced from your pages as `media/<file>` | Reachable as static files, but never executed |
 
    Replacing `jaco/` with a new version never touches `jaco-data/` or `media/`,
-   so code updates cannot lose content or backups.
+   so code updates cannot lose content, backups or credentials. A deployment
+   uploads the application to `jaco/` and the public pages next to it - it never
+   writes into `jaco-data/`. If a server still carries `settings.php`,
+   `runtime/` or a nested `jaco/` inside the application directory, move the
+   settings to `jaco-data/settings.php` before the next deployment: removing
+   the application directory would delete them with it.
 
 3. Open the installer in the browser: `https://example.com/jaco/install.php`.
    Enter username (anything you like) and password (at least 8 characters),
@@ -157,7 +162,7 @@ The PHP process must be allowed to write:
 - every `.html` file that should be editable
 - `jaco-data/backups/` (created with the first backup, create it beforehand if needed)
 - the media directory in the root directory (images from the editor), `media/` by default
-- `jaco/runtime/log/` (error log)
+- `jaco-data/runtime/log/` (error and login log)
 
 ## Protect the internals
 
@@ -167,7 +172,7 @@ access to the internals. On Apache this ships with the project:
 - `jaco/.htaccess` allows only `api.php` and `index.html` and denies everything
   else in that directory, so an unlisted file is never served.
 - `jaco/frontend/.htaccess` allows only `.js`, `.mjs` and `.css`.
-- `jaco/backend/`, `jaco/language/`, `jaco/schema/`, `jaco/runtime/`,
+- `jaco/backend/`, `jaco/language/`, `jaco/schema/`,
   `jaco/vendor/` and `jaco/test/` deny every request.
 - `jaco-data/` denies every request.
 - `media/` serves images and PDFs and never executes PHP (the installer writes

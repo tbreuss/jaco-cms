@@ -101,6 +101,9 @@ jobs:
             # the server owns - a deploy must never overwrite or delete them.
             - name: Stage application
               run: |
+                  # The payload is the content of jaco/, so the archive holds
+                  # deploy/app/api.php. strip_components: 2 on upload removes
+                  # "deploy/app" and puts api.php directly into <target>/jaco.
                   mkdir -p deploy/app
                   rsync -a --delete \
                       --exclude 'test/' --exclude '.php-cs-fixer.php' \
@@ -131,16 +134,12 @@ jobs:
                       robots.txt sitemap.xml \
                       assets de \
                       deploy/site/
-                  # Operator data (jaco-data/backups/, jaco-data/runtime/, jaco-data/settings.php,
-                  # jaco-data/.htaccess, media/ uploads) stays on the server.
-                  # But committed templates (jaco-data/templates/) are part of the demo site
-                  # and must be deployed.
+                  # Operator data (jaco-data/ with settings.php, backups, runtime and
+                  # templates, and the media uploads) belongs to the server. A deploy
+                  # must never write into jaco-data/: it would overwrite credentials
+                  # and delete backups or templates that only exist there.
                   mkdir -p deploy/site/media
                   rsync -a media/.htaccess deploy/site/media/
-                  mkdir -p deploy/site/jaco-data/templates
-                  rsync -a --delete \
-                      --exclude 'backups/' --exclude 'runtime/' --exclude 'settings.php' --exclude '.htaccess' \
-                      jaco-data/templates/ deploy/site/jaco-data/templates/
 
             - name: Verify staged application
               run: |
@@ -150,10 +149,12 @@ jobs:
                   # would be served: the whitelist lives here
                   test -f deploy/app/.htaccess
                   test ! -f deploy/app/install.php
-                  test ! -f deploy/app/settings.php
                   test ! -d deploy/app/test
-                  # operator data must never be part of the application payload
+                  # operator data and runtime state live under jaco-data/, next to
+                  # the application - never inside the payload
                   test ! -d deploy/app/jaco-data
+                  test ! -d deploy/app/runtime
+                  test ! -f deploy/app/settings.php
                   test ! -d deploy/app/_backup
                   test ! -d deploy/app/_template
 
@@ -167,14 +168,10 @@ jobs:
                   # crawler entry points
                   test -f deploy/site/robots.txt
                   test -f deploy/site/sitemap.xml
-                  # committed templates are deployed; operator data (backups/, runtime/,
-                  # settings.php, .htaccess) is NOT deployed
-                  test -d deploy/site/jaco-data/templates
-                  test -f deploy/site/jaco-data/templates/site/footer-en.html
-                  test -f deploy/site/jaco-data/templates/site/nav-en.html
-                  test ! -f deploy/site/jaco-data/settings.php
-                  test ! -d deploy/site/jaco-data/backups
-                  test ! -d deploy/site/jaco-data/runtime
+                  # operator data is never part of the payload: no credentials, no
+                  # backups, no runtime state, no templates
+                  test ! -d deploy/site/jaco-data
+                  test ! -f deploy/site/settings.php
                   test -f deploy/site/media/.htaccess
 
             - name: Deploy application to ${{ vars.SSH_TARGET }}/jaco
@@ -189,7 +186,8 @@ jobs:
                   # Replaces ONLY the jaco/ application directory.
                   # jaco-data/ and media/ live next to it and stay untouched.
                   rm: true
-                  strip_components: 1
+                  # deploy/app/api.php -> <target>/jaco/api.php
+                  strip_components: 2
 
             - name: Deploy website to ${{ vars.SSH_TARGET }}
               uses: appleboy/scp-action@master

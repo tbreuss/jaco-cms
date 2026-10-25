@@ -39,6 +39,25 @@ check() {
   fi
 }
 
+# check_gone <pfad> <beschreibung>: erwartet 403 oder 404 - der Pfad darf nicht
+# erreichbar sein. Aeltere Deploys haben Anwendung, Daten und Einstellungen
+# ineinander verschachtelt; diese Pruefung findet solche Reste.
+check_gone() {
+  path="$1"
+  label="$2"
+  actual="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$BASE$path")"
+  case "$actual" in
+    403|404)
+      printf 'ok   %-3s %-45s %s\n' "$actual" "$path" "$label"
+      PASSED=$((PASSED + 1))
+      ;;
+    *)
+      printf 'FAIL %-3s (expected 403/404) %-30s %s\n' "$actual" "$path" "$label" >&2
+      FAILED=$((FAILED + 1))
+      ;;
+  esac
+}
+
 # check_json <pfad> <beschreibung>: erwartet 200 und eine JSON-Antwort
 check_json() {
   path="$1"
@@ -67,6 +86,13 @@ check 403 "/jaco/vendor/autoload.php"       "third party code"
 check 403 "/jaco-data/"                     "operator data"
 check 403 "/jaco-data/templates/"           "templates"
 check 403 "/jaco-data/backups/"             "backups"
+
+echo
+echo "no leftovers from a nested deploy"
+check_gone "/jaco/settings.php"             "credentials outside jaco-data"
+check_gone "/jaco/runtime/"                 "runtime outside jaco-data"
+check_gone "/jaco/jaco-data/"               "operator data inside the application"
+check_gone "/jaco/jaco/"                    "application inside the application"
 
 echo
 echo "admin entry points must be reachable"
