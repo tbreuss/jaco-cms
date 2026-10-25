@@ -104,11 +104,14 @@ export const PasswordView = {
           }),
           m(ButtonGroup, {wrap: 'div.row.text-right'},
             m(ButtonSecondary, {
+              // without an explicit type a button inside a form submits it: Cancel
+              // sent a POST with empty fields and a validation error came back
+              type: 'button',
               onclick: () => {
                 m.route.set('/')
               }
             }, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
-            m(ButtonPrimary, {disabled: state.sending},
+            m(ButtonPrimary, {disabled: state.sending, type: 'submit'},
               m(Icon, {name: 'check'}),
               m('span', t('Change password')),
             ),

@@ -1704,6 +1704,32 @@ QUnit.test('cancel returns to the preview', (assert) => {
   }
 })
 
+QUnit.test('cancel does not submit the form', (assert) => {
+  // a button without a type is a submit button: Cancel used to post the form with
+  // empty fields and produced a validation error
+  const stub = stubRequest(() => Promise.resolve({}))
+  const originalSet = m.route.set
+  const routeCalls = []
+  m.route.set = (path) => routeCalls.push(path)
+
+  try {
+    m.render(fixture(), m(PasswordView))
+    const cancel = [...fixture().querySelectorAll('button')]
+      .find((button) => button.textContent.includes(t('Cancel')))
+
+    assert.ok(cancel, 'cancel button rendered')
+    assert.strictEqual(cancel.getAttribute('type'), 'button', 'cancel is not a submit button')
+
+    cancel.click()
+
+    assert.deepEqual(routeCalls, ['/'], 'cancel navigates away')
+    assert.deepEqual(stub.calls, [], 'no request was sent')
+  } finally {
+    stub.restore()
+    m.route.set = originalSet
+  }
+})
+
 QUnit.test('a read-only user still reaches the password form', (assert) => {
   // the form opens; the server answers the save with the read-only message, which
   // explains more than a redirected link would
