@@ -39,7 +39,7 @@ final class ApiSiteTemplateTest extends ApiTestCase
         $this->assertSame('<footer>old</footer>', $body['content']);
     }
 
-    public function testUpdateWithApplyReplacesMarkedElementsWithoutBackups(): void
+    public function testUpdateWithApplyReplacesMarkedElementsAndBacksEachPageUp(): void
     {
         $response = $this->api('template/site/update', [
             'fileName' => 'footer.html',
@@ -56,7 +56,43 @@ final class ApiSiteTemplateTest extends ApiTestCase
         $this->assertStringContainsString('<footer data-jaco-template="footer"><a href="de/impressum.html">Impressum</a></footer>', $content);
         $this->assertStringNotContainsString('>old<', $content);
 
-        $this->assertSame([], $this->newEntriesIn($this->config->backupDir), 'apply must not create backups');
+        // applying rewrites the structure of every page: each one is backed up first
+        $backups = $this->newEntriesIn($this->config->backupDir);
+        $this->assertCount(1, $backups, 'the rewritten page is backed up');
+        $this->assertStringContainsString('site-template-test.html', (string) $backups[0]);
+    }
+
+    public function testTheBackupHoldsTheContentBeforeTheApply(): void
+    {
+        $this->api('template/site/update', [
+            'fileName' => 'footer.html',
+            'content' => '<footer>new</footer>',
+            'applyToAll' => true,
+        ]);
+
+        $backups = $this->newEntriesIn($this->config->backupDir);
+        $this->assertCount(1, $backups);
+        $backup = (string) file_get_contents($this->config->backupDir . '/' . $backups[0]);
+
+        $this->assertStringContainsString('<footer data-jaco-template="footer">old</footer>', $backup);
+        $this->assertStringNotContainsString('>new<', $backup);
+    }
+
+    public function testPagesWithoutTheMarkerAreNotBackedUp(): void
+    {
+        $response = $this->api('template/site/update', [
+            'fileName' => 'footer.html',
+            'content' => '<footer>new</footer>',
+            'applyToAll' => true,
+        ]);
+
+        $this->assertSame(Status::OK, $response->status);
+        $body = json_decode((string) $response->body, true);
+        $this->assertSame(1, $body['appliedFiles'], 'only the marked page is touched');
+
+        foreach ($this->newEntriesIn($this->config->backupDir) as $backup) {
+            $this->assertStringNotContainsString('site-template-other.html', (string) $backup);
+        }
     }
 
 

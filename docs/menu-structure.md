@@ -77,7 +77,7 @@ editor contains the template HTML and separate **Save**, **Save & Close** and
 **Preview & apply** buttons. Applying first opens a preview with the affected
 pages and elements; the admin confirms before applying. Applying uses atomic
 file writes, replaces every element with the matching `data-jaco-template`
-marker and creates no backups; the marker is preserved on the replacement root.
+marker; every rewritten page is backed up first, and the marker is preserved on the replacement root.
 
 For a bilingual footer, use separate names and markers:
 

@@ -174,8 +174,12 @@ function preview_site_template(Config $config, string $name): array
 }
 
 /**
- * Apply one template to every public HTML page. This deliberately writes
- * without a backup; the caller asked for a "no backup" operation.
+ * Apply one template to every public HTML page.
+ *
+ * Every page is backed up before it is written, like a page edit: applying
+ * rewrites the structure of the whole site at once, and it used to be the one
+ * operation without a way back. A page whose backup fails is skipped instead of
+ * overwritten - it shows up in `failed` and stays as it was.
  *
  * @return array{files: int, elements: int, failed: list<string>}
  */
@@ -204,6 +208,12 @@ function apply_site_template(Config $config, string $name): array
         }
         [$updated, $count] = html\replace_template_elements($html, $name, $withMarker);
         if ($count === 0) {
+            continue;
+        }
+        // backup first: without it the rewrite of every marked element in every
+        // page would be the only change in Jaco that cannot be undone
+        if (!filesystem\backup_file($config->webDir, $file->file, $config->backupDir)) {
+            $failed[] = $file->file;
             continue;
         }
         if (!filesystem\write_file_atomic($config, $config->webDir, $file->file, $updated)) {

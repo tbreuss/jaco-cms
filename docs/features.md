@@ -22,7 +22,7 @@ the admin navigation in [menu-structure.md](menu-structure.md), and installation
 | Inline editing | Editors change marked regions directly in the live preview, with rich text, images, links, embedded videos and gallery images; a read-only account can open the same editor but cannot save. | [Constraints](constraints.md) |
 | Page manager | Editors create pages from templates, copy, edit and delete pages, and continue a newly created page in the inline editor. | [Constraints](constraints.md) |
 | Page settings | Editors manage the page title, meta description and robots value from a dialog in the inline editor or the raw page view; the body is left untouched. | [Constraints](constraints.md) |
-| Site templates | Admins manage reusable HTML fragments under `jaco-data/templates/site`, preview and apply one to every public page by replacing elements marked with `data-jaco-template`. Writes are atomic and applying does not create backups. | [Constraints](constraints.md) |
+| Site templates | Admins manage reusable HTML fragments under `jaco-data/templates/site`, preview and apply one to every public page by replacing elements marked with `data-jaco-template`. Writes are atomic, and every page that applying rewrites is backed up first, like a page edit. | [Constraints](constraints.md) |
 | Stylesheets | Admins list, view and edit the site CSS from the admin; an editor sees the entry greyed out. | [Constraints](constraints.md) |
 
 ## Access and safety
