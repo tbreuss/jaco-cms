@@ -15,6 +15,3 @@
 /jaco/test/runtime
 /inspiration
 /test
-# uploads stay on the server, the deny file is part of the repository
-/media/*
-!/media/.htaccess

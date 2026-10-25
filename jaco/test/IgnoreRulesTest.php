@@ -55,12 +55,26 @@ final class IgnoreRulesTest extends TestCase
             'jaco-data/templates/content/.gitignore',
             'jaco-data/templates/page/.gitignore',
             'jaco-data/templates/site/.gitignore',
+            'media/.gitignore',
             'media/.htaccess',
         ] as $file) {
             $this->assertNotNull(
                 $this->git('add', '--dry-run', '--', $file),
                 $file . ' is part of the repository and must stay addable',
             );
+        }
+    }
+
+    public function testTheImagesTheSiteShipsStaysAddable(): void
+    {
+        // demo-elements.svg appears in the elements page, the two social cards in
+        // the head: content that belongs to the site, unlike an upload
+        foreach ([
+            'media/demo-elements.svg',
+            'media/social-card-en.png',
+            'media/social-card-de.png',
+        ] as $file) {
+            $this->assertNotNull($this->git('add', '--dry-run', '--', $file), $file . ' has to be committable');
         }
     }
 
@@ -89,6 +103,7 @@ final class IgnoreRulesTest extends TestCase
         foreach ([
             'jaco-data/backups/20260101_000000_aaaa_index.html',
             'jaco-data/runtime/log/error.log',
+            'media/20260101_000000_aaaa.jpg',
         ] as $path) {
             $absolute = \dirname(__DIR__, 2) . '/' . $path;
             @\mkdir(\dirname($absolute), 0755, true);
