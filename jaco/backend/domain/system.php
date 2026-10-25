@@ -9,6 +9,7 @@ use jaco\core\filesystem;
 use jaco\core\system;
 use jaco\core\totp;
 use jaco\domain\Payload;
+use jaco\domain\page;
 
 use function jaco\core\config\write_user_field;
 
@@ -184,7 +185,7 @@ function get_overview(Config $config): array
     [$logSize, $logLines] = log_stats($config->phpErrorLog);
 
     return [
-        'pages' => count(filesystem\find_files_rec($config->webDir, $config->pageExtensions, [$config->appDir])),
+        'pages' => count(page\find_public_pages($config)),
         'uploads' => count(filesystem\find_files_rec($config->webDir, $config->uploadExtensions, [$config->appDir])),
         'backups' => count(filesystem\find_files($config->backupDir, array_merge($config->uploadExtensions, $config->pageExtensions))),
         'projectSize' => dir_size($config->webDir),

@@ -121,6 +121,31 @@ final class ApiSiteTemplateTest extends ApiTestCase
         $this->assertStringNotContainsString('Deutscher Footer', (string) file_get_contents($this->config->webDir . '/' . $enPage));
         $this->assertStringNotContainsString('English footer', (string) file_get_contents($this->config->webDir . '/' . $dePage));
     }
+    public function testOperatorDataIsNotTreatedAsContent(): void
+    {
+        // Regression: only the app directory used to be excluded, so the operator
+        // data below jaco-data was walked as well. A template was applied to its own
+        // source and to every backup that carried a copy of the marker.
+        @mkdir($this->config->backupDir, 0755, true);
+        $ownTemplate = $this->config->templateSiteDir . '/footer.html';
+        $backup = $this->config->backupDir . '/20260101_000000_aaaa_de|index.html';
+        file_put_contents($ownTemplate, '<footer data-jaco-template="footer">old</footer>');
+        file_put_contents($backup, '<html><body><footer data-jaco-template="footer">backup</footer></body></html>');
+
+        $found = array_map(
+            static fn($file) => $file->file,
+            \jaco\domain\page\find_public_pages($this->config),
+        );
+
+        $this->assertContains(self::PAGE, $found, 'a real page is found');
+        $this->assertNotContains('jaco-data/templates/site/footer.html', $found, 'the template source is no page');
+        $this->assertNotContains('jaco-data/backups/20260101_000000_aaaa_de|index.html', $found, 'a backup is no page');
+        $this->assertSame([], array_filter(
+            $found,
+            static fn(string $file) => \str_starts_with($file, 'jaco-data/'),
+        ), 'nothing below the operator data is a page');
+    }
+
     public function testPreviewCountsPagesAndElementsWithoutWriting(): void
     {
         $response = $this->api('template/site/preview', ['fileName' => 'footer.html']);

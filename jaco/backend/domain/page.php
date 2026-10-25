@@ -41,7 +41,7 @@ function find_pages(Config $config, string $filteredBy, string $sortedBy): Paylo
         return Payload::invalid($errors);
     }
 
-    $files = filesystem\find_files_rec($config->webDir, $config->pageExtensions, [$config->appDir]);
+    $files = find_public_pages($config);
 
     $sorted = list\parse_sort($sortedBy, SORT_PARAMETERS);
     $pages = create_list($files, $config->webDir);
@@ -53,6 +53,28 @@ function find_pages(Config $config, string $filteredBy, string $sortedBy): Paylo
         'filter' => $filteredBy,
         'sort' => $sorted,
     ]);
+}
+
+/**
+ * Every file of the published site.
+ *
+ * Only the application was excluded once, so the operator data (`jaco-data`: the
+ * site templates and the backups) and the media directory were walked as pages -
+ * the page list showed them, the overview counted them, and a site template got
+ * applied to its own source and to every backup that carried a copy of the marker.
+ *
+ * @return array<filesystem\File>
+ */
+function find_public_pages(Config $config): array
+{
+    $excluded = [$config->appDir, $config->dataDir, $config->mediaDir];
+    // a directory outside the web root would exclude everything: skip it instead
+    $excluded = \array_values(\array_filter(
+        $excluded,
+        static fn(string $dir): bool => filesystem\is_inside_dir($dir, $config->webDir),
+    ));
+
+    return filesystem\find_files_rec($config->webDir, $config->pageExtensions, $excluded);
 }
 
 function find_page(Config $config, string $file): Payload

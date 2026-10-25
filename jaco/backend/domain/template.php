@@ -7,6 +7,7 @@ use jaco\core\data;
 use jaco\core\filesystem;
 use jaco\core\html;
 use jaco\domain\Payload;
+use jaco\domain\page;
 
 final class Template
 {
@@ -155,7 +156,7 @@ function find_site_template(Config $config, string $file): Payload
  */
 function preview_site_template(Config $config, string $name): array
 {
-    $files = filesystem\find_files_rec($config->webDir, $config->pageExtensions, [$config->appDir]);
+    $files = page\find_public_pages($config);
     $matches = [];
     $elements = 0;
     foreach ($files as $file) {
@@ -195,7 +196,7 @@ function apply_site_template(Config $config, string $name): array
         return ['files' => 0, 'elements' => 0, 'failed' => []];
     }
 
-    $files = filesystem\find_files_rec($config->webDir, $config->pageExtensions, [$config->appDir]);
+    $files = page\find_public_pages($config);
     $changedFiles = 0;
     $changedElements = 0;
     $failed = [];

@@ -42,11 +42,13 @@ function test_config(): Config
         appDir: $dir,
         appDirName: basename($dir),
         webDir: dirname($dir),
-        dataDir: $dir . '/data',
-        backupDir: $dir . '/data/backups',
-        templatePageDir: $dir . '/data/templates/page',
-        templateContentDir: $dir . '/data/templates/content',
-        templateSiteDir: $dir . '/data/templates/site',
+        // next to the application, as in a real installation: keeping it inside the
+        // app directory used to hide bugs where operator data was read as content
+        dataDir: dirname($dir) . '/jaco-data',
+        backupDir: dirname($dir) . '/jaco-data/backups',
+        templatePageDir: dirname($dir) . '/jaco-data/templates/page',
+        templateContentDir: dirname($dir) . '/jaco-data/templates/content',
+        templateSiteDir: dirname($dir) . '/jaco-data/templates/site',
         mediaDir: dirname($dir) . '/media',
         uploadExtensions: ['png', 'gif', 'jpg', 'jpeg', 'svg', 'pdf'],
         mediaUrl: 'media',

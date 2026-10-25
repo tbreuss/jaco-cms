@@ -38,6 +38,42 @@ final class ApiPageListTest extends ApiTestCase
         $this->assertIsInt($item['created']);
     }
 
+    public function testOperatorDataIsNotListedAsAPage(): void
+    {
+        // regression: the page walk excluded only the application, so a template or
+        // a backup below jaco-data appeared as a page
+        @mkdir($this->config->backupDir, 0755, true);
+        $backup = $this->config->backupDir . '/20260101_000000_aaaa_de|index.html';
+        file_put_contents($backup, $this->page('From a backup'));
+
+        try {
+            $body = $this->body($this->api('page/list', method: 'GET'));
+            $files = array_column($body['items'], 'file');
+
+            $this->assertNotContains('jaco-data/backups/20260101_000000_aaaa_de|index.html', $files);
+            $this->assertSame([], array_filter($files, static fn(string $file): bool => str_starts_with($file, 'jaco-data/')));
+        } finally {
+            @unlink($backup);
+        }
+    }
+
+    public function testTheOverviewDoesNotCountOperatorData(): void
+    {
+        @mkdir($this->config->backupDir, 0755, true);
+        $backup = $this->config->backupDir . '/20260101_000000_bbbb_de|index.html';
+        file_put_contents($backup, $this->page('From a backup'));
+
+        try {
+            $listed = count($this->body($this->api('page/list', method: 'GET'))['items']);
+            $counted = $this->body($this->api('system', method: 'GET'))['overview']['pages'];
+
+            // the overview counts what the page list shows: a backup adds no page
+            $this->assertSame($listed, $counted, 'the overview counts the same pages as the list');
+        } finally {
+            @unlink($backup);
+        }
+    }
+
     public function testFilterNarrowsTheList(): void
     {
         $body = $this->body($this->api('page/list', method: 'GET', query: ['filter' => 'api-list-a']));

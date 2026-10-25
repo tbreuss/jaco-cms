@@ -386,6 +386,20 @@ function filter_filename(string $file): string
     return implode(DIRECTORY_SEPARATOR, $absolutes);
 }
 
+/**
+ * True when the path lies below the directory - a proper descendant, not the
+ * directory itself. Used to keep the page walk out of the directories that hold
+ * the application, the operator data and the media files.
+ */
+function is_inside_dir(string $path, string $dir): bool
+{
+    if ($dir === '' || $path === $dir) {
+        return false;
+    }
+
+    return \str_starts_with($path, \rtrim($dir, '/') . '/');
+}
+
 function is_file_in_dir(string $file, string $dir): bool
 {
     $parts = explode(DIRECTORY_SEPARATOR, $file);
