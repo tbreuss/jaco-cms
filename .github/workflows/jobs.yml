@@ -131,11 +131,16 @@ jobs:
                       robots.txt sitemap.xml \
                       assets de \
                       deploy/site/
-                  # Operator data (jaco-data/, media/) stays on the server.
-                  # The installer creates .htaccess and template structure on first run.
-                  # Deploys must never touch operator data.
+                  # Operator data (jaco-data/backups/, jaco-data/runtime/, jaco-data/settings.php,
+                  # jaco-data/.htaccess, media/ uploads) stays on the server.
+                  # But committed templates (jaco-data/templates/) are part of the demo site
+                  # and must be deployed.
                   mkdir -p deploy/site/media
                   rsync -a media/.htaccess deploy/site/media/
+                  mkdir -p deploy/site/jaco-data/templates
+                  rsync -a --delete \
+                      --exclude 'backups/' --exclude 'runtime/' --exclude 'settings.php' --exclude '.htaccess' \
+                      jaco-data/templates/ deploy/site/jaco-data/templates/
 
             - name: Verify staged application
               run: |
@@ -162,8 +167,14 @@ jobs:
                   # crawler entry points
                   test -f deploy/site/robots.txt
                   test -f deploy/site/sitemap.xml
-                  # operator data (jaco-data/, media/) is not staged; installer creates it
-                  test ! -d deploy/site/jaco-data
+                  # committed templates are deployed; operator data (backups/, runtime/,
+                  # settings.php, .htaccess) is NOT deployed
+                  test -d deploy/site/jaco-data/templates
+                  test -f deploy/site/jaco-data/templates/site/footer-en.html
+                  test -f deploy/site/jaco-data/templates/site/nav-en.html
+                  test ! -f deploy/site/jaco-data/settings.php
+                  test ! -d deploy/site/jaco-data/backups
+                  test ! -d deploy/site/jaco-data/runtime
                   test -f deploy/site/media/.htaccess
 
             - name: Deploy application to ${{ vars.SSH_TARGET }}/jaco
