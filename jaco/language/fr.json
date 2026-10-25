@@ -251,5 +251,6 @@
     "Not available in the demo": "Non disponible dans la démo",
     "This page shows details of the server. Open it with a regular account.": "Cette page montre des détails du serveur. Ouvrez-la avec un compte régulier.",
     "Every page that is rewritten is backed up first.": "Chaque page réécrite est sauvegardée au préalable.",
-    "The template is applied as it is stored.": "Le modèle est appliqué tel qu’il est enregistré."
+    "The template is applied as it is stored.": "Le modèle est appliqué tel qu’il est enregistré.",
+    "List templates": "Lister les modèles"
 }

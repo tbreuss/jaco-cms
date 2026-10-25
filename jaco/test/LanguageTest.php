@@ -59,6 +59,12 @@ final class LanguageTest extends TestCase
 
         $this->assertNotSame([], $asked, 'the scan found labels at all');
 
+        // the command palette translates labelKey, not a literal, so the registry
+        // has to be scanned separately - "List templates" went missing that way
+        $asked += $this->labelsFromRegistry($this->root() . '/jaco/frontend/lib/commands.js');
+
+        $this->assertArrayHasKey('List pages', $asked, 'the registry scan found the palette labels');
+
         $missing = array_values(array_diff(array_keys($asked), array_keys($english)));
 
         $this->assertSame(
@@ -108,6 +114,28 @@ final class LanguageTest extends TestCase
         }
 
         return $asked;
+    }
+
+    /**
+     * Labels a data registry hands to t() through a variable: the command palette
+     * carries them as `labelKey: '…'` and names the file that owns them.
+     *
+     * @return array<string, string>
+     */
+    private function labelsFromRegistry(string $file): array
+    {
+        if (!\is_file($file)) {
+            return [];
+        }
+
+        \preg_match_all("/labelKey: '((?:[^'\\\\]|\\\\.)*)'/", (string) \file_get_contents($file), $matches);
+
+        $labels = [];
+        foreach ($matches[1] as $label) {
+            $labels[\stripcslashes($label)] = \substr($file, \strlen($this->root()) + 1);
+        }
+
+        return $labels;
     }
 
     private function root(): string
