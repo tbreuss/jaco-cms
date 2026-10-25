@@ -60,21 +60,33 @@ export const commands = [
   {
     id: 'page.goto',
     labelKey: 'Jump to page',
+    roles: ['editor', 'admin'],
     run: () => m.route.set('/page-goto'),
   },
   {
     id: 'nav.pages',
     labelKey: 'List pages',
+    roles: ['editor', 'admin'],
     run: () => m.route.set('/pages'),
   },
   {
     id: 'nav.uploads',
     labelKey: 'List media',
+    roles: ['editor', 'admin'],
     run: () => m.route.set('/uploads'),
   },
   {
+    id: 'nav.templates',
+    labelKey: 'List templates',
+    roles: ['editor', 'admin'],
+    run: () => m.route.set('/templates'),
+  },
+  {
+    // backups are an admin area: without a role an editor saw the command and
+    // landed on the access-denied page
     id: 'nav.backups',
     labelKey: 'List backups',
+    roles: ['admin'],
     run: () => m.route.set('/backups'),
   },
   {

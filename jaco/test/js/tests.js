@@ -981,15 +981,32 @@ QUnit.test('the theme command cycles the theme', (assert) => {
   }
 })
 
-QUnit.test('a viewer does not see editor commands', (assert) => {
+QUnit.test('an unknown role sees no command that opens a page', (assert) => {
+  // a token without a known role grants nothing, so every navigation command is
+  // gone as well - only the theme switch stays, it opens no page
   window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer'))
   openPalette()
   m.render(fixture(), m(CommandPalette))
 
   const labels = [...fixture().querySelectorAll('.palette-label')].map((label) => label.textContent)
-  assert.notOk(labels.includes(t('Add page')), 'a viewer cannot add pages')
-  assert.ok(labels.includes(t('List pages')), 'reading commands stay available')
-  assert.notOk(visibleCommands().some((cmd) => cmd.id === 'page.add'))
+  assert.notOk(labels.includes(t('Add page')), 'no page can be added')
+  assert.notOk(labels.includes(t('List pages')), 'no page is offered either')
+
+  const ids = visibleCommands().map((cmd) => cmd.id)
+  assert.deepEqual(ids, ['theme.toggle'], 'only the theme switch is left')
+})
+
+QUnit.test('an editor sees the commands the palette gives the editor', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('editor'))
+  openPalette()
+  m.render(fixture(), m(CommandPalette))
+
+  const labels = [...fixture().querySelectorAll('.palette-label')].map((label) => label.textContent)
+  assert.ok(labels.includes(t('Add page')))
+  assert.ok(labels.includes(t('List pages')))
+  assert.ok(labels.includes(t('List templates')))
+  assert.notOk(labels.includes(t('List backups')), 'backups are an admin area')
+  assert.notOk(labels.includes(t('Edit CSS')), 'design is an admin area')
 })
 
 QUnit.test('the palette names the page the page commands act on', (assert) => {
