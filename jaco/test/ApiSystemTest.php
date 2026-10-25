@@ -33,6 +33,39 @@ final class ApiSystemTest extends ApiTestCase
         }
     }
 
+    public function testNoCheckPrintsAnAbsolutePath(): void
+    {
+        // the owner's account name and the layout of the hoster are none of the
+        // admin's business: the system page shows paths relative to the web root
+        $response = $this->api('system', [], 'GET');
+        $checks = json_decode((string) $response->body, true)['checks'];
+
+        $absolute = [];
+        foreach ($checks as $check) {
+            if (\str_contains((string) $check['detail'], $this->config->webDir)) {
+                $absolute[] = $check['label'] . ': ' . $check['detail'];
+            }
+        }
+
+        $this->assertSame([], $absolute, "absolute paths on the system page:\n  " . \implode("\n  ", $absolute));
+    }
+
+    public function testTheDetailsNamePathsRelativeToTheWebRoot(): void
+    {
+        $response = $this->api('system', [], 'GET');
+        $checks = json_decode((string) $response->body, true)['checks'];
+
+        $details = [];
+        foreach ($checks as $check) {
+            $details[$check['label']] = $check['detail'];
+        }
+
+        $this->assertSame('jaco/vendor/autoload.php', $details['Composer dependencies'] ?? null);
+        $this->assertSame('jaco/.htaccess', $details['App protection (.htaccess)'] ?? null);
+        $this->assertSame('jaco-data/.htaccess', $details['Data protection (.htaccess)'] ?? null);
+        $this->assertSame('jaco/install.php', $details['Installer removed'] ?? null);
+    }
+
     public function testRequestWithoutTokenIsForbidden(): void
     {
         $response = $this->api('system', [], 'GET', false);

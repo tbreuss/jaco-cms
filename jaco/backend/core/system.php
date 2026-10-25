@@ -29,6 +29,27 @@ function display_value(mixed $value, Config $config): mixed
 }
 
 /**
+ * The path as the owner knows it: relative to the web root, so the system page
+ * does not print the account name and the directory layout of the hoster.
+ * `jaco/vendor/autoload.php` instead of `/home/<user>/public_html/…/jaco/vendor/autoload.php`.
+ * A path outside the web root stays as it is - there is nothing to cut off.
+ */
+function display_path(string $path, Config $config): string
+{
+    $webDir = rtrim($config->webDir, '/');
+
+    if ($webDir === '' || $path === $webDir) {
+        return $path;
+    }
+
+    if (str_starts_with($path, $webDir . '/')) {
+        return substr($path, strlen($webDir) + 1);
+    }
+
+    return $path;
+}
+
+/**
  * Environment checks for the installer. Every entry reports one
  * requirement, the installer refuses to write settings while any
  * entry fails.
@@ -53,12 +74,18 @@ function install_checks(Config $config): array
     }
 
     $vendor = $config->appDir . '/vendor/autoload.php';
-    $checks[] = ['label' => 'Composer dependencies', 'ok' => is_file($vendor), 'detail' => $vendor];
+    $checks[] = [
+        'label' => 'Composer dependencies',
+        'ok' => is_file($vendor),
+        'detail' => display_path($vendor, $config),
+    ];
 
+    // the settings live in the operator data since they moved out of the
+    // application; the check stays on the directory the installer writes to
     $checks[] = [
         'label' => 'Configuration writable',
-        'ok' => is_writable($config->appDir),
-        'detail' => $config->appDir . '/settings.php',
+        'ok' => is_writable($config->dataDir),
+        'detail' => display_path($config->dataDir . '/settings.php', $config),
     ];
 
     foreach (
@@ -74,7 +101,7 @@ function install_checks(Config $config): array
         while (!is_dir($parent) && dirname($parent) !== $parent) {
             $parent = dirname($parent);
         }
-        $checks[] = ['label' => $label, 'ok' => is_writable($parent), 'detail' => $dir];
+        $checks[] = ['label' => $label, 'ok' => is_writable($parent), 'detail' => display_path($dir, $config)];
     }
 
     return $checks;
@@ -119,10 +146,10 @@ function security_checks(Config $config): array
     foreach ($files as $label => $check) {
         if ($label === 'Log protection (.htaccess)') {
             $ok = $htaccessProtects($check, $config->appDir);
-            $detail = $check . '/.htaccess';
+            $detail = display_path($check . '/.htaccess', $config);
         } else {
             $ok = \is_file($check);
-            $detail = $check;
+            $detail = display_path($check, $config);
         }
         $checks[] = ['label' => $label, 'ok' => $ok, 'detail' => $detail];
     }
@@ -131,7 +158,7 @@ function security_checks(Config $config): array
     $checks[] = [
         'label' => 'Installer removed',
         'ok' => !\is_file($config->appDir . '/install.php'),
-        'detail' => $config->appDir . '/install.php',
+        'detail' => display_path($config->appDir . '/install.php', $config),
     ];
 
     // settings.php must not be writable by the web user
@@ -139,7 +166,7 @@ function security_checks(Config $config): array
     $checks[] = [
         'label' => 'Settings not writable',
         'ok' => !\is_file($settingsFile) || !\is_writable($settingsFile),
-        'detail' => $settingsFile,
+        'detail' => display_path($settingsFile, $config),
     ];
 
     // A short or missing secretKey is replaced by a per-request random
@@ -157,7 +184,7 @@ function security_checks(Config $config): array
     $checks[] = [
         'label' => 'Upload directory writable',
         'ok' => \is_dir($config->mediaDir) && \is_writable($config->mediaDir),
-        'detail' => $config->mediaDir,
+        'detail' => display_path($config->mediaDir, $config),
     ];
 
     // Directory permissions should not be world-writable (0777)
@@ -172,7 +199,7 @@ function security_checks(Config $config): array
         if (\is_dir($dir)) {
             $perms = \fileperms($dir) & 0777;
             if ($perms === 0777) {
-                $tooOpen[] = $dir . ' (' . \decoct($perms) . ')';
+                $tooOpen[] = display_path($dir, $config) . ' (' . \decoct($perms) . ')';
             }
         }
     }
