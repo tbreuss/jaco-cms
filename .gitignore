@@ -13,8 +13,8 @@
 /jaco/test/e2e/test-results
 /jaco/vendor
 /jaco/test/runtime
-/jaco-data/backups
-/jaco-data/runtime
 /inspiration
 /test
-/media
+# uploads stay on the server, the deny file is part of the repository
+/media/*
+!/media/.htaccess
