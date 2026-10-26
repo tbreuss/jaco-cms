@@ -478,18 +478,9 @@ window.addClickHandler = () => {
       return
     }
 
-    const editableImage = event.target.closest('[data-jaco-image]')
-    if (editableImage) {
-
-      editableImage.onload = () => {
-        console.debug('image loaded')
-        window.resize()
-      }
-
-      window.openMediaPicker(editableImage, () => chooseNewImage(editableImage))
-      return
-    }
-
+    // A resizable image carries both names, so the more specific question has to
+    // come first: asking for the plain role would open the media picker and never
+    // reach the tools.
     let editableImageExtended = event.target.closest('[data-jaco-image--resizable]')
     if (editableImageExtended) {
 
@@ -592,6 +583,18 @@ window.addClickHandler = () => {
       const top = rect.top +  window.scrollY - divElement.offsetHeight
       divElement.style.top = (top).toString() + 'px'
       divElement.style.minWidth = (rect.width - 2 * 8).toString() + 'px'
+      return
+    }
+
+    const editableImage = event.target.closest('[data-jaco-image]')
+    if (editableImage) {
+
+      editableImage.onload = () => {
+        console.debug('image loaded')
+        window.resize()
+      }
+
+      window.openMediaPicker(editableImage, () => chooseNewImage(editableImage))
       return
     }
 

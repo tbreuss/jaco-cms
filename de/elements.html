@@ -105,20 +105,32 @@
     <p class="elements-note">Bild und Link werden getrennt bearbeitet: Klick auf das Bild für die Datei, Klick auf den umgebenden Link für sein Ziel. Dieser Link öffnet ein neues Tab – das stellt der Link-Dialog ein.</p>
 
     <h3 data-jaco-line>Galerie</h3>
-    <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image data-jaco-image--lightbox
+    <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image--lightbox
      src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;
 
 &lt;!-- nach dem Speichern: der Server legt media/team-full.jpg an und verlinkt sie --&gt;
 &lt;a href=&quot;media/team-full.jpg&quot;&gt;
-  &lt;img data-jaco-image data-jaco-image data-jaco-image--lightbox
+  &lt;img data-jaco-image data-jaco-image--lightbox
        src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;
 &lt;/a&gt;</code></pre>
     <div class="elements-image">
-      <img class="elements-gallery" data-jaco-image data-jaco-image data-jaco-image--lightbox
+      <img class="elements-gallery" data-jaco-image data-jaco-image--lightbox
            src="media/demo-elements-gallery.svg" alt="Galerie-Vorschaubild" width="320" height="180"
            data-demo-full="media/demo-elements-gallery-full.svg">
     </div>
     <p class="elements-note">Das Vorschaubild ist eine kleine Datei; der Galerie-Marker legt eine zweite in Vollgrösse an und verlinkt das Vorschaubild darauf. Wird das Bild ersetzt, entsteht auch ein neues Vollbild. Ein Galerie-Bild, das in einem eigenen Link auf eine Seite zeigt, behält diesen Link – und bekommt kein neues Vollbild.</p>
+  </div>
+
+  <div class="elements-section">
+    <h2 data-jaco-line>Galerie, Grösse einstellbar</h2>
+    <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image--resizable data-jaco-image--lightbox
+     src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;</code></pre>
+    <div class="elements-image">
+      <img class="elements-gallery" data-jaco-image data-jaco-image--resizable data-jaco-image--lightbox
+           src="media/demo-elements-gallery.svg" alt="Galerie-Vorschaubild mit einstellbarer Grösse" width="320" height="180"
+           data-demo-full="media/demo-elements-gallery-full.svg">
+    </div>
+    <p class="elements-note">Die zwei Eigenschaften sind unabhängig: Die Lightbox schreibt die grosse Datei, resizable fügt die Werkzeuge für Grösse und Alt-Text hinzu. Beide gelten für dasselbe Bild.</p>
   </div>
 
   <div class="elements-section">
@@ -225,6 +237,14 @@
       document.querySelectorAll('.elements-gallery[data-demo-full]').forEach((image) => {
         image.style.cursor = 'zoom-in'
         image.addEventListener('click', (event) => {
+          // Nur in der öffentlichen Ansicht: der Editor lädt seine Skripte in
+          // dieses Dokument und übernimmt den Klick, dort bleibt der Dialog
+          // weg. `initRichTextEditor` definiert nur das Editor-Skript –
+          // damit ist es der Marker für "wird gerade bearbeitet".
+          if (typeof window.initRichTextEditor === 'function') {
+            return
+          }
+
           event.preventDefault()
           event.stopPropagation()
 

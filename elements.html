@@ -105,20 +105,32 @@
     <p class="elements-note">The image and the link are edited separately: click the image for the file, the surrounding link for its target. This link opens in a new tab, which the link dialog sets.</p>
 
     <h3 data-jaco-line>Gallery</h3>
-    <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image data-jaco-image--lightbox
+    <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image--lightbox
      src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;
 
 &lt;!-- after saving: the server writes media/team-full.jpg and links it --&gt;
 &lt;a href=&quot;media/team-full.jpg&quot;&gt;
-  &lt;img data-jaco-image data-jaco-image data-jaco-image--lightbox
+  &lt;img data-jaco-image data-jaco-image--lightbox
        src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;
 &lt;/a&gt;</code></pre>
     <div class="elements-image">
-      <img class="elements-gallery" data-jaco-image data-jaco-image data-jaco-image--lightbox
+      <img class="elements-gallery" data-jaco-image data-jaco-image--lightbox
            src="media/demo-elements-gallery.svg" alt="Gallery thumbnail" width="320" height="180"
            data-demo-full="media/demo-elements-gallery-full.svg">
     </div>
     <p class="elements-note">The thumbnail is a small file; the gallery marker writes a second, full-size one and links the thumbnail to it. Replacing the image replaces both. A gallery image wrapped in a link to a page keeps that link and gets no new full-size file.</p>
+  </div>
+
+  <div class="elements-section">
+    <h2 data-jaco-line>Gallery, size editable</h2>
+    <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image--resizable data-jaco-image--lightbox
+     src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;</code></pre>
+    <div class="elements-image">
+      <img class="elements-gallery" data-jaco-image data-jaco-image--resizable data-jaco-image--lightbox
+           src="media/demo-elements-gallery.svg" alt="Gallery thumbnail with editable size" width="320" height="180"
+           data-demo-full="media/demo-elements-gallery-full.svg">
+    </div>
+    <p class="elements-note">The two properties are independent: the lightbox writes the full file, resizable adds the size and alt-text tools. Both apply to the same image.</p>
   </div>
 
   <div class="elements-section">
@@ -225,6 +237,14 @@
       document.querySelectorAll('.elements-gallery[data-demo-full]').forEach((image) => {
         image.style.cursor = 'zoom-in'
         image.addEventListener('click', (event) => {
+          // Only in the public view: the editor loads its scripts into this
+          // document and owns the click, so the dialog stays out of the way.
+          // `initRichTextEditor` is defined by the editor script and by
+          // nothing else, which makes it the marker for "being edited".
+          if (typeof window.initRichTextEditor === 'function') {
+            return
+          }
+
           event.preventDefault()
           event.stopPropagation()
 
