@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <base href="/">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <title>[EN] Repeating cards</title>
+  <meta name="description" content="What this page is about, in one sentence.">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/theme.js"></script>
+  <script src="assets/nav.js"></script>
+  <!-- scripts belong in the head: the inline editor strips them from the body -->
+</head>
+
+<body>
+  <ul class="navigation" data-jaco-template="nav-en.html">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="features.html">Features</a></li>
+    <li><a href="docs.html">Docs</a></li>
+    <li><a href="download.html">Download</a></li>
+  </ul>
+
+  <div class="page-head">
+    <h1 data-jaco-editable-line>Page title</h1>
+    <div data-jaco-editable>
+      <p>One or two sentences that introduce the page.</p>
+    </div>
+  </div>
+
+  <div class="features features-why" data-jaco-content-list data-jaco-fragment="feature_en.html" data-jaco-title="Add entry" data-jaco-pos="top">
+    <div data-jaco-content-item>
+      <div class="feature">
+        <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20h4L20 8l-4-4L4 16v4Z"/><path d="m14 6 4 4"/></svg></span>
+        <h3 data-jaco-editable-line>Entry title</h3>
+        <div data-jaco-editable>
+          <p>What this entry says in a sentence or two.</p>
+        </div>
+      </div>
+    </div>
+    <div data-jaco-content-item>
+      <div class="feature">
+        <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5M9 13l-2 2 2 2M15 13l2 2-2 2"/></svg></span>
+        <h3 data-jaco-editable-line>Second entry</h3>
+        <div data-jaco-editable>
+          <p>What this entry says in a sentence or two.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer data-jaco-template="footer-en.html">
+    <a href="imprint.html">Imprint</a> · <a href="privacy.html">Privacy</a>
+  </footer>
+</body>
+
+</html>

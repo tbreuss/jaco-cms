@@ -5,7 +5,11 @@
   <base href="/">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Complex page template</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <title>[EN] Text page</title>
+  <meta name="description" content="What this page is about, in one sentence.">
   <link rel="stylesheet" href="assets/site.css">
   <script src="assets/theme.js"></script>
   <script src="assets/nav.js"></script>
@@ -13,7 +17,7 @@
 </head>
 
 <body>
-  <ul class="navigation">
+  <ul class="navigation" data-jaco-template="nav-en.html">
     <li><a href="index.html">Home</a></li>
     <li><a href="features.html">Features</a></li>
     <li><a href="docs.html">Docs</a></li>
@@ -21,21 +25,19 @@
   </ul>
 
   <div class="page-head">
-    <h1 data-jaco-editable-line>New page</h1>
-    <p>One sentence that says what this page is about.</p>
+    <h1 data-jaco-editable-line>Page title</h1>
+    <div data-jaco-editable>
+      <p>One or two sentences that introduce the page.</p>
+    </div>
   </div>
 
   <div data-jaco-editable>
-    <h2>First section</h2>
-    <p>Start writing here.</p>
+    <h2>Content</h2>
+    <p>Replace this text with the content of the page – with headings, lists,
+    quotes, links, images and embeds.</p>
   </div>
 
-  <div data-jaco-editable>
-    <h2>Second section</h2>
-    <p>Another block, reorderable by drag and drop in the inline editor.</p>
-  </div>
-
-  <footer>
+  <footer data-jaco-template="footer-en.html">
     <a href="imprint.html">Imprint</a> · <a href="privacy.html">Privacy</a>
   </footer>
 </body>

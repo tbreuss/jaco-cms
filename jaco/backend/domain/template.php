@@ -18,6 +18,16 @@ final class Template
     ) {}
 }
 
+/**
+ * The language a page template is written in, taken from its file name:
+ * "text-de.html" is German. A file without a two-letter suffix is treated as
+ * unsuffixed, which sorts it with the other languages.
+ */
+function page_template_language(string $file): string
+{
+    return \preg_match('/-([a-z]{2})\.[a-z]+$/', \strtolower($file), $match) === 1 ? $match[1] : '';
+}
+
 function find_page_templates(Config $config): Payload
 {
     if (!filesystem\dir_exists($config->templatePageDir)) {
@@ -30,13 +40,27 @@ function find_page_templates(Config $config): Payload
         withContent: true,
     );
 
-    return Payload::success(
-        array_map(fn(filesystem\File $file): Template => new Template(
-            file: $file->file,
-            title: html\get_title($file->content),
-            created: $file->modified,
-        ), $files),
-    );
+    $items = array_map(fn(filesystem\File $file): Template => new Template(
+        file: $file->file,
+        title: html\get_title($file->content),
+        created: $file->modified,
+    ), $files);
+
+    // The dropdown shows the title, so that is what has to be in order, and the
+    // site language groups it: the default language first, then the others
+    // alphabetically. Sorting by title alone would let a new "[FR]" land between
+    // "[EN]" and "[IT]" instead of next to the language it belongs to.
+    $languageOrder = [$config->defaultLanguage => 0];
+    usort($items, static function (Template $a, Template $b) use ($languageOrder): int {
+        $orderA = $languageOrder[page_template_language($a->file)] ?? 1;
+        $orderB = $languageOrder[page_template_language($b->file)] ?? 1;
+
+        return $orderA === $orderB
+            ? \strnatcasecmp($a->title, $b->title)
+            : $orderA <=> $orderB;
+    });
+
+    return Payload::success($items);
 }
 
 function find_content_templates(Config $config): Payload
