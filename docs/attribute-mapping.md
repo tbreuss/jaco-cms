@@ -6,6 +6,13 @@
 > marker already carries its file name (`data-jaco-template="footer.html"`), in the
 > pages, the site templates, `template_with_marker()` and the tests. Only its
 > whitelist entry is still missing.
+>
+> The work is split in two. **Phase 1** is everything that touches the names:
+> rename, whitelist, validation, pages, templates. It has to land before the
+> release, because afterwards every name change costs a migration. **Phase 2**
+> changes only how the editor works inside - editor state out of the DOM, one
+> contract file - and can follow later without anyone noticing, because neither the
+> names nor the pages change. See [Implementation order](#implementation-order).
 
 The `data-jaco-*` attributes are the contract between a page and the editor. They
 are written by hand into HTML that a customer already owns, so every name here is
@@ -130,6 +137,11 @@ valid on an element that carries that role (see
 
 ### Editor state
 
+**Phase 2.** In phase 1 the editor keeps writing its four runtime attributes under
+their old names. They are never in a page and never in the whitelist, so they
+need no new name; a surviving one is an unknown name and rejected on save. Phase
+2 then moves the state out of the DOM:
+
 The editor keeps its own state **out of the DOM**. It sets no `data-jaco-*`
 attribute while it runs, so the page the editor saves is the page the author wrote,
 and no name exists that an author could copy by mistake.
@@ -141,9 +153,9 @@ and no name exists that an author could copy by mistake.
 | full-size data URL for the lightbox | `data-jaco-gallery-full` | `WeakMap` from the `<img>` to the data URL |
 | the size badge | `data-jaco-editable-image-temp` | a reference to the inserted element |
 
-The base64 image data therefore no longer sits in a DOM attribute. Because no
-runtime name is in the contract, an old one that turns up in a page is an
-**unknown name** like any other and is rejected on save.
+The base64 image data therefore no longer sits in a DOM attribute. No runtime
+name is in the contract, so one that turns up in a page is an **unknown name**
+like any other and is rejected on save.
 
 ## Elements
 
@@ -363,21 +375,34 @@ Errors are reported before saving, not silently dropped.
 
 ## Where the contract lives
 
-1. `jaco/data-attributes.json` – the one list of names (new), read by the whitelist in `backend/core/html.php`, by the frontend and by the tests.
+1. `backend/core/html.php` – the whitelist (`ALLOWED_ATTRIBUTES`), decides what survives a save.
 2. `frontend/` – selectors in `editor.js` and `contentlists.js`, and the attribute list `dataAttrs` in `lib/iframe.js`.
 3. Pages and templates – `*.html` in the root, `de/`, `jaco-data/templates/`.
 4. `docs/` – this file.
 
-A test that reads the names from the contract file and checks them against the
+A test that reads the names from the whitelist and checks them against the
 frontend selectors and the pages would catch a rename that is only half done. The
 repository already has this pattern: `IgnoreRulesTest`, `MenuRoleTest`,
 `PaletteRoleTest`. The page check parses HTML; that is more work than the
 constant-to-constant checks in `IgnoreRulesTest`, and is the reason the contract
 test is its own step.
 
+The whitelist holds thirteen names and none of the runtime attributes:
+
+```php
+'data-jaco-block', 'data-jaco-line', 'data-jaco-link', 'data-jaco-image',
+'data-jaco-repeater', 'data-jaco-repeater-item', 'data-jaco-template',
+'data-jaco-image--resizable', 'data-jaco-image--lightbox',
+'data-jaco-repeater--fragment', 'data-jaco-repeater--label',
+'data-jaco-repeater--add', 'data-jaco-repeater--sortable',
+```
+
+> `data-jaco-template-name` is gone: the name is the value of
+> `data-jaco-template`. Thirteen names, one rule.
+
 ### One source for the names
 
-The names stood in four places that had to agree: the whitelist in `html.php`, the
+**Phase 2.** The names stood in four places that had to agree: the whitelist in `html.php`, the
 selectors in `editor.js` and `contentlists.js`, the copy in `lib/iframe.js`, and the
 pages. The contract file is the one place that lists them; everything else reads
 it or is checked against it. A rename is one edit in the file plus the pages.
@@ -396,24 +421,11 @@ it or is checked against it. A rename is one edit in the file plus the pages.
 }
 ```
 
-The sketch shows the shape, not every entry. The role of a property is the part
+The whitelist is then derived from the file. The sketch shows the shape, not every
+entry. The role of a property is the part
 before the `--`, so the file does not repeat it. How the frontend receives the file
 (a generated constant or a request with the other editor data) is decided when it is
 built; the contract test checks whichever it is.
-
-The whitelist is derived from it and holds thirteen names:
-
-```php
-'data-jaco-block', 'data-jaco-line', 'data-jaco-link', 'data-jaco-image',
-'data-jaco-repeater', 'data-jaco-repeater-item', 'data-jaco-template',
-'data-jaco-image--resizable', 'data-jaco-image--lightbox',
-'data-jaco-repeater--fragment', 'data-jaco-repeater--label',
-'data-jaco-repeater--add', 'data-jaco-repeater--sortable',
-```
-
-> `data-jaco-template-name` is gone: the name is the value of
-> `data-jaco-template`. Thirteen names, one rule. The file holds nothing the editor
-> sets at runtime.
 
 ## Migration
 
@@ -456,18 +468,18 @@ and need a human decision:
 | `data-jaco-pos="any"` | `data-jaco-repeater--add="any"` | mechanical |
 | *(no `pos`)* | *(no attribute)* | none exists in the repository; the new default `top` applies, which is the one deliberate behaviour change |
 | `data-jaco-template="footer-en"` | `data-jaco-template="footer-en.html"` | **done**: extension added in pages, templates and code; the whitelist entry is still open |
-| `data-jaco-editable-image-file` | – | runtime; leaves the DOM, see [Editor state](#editor-state) |
-| `data-jaco-gallery-full` | – | runtime; leaves the DOM, see [Editor state](#editor-state) |
-| `data-jaco-is-editing` | – | runtime; leaves the DOM, see [Editor state](#editor-state) |
-| `data-jaco-editable-image-temp` | – | runtime; leaves the DOM, see [Editor state](#editor-state) |
+| `data-jaco-editable-image-file` | *(unchanged)* | runtime; not in pages. Leaves the DOM in phase 2, see [Editor state](#editor-state) |
+| `data-jaco-gallery-full` | *(unchanged)* | runtime; not in pages. Leaves the DOM in phase 2, see [Editor state](#editor-state) |
+| `data-jaco-is-editing` | *(unchanged)* | runtime; not in pages. Leaves the DOM in phase 2, see [Editor state](#editor-state) |
+| `data-jaco-editable-image-temp` | *(unchanged)* | runtime; not in pages. Leaves the DOM in phase 2, see [Editor state](#editor-state) |
 
 The three **semantic** cases, plus one mechanical change:
 
 1. **`pos="draggable"` → `add="top"` + `sortable`.** The old value meant both
    "button on top" and "blocks sortable". Both must be written out.
-2. **No `pos` → `add="any"`.** The old fallback for a missing or unknown value was
-   `any`; the new default is `top`. Writing `any` keeps the behaviour, and a
-   repeater that wants the new default can drop the attribute afterwards.
+2. **No `pos` → no attribute.** The old fallback for a missing or unknown value was
+   `any`; the new default is `top`. No page in the repository lacks a `pos`, so the
+   case does not occur today; a repeater without one gets `top`.
 3. **Images with both capabilities** (`-extended` + `-gallery`) become three
    attributes. Today zero pages have both, so the case is theoretical — but the
    rewrite script must handle it.
@@ -681,7 +693,7 @@ Each of these has to produce a message on save instead of being ignored.
 | `<div data-jaco-block data-jaco-line>` | two roles on one element |
 | `<section data-jaco-repeater data-jaco-repeater--fragment="nosuch.html">` | fragment file does not exist |
 | `<div><div data-jaco-repeater-item>` inside a repeater | item is not a direct child |
-| `<div data-jaco-transient-active>` | a runtime name from the old code is unknown |
+| `<div data-jaco-is-editing>` | an editor state name that survived into the page is unknown |
 
 ## Block configuration
 
@@ -731,14 +743,17 @@ used.
 ## Implementation order
 
 Nothing below is done. The naming is agreed, the code still uses the old names.
-When the work starts, this is the order; step 1 is written first and is supposed
-to fail until the rest agrees.
+
+### Phase 1: the names
+
+Everything that touches a name or a page, in one change set. Step 1 is written
+first and is supposed to fail until the rest agrees.
 
 | # | Step | Where |
 | --- | --- | --- |
-| 1 | Contract file and contract test: read the thirteen names from the file, compare them with the whitelist, the frontend selectors and every page | `jaco/data-attributes.json`, new test next to `IgnoreRulesTest` |
-| 2 | Whitelist derived from the file, validation rules, template marker fixed | `backend/core/html.php` |
-| 3 | Selectors read the names; editor state leaves the DOM | `frontend/editor.js`, `frontend/contentlists.js`, `frontend/lib/iframe.js` |
+| 1 | Contract test: read the thirteen names from the whitelist, compare them with the frontend selectors and with every page | new test next to `IgnoreRulesTest` |
+| 2 | Whitelist and validation rules, template marker fixed | `backend/core/html.php` |
+| 3 | Selectors | `frontend/editor.js`, `frontend/contentlists.js`, `frontend/lib/iframe.js` |
 | 4 | Pages (the template marker is already done) | 14 files in the root and `de/` |
 | 5 | Templates | 12 files under `jaco-data/templates/` |
 | 6 | Suites | PHPUnit, QUnit, Playwright |
@@ -749,35 +764,37 @@ starts.** With a hard break, the intermediate states are inconsistent by design
 keeps the inconsistency bounded to one step. A step that leaves the test red is a
 step that is not finished.
 
-**Step 1** writes the contract file and checks four places against each other (file, whitelist, frontend, pages), the same way `IgnoreRulesTest`
-guards the ignore rules and `MenuRoleTest` the menu. Without it a rename that
-missed one selector looks green. The page check parses HTML, which is more work
-than the constant-to-constant checks; this is why it is a step of its own.
+**Step 1** checks three places against each other (whitelist, frontend, pages), the
+same way `IgnoreRulesTest` guards the ignore rules and `MenuRoleTest` the menu.
+Without it a rename that missed one selector looks green. The page check parses
+HTML, which is more work than the constant-to-constant checks; this is why it is a
+step of its own.
 
-**Step 2** derives the whitelist from the contract file, so it holds exactly its
-thirteen names, and fixes the template marker from `docs/backlog.md`: `data-jaco-template`
-is missing from the whitelist today and is stripped on every save, which the file
-makes impossible. The pairing rules
-from [What the server validates](#what-the-server-validates) go in the same place:
-a property without its role, an item outside a repeater, a repeater without a
+**Step 2** puts the thirteen names in the whitelist and fixes the template marker
+from `docs/backlog.md`: `data-jaco-template` is missing from the whitelist today and
+is stripped on every save. The pairing rules from
+[What the server validates](#what-the-server-validates) go in the same place: a
+property without its role, an item outside a repeater, a repeater without a
 fragment, an unknown add position, a value on a role that takes none, a missing
-value on a role that requires one, an unknown name.
+value on a role that requires one, an invalid template value, an unknown name. The
+template value is validated by one function that the marker check, the template
+API and apply-to-all share; see
+[Syntax of the value](#syntax-of-the-value).
 
 **Step 3** replaces every selector, and the list of attribute names in
 `frontend/lib/iframe.js` (`dataAttrs`), which is a copy of the contract outside the
-whitelist. The editor also stops writing `data-jaco-is-editing`, `-image-file`,
-`-gallery-full` and `-image-temp` and keeps that state in JavaScript, see
-[Editor state](#editor-state). With a hard break there is no old name to fall
-back to, so a missed selector silently stops working - the contract test from step
-1 is what catches it. One behaviour changes with the split: `makeSortable` in
-`frontend/contentlists.js` runs today only when the position is `draggable`. It has
-to run whenever `data-jaco-repeater--sortable` is present, for every add position,
-otherwise `add="bottom"` with sorting silently stays fixed.
+whitelist. The editor's four runtime attributes keep their names. With a hard
+break there is no old name to fall back to, so a missed selector silently stops
+working - the contract test from step 1 is what catches it. One behaviour changes
+with the split: `makeSortable` in `frontend/contentlists.js` runs today only when
+the position is `draggable`. It has to run whenever `data-jaco-repeater--sortable`
+is present, for every add position, otherwise `add="bottom"` with sorting silently
+stays fixed.
 
-**Step 4** rewrites 14 pages. The add position becomes explicit (`top` was
-implicit `any` before), `pos="draggable"` splits into `add="top"` plus `sortable`,
-image capabilities become two properties, the template marker needs no change: it already
-carries `.html` and has no second attribute.
+**Step 4** rewrites 14 pages. `pos="draggable"` splits into `add="top"` plus
+`sortable`, image capabilities become two properties, and every `pos` becomes
+`add` with its value; all six repeaters carry one, so no behaviour changes. The
+template marker needs no change.
 
 **Step 5** touches 12 templates: six content fragments, two page templates, four
 site templates. They carry the same attributes as the pages.
@@ -785,13 +802,28 @@ site templates. They carry the same attributes as the pages.
 **Step 6** runs everything: PHPUnit (400 tests), QUnit (180), Playwright (35), and
 `./build-dist.sh` plus `./verify-dist-archive.sh`.
 
+### Phase 2: the inside
+
+A separate change after phase 1 is merged. It touches neither a name nor a page, so
+it can wait for a quiet moment, and a half-done phase 2 breaks nothing the author
+sees.
+
+| # | Step | Where |
+| --- | --- | --- |
+| A | Editor state out of the DOM, see [Editor state](#editor-state) | `frontend/editor.js` |
+| B | One contract file for the names, see [One source for the names](#one-source-for-the-names); the way the frontend reads it is still open | `jaco/data-attributes.json`, `backend/core/html.php`, `frontend/` |
+
+Step A also removes the base64 data attribute. After step B the contract test reads
+the file instead of the whitelist constant.
+
 ### Why the contract test comes first
 
 With a hard break, a page that still carries `data-jaco-editable` does not fail
 loudly - the sanitizer strips the attribute and the page quietly stops being
-editable. A test that compares the contract file, the whitelist, the frontend and the pages is the only thing that makes the
-rename verifiable instead of hopeful. Running it after every step is the
-difference between "the rename is done" and "the rename looks done".
+editable. A test that compares the whitelist, the frontend and the pages is the
+only thing that makes the rename verifiable instead of hopeful. Running it after
+every step is the difference between "the rename is done" and "the rename looks
+done".
 
 ## Out of scope
 
@@ -807,6 +839,7 @@ difference between "the rename is done" and "the rename looks done".
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 0.16.0 | 2026-10-26 | The work is split: phase 1 (the names, before the release) and phase 2 (editor state out of the DOM, one contract file). The editor's runtime attributes keep their names in phase 1. |
 | 0.15.0 | 2026-10-26 | Default add position stays `top`; all six repeaters in the pages carry a `pos`, so the migration changes no behaviour. The template value is a path relative to `jaco-data/templates/site/` with a fixed syntax and is validated, not sanitized, so templates can live in subdirectories. The three block properties are agreed. The way the frontend reads the contract file stays open. |
 | 0.14.0 | 2026-10-26 | Editor state leaves the DOM: no transient attributes, so the exception in the grammar, the `transient-*` rules and the base64 data attribute are gone. One contract file (`jaco/data-attributes.json`) lists the names; whitelist, frontend and tests read it. Steps 2 and 6 merge. |
 | 0.13.0 | 2026-10-26 | Properties are separated from their role by a double hyphen: `data-jaco-image--resizable`, `data-jaco-repeater--fragment`. The grammar is no longer ambiguous, the pairing rule is one rule instead of one per role, and the "Consequences" section changes from a trade-off to a statement. Transient attributes keep their names and are the one documented exception; a surviving one is an error. `lib/iframe.js` joins the places that carry the contract. |
@@ -814,13 +847,4 @@ difference between "the rename is done" and "the rename looks done".
 | 0.12.0 | 2026-10-26 | Both file references carry the extension: `data-jaco-template="footer.html"`. The template label without extension stays a display concern in `site_template_name()`. |
 | 0.11.0 | 2026-10-25 | Five details settled: at most one role per element, fragment takes the extension while the template name does not, `sortable` works with every add position, an item must be a direct child, a missing fragment is an error while a missing template is a warning. |
 | 0.10.0 | 2026-10-25 | One rule about roles, not about values: roles may carry a required value (`data-jaco-template="…"`), so `-template-name` is gone. `sortable` no longer implies an add position. Transient attributes follow the same grammar; the `transient-` prefix is a recognisability aid, not a second scheme. Role/property ambiguity documented. Migration mapping and per-step contract gate added. Whitelist is thirteen names. Corrections after review: the template value rule was inverted, a missing `pos` maps to `any` to keep the old behaviour, an unknown template name is a warning, and `makeSortable` has to run for every add position. |
-| 0.9.0 | 2026-10-25 | Four names fixed: `repeater-label` (was `title`), `repeater-add` plus `repeater-sortable` (was `repeater-position` with `draggable` inside), `transient-filename` (was `transient-target`), `transient-badge` (was `transient-temp`). |
-| 0.8.0 | 2026-10-25 | Implementation order written down; step 1 is the contract test. |
-| 0.7.0 | 2026-10-25 | Decisions recorded: hard break, default `top`, no `style` support, block settings only as closed vocabularies. |
-| 0.6.0 | 2026-10-25 | `list` becomes `repeater`: the name no longer reads like `<ul>`/`<ol>`. |
-| 0.5.0 | 2026-10-25 | One rule: marker plus keys, no value grammar. Image capabilities become boolean keys. Every marker gets a plain name; the template name becomes a key as well. |
-| 0.4.0 | 2026-10-25 | Markers instead of a role value: `data-jaco-content-block`, `data-jaco-repeater`, `data-jaco-repeater-item`. Keys stay domain-prefixed. |
-| 0.3.1 | 2026-10-25 | Appendix with every valid form and the rejected ones. |
-| 0.3.0 | 2026-10-25 | List position becomes a flag in the value; three attributes instead of four. `key=value` reserved but disabled. |
-| 0.2.0 | 2026-10-25 | One marker attribute with a type token, type-prefixed keys, `list-item` instead of `item`. |
-| 0.1.0 | 2026-10-25 | Draft. Corrected against the code: the first revision described a migration that had not happened, mixed `transient` and `runtime`, and used two separators in one grammar. |
+| 0.1.0 - 0.9.0 | 2026-10-25 | Draft and the early naming rounds; see the git history of this file. |
