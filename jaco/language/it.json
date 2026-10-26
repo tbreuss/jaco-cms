@@ -76,7 +76,7 @@
     "Template was successfully saved.": "Il modello è stato salvato.",
     "Template applied to {files} pages ({elements} elements).": "Modello applicato a {files} pagine ({elements} elementi).",
     "Some pages could not be updated: {files}": "Alcune pagine non sono state aggiornate: {files}",
-    "The marker must match the template name: data-jaco-template=\"{name}\".": "Il marcatore deve corrispondere al nome del modello: data-jaco-template=\"{name}\".",
+    "The marker must match the template file: data-jaco-template=\"{file}\".": "Il marcatore deve corrispondere al file del modello: data-jaco-template=\"{file}\".",
     "Page title": "Titolo pagina",
     "Page was successfully added.": "La pagina è stata aggiunta con successo.",
     "Page was successfully copied.": "La pagina è stata copiata con successo.",

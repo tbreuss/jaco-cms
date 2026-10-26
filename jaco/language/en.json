@@ -70,7 +70,7 @@
     "Project size": "Project size",
     "Page template": "Page template",
     "Page title": "Page title",
-    "The marker must match the template name: data-jaco-template=\"{name}\".": "The marker must match the template name: data-jaco-template=\"{name}\".",
+    "The marker must match the template file: data-jaco-template=\"{file}\".": "The marker must match the template file: data-jaco-template=\"{file}\".",
     "Some pages could not be updated: {files}": "Some pages could not be updated: {files}",
     "Template applied to {files} pages ({elements} elements).": "Template applied to {files} pages ({elements} elements).",
     "Template was successfully saved.": "Template was successfully saved.",

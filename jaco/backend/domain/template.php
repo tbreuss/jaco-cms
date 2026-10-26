@@ -154,19 +154,19 @@ function find_site_template(Config $config, string $file): Payload
 /**
  * @return array{files: list<array{file: string, elements: int}>, elements: int}
  */
-function preview_site_template(Config $config, string $name): array
+function preview_site_template(Config $config, string $file): array
 {
     $files = page\find_public_pages($config);
     $matches = [];
     $elements = 0;
-    foreach ($files as $file) {
-        $html = filesystem\read_file($config->webDir, $file->file);
+    foreach ($files as $page) {
+        $html = filesystem\read_file($config->webDir, $page->file);
         if ($html === null) {
             continue;
         }
-        $count = html\count_template_elements($html, $name);
+        $count = html\count_template_elements($html, $file);
         if ($count > 0) {
-            $matches[] = ['file' => $file->file, 'elements' => $count];
+            $matches[] = ['file' => $page->file, 'elements' => $count];
             $elements += $count;
         }
     }
@@ -184,14 +184,14 @@ function preview_site_template(Config $config, string $name): array
  *
  * @return array{files: int, elements: int, failed: list<string>}
  */
-function apply_site_template(Config $config, string $name): array
+function apply_site_template(Config $config, string $file): array
 {
-    $template = find_site_template($config, $name . '.html');
+    $template = find_site_template($config, $file);
     if (!$template->isSuccess) {
         return ['files' => 0, 'elements' => 0, 'failed' => []];
     }
 
-    $withMarker = html\template_with_marker($template->data['content'], $name);
+    $withMarker = html\template_with_marker($template->data['content'], $file);
     if ($withMarker === null) {
         return ['files' => 0, 'elements' => 0, 'failed' => []];
     }
@@ -201,24 +201,24 @@ function apply_site_template(Config $config, string $name): array
     $changedElements = 0;
     $failed = [];
 
-    foreach ($files as $file) {
-        $html = filesystem\read_file($config->webDir, $file->file);
+    foreach ($files as $page) {
+        $html = filesystem\read_file($config->webDir, $page->file);
         if ($html === null) {
-            $failed[] = $file->file;
+            $failed[] = $page->file;
             continue;
         }
-        [$updated, $count] = html\replace_template_elements($html, $name, $withMarker);
+        [$updated, $count] = html\replace_template_elements($html, $file, $withMarker);
         if ($count === 0) {
             continue;
         }
         // backup first: without it the rewrite of every marked element in every
         // page would be the only change in Jaco that cannot be undone
-        if (!filesystem\backup_file($config->webDir, $file->file, $config->backupDir)) {
-            $failed[] = $file->file;
+        if (!filesystem\backup_file($config->webDir, $page->file, $config->backupDir)) {
+            $failed[] = $page->file;
             continue;
         }
-        if (!filesystem\write_file_atomic($config, $config->webDir, $file->file, $updated)) {
-            $failed[] = $file->file;
+        if (!filesystem\write_file_atomic($config, $config->webDir, $page->file, $updated)) {
+            $failed[] = $page->file;
             continue;
         }
         $changedFiles++;
@@ -238,7 +238,7 @@ function update_site_template(Config $config, string $file, string $content): Pa
     if ($file === null) {
         return Payload::invalid($errors);
     }
-    if (html\template_with_marker($content, site_template_name($file)) === null) {
+    if (html\template_with_marker($content, $file) === null) {
         return Payload::invalid([['content', 'Template must contain exactly one root element.']]);
     }
 
@@ -275,7 +275,7 @@ function apply_site_template_to_all(Config $config, string $file): Payload
         return Payload::error([['file', 'Could not read template.']]);
     }
 
-    $applied = apply_site_template($config, site_template_name($file));
+    $applied = apply_site_template($config, $file);
 
     return Payload::success([
         'file' => $file,

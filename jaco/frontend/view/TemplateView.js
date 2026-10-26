@@ -312,18 +312,11 @@ export const TemplateView = {
                 wrap: 'div.row',
                 label: t('Template'),
                 value: state.file,
-                options: SiteTemplateModel.list.map((item) => ({value: item.file, label: item.name})),
+                options: SiteTemplateModel.list.map((item) => ({value: item.file, label: item.file})),
                 onchange: selectFile,
               }),
-              m(InputText, {
-                id: 'templateName',
-                wrap: 'div.row',
-                label: t('Name'),
-                value: SiteTemplateModel.item.name ?? '',
-                disabled: true,
-              }),
-              m('p', t('The marker must match the template name: data-jaco-template="{name}".', {
-                name: SiteTemplateModel.item.name ?? '',
+              m('p', t('The marker must match the template file: data-jaco-template="{file}".', {
+                file: SiteTemplateModel.item.file ?? '',
               })),
               m('.row',
                 m('label', {style: {width: '100%'}}, t('HTML')),

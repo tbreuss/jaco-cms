@@ -70,7 +70,7 @@
     "Project size": "Projektgrösse",
     "Page template": "Seitenvorlage",
     "Page title": "Seitentitel",
-    "The marker must match the template name: data-jaco-template=\"{name}\".": "Der Marker muss dem Template-Namen entsprechen: data-jaco-template=\"{name}\".",
+    "The marker must match the template file: data-jaco-template=\"{file}\".": "Der Marker muss der Template-Datei entsprechen: data-jaco-template=\"{file}\".",
     "Some pages could not be updated: {files}": "Einige Seiten konnten nicht aktualisiert werden: {files}",
     "Template applied to {files} pages ({elements} elements).": "Vorlage auf {files} Seiten ({elements} Elemente) angewendet.",
     "Template was successfully saved.": "Vorlage wurde gespeichert.",

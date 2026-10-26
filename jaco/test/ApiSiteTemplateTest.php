@@ -19,7 +19,7 @@ final class ApiSiteTemplateTest extends ApiTestCase
         $this->watchDir($this->config->templateSiteDir);
 
         @mkdir($this->config->templateSiteDir, 0755, true);
-        file_put_contents($this->config->webDir . '/' . self::PAGE, '<html><body><footer data-jaco-template="footer">old</footer></body></html>');
+        file_put_contents($this->config->webDir . '/' . self::PAGE, '<html><body><footer data-jaco-template="footer.html">old</footer></body></html>');
         file_put_contents($this->config->webDir . '/' . self::OTHER, '<html><body><p>other</p></body></html>');
     }
 
@@ -54,7 +54,7 @@ final class ApiSiteTemplateTest extends ApiTestCase
         $this->assertSame(1, $body['appliedElements']);
 
         $content = (string) file_get_contents($this->config->webDir . '/' . self::PAGE);
-        $this->assertStringContainsString('<footer data-jaco-template="footer"><a href="de/impressum.html">Impressum</a></footer>', $content);
+        $this->assertStringContainsString('<footer data-jaco-template="footer.html"><a href="de/impressum.html">Impressum</a></footer>', $content);
         $this->assertStringNotContainsString('>old<', $content);
 
         // applying rewrites the structure of every page: each one is backed up first
@@ -75,7 +75,7 @@ final class ApiSiteTemplateTest extends ApiTestCase
         $this->assertCount(1, $backups);
         $backup = (string) file_get_contents($this->config->backupDir . '/' . $backups[0]);
 
-        $this->assertStringContainsString('<footer data-jaco-template="footer">old</footer>', $backup);
+        $this->assertStringContainsString('<footer data-jaco-template="footer.html">old</footer>', $backup);
         $this->assertStringNotContainsString('>new<', $backup);
     }
 
@@ -101,8 +101,8 @@ final class ApiSiteTemplateTest extends ApiTestCase
     {
         $enPage = 'site-template-lang-en.html';
         $dePage = 'site-template-lang-de.html';
-        file_put_contents($this->config->webDir . '/' . $enPage, '<html><body><footer data-jaco-template="footer-en">old en</footer></body></html>');
-        file_put_contents($this->config->webDir . '/' . $dePage, '<html><body><footer data-jaco-template="footer-de">old de</footer></body></html>');
+        file_put_contents($this->config->webDir . '/' . $enPage, '<html><body><footer data-jaco-template="footer-en.html">old en</footer></body></html>');
+        file_put_contents($this->config->webDir . '/' . $dePage, '<html><body><footer data-jaco-template="footer-de.html">old de</footer></body></html>');
 
         $en = $this->api('template/site/update', [
             'fileName' => 'footer-en.html',
@@ -120,8 +120,8 @@ final class ApiSiteTemplateTest extends ApiTestCase
         $this->assertSame(Status::OK, $de->status);
         $this->assertSame(Status::OK, $applyEn->status);
         $this->assertSame(Status::OK, $applyDe->status);
-        $this->assertStringContainsString('<footer data-jaco-template="footer-en">English footer</footer>', (string) file_get_contents($this->config->webDir . '/' . $enPage));
-        $this->assertStringContainsString('<footer data-jaco-template="footer-de">Deutscher Footer</footer>', (string) file_get_contents($this->config->webDir . '/' . $dePage));
+        $this->assertStringContainsString('<footer data-jaco-template="footer-en.html">English footer</footer>', (string) file_get_contents($this->config->webDir . '/' . $enPage));
+        $this->assertStringContainsString('<footer data-jaco-template="footer-de.html">Deutscher Footer</footer>', (string) file_get_contents($this->config->webDir . '/' . $dePage));
         $this->assertStringNotContainsString('Deutscher Footer', (string) file_get_contents($this->config->webDir . '/' . $enPage));
         $this->assertStringNotContainsString('English footer', (string) file_get_contents($this->config->webDir . '/' . $dePage));
     }
@@ -133,8 +133,8 @@ final class ApiSiteTemplateTest extends ApiTestCase
         @mkdir($this->config->backupDir, 0755, true);
         $ownTemplate = $this->config->templateSiteDir . '/footer.html';
         $backup = $this->config->backupDir . '/20260101_000000_aaaa_de|index.html';
-        file_put_contents($ownTemplate, '<footer data-jaco-template="footer">old</footer>');
-        file_put_contents($backup, '<html><body><footer data-jaco-template="footer">backup</footer></body></html>');
+        file_put_contents($ownTemplate, '<footer data-jaco-template="footer.html">old</footer>');
+        file_put_contents($backup, '<html><body><footer data-jaco-template="footer.html">backup</footer></body></html>');
 
         $found = array_map(
             static fn($file) => $file->file,

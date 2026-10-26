@@ -105,8 +105,12 @@ function set_title(string $html, string $title): string
 /**
  * A site template is one root element. The marker is added to that root so a
  * later "apply to all" can find the element again.
+ *
+ * $file is the template file name with its extension ("footer.html"), the same
+ * string the admin lists and the preview endpoint takes. The HTML references a
+ * file, so the marker carries the extension as well.
  */
-function template_with_marker(string $template, string $name): ?string
+function template_with_marker(string $template, string $file): ?string
 {
     $trimmed = \trim($template);
     if ($trimmed === '' || \preg_match('/\A<([a-zA-Z][a-zA-Z0-9:-]*)([^>]*)>/s', $trimmed, $match) !== 1) {
@@ -155,15 +159,15 @@ function template_with_marker(string $template, string $name): ?string
         $attributes = \preg_replace('#/\s*$#', '', $attributes) ?? $attributes;
     }
     $attributes = \rtrim($attributes);
-    $marker = ' data-jaco-template="' . \htmlspecialchars($name, ENT_QUOTES) . '"';
+    $marker = ' data-jaco-template="' . \htmlspecialchars($file, ENT_QUOTES) . '"';
     $opening = '<' . $match[1] . $attributes . $marker . ($selfClosing ? ' /' : '') . '>';
 
     return $opening . \substr($trimmed, \strlen($match[0]));
 }
 
-function count_template_elements(string $html, string $name): int
+function count_template_elements(string $html, string $file): int
 {
-    $pattern = '#<[a-zA-Z][a-zA-Z0-9:-]*\b[^>]*\bdata-jaco-template\s*=\s*(["\'])' . \preg_quote($name, '#') . '\1[^>]*>#i';
+    $pattern = '#<[a-zA-Z][a-zA-Z0-9:-]*\b[^>]*\bdata-jaco-template\s*=\s*(["\'])' . \preg_quote($file, '#') . '\1[^>]*>#i';
 
     return \preg_match_all($pattern, $html) ?: 0;
 }
@@ -174,9 +178,9 @@ function count_template_elements(string $html, string $name): int
  *
  * @return array{0: string, 1: int}
  */
-function replace_template_elements(string $html, string $name, string $template): array
+function replace_template_elements(string $html, string $file, string $template): array
 {
-    $pattern = '#<([a-zA-Z][a-zA-Z0-9:-]*)\b[^>]*\bdata-jaco-template\s*=\s*(["\'])' . \preg_quote($name, '#') . '\2[^>]*>#i';
+    $pattern = '#<([a-zA-Z][a-zA-Z0-9:-]*)\b[^>]*\bdata-jaco-template\s*=\s*(["\'])' . \preg_quote($file, '#') . '\2[^>]*>#i';
     \preg_match_all($pattern, $html, $matches, PREG_OFFSET_CAPTURE);
 
     $result = $html;

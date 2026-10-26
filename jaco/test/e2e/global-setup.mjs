@@ -21,8 +21,8 @@ export default async function globalSetup() {
   mkdirSync(dirname(backupFile), {recursive: true})
   writeFileSync(uploadFile, png)
   mkdirSync(dirname(siteTemplateFile), {recursive: true})
-  writeFileSync(siteTemplateFile, '<footer data-jaco-template="e2e-footer">E2E footer</footer>')
-  writeFileSync(siteTemplatePage, '<!DOCTYPE html><html><body><footer data-jaco-template="e2e-footer">Before</footer></body></html>')
+  writeFileSync(siteTemplateFile, '<footer data-jaco-template="e2e-footer.html">E2E footer</footer>')
+  writeFileSync(siteTemplatePage, '<!DOCTYPE html><html><body><footer data-jaco-template="e2e-footer.html">Before</footer></body></html>')
   copyFileSync(join(root, 'index.html'), backupFile)
   rmSync(loginHistoryFile, {force: true})
 

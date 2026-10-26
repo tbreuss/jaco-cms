@@ -10,11 +10,10 @@ use jaco\domain\Payload;
 use function jaco\core\http\json_response;
 use function jaco\core\responder\api_errors;
 use function jaco\domain\template\preview_site_template;
-use function jaco\domain\template\site_template_name;
 
 function action(Config $config, Request $request): Response
 {
-    return responder(preview_site_template($config, site_template_name($request->post->strVal('fileName'))));
+    return responder(preview_site_template($config, $request->post->strVal('fileName')));
 }
 
 function responder(Payload|array $payload): Response

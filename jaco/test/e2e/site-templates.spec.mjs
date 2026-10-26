@@ -11,7 +11,9 @@ test('admin can open the site template editor', async ({page}) => {
   await expect(page.locator('h1')).toHaveText('Site templates')
   await page.locator('#templateFile').selectOption('e2e-footer.html')
   await expect(page.locator('#templateFile')).toHaveValue('e2e-footer.html')
-  await expect(page.locator('#templateName')).toHaveValue('e2e-footer')
+  // the dropdown shows the file name, extension included: the marker in a page
+  // has to match it exactly
+  await expect(page.locator('#templateFile option:checked')).toHaveText('e2e-footer.html')
   await expect(page.locator('#ace')).toBeVisible()
   await expect(page.getByRole('button', {name: 'Preview & apply', exact: true})).toBeEnabled()
 })
@@ -27,7 +29,7 @@ test('admin can preview and apply a site template', async ({page}) => {
   await page.goto('/jaco/#!/templates')
   await expect(page.locator('#ace')).toBeVisible()
   await page.locator('#templateFile').selectOption('e2e-footer.html')
-  await expect(page.locator('#templateName')).toHaveValue('e2e-footer')
+  await expect(page.locator('#templateFile')).toHaveValue('e2e-footer.html')
   await expect(page.locator('#ace')).toContainText('E2E footer')
   await page.evaluate(() => {
     ace.edit('ace').setValue('<footer>After apply</footer>')
@@ -51,7 +53,7 @@ test('admin can preview and apply a site template', async ({page}) => {
   const response = await page.request.get('/e2e-template-page.html')
   expect(response.ok()).toBeTruthy()
   const html = await response.text()
-  expect(html).toContain('<footer data-jaco-template="e2e-footer">After apply</footer>')
+  expect(html).toContain('<footer data-jaco-template="e2e-footer.html">After apply</footer>')
 })
 
 test('the apply dialog does not claim there is no backup', async ({page}) => {
