@@ -20,10 +20,10 @@ test('inline editor exposes page settings without opening the raw HTML view', as
 
   await page.getByRole('button', {name: 'Page settings'}).click()
   await expect(page.locator('.modal h2')).toHaveText('Page settings')
-  await expect(page.locator('#pageSettingsTitle')).toHaveValue('Editable content elements – Jaco CMS')
+  await expect(page.locator('#pageSettingsTitle')).toHaveValue('Elements reference – Jaco CMS')
   await expect(page.locator('#pageSettingsDescription')).toBeEditable()
   await expect(page.locator('#pageSettingsRobots')).toBeEnabled()
-  await expect(page.locator('#pageSettingsRobots')).toHaveValue('noindex, nofollow, noarchive')
+  await expect(page.locator('#pageSettingsRobots')).toHaveValue('')
   await page.getByRole('button', {name: 'Cancel'}).last().click()
   await expect(page.locator('.modal')).toHaveCount(0)
 })

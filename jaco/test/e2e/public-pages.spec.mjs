@@ -15,7 +15,7 @@ const pages = [
   {path: '/de/download.html', title: 'Download', h1: 'Jaco CMS herunterladen'},
   {path: '/de/privacy.html', title: 'Datenschutz', h1: 'Datenschutzerklärung'},
   {path: '/de/imprint.html', title: 'Impressum', h1: 'Impressum'},
-  {path: '/elements.html', title: 'Editable content elements', h1: 'Editable content elements'},
+  {path: '/elements.html', title: 'Elements reference', h1: 'Editable content elements'},
 ]
 
 for (const pageInfo of pages) {

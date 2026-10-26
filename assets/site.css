@@ -484,7 +484,7 @@ th {
     margin: 0.75rem;
 }
 
-.elements-video {
+iframe.elements-video {
     display: block;
     width: 100%;
     max-width: 560px;
