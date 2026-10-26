@@ -68,6 +68,27 @@ final class DataAttributeContractTest extends TestCase
         );
     }
 
+    public function testTheGuidesWriteTemplateValuesWithTheirExtension(): void
+    {
+        // The name check cannot see a value. `data-jaco-template="footer-en"` used the
+        // right attribute with the wrong value - the marker carries the file name, and
+        // a missing extension is only visible in the value.
+        $root = \dirname(__DIR__, 2);
+        $offenders = [];
+
+        foreach ($this->guideFiles() as $relative) {
+            $text = (string) \file_get_contents($root . '/' . $relative);
+            \preg_match_all('/data-jaco-template="([^"]*)"/', $text, $matches);
+            foreach ($matches[1] as $value) {
+                if (!\str_ends_with($value, '.html')) {
+                    $offenders[] = $relative . ': data-jaco-template="' . $value . '"';
+                }
+            }
+        }
+
+        $this->assertSame([], $offenders, 'a template value without .html');
+    }
+
     public function testTheGuidesUseOnlyNamesFromTheWhitelist(): void
     {
         // Guides tell a reader what to write today. The design document and the
@@ -218,17 +239,8 @@ final class DataAttributeContractTest extends TestCase
     private function namesInGuides(): array
     {
         $root = \dirname(__DIR__, 2);
-        $guides = [
-            'README.md',
-            'docs/install.md',
-            'docs/glossary.md',
-            'docs/constraints.md',
-            'docs/features.md',
-            'docs/menu-structure.md',
-        ];
-
         $names = [];
-        foreach ($guides as $relative) {
+        foreach ($this->guideFiles() as $relative) {
             $path = $root . '/' . $relative;
             if (!\is_file($path)) {
                 continue;
@@ -238,6 +250,19 @@ final class DataAttributeContractTest extends TestCase
         }
 
         return $this->sorted($names);
+    }
+
+    /** @return list<string> */
+    private function guideFiles(): array
+    {
+        return [
+            'README.md',
+            'docs/install.md',
+            'docs/glossary.md',
+            'docs/constraints.md',
+            'docs/features.md',
+            'docs/menu-structure.md',
+        ];
     }
 
     /** @return list<string> */
