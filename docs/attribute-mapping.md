@@ -200,8 +200,15 @@ A lightbox image after saving:
 </a>
 ```
 
-An existing `<a>` around the image wins: no `-full.ext` is written and nothing is
-wrapped.
+The marker keeps the link it wrote itself. On a second save the thumbnail sits in
+that link, so the full version is replaced in place - same file name, same pair. The
+old guard stopped at any parent link and silently kept the first full image; that is
+fixed in `a80874a`.
+
+A link to **somewhere else** still wins: the thumbnail stays inside it, no
+`-full.ext` is written, and the old full image is left alone. That case is open in
+`docs/backlog.md` - decide whether the link should be rewritten or whether the
+editor should say that no full version is produced.
 
 ## Repeater
 
@@ -338,6 +345,39 @@ Counted in the pages: 75 plain images, 31 resizable, 2 lightbox, 0 with both. Th
 common case gets nine characters shorter; the expensive cases are rare. The
 "image, both" row is the only one that grows by more than a few characters
 (44 → 68); it occurs on zero pages today, so the cost is theoretical.
+
+### The whole repository
+
+Caveat first: `grep data-jaco-editable` also matches `data-jaco-editable-line`,
+`-image` and the rest. The rows below are not summed from such a search but counted
+per name, with the longer names excluded.
+
+| Today | Count | Old | New | Δ |
+| --- | --- | --- | --- | --- |
+| `data-jaco-editable` | 270 | 18 | 15 | −810 |
+| `data-jaco-editable-line` | 115 | 23 | 14 | −1.035 |
+| `data-jaco-editable-link` | 18 | 23 | 14 | −162 |
+| `data-jaco-editable-image` | 24 | 24 | 15 | −216 |
+| `data-jaco-editable-image-extended` | 4 | 33 | `data-jaco-image` (15) + `--resizable` (26) | −72 |
+| `data-jaco-editable-image-gallery` | 6 | 32 | `data-jaco-image` (15) + `--lightbox` (25) | −102 |
+| `data-jaco-content-list` | 20 | 22 | 18 | −80 |
+| `data-jaco-content-item` | 30 | 22 | 23 | +30 |
+| `data-jaco-fragment` | 20 | 18 | 28 | +200 |
+| `data-jaco-title` | 20 | 15 | 25 | +200 |
+| `data-jaco-pos` | 20 | 13 | 23 | +200 |
+| `pos="draggable"` | 4 | 25 | 28 | +12 |
+| **total** | | **11.193** | **9.358** | **−1.835** |
+
+**The rename is 1.835 characters shorter, not longer.** The rows that grow
+(`repeater--fragment`, `--label`, `--add`) are 60 occurrences against 447 for the
+four short role names, and the role names save 6 to 9 characters each.
+
+`data-jaco-template` is not in the sum: it is already `footer.html` and keeps 32
+characters, on 54 occurrences.
+
+The count is the state of this repository - 14 pages, 12 templates and the two
+elements pages. It says nothing about a customer's page, which has fewer images and
+fewer repeaters than the demo.
 
 A repeater with fragment and label, using the default add position:
 
@@ -827,14 +867,17 @@ Allowing it would mean a CSS sanitizer of its own - `expression()`, `url()`,
 rename. **Decided: no `style` support.** Free values are not offered for blocks;
 images keep using the `width` and `height` attributes they already have.
 
-**Decided: the three block properties are agreed** as shown in the table:
-`data-jaco-block--align`, `--tone` and `--size`, each with the closed set of values
-listed there. They are not among the thirteen names yet; they join the contract
-file when the editor offers them, and no earlier. Further block settings follow
-the same shape: a property on the role with a closed set of values. The fact that a role can carry
-a value (`data-jaco-template="footer.html"`) does not open the door to free values: the
-value rule is per name, and a new name is added to the closed list before it is
-used.
+**Status: agreed in shape, not in the contract.** The three names above are examples
+of what a block property would look like; none of them exists today, and none of them
+is in the thirteen. They join the whitelist together with the editor feature that
+offers them, not before - a name in the contract that nothing can set is a promise the
+editor would break.
+
+What is decided is the **shape**, and it holds for any later property: a property on
+the role, a value from a closed set, never a free value. Whether the three are the
+right ones is a product question, not a naming question. The fact that a role can
+carry a value (`data-jaco-template="footer.html"`) does not open the door to free
+values: the value rule is per name.
 
 ## Implementation order
 
@@ -947,6 +990,7 @@ done".
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 0.22.0 | 2026-10-26 | The length section gets the total: the rename is 1.835 characters shorter over 11.193, not longer. The lightbox rule states what happens on the second save, and the block properties are candidates in shape, not names in the contract. |
 | 0.21.0 | 2026-10-26 | The rewrite script is checked in for the duration, with what it does and what it cannot do. An unread one-off leaves no trace of a change that touches 34 files. |
 | 0.20.0 | 2026-10-26 | The contract test cannot be green after every step: with a hard break it names the names that still disagree, and that list is the work list. Green at the end of step 6, with the suites and the dist checks. |
 | 0.19.0 | 2026-10-26 | The template value may contain directories, but three functions still refuse it: the contract now names them and phase 1 changes all three together. A duplicated paragraph about `site_template_name()` is gone. |
