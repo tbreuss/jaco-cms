@@ -185,11 +185,11 @@ export const iframe = {
     // the inline editor owns the content of the page, not the document around it
     let bodyHtml = contentWindow.document.body.innerHTML
 
-    // use empty data attributes only (and remove the empty string part)
-    const dataAttrs = ['data-jaco-editable-image', 'data-jaco-editable-image-gallery', 'data-jaco-editable-line', 'data-jaco-editable', 'data-jaco-content-list', 'data-jaco-content-item']
-    dataAttrs.forEach((attr) => {
-      bodyHtml = bodyHtml.replaceAll(attr + '=""', attr)
-    })
+    // The browser writes every empty attribute as x="". A data-jaco marker is an
+    // empty attribute on purpose, so its ="" goes; every other attribute keeps its
+    // value, empty or not. One rule instead of a list of names that the contract
+    // would have to be copied into.
+    bodyHtml = bodyHtml.replace(/\s(data-jaco-[a-z-]+)=""/g, ' $1')
 
     return bodyHtml
   },

@@ -1988,8 +1988,8 @@ QUnit.module('content lists', {
 })
 
 const contentListHtml = (pos = 'top') =>
-  `<div data-jaco-content-list data-jaco-fragment="news.html" data-jaco-title="Add news" data-jaco-pos="${pos}">` +
-  '<div data-jaco-content-item><h2>Existing</h2></div>' +
+  `<div data-jaco-repeater data-jaco-repeater--fragment="news.html" data-jaco-repeater--label="Add news" data-jaco-repeater--add="${pos}">` +
+  '<div data-jaco-repeater-item><h2>Existing</h2></div>' +
   '</div>'
 
 const stubFetcher = (html = '<p>Fresh</p>') => () => Promise.resolve(html)
@@ -1999,7 +1999,7 @@ QUnit.test('posOf reads top, bottom and defaults anything else to any', (assert)
   const list = (pos) => {
     const el = document.createElement('div')
     if (pos !== null) {
-      el.setAttribute('data-jaco-pos', pos)
+      el.setAttribute('data-jaco-repeater--add', pos)
     }
     return el
   }
@@ -2013,7 +2013,7 @@ QUnit.test('posOf reads top, bottom and defaults anything else to any', (assert)
 QUnit.test('top inserts fetched fragments at the beginning', (assert) => {
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))
-  const list = fixture().querySelector('[data-jaco-content-list]')
+  const list = fixture().querySelector('[data-jaco-repeater]')
 
   window.JacoContentLists.initContentLists(fixture(), stubFetcher())
 
@@ -2027,7 +2027,7 @@ QUnit.test('top inserts fetched fragments at the beginning', (assert) => {
 
   button.click()
   setTimeout(() => {
-    const items = [...list.querySelectorAll(':scope > [data-jaco-content-item]')]
+    const items = [...list.querySelectorAll(':scope > [data-jaco-repeater-item]')]
     assert.strictEqual(items.length, 2, 'a block was added')
     assert.ok(items[0].textContent.includes('Fresh'), 'the new block is first')
     assert.ok(items[0].querySelector('.jaco-content-item-bar'), 'the new block has a delete overlay')
@@ -2038,7 +2038,7 @@ QUnit.test('top inserts fetched fragments at the beginning', (assert) => {
 QUnit.test('bottom appends fetched fragments at the end', (assert) => {
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('bottom')))
-  const list = fixture().querySelector('[data-jaco-content-list]')
+  const list = fixture().querySelector('[data-jaco-repeater]')
 
   window.JacoContentLists.initContentLists(fixture(), stubFetcher())
 
@@ -2047,7 +2047,7 @@ QUnit.test('bottom appends fetched fragments at the end', (assert) => {
 
   button.click()
   setTimeout(() => {
-    const items = [...list.querySelectorAll(':scope > [data-jaco-content-item]')]
+    const items = [...list.querySelectorAll(':scope > [data-jaco-repeater-item]')]
     assert.strictEqual(items.length, 2, 'a block was added')
     assert.ok(items[1].textContent.includes('Fresh'), 'the new block is last')
     done()
@@ -2057,7 +2057,7 @@ QUnit.test('bottom appends fetched fragments at the end', (assert) => {
 QUnit.test('any puts a button before every block and at the end', (assert) => {
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('any')))
-  const list = fixture().querySelector('[data-jaco-content-list]')
+  const list = fixture().querySelector('[data-jaco-repeater]')
 
   window.JacoContentLists.initContentLists(fixture(), stubFetcher())
 
@@ -2067,7 +2067,7 @@ QUnit.test('any puts a button before every block and at the end', (assert) => {
 
   buttons[0].click()
   setTimeout(() => {
-    const items = [...list.querySelectorAll(':scope > [data-jaco-content-item]')]
+    const items = [...list.querySelectorAll(':scope > [data-jaco-repeater-item]')]
     assert.strictEqual(items.length, 2, 'a block was added')
     assert.ok(items[0].textContent.includes('Fresh'), 'the new block follows the clicked button')
     done()
@@ -2085,7 +2085,7 @@ QUnit.test('a failed fragment load marks the button instead of dying silently', 
   setTimeout(() => {
     assert.ok(button.classList.contains('is-error'), 'the button shows the failure')
     assert.strictEqual(
-      fixture().querySelectorAll('[data-jaco-content-item]').length,
+      fixture().querySelectorAll('[data-jaco-repeater-item]').length,
       1,
       'no block was added'
     )
@@ -2104,12 +2104,12 @@ const pointerEvent = (type, x, y) => new PointerEvent(type, {
 
 QUnit.test('draggable adds on top and reorders via the grip', (assert) => {
   m.render(fixture(), m.trust(
-    '<div data-jaco-content-list data-jaco-fragment="news.html" data-jaco-title="Add news" data-jaco-pos="draggable">' +
-    '<div data-jaco-content-item><h2>First</h2></div>' +
-    '<div data-jaco-content-item><h2>Second</h2></div>' +
+    '<div data-jaco-repeater data-jaco-repeater--fragment="news.html" data-jaco-repeater--label="Add news" data-jaco-repeater--add="draggable">' +
+    '<div data-jaco-repeater-item><h2>First</h2></div>' +
+    '<div data-jaco-repeater-item><h2>Second</h2></div>' +
     '</div>'
   ))
-  const list = fixture().querySelector('[data-jaco-content-list]')
+  const list = fixture().querySelector('[data-jaco-repeater]')
 
   window.JacoContentLists.initContentLists(fixture(), stubFetcher())
 
@@ -2118,14 +2118,14 @@ QUnit.test('draggable adds on top and reorders via the grip', (assert) => {
   assert.strictEqual(button.nextElementSibling, list, 'button is before the list like top')
   assert.ok(list.querySelector('.jaco-content-grip'), 'blocks have a grip')
 
-  const headings = () => [...list.querySelectorAll(':scope > [data-jaco-content-item] h2')]
+  const headings = () => [...list.querySelectorAll(':scope > [data-jaco-repeater-item] h2')]
     .map((h2) => h2.textContent)
   assert.deepEqual(headings(), ['First', 'Second'], 'initial order')
 
   const grips = [...list.querySelectorAll('.jaco-content-grip')]
-  const secondItem = grips[1].closest('[data-jaco-content-item]')
+  const secondItem = grips[1].closest('[data-jaco-repeater-item]')
   const secondRect = grips[1].getBoundingClientRect()
-  const firstRect = grips[0].closest('[data-jaco-content-item]').getBoundingClientRect()
+  const firstRect = grips[0].closest('[data-jaco-repeater-item]').getBoundingClientRect()
 
   grips[1].dispatchEvent(pointerEvent('pointerdown', secondRect.left, secondRect.top))
   grips[1].dispatchEvent(pointerEvent('pointermove', secondRect.left, secondRect.top + 20))
@@ -2140,12 +2140,12 @@ QUnit.test('draggable adds on top and reorders via the grip', (assert) => {
 
 QUnit.test('a click on the grip without movement drags nothing', (assert) => {
   m.render(fixture(), m.trust(
-    '<div data-jaco-content-list data-jaco-fragment="news.html" data-jaco-title="Add news" data-jaco-pos="draggable">' +
-    '<div data-jaco-content-item><h2>First</h2></div>' +
-    '<div data-jaco-content-item><h2>Second</h2></div>' +
+    '<div data-jaco-repeater data-jaco-repeater--fragment="news.html" data-jaco-repeater--label="Add news" data-jaco-repeater--add="draggable">' +
+    '<div data-jaco-repeater-item><h2>First</h2></div>' +
+    '<div data-jaco-repeater-item><h2>Second</h2></div>' +
     '</div>'
   ))
-  const list = fixture().querySelector('[data-jaco-content-list]')
+  const list = fixture().querySelector('[data-jaco-repeater]')
 
   window.JacoContentLists.initContentLists(fixture(), stubFetcher())
 
@@ -2155,7 +2155,7 @@ QUnit.test('a click on the grip without movement drags nothing', (assert) => {
   grip.dispatchEvent(pointerEvent('pointermove', rect.left, rect.top + 2))
   grip.dispatchEvent(pointerEvent('pointerup'))
 
-  const headings = [...list.querySelectorAll(':scope > [data-jaco-content-item] h2')]
+  const headings = [...list.querySelectorAll(':scope > [data-jaco-repeater-item] h2')]
     .map((h2) => h2.textContent)
   assert.deepEqual(headings, ['First', 'Second'], 'order unchanged below the threshold')
   assert.strictEqual(list.querySelector('.is-dragging'), null, 'no residue')
@@ -2167,12 +2167,12 @@ QUnit.test('dragging near the bottom edge scrolls down', (assert) => {
   spacer.style.height = '3000px'
   document.body.appendChild(spacer)
   m.render(fixture(), m.trust(
-    '<div data-jaco-content-list data-jaco-fragment="news.html" data-jaco-title="Add news" data-jaco-pos="draggable">' +
-    '<div data-jaco-content-item><h2>First</h2></div>' +
-    '<div data-jaco-content-item><h2>Second</h2></div>' +
+    '<div data-jaco-repeater data-jaco-repeater--fragment="news.html" data-jaco-repeater--label="Add news" data-jaco-repeater--add="draggable">' +
+    '<div data-jaco-repeater-item><h2>First</h2></div>' +
+    '<div data-jaco-repeater-item><h2>Second</h2></div>' +
     '</div>'
   ))
-  const list = fixture().querySelector('[data-jaco-content-list]')
+  const list = fixture().querySelector('[data-jaco-repeater]')
   const scroller = document.scrollingElement || document.documentElement
   scroller.scrollTop = 100
 
@@ -2212,8 +2212,8 @@ QUnit.test('only draggable lists show a grip', (assert) => {
 
 QUnit.test('delete asks twice and removes the block on confirm', (assert) => {
   m.render(fixture(), m.trust(contentListHtml('top')))
-  const list = fixture().querySelector('[data-jaco-content-list]')
-  const item = list.querySelector('[data-jaco-content-item]')
+  const list = fixture().querySelector('[data-jaco-repeater]')
+  const item = list.querySelector('[data-jaco-repeater-item]')
 
   window.JacoContentLists.attachItemOverlay(item)
 
@@ -2316,11 +2316,11 @@ QUnit.test('clicking a dynamically inserted block opens the editor toolbar', (as
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))
 
-  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<h2 data-jaco-editable-line>Fresh headline</h2>'))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<h2 data-jaco-line>Fresh headline</h2>'))
   fixture().querySelector('.jaco-content-add-button').click()
 
   setTimeout(() => {
-    const headline = fixture().querySelector('[data-jaco-content-item] h2')
+    const headline = fixture().querySelector('[data-jaco-repeater-item] h2')
     assert.ok(headline, 'the inserted block is rendered')
     headline.dispatchEvent(new MouseEvent('click', {bubbles: true}))
     assert.ok(
@@ -2335,17 +2335,17 @@ QUnit.test('toolbar follows across static and inserted blocks with images', (ass
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))
 
-  const fragment = '<div class="news-text"><h2 data-jaco-editable-line>Fresh headline</h2>' +
-    '<img data-jaco-editable-image height="120" src="img/spacer.png" width="120"></div>'
+  const fragment = '<div class="news-text"><h2 data-jaco-line>Fresh headline</h2>' +
+    '<img data-jaco-image height="120" src="img/spacer.png" width="120"></div>'
   window.JacoContentLists.initContentLists(fixture(), stubFetcher(fragment))
   fixture().querySelector('.jaco-content-add-button').click()
 
   setTimeout(() => {
-    const staticHeadline = fixture().querySelector('[data-jaco-content-list] > [data-jaco-content-item] h2')
+    const staticHeadline = fixture().querySelector('[data-jaco-repeater] > [data-jaco-repeater-item] h2')
     staticHeadline.dispatchEvent(new MouseEvent('click', {bubbles: true}))
     assert.ok(document.querySelector('.ql-toolbar'), 'toolbar opens on the static block')
 
-    const freshHeadline = [...fixture().querySelectorAll('[data-jaco-content-item] h2')]
+    const freshHeadline = [...fixture().querySelectorAll('[data-jaco-repeater-item] h2')]
       .find((h2) => h2.textContent.includes('Fresh'))
     freshHeadline.dispatchEvent(new MouseEvent('click', {bubbles: true}))
     assert.ok(document.querySelector('.ql-toolbar'), 'toolbar moves to the inserted block')
@@ -2360,11 +2360,11 @@ QUnit.test('blocks introduce no positioned ancestor for editor chrome', (assert)
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))
 
-  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<h2 data-jaco-editable-line>Fresh</h2>'))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<h2 data-jaco-line>Fresh</h2>'))
   fixture().querySelector('.jaco-content-add-button').click()
 
   setTimeout(() => {
-    const item = [...fixture().querySelectorAll('[data-jaco-content-item]')]
+    const item = [...fixture().querySelectorAll('[data-jaco-repeater-item]')]
       .find((el) => el.textContent.includes('Fresh'))
     assert.strictEqual(window.getComputedStyle(item).position, 'static', 'items stay static')
 
@@ -2412,9 +2412,9 @@ QUnit.test('gallery full version keeps small images as they are', (assert) => {
 })
 
 QUnit.test('the block toolbar offers video embeds', (assert) => {
-  m.render(fixture(), m.trust('<div data-jaco-editable><p>with video</p></div>'))
+  m.render(fixture(), m.trust('<div data-jaco-block><p>with video</p></div>'))
 
-  fixture().querySelector('[data-jaco-editable] p')
+  fixture().querySelector('[data-jaco-block] p')
     .dispatchEvent(new MouseEvent('click', {bubbles: true}))
 
   assert.ok(document.querySelector('.ql-toolbar .ql-video'), 'video button is in the toolbar')
@@ -2429,11 +2429,11 @@ QUnit.test('chrome is stripped but content markers survive', (assert) => {
 
   assert.strictEqual(fixture().querySelector('.jaco-content-add-button'), null, 'buttons are gone')
   assert.strictEqual(fixture().querySelector('.jaco-content-item-bar'), null, 'overlays are gone')
-  const list = fixture().querySelector('[data-jaco-content-list]')
+  const list = fixture().querySelector('[data-jaco-repeater]')
   assert.ok(list, 'the list survives')
-  assert.strictEqual(list.getAttribute('data-jaco-fragment'), 'news.html', 'fragment reference survives')
-  assert.strictEqual(list.getAttribute('data-jaco-pos'), 'top', 'position survives')
-  assert.ok(list.querySelector('[data-jaco-content-item]'), 'blocks survive')
+  assert.strictEqual(list.getAttribute('data-jaco-repeater--fragment'), 'news.html', 'fragment reference survives')
+  assert.strictEqual(list.getAttribute('data-jaco-repeater--add'), 'top', 'position survives')
+  assert.ok(list.querySelector('[data-jaco-repeater-item]'), 'blocks survive')
 })
 
 QUnit.test('Icon renders decorative svg paths', (assert) => {

@@ -5,27 +5,34 @@
 //
 // Authoring:
 //
-//   <div data-jaco-content-list data-jaco-fragment="news.html"
-//        data-jaco-title="Add news" data-jaco-pos="top">
-//     <div data-jaco-content-item>…existing block…</div>
+//   <div data-jaco-repeater data-jaco-repeater--fragment="news.html"
+//        data-jaco-repeater--label="Add news" data-jaco-repeater--add="top">
+//     <div data-jaco-repeater-item>…existing block…</div>
 //   </div>
 //
-// data-jaco-pos is "top", "bottom" or "any" (anything else behaves like "any").
-// The button label comes from data-jaco-title, so no translations are needed.
+// data-jaco-repeater--add is "top", "bottom" or "any" (anything else behaves like
+// "any"); data-jaco-repeater--sortable adds the grip. The button label comes from
+// data-jaco-repeater--label, so no translations are needed.
 // Fragments are fetched from the template/content/view API, which serves files
 // from jaco-data/templates/content. Item order lives in the DOM - save needs no
 // changes, but editor chrome has to be stripped (removeContentListChrome)
 // before the body is sent, see iframe.getHTML().
 window.JacoContentLists = (() => {
-  const LIST_ATTR = 'data-jaco-content-list'
-  const ITEM_ATTR = 'data-jaco-content-item'
+  const LIST_ATTR = 'data-jaco-repeater'
+  const ITEM_ATTR = 'data-jaco-repeater-item'
   const ADD_BUTTON_CLASS = 'jaco-content-add-button'
   const OVERLAY_CLASS = 'jaco-content-item-bar'
   const GRIP_CLASS = 'jaco-content-grip'
   const DRAGGING_CLASS = 'is-dragging'
 
   const posOf = (list) => {
-    const pos = (list.getAttribute('data-jaco-pos') || '').toLowerCase()
+    const ADD = 'data-jaco-repeater--add'
+    const SORTABLE = 'data-jaco-repeater--sortable'
+    const add = (list.getAttribute(ADD) || '').toLowerCase()
+    const sortable = list.hasAttribute(SORTABLE)
+    // "draggable" was a position and a capability at once; it is now add="top" plus
+    // the sortable property, and the old value stays readable while the pages migrate
+    const pos = add === 'draggable' ? 'draggable' : add
     return pos === 'top' || pos === 'bottom' || pos === 'draggable' ? pos : 'any'
   }
 
@@ -45,7 +52,7 @@ window.JacoContentLists = (() => {
   const createAddButton = (list, onAdd) => {
     const button = document.createElement('div')
     button.className = ADD_BUTTON_CLASS
-    const title = list.getAttribute('data-jaco-title') || ''
+    const title = list.getAttribute('data-jaco-repeater--label') || ''
     const setLabel = () => {
       button.textContent = '+ ' + (window.jacoEditorT
         ? window.jacoEditorT(title, title)
@@ -81,7 +88,7 @@ window.JacoContentLists = (() => {
   }
 
   const loadAndInsert = (list, pos, refNode, fetcher) => {
-    const file = list.getAttribute('data-jaco-fragment') || ''
+    const file = list.getAttribute('data-jaco-repeater--fragment') || ''
     return (fetcher || fetchFragment)(file).then((html) => insertItem(list, pos, html, refNode))
   }
 

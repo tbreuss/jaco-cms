@@ -113,7 +113,7 @@ window.initRichTextEditor = () => {
 }
 
 window.initImages = (root) => {
-  const selector = '[data-jaco-editable-image], [data-jaco-editable-image-extended]'
+  const selector = '[data-jaco-image]'
   ;(root || document).querySelectorAll(selector).forEach((image) => {
     if (image.nextElementSibling && image.nextElementSibling.hasAttribute('data-jaco-editable-image-temp')) {
       return // already initialized
@@ -182,7 +182,7 @@ const chooseNewImage = (editableImage) => {
     reader.onload = readerEvent => {
       resizeImage(readerEvent.target.result, file.type, width, height, 'fill', editableImage)
       editableImage.setAttribute('data-jaco-editable-image-file', file.name)
-      if (editableImage.hasAttribute('data-jaco-editable-image-gallery')) {
+      if (editableImage.hasAttribute('data-jaco-image--lightbox')) {
         scaleDataUrlToWidth(readerEvent.target.result, file.type, GALLERY_FULL_MAX_WIDTH, (fullDataUrl) => {
           editableImage.setAttribute('data-jaco-gallery-full', fullDataUrl)
         })
@@ -405,14 +405,14 @@ window.addClickHandler = () => {
       return
     }
 
-    if (event.target.closest('[data-jaco-editable-image], [data-jaco-editable-image-extended], [data-jaco-editable-link]')) {
+    if (event.target.closest('[data-jaco-image], [data-jaco-link]')) {
       await editorMessagesReady
     }
     removeRichTextEditorElements()
     removeExtendedImages()
     removeLinks()
 
-    let editable = event.target.closest('[data-jaco-editable]')
+    let editable = event.target.closest('[data-jaco-block]')
     if (editable) {
       editable.setAttribute('data-jaco-is-editing', '')
       let toolbarOptions = [
@@ -437,7 +437,7 @@ window.addClickHandler = () => {
       return
     }
 
-    let editableLine = event.target.closest('[data-jaco-editable-line]')
+    let editableLine = event.target.closest('[data-jaco-line]')
     if (editableLine) {
       editableLine.setAttribute('data-jaco-is-editing', '')
       let toolbarLineOptions = [
@@ -478,7 +478,7 @@ window.addClickHandler = () => {
       return
     }
 
-    const editableImage = event.target.closest('[data-jaco-editable-image]')
+    const editableImage = event.target.closest('[data-jaco-image]')
     if (editableImage) {
 
       editableImage.onload = () => {
@@ -490,7 +490,7 @@ window.addClickHandler = () => {
       return
     }
 
-    let editableImageExtended = event.target.closest('[data-jaco-editable-image-extended]')
+    let editableImageExtended = event.target.closest('[data-jaco-image--resizable]')
     if (editableImageExtended) {
 
       const [width, height] = detectImageSize(editableImageExtended)
@@ -595,7 +595,7 @@ window.addClickHandler = () => {
       return
     }
 
-    const editableLink = event.target.closest('[data-jaco-editable-link]')
+    const editableLink = event.target.closest('[data-jaco-link]')
     if (editableLink) {
 
       const divElement = document.createElement('div')
@@ -791,9 +791,9 @@ window.removeRichTextEditorElements = () => {
       element.parentElement.removeAttribute('class')
     }
     element.parentElement.removeAttribute('data-jaco-is-editing')
-    if (element.parentElement.hasAttribute('data-jaco-editable-line')) {
+    if (element.parentElement.hasAttribute('data-jaco-line')) {
       element.parentElement.innerHTML = removeBlockTags(element)
-    } else if (element.parentElement.hasAttribute('data-jaco-editable')) {
+    } else if (element.parentElement.hasAttribute('data-jaco-block')) {
       removeBoundaryEmptyParagraphs(element)
       normalizeVideoFrames(element)
       element.parentElement.innerHTML = element.innerHTML

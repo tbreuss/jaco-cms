@@ -1,16 +1,16 @@
-[data-jaco-editable] {
+[data-jaco-block] {
     outline: 1px solid var(--border, #ddd);
     border: 1px solid rgba(255, 255, 255, 0);
     min-height: 1rem;
     margin-bottom: 1rem;
 }
 
-[data-jaco-editable-line] {
+[data-jaco-line] {
     outline: 1px solid var(--border, #ddd);
     min-height: 1rem;
 }
 
-[data-jaco-editable-line] * {
+[data-jaco-line] * {
     margin-top: 0;
     margin-bottom: 0;
     padding-top: 0;
@@ -21,13 +21,13 @@
    or flex parent that turns a single line into a tall box. Editors size by
    content instead; the block editor is unaffected in normal flow, where 100%
    of an automatic height already means content height. */
-.ql-container[data-jaco-editable],
-.ql-container[data-jaco-editable-line] {
+.ql-container[data-jaco-block],
+.ql-container[data-jaco-line] {
     height: auto;
 }
 
-.ql-container[data-jaco-editable] .ql-editor,
-.ql-container[data-jaco-editable-line] .ql-editor {
+.ql-container[data-jaco-block] .ql-editor,
+.ql-container[data-jaco-line] .ql-editor {
     height: auto;
 }
 
@@ -35,43 +35,43 @@
    this a heading looks like body text while editing (and the page stylesheet
    even recolors it, e.g. ".hero p"). Inheriting keeps the heading look, and the
    save path unwraps the paragraph again, so nothing persists. */
-[data-jaco-editable-line] .ql-editor p {
+[data-jaco-line] .ql-editor p {
     font-size: inherit;
     font-weight: inherit;
     line-height: inherit;
     color: inherit;
 }
 
-[data-jaco-editable-image] {
+[data-jaco-image] {
     outline: 1px solid var(--border, #ddd);
 }
 
-[data-jaco-editable-image-extended] {
+[data-jaco-image--resizable] {
     outline: 1px solid var(--border, #ddd);
 }
 
-[data-jaco-editable-link] {
+[data-jaco-link] {
     outline: 1px solid var(--border, #ddd);
     display: inline-block;
 }
 
-[data-jaco-editable-link]:has(> [data-jaco-editable-image])::before,
-[data-jaco-editable-link]:has(> [data-jaco-editable-image-extended])::before {
+[data-jaco-link]:has(> [data-jaco-image])::before,
+[data-jaco-link]:has(> [data-jaco-image--resizable])::before {
     content: 'Editable Link';
 }
 
-[data-jaco-editable-link]:hover {
+[data-jaco-link]:hover {
     text-decoration: none;
 }
 
-[data-jaco-editable]:hover,
-[data-jaco-editable-line]:hover,
-[data-jaco-editable-image]:hover,
-[data-jaco-editable-image-extended]:hover {
+[data-jaco-block]:hover,
+[data-jaco-line]:hover,
+[data-jaco-image]:hover,
+[data-jaco-image--resizable]:hover {
     cursor: pointer;
 }
 
-[data-jaco-editable-image-extended] {
+[data-jaco-image--resizable] {
     position: relative;
 }
 
@@ -194,7 +194,7 @@
     font-size: 0.9rem;
 }
 
-[data-jaco-content-list] {
+[data-jaco-repeater] {
     outline: 1px dashed var(--border, #bbb);
     padding: 0.5rem;
     margin-bottom: 1rem;
@@ -219,7 +219,7 @@
 /* NOTE: items must not be positioned (no relative/absolute): they would become
    the offset parent of the absolutely positioned Quill toolbar and dialogs,
    whose coordinates handlePosition computes document-relative. */
-[data-jaco-content-item] {
+[data-jaco-repeater-item] {
     position: static;
 }
 
@@ -262,7 +262,7 @@
     cursor: grabbing;
 }
 
-[data-jaco-content-item].is-dragging {
+[data-jaco-repeater-item].is-dragging {
     opacity: 0.4;
 }
 

@@ -118,7 +118,7 @@ final class EmbeddedImagesTest extends TestCase
     public function testGalleryImageIsLinkedToItsFullVersion(): void
     {
         $config = test_config();
-        $html = '<html><body><img data-jaco-editable-image data-jaco-editable-image-gallery'
+        $html = '<html><body><img data-jaco-image data-jaco-image--lightbox'
             . ' src="data:image/png;base64,' . base64_encode('thumb-bytes') . '"'
             . ' data-jaco-editable-image-file="' . self::GALLERY_FILE . '"'
             . ' data-jaco-gallery-full="data:image/png;base64,' . base64_encode('full-bytes') . '" alt="test"></body></html>';
@@ -132,7 +132,7 @@ final class EmbeddedImagesTest extends TestCase
         $result = (string) $result;
         $this->assertStringContainsString('<a href="media/' . self::GALLERY_FULL_FILE . '">', $result);
         $this->assertStringContainsString('src="media/' . self::GALLERY_FILE . '"', $result);
-        $this->assertStringContainsString('data-jaco-editable-image-gallery', $result);
+        $this->assertStringContainsString('data-jaco-image--lightbox', $result);
         $this->assertStringNotContainsString('data-jaco-gallery-full', $result);
         $this->assertStringNotContainsString('base64', $result);
     }
@@ -140,7 +140,7 @@ final class EmbeddedImagesTest extends TestCase
     public function testGalleryWithoutFullVersionStaysPlain(): void
     {
         $config = test_config();
-        $html = '<html><body><img data-jaco-editable-image data-jaco-editable-image-gallery'
+        $html = '<html><body><img data-jaco-image data-jaco-image--lightbox'
             . ' src="data:image/png;base64,' . base64_encode('thumb-bytes') . '"'
             . ' data-jaco-editable-image-file="' . self::GALLERY_FILE . '" alt="test"></body></html>';
 
@@ -155,8 +155,8 @@ final class EmbeddedImagesTest extends TestCase
     public function testGalleryKeepsAnExistingParentLink(): void
     {
         $config = test_config();
-        $html = '<html><body><a href="/keep.html" data-jaco-editable-link>'
-            . '<img data-jaco-editable-image data-jaco-editable-image-gallery'
+        $html = '<html><body><a href="/keep.html" data-jaco-link>'
+            . '<img data-jaco-image data-jaco-image--lightbox'
             . ' src="data:image/png;base64,' . base64_encode('thumb-bytes') . '"'
             . ' data-jaco-editable-image-file="' . self::GALLERY_FILE . '"'
             . ' data-jaco-gallery-full="data:image/png;base64,' . base64_encode('full-bytes') . '" alt="test"></a></body></html>';
@@ -176,7 +176,7 @@ final class EmbeddedImagesTest extends TestCase
         file_put_contents($config->mediaDir . '/' . self::GALLERY_FULL_FILE, 'old-full');
 
         $html = '<html><body><a href="media/' . self::GALLERY_FULL_FILE . '">'
-            . '<img data-jaco-editable-image data-jaco-editable-image-gallery'
+            . '<img data-jaco-image data-jaco-image--lightbox'
             . ' src="data:image/png;base64,' . base64_encode('thumb-bytes') . '"'
             . ' data-jaco-editable-image-file="' . self::GALLERY_FILE . '"'
             . ' data-jaco-gallery-full="data:image/png;base64,' . base64_encode('new-full') . '" alt="test"></a></body></html>';
@@ -199,7 +199,7 @@ final class EmbeddedImagesTest extends TestCase
         file_put_contents($config->mediaDir . '/' . self::GALLERY_FULL_FILE, 'old-full');
 
         $html = '<html><body><a href="/media/' . self::GALLERY_FULL_FILE . '">'
-            . '<img data-jaco-editable-image data-jaco-editable-image-gallery'
+            . '<img data-jaco-image data-jaco-image--lightbox'
             . ' src="data:image/png;base64,' . base64_encode('thumb-bytes') . '"'
             . ' data-jaco-editable-image-file="' . self::GALLERY_FILE . '"'
             . ' data-jaco-gallery-full="data:image/png;base64,' . base64_encode('new-full') . '" alt="test"></a></body></html>';
@@ -213,7 +213,7 @@ final class EmbeddedImagesTest extends TestCase
     public function testBrokenGalleryFullIsReported(): void
     {
         $config = test_config();
-        $html = '<html><body><img data-jaco-editable-image data-jaco-editable-image-gallery'
+        $html = '<html><body><img data-jaco-image data-jaco-image--lightbox'
             . ' src="data:image/png;base64,' . base64_encode('thumb-bytes') . '"'
             . ' data-jaco-editable-image-file="' . self::GALLERY_FILE . '"'
             . ' data-jaco-gallery-full="data:image/png;base64,not-base64!!" alt="test"></body></html>';
@@ -226,7 +226,7 @@ final class EmbeddedImagesTest extends TestCase
 
     private function image(string $base64, string $fileName = self::FILE): string
     {
-        return '<html><body><img data-jaco-editable-image src="data:image/png;base64,' . $base64 . '"'
+        return '<html><body><img data-jaco-image src="data:image/png;base64,' . $base64 . '"'
             . ' data-jaco-editable-image-file="' . $fileName . '" alt="test"></body></html>';
     }
 }

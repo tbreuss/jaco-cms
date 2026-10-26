@@ -20,7 +20,7 @@ test('admin can choose an existing image from the media picker', async ({page}) 
   // they are ready before the image click is dispatched.
   await expect(frame.locator('.jaco-content-add-button').first()).toBeVisible()
 
-  const image = frame.locator('img[data-jaco-editable-image]').first()
+  const image = frame.locator('img[data-jaco-image]').first()
   await expect(image).toBeVisible()
   await image.evaluate((element) => element.click())
 

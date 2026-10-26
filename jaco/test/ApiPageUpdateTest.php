@@ -129,15 +129,15 @@ final class ApiPageUpdateTest extends ApiTestCase
     {
         $response = $this->api('page/update', [
             'fileName' => self::PAGE,
-            'html' => '<body><div data-jaco-editable><h1>Block</h1></div>'
-                . '<p data-jaco-editable-line>Zeile</p></body>',
+            'html' => '<body><div data-jaco-block><h1>Block</h1></div>'
+                . '<p data-jaco-line>Zeile</p></body>',
         ]);
 
         $this->assertSame(Status::CREATED, $response->status);
 
         $content = (string) file_get_contents($this->config->webDir . '/' . self::PAGE);
-        $this->assertStringContainsString('data-jaco-editable>', $content);
-        $this->assertStringContainsString('data-jaco-editable-line>', $content);
+        $this->assertStringContainsString('data-jaco-block>', $content);
+        $this->assertStringContainsString('data-jaco-line>', $content);
     }
 
     public function testPageIsNotTouchedWhenTheRequestHasNoToken(): void
@@ -208,7 +208,7 @@ final class ApiPageUpdateTest extends ApiTestCase
     private function pageWithEmbeddedImage(): string
     {
         return '<!DOCTYPE html><html lang="en"><head><title>Update test</title></head><body>'
-            . '<img data-jaco-editable-image src="data:image/png;base64,' . self::PNG_BASE64 . '"'
+            . '<img data-jaco-image src="data:image/png;base64,' . self::PNG_BASE64 . '"'
             . ' data-jaco-editable-image-file="api-update-image.png" alt="test">'
             . '</body></html>';
     }

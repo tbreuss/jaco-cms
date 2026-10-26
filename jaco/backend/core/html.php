@@ -244,17 +244,22 @@ const ALLOWED_ATTRIBUTES = [
     '*' => [
         'class',
         'id',
-        'data-jaco-editable',
-        'data-jaco-editable-line',
-        'data-jaco-editable-link',
-        'data-jaco-editable-image',
-        'data-jaco-editable-image-extended',
-        'data-jaco-editable-image-gallery',
-        'data-jaco-content-list',
-        'data-jaco-content-item',
-        'data-jaco-fragment',
-        'data-jaco-title',
-        'data-jaco-pos',
+        // The contract: the only place that decides which data-jaco-* names exist.
+        // Every other mention - the selectors, the pages, docs/attribute-mapping.md -
+        // is a copy that DataAttributeContractTest compares against this list.
+        'data-jaco-block',
+        'data-jaco-line',
+        'data-jaco-link',
+        'data-jaco-image',
+        'data-jaco-repeater',
+        'data-jaco-repeater-item',
+        'data-jaco-template',
+        'data-jaco-image--resizable',
+        'data-jaco-image--lightbox',
+        'data-jaco-repeater--fragment',
+        'data-jaco-repeater--label',
+        'data-jaco-repeater--add',
+        'data-jaco-repeater--sortable',
     ],
     'a' => ['href', 'rel', 'target', 'title'],
     'button' => ['aria-expanded', 'aria-label', 'title', 'type'],
@@ -330,6 +335,37 @@ function replace_body(string $document, string $body): string
     return $replaced;
 }
 
+/**
+ * The problems a sanitized body still has with the attribute contract.
+ *
+ * The sanitizer separates what may stay from what must go; this reports what is
+ * there but makes no sense - a property without its role, two roles on one element,
+ * an item outside its repeater. The page is not written when the list is not empty.
+ *
+ * @param string $html a body fragment, already sanitized or not
+ * @return list<string>
+ */
+function data_attribute_errors(string $html): array
+{
+    \libxml_use_internal_errors(true);
+    $dom = new \DOMDocument();
+    $loaded = $dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><body>' . $html . '</body>');
+    \libxml_clear_errors();
+
+    if (!$loaded) {
+        return [];
+    }
+
+    $problems = [];
+    foreach ($dom->getElementsByTagName('*') as $el) {
+        foreach (data_attribute_problems($el) as $problem) {
+            $problems[] = $problem;
+        }
+    }
+
+    return \array_values(\array_unique($problems));
+}
+
 function sanitize_node(\DOMElement $el): void
 {
     $tag = \strtolower($el->nodeName);
@@ -375,6 +411,88 @@ function sanitize_node(\DOMElement $el): void
     }
 }
 
+/**
+ * The names the contract knows, split into roles and properties.
+ *
+ * A property carries its role in front of the double hyphen, so the pairing is one
+ * rule: `data-jaco-image--resizable` needs `data-jaco-image` on the same element.
+ *
+ * @return array{roles: list<string>, properties: list<string>}
+ */
+function data_attribute_contract(): array
+{
+    $roles = [];
+    $properties = [];
+
+    foreach (ALLOWED_ATTRIBUTES['*'] as $attribute) {
+        if (!\str_starts_with($attribute, 'data-jaco-')) {
+            continue;
+        }
+
+        if (\str_contains($attribute, '--')) {
+            $properties[] = $attribute;
+            continue;
+        }
+
+        $roles[] = $attribute;
+    }
+
+    return ['roles' => $roles, 'properties' => $properties];
+}
+
+/**
+ * The role a property belongs to: `data-jaco-image--resizable` -> `data-jaco-image`.
+ */
+function data_attribute_role_of(string $property): string
+{
+    return \strstr($property, '--', true) ?: $property;
+}
+
+/**
+ * Check the data attributes on one element against the pairing rules.
+ *
+ * Only names the contract knows are inspected; an unknown one is removed by the
+ * whitelist before this runs. Returns one message per broken rule.
+ *
+ * @return list<string> human-readable problems, empty when the element is fine
+ */
+function data_attribute_problems(\DOMElement $el): array
+{
+    $roles = [];
+    foreach (data_attribute_contract()['roles'] as $role) {
+        if ($el->hasAttribute($role)) {
+            $roles[] = $role;
+        }
+    }
+
+    $problems = [];
+
+    if (\count($roles) > 1) {
+        $problems[] = 'one role per element, found: ' . \implode(', ', $roles);
+    }
+
+    foreach (data_attribute_contract()['properties'] as $property) {
+        if (!$el->hasAttribute($property)) {
+            continue;
+        }
+
+        $role = data_attribute_role_of($property);
+        if (!\in_array($role, $roles, true)) {
+            $problems[] = $property . ' needs ' . $role . ' on the same element';
+        }
+    }
+
+    // the repeater item is a direct child of its container, never a sibling of it
+    if ($el->hasAttribute('data-jaco-repeater-item')) {
+        $parent = $el->parentNode;
+        if (!$parent instanceof \DOMElement || !$parent->hasAttribute('data-jaco-repeater')) {
+            $problems[] = 'data-jaco-repeater-item outside a repeater';
+        }
+    }
+
+    return $problems;
+}
+
 function is_allowed_attribute(string $tag, string $name, string $value): bool
 {
     $allowed = \array_merge(ALLOWED_ATTRIBUTES['*'], ALLOWED_ATTRIBUTES[$tag] ?? []);
@@ -389,6 +507,11 @@ function is_allowed_attribute(string $tag, string $name, string $value): bool
         $value = \str_replace(["\t", "\n", "\r", "\0"], '', \trim($value));
 
         return \preg_match('#^https://(www\.youtube\.com/embed/|www\.youtube-nocookie\.com/embed/)#i', $value) === 1;
+    }
+
+    // the add position is a closed set; anything else would silently fall back
+    if ($name === 'data-jaco-repeater--add') {
+        return \in_array($value, ['top', 'bottom', 'any'], true);
     }
 
     if ($name !== 'href' && $name !== 'src') {
@@ -511,10 +634,12 @@ function handle_embedded_data_url_images(Config $config, string $html): array
         return [false, ['Could not load HTML']];
     }
 
-    $imgAttrs = ['data-jaco-editable-image', 'data-jaco-editable-image-extended'];
+    // The role is new, the editor state is not: the file name and the full-size data
+    // stay under their old names in phase 1 and leave the DOM in phase 2.
+    $imgAttrs = ['data-jaco-image'];
     $imgSrcAttr = 'src';
     $imgFileAttr = 'data-jaco-editable-image-file';
-    $galleryAttr = 'data-jaco-editable-image-gallery';
+    $galleryAttr = 'data-jaco-image--lightbox';
     $galleryFullAttr = 'data-jaco-gallery-full';
 
     // snapshot: gallery handling moves nodes, which a live list would not survive

@@ -883,6 +883,19 @@ values: the value rule is per name.
 
 Nothing below is done. The naming is agreed, the code still uses the old names.
 
+**The release comes after phase 1.** The template marker bug (`docs/backlog.md`) is
+a blocker on its own, but it is fixed inside phase 1, in the new whitelist - not
+before it, where it would mean editing the same code twice. So the order is:
+
+```text
+1. phase 1, steps 1-6        the names, the whitelist, the pages, the suites
+2. deploy
+3. remove the noindex header and open the site to crawlers
+```
+
+Deploying before phase 1 would ship the current whitelist, and the template marker
+would still be stripped on every save.
+
 ### Phase 1: the names
 
 Everything that touches a name or a page, in one change set. Step 1 is written
@@ -891,7 +904,7 @@ first and is supposed to fail until the rest agrees.
 | # | Step | Where |
 | --- | --- | --- |
 | 1 | Contract test: read the names from the whitelist and compare them with this document, the frontend selectors and every page | new test next to `IgnoreRulesTest` |
-| 2 | Whitelist and validation rules, template marker fixed | `backend/core/html.php` |
+| 2 | Whitelist, validation rules and the contract check on save; template marker fixed | `backend/core/html.php`, `backend/domain/page.php` |
 | 3 | Selectors | `frontend/editor.js`, `frontend/contentlists.js`, `frontend/lib/iframe.js` |
 | 4 | Pages (the template marker is already done) | 14 files in the root and `de/` |
 | 5 | Templates | 12 files under `jaco-data/templates/` |
@@ -990,6 +1003,8 @@ done".
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 0.24.0 | 2026-10-26 | Step 2 is implemented: the whitelist, the pairing rules and a check that rejects a save which breaks the contract. |
+| 0.23.0 | 2026-10-26 | The release comes after phase 1: the template marker is fixed inside the new whitelist, not before it, where the same code would be edited twice. |
 | 0.22.0 | 2026-10-26 | The length section gets the total: the rename is 1.835 characters shorter over 11.193, not longer. The lightbox rule states what happens on the second save, and the block properties are candidates in shape, not names in the contract. |
 | 0.21.0 | 2026-10-26 | The rewrite script is checked in for the duration, with what it does and what it cannot do. An unread one-off leaves no trace of a change that touches 34 files. |
 | 0.20.0 | 2026-10-26 | The contract test cannot be green after every step: with a hard break it names the names that still disagree, and that list is the work list. Green at the end of step 6, with the suites and the dist checks. |

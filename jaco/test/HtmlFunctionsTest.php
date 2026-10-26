@@ -39,7 +39,7 @@ final class HtmlFunctionsTest extends TestCase
         'bold link' => ['<p><a href="https://example.com" target="_blank">x</a> <strong>b</strong></p>', '<p><a href="https://example.com" target="_blank">x</a> <strong>b</strong></p>'],
         'mailto' => ['<a href="mailto:a@b.c">mail</a>', '<a href="mailto:a@b.c">mail</a>'],
         'relative link' => ['<a href="/page">x</a>', '<a href="/page">x</a>'],
-        'data-jaco attrs' => ['<img src="upload/a.png" data-jaco-editable-image data-jaco-editable-image-extended>', '<img src="upload/a.png" data-jaco-editable-image data-jaco-editable-image-extended>'],
+        'data-jaco attrs' => ['<img src="upload/a.png" data-jaco-image data-jaco-image--resizable>', '<img src="upload/a.png" data-jaco-image data-jaco-image--resizable>'],
         'utf-8' => ['<p>Grüße — über</p>', '<p>Grüße — über</p>'],
         'heading list table' => ['<h1>T</h1><ul><li>a</li></ul><table><tr><td colspan="2">x</td></tr></table>', '<h1>T</h1><ul><li>a</li></ul><table><tr><td colspan="2">x</td></tr></table>'],
         'data-url image survives' => ['<img src="data:image/png;base64,iVBOR">', '<img src="data:image/png;base64,iVBOR">'],
@@ -183,44 +183,44 @@ final class HtmlFunctionsTest extends TestCase
 
     public function testEditableMarkersSurviveSanitizing(): void
     {
-        $html = '<div data-jaco-editable><h1>Block</h1></div>'
-            . '<p data-jaco-editable-line>Zeile</p>'
-            . '<a href="/x" data-jaco-editable-link>Link</a>'
-            . '<img src="upload/a.png" data-jaco-editable-image>';
+        $html = '<div data-jaco-block><h1>Block</h1></div>'
+            . '<p data-jaco-line>Zeile</p>'
+            . '<a href="/x" data-jaco-link>Link</a>'
+            . '<img src="upload/a.png" data-jaco-image>';
 
         $result = html\sanitize_html($html);
 
         // without these the page cannot be edited in place any more
-        $this->assertStringContainsString('data-jaco-editable>', $result);
-        $this->assertStringContainsString('data-jaco-editable-line>', $result);
-        $this->assertStringContainsString('data-jaco-editable-link>', $result);
-        $this->assertStringContainsString('data-jaco-editable-image>', $result);
+        $this->assertStringContainsString('data-jaco-block>', $result);
+        $this->assertStringContainsString('data-jaco-line>', $result);
+        $this->assertStringContainsString('data-jaco-link>', $result);
+        $this->assertStringContainsString('data-jaco-image>', $result);
     }
 
     public function testContentListMarkersSurviveSanitizing(): void
     {
-        $html = '<div data-jaco-content-list data-jaco-fragment="news.html" data-jaco-title="Add news" data-jaco-pos="top">'
-            . '<div data-jaco-content-item><h2 data-jaco-editable-line>Headline</h2></div>'
+        $html = '<div data-jaco-repeater data-jaco-repeater--fragment="news.html" data-jaco-repeater--label="Add news" data-jaco-repeater--add="top">'
+            . '<div data-jaco-repeater-item><h2 data-jaco-line>Headline</h2></div>'
             . '</div>';
 
         $result = html\sanitize_html($html);
 
-        $this->assertStringContainsString('data-jaco-content-list', $result);
-        $this->assertStringContainsString('data-jaco-content-item', $result);
-        $this->assertStringContainsString('data-jaco-fragment="news.html"', $result);
-        $this->assertStringContainsString('data-jaco-title="Add news"', $result);
-        $this->assertStringContainsString('data-jaco-pos="top"', $result);
-        $this->assertStringContainsString('data-jaco-editable-line', $result);
+        $this->assertStringContainsString('data-jaco-repeater', $result);
+        $this->assertStringContainsString('data-jaco-repeater-item', $result);
+        $this->assertStringContainsString('data-jaco-repeater--fragment="news.html"', $result);
+        $this->assertStringContainsString('data-jaco-repeater--label="Add news"', $result);
+        $this->assertStringContainsString('data-jaco-repeater--add="top"', $result);
+        $this->assertStringContainsString('data-jaco-line', $result);
     }
 
     public function testGalleryMarkerSurvivesSanitizing(): void
     {
-        $html = '<a href="/keep.html"><img data-jaco-editable-image data-jaco-editable-image-gallery'
+        $html = '<a href="/keep.html"><img data-jaco-image data-jaco-image--lightbox'
             . ' data-jaco-gallery-full="data:image/png;base64,AAAA" src="upload/a.png" alt="test"></a>';
 
         $result = html\sanitize_html($html);
 
-        $this->assertStringContainsString('data-jaco-editable-image-gallery', $result);
+        $this->assertStringContainsString('data-jaco-image--lightbox', $result);
         $this->assertStringNotContainsString('data-jaco-gallery-full', $result);
         $this->assertStringContainsString('<a href="/keep.html">', $result);
     }

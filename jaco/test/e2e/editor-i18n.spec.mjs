@@ -16,7 +16,7 @@ test('Quill header labels follow the user language', async ({page}) => {
   await page.evaluate(() => window.m.route.set('/page-edit'))
   await expect(frame.locator('.jaco-content-add-button').first()).toBeVisible()
 
-  const richText = frame.locator('div[data-jaco-editable]').filter({hasText: 'A rich-text block supports'})
+  const richText = frame.locator('div[data-jaco-block]').filter({hasText: 'A rich-text block supports'})
   await richText.locator('p').first().click()
 
   await expect(frame.locator('.ql-picker.ql-header .ql-picker-label')).toHaveAttribute('data-label', 'Normal')

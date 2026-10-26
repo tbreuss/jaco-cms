@@ -63,8 +63,8 @@ Full guide with markers reference: [`docs/install.md`](docs/install.md).
 4. Mark editable regions in your HTML and log in at `/jaco/`:
 
 ```html
-<h1 data-jaco-editable-line>My headline</h1>
-<div data-jaco-editable><p>My paragraph.</p></div>
+<h1 data-jaco-line>My headline</h1>
+<div data-jaco-block><p>My paragraph.</p></div>
 ```
 
 The three directories next to your pages: `jaco/` is the application (replaced on

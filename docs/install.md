@@ -271,19 +271,20 @@ post_max_size = 24M
 Without markers there is nothing to edit inline (only source via Ace).
 These attributes designate editable spots in the existing HTML:
 
-- `data-jaco-editable` — text block (Quill editor with full toolbar)
-- `data-jaco-editable-line` — single line, e.g. headings
-- `data-jaco-editable-link` — link (URL and target via dialog)
-- `data-jaco-editable-image` — image (replacement via dialog)
-- `data-jaco-editable-image-extended` — image with scaling options
+- `data-jaco-block` — text block (Quill editor with full toolbar)
+- `data-jaco-line` — single line, e.g. headings
+- `data-jaco-link` — link (URL and target via dialog)
+- `data-jaco-image` — image (replacement via dialog)
+- `data-jaco-image--resizable` — on an image, additionally scales it
+- `data-jaco-image--lightbox` — on an image, links the thumbnail to a full-size file
 
 Example:
 
 ```html
-<h1 data-jaco-editable-line>My headline</h1>
-<div data-jaco-editable><p>My paragraph.</p></div>
-<a href="page.html" data-jaco-editable-link>My link</a>
-<img data-jaco-editable-image src="media/image.jpg" alt="Image" width="800">
+<h1 data-jaco-line>My headline</h1>
+<div data-jaco-block><p>My paragraph.</p></div>
+<a href="page.html" data-jaco-link>My link</a>
+<img data-jaco-image src="media/image.jpg" alt="Image" width="800">
 ```
 
 ## Recurring content blocks
@@ -293,9 +294,10 @@ Put a fragment file in `jaco-data/templates/content/`, then mark where blocks ma
 appear:
 
 ```html
-<div data-jaco-content-list data-jaco-fragment="news-section.html" data-jaco-title="Add news" data-jaco-pos="top">
-    <div data-jaco-content-item>
-        <h2 data-jaco-editable-line>Existing headline</h2>
+<div data-jaco-repeater data-jaco-repeater--fragment="news-section.html"
+     data-jaco-repeater--label="Add news" data-jaco-repeater--add="top">
+    <div data-jaco-repeater-item>
+        <h2 data-jaco-line>Existing headline</h2>
     </div>
 </div>
 ```
@@ -307,41 +309,41 @@ one places a text block and an image next to each other:
 <!-- jaco-data/templates/content/news-section.html -->
 <div class="news-section">
     <div class="news-text">
-        <h2 data-jaco-editable-line>Headline</h2>
-        <p data-jaco-editable-line>Text</p>
+        <h2 data-jaco-line>Headline</h2>
+        <p data-jaco-line>Text</p>
     </div>
     <div class="news-img">
-        <img data-jaco-editable-image height="600" width="800" src="…">
+        <img data-jaco-image height="600" width="800" src="…">
     </div>
     <div class="clearer"></div>
 </div>
 ```
 
-The editor inserts the fragment inside a `data-jaco-content-item` wrapper, so the
+The editor inserts the fragment inside a `data-jaco-repeater-item` wrapper, so the
 fragment itself must not carry that wrapper.
 
-- `data-jaco-fragment` names the fragment file from `jaco-data/templates/content/`
-- `data-jaco-title` labels the add button shown in the editor
-- `data-jaco-pos` is `top` (new blocks first), `bottom` (new blocks last),
-  `any` (a button before every block plus one at the end) or `draggable`
-  (like `top`, plus blocks can be reordered with the ⠿ grip)
-- existing blocks are wrapped in `<div data-jaco-content-item>` and can be
+- `data-jaco-repeater--fragment` names the fragment file from `jaco-data/templates/content/`
+- `data-jaco-repeater--label` labels the add button shown in the editor
+- `data-jaco-repeater--add` is `top` (new blocks first), `bottom` (new blocks
+  last) or `any` (a button before every block plus one at the end)
+- `data-jaco-repeater--sortable` adds the ⠿ grip, so blocks can be reordered
+- existing blocks are wrapped in `<div data-jaco-repeater-item>` and can be
   deleted in the editor (two-step: ×, then ✓)
 
 ## Embedded videos
 
-In a text block (`data-jaco-editable`), the toolbar video button embeds a
+In a text block (`data-jaco-block`), the toolbar video button embeds a
 video from its URL. Only YouTube embeds survive saving
 (`https://www.youtube.com/embed/…` and `https://www.youtube-nocookie.com/embed/…`);
 any other iframe source is removed, along with event handler attributes.
 
 ## Image gallery
 
-An image with `data-jaco-editable-image-gallery` (in addition to
-`data-jaco-editable-image`) links its thumbnail to the full version:
+An image with `data-jaco-image--lightbox` (in addition to `data-jaco-image`)
+links its thumbnail to the full version:
 
 ```html
-<img data-jaco-editable-image data-jaco-editable-image-gallery width="800" src="media/thumb.jpg" alt="Gallery">
+<img data-jaco-image data-jaco-image--lightbox width="800" src="media/thumb.jpg" alt="Gallery">
 ```
 
 When a file is picked in the editor, the thumbnail follows the `width`/`height`

@@ -287,7 +287,17 @@ function update_page(
     if ($status) {
         // the page manager owns the document: doctype and head stay as sent,
         // only the body is treated as content and sanitized
-        $data['withContent'] = html\replace_body($data['withContent'], html\sanitize_html($htmlOrErrors));
+        $body = html\sanitize_html($htmlOrErrors);
+        $contractErrors = html\data_attribute_errors($body);
+
+        if (\count($contractErrors) > 0) {
+            return Payload::invalid(\array_map(
+                static fn(string $problem): array => ['withContent', $problem],
+                $contractErrors,
+            ));
+        }
+
+        $data['withContent'] = html\replace_body($data['withContent'], $body);
     } else {
         return Payload::error([['withContent', \reset($htmlOrErrors)]]);
     }
@@ -470,7 +480,17 @@ function update_page_body(Config $config, string $file, string $withBody): Paylo
 
     // the client owns the content, the stored document keeps doctype and head
     $document = filesystem\read_file($config->webDir, $data['file']) ?? '';
-    $data['withBody'] = html\replace_body($document, html\sanitize_html($htmlOrErrors));
+    $body = html\sanitize_html($htmlOrErrors);
+    $contractErrors = html\data_attribute_errors($body);
+
+    if (\count($contractErrors) > 0) {
+        return Payload::invalid(\array_map(
+            static fn(string $problem): array => ['withBody', $problem],
+            $contractErrors,
+        ));
+    }
+
+    $data['withBody'] = html\replace_body($document, $body);
 
     $status = filesystem\backup_file($config->webDir, $data['file'], $config->backupDir);
 

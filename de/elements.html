@@ -30,22 +30,22 @@
   </ul>
 
   <div class="page-head">
-    <h1 data-jaco-editable-line>Editierbare Inhaltselemente</h1>
-    <div data-jaco-editable>
+    <h1 data-jaco-line>Editierbare Inhaltselemente</h1>
+    <div data-jaco-block>
       <p>Jeder Marker, der eine Seite editierbar macht, ist hier an einem live bearbeitbaren Beispiel zu sehen – samt HTML, das ihn erzeugt. Die Navigation bleibt bewusst kurz; die <a href="de/docs.html">Dokumentation</a> verlinkt hierher.</p>
     </div>
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-editable-line>Einzeiliger Text</h2>
-    <pre class="code-ref"><code>&lt;h1 data-jaco-editable-line&gt;A single line&lt;/h1&gt;</code></pre>
-    <p data-jaco-editable-line>Ein Einzeiler-Marker ist für Überschriften und kurze Bezeichnungen gedacht.</p>
+    <h2 data-jaco-line>Einzeiliger Text</h2>
+    <pre class="code-ref"><code>&lt;h1 data-jaco-line&gt;A single line&lt;/h1&gt;</code></pre>
+    <p data-jaco-line>Ein Einzeiler-Marker ist für Überschriften und kurze Bezeichnungen gedacht.</p>
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-editable-line>Rich-Text</h2>
-    <pre class="code-ref"><code>&lt;div data-jaco-editable&gt;&lt;p&gt;Text with &lt;strong&gt;formatting&lt;/strong&gt;.&lt;/p&gt;&lt;/div&gt;</code></pre>
-    <div data-jaco-editable>
+    <h2 data-jaco-line>Rich-Text</h2>
+    <pre class="code-ref"><code>&lt;div data-jaco-block&gt;&lt;p&gt;Text with &lt;strong&gt;formatting&lt;/strong&gt;.&lt;/p&gt;&lt;/div&gt;</code></pre>
+    <div data-jaco-block>
       <p>Ein Rich-Text-Block unterstützt <strong>fett</strong>, <em>kursiv</em>, Links, Listen und eingebettete Videos. Der ganze Block wird an einer Stelle bearbeitet.</p>
       <ul>
         <li>Erster Listeneintrag</li>
@@ -55,66 +55,66 @@
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-editable-line>Videos</h2>
+    <h2 data-jaco-line>Videos</h2>
     <pre class="code-ref"><code>&lt;!-- in a text block, added through the video dialog --&gt;
 &lt;iframe src=&quot;https://www.youtube-nocookie.com/embed/VIDEO_ID&quot;&gt;&lt;/iframe&gt;</code></pre>
-    <div data-jaco-editable>
+    <div data-jaco-block>
       <p>Ein Video kommt über einen Textblock und den Video-Knopf in die Werkzeugleiste.</p>
       <iframe class="ql-video elements-video" src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ" title="Beispiel eines eingebetteten Videos" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-editable-line>Bearbeitbare Links</h2>
-    <pre class="code-ref"><code>&lt;a href=&quot;de/download.html&quot; data-jaco-editable-link&gt;Gleicher Tab&lt;/a&gt;
+    <h2 data-jaco-line>Bearbeitbare Links</h2>
+    <pre class="code-ref"><code>&lt;a href=&quot;de/download.html&quot; data-jaco-link&gt;Gleicher Tab&lt;/a&gt;
 
-&lt;a href=&quot;de/download.html&quot; target=&quot;_blank&quot; data-jaco-editable-link&gt;Neuer Tab&lt;/a&gt;</code></pre>
+&lt;a href=&quot;de/download.html&quot; target=&quot;_blank&quot; data-jaco-link&gt;Neuer Tab&lt;/a&gt;</code></pre>
     <p>
-      <a class="cta" href="de/download.html" data-jaco-editable-link>Gleicher Tab</a>
-      <a class="cta secondary" href="de/download.html" target="_blank" data-jaco-editable-link>Neuer Tab</a>
+      <a class="cta" href="de/download.html" data-jaco-link>Gleicher Tab</a>
+      <a class="cta secondary" href="de/download.html" target="_blank" data-jaco-link>Neuer Tab</a>
     </p>
     <p class="elements-note">URL und Ziel werden beide über den Link-Dialog geändert.</p>
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-editable-line>Bilder</h2>
+    <h2 data-jaco-line>Bilder</h2>
 
-    <h3 data-jaco-editable-line>Feste Grösse</h3>
-    <pre class="code-ref"><code>&lt;img data-jaco-editable-image src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;</code></pre>
+    <h3 data-jaco-line>Feste Grösse</h3>
+    <pre class="code-ref"><code>&lt;img data-jaco-image src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;</code></pre>
     <div class="elements-image">
-      <img data-jaco-editable-image src="media/demo-elements.svg" alt="Bild mit fester Grösse" width="320" height="180">
+      <img data-jaco-image src="media/demo-elements.svg" alt="Bild mit fester Grösse" width="320" height="180">
     </div>
     <p class="elements-note">Die Datei wird ersetzt; Breite und Höhe bleiben, wie sie im HTML stehen.</p>
 
-    <h3 data-jaco-editable-line>Grösse bearbeitbar</h3>
-    <pre class="code-ref"><code>&lt;img data-jaco-editable-image-extended src=&quot;media/team.jpg&quot; width=&quot;400&quot; height=&quot;225&quot;&gt;</code></pre>
+    <h3 data-jaco-line>Grösse bearbeitbar</h3>
+    <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image--resizable src=&quot;media/team.jpg&quot; width=&quot;400&quot; height=&quot;225&quot;&gt;</code></pre>
     <div class="elements-image">
-      <img data-jaco-editable-image-extended src="media/demo-elements-extended.svg" alt="Bild mit bearbeitbarer Grösse" width="400" height="225">
+      <img data-jaco-image data-jaco-image--resizable src="media/demo-elements-extended.svg" alt="Bild mit bearbeitbarer Grösse" width="400" height="225">
     </div>
     <p class="elements-note">Die Datei wird ersetzt, und Breite und Höhe lassen sich im Editor ändern – dafür stehen die Griffe.</p>
 
-    <h3 data-jaco-editable-line>In einem Link</h3>
-    <pre class="code-ref"><code>&lt;a href=&quot;shop.html&quot; data-jaco-editable-link&gt;
-  &lt;img data-jaco-editable-image src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;
+    <h3 data-jaco-line>In einem Link</h3>
+    <pre class="code-ref"><code>&lt;a href=&quot;shop.html&quot; data-jaco-link&gt;
+  &lt;img data-jaco-image src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;
 &lt;/a&gt;</code></pre>
     <div class="elements-image">
-      <a class="elements-image-link" href="media/demo-elements-link.svg" target="_blank" rel="noopener" data-jaco-editable-link>
-        <img data-jaco-editable-image src="media/demo-elements-link.svg" alt="Bild in einem bearbeitbaren Link" width="320" height="180">
+      <a class="elements-image-link" href="media/demo-elements-link.svg" target="_blank" rel="noopener" data-jaco-link>
+        <img data-jaco-image src="media/demo-elements-link.svg" alt="Bild in einem bearbeitbaren Link" width="320" height="180">
       </a>
     </div>
     <p class="elements-note">Bild und Link werden getrennt bearbeitet: Klick auf das Bild für die Datei, Klick auf den umgebenden Link für sein Ziel. Dieser Link öffnet ein neues Tab – das stellt der Link-Dialog ein.</p>
 
-    <h3 data-jaco-editable-line>Galerie</h3>
-    <pre class="code-ref"><code>&lt;img data-jaco-editable-image data-jaco-editable-image-gallery
+    <h3 data-jaco-line>Galerie</h3>
+    <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image data-jaco-image--lightbox
      src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;
 
 &lt;!-- nach dem Speichern: der Server legt media/team-full.jpg an und verlinkt sie --&gt;
 &lt;a href=&quot;media/team-full.jpg&quot;&gt;
-  &lt;img data-jaco-editable-image data-jaco-editable-image-gallery
+  &lt;img data-jaco-image data-jaco-image data-jaco-image--lightbox
        src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;
 &lt;/a&gt;</code></pre>
     <div class="elements-image">
-      <img class="elements-gallery" data-jaco-editable-image data-jaco-editable-image-gallery
+      <img class="elements-gallery" data-jaco-image data-jaco-image data-jaco-image--lightbox
            src="media/demo-elements-gallery.svg" alt="Galerie-Vorschaubild" width="320" height="180"
            data-demo-full="media/demo-elements-gallery-full.svg">
     </div>
@@ -122,80 +122,80 @@
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-editable-line>Wiederholbarer Inhalt: Positionen</h2>
+    <h2 data-jaco-line>Wiederholbarer Inhalt: Positionen</h2>
     <p class="elements-note">Die vier Listen nutzen dasselbe Block-Fragment, aber unterschiedliche Einfügepositionen.</p>
 
-    <h3 data-jaco-editable-line>Oben</h3>
-    <pre class="code-ref"><code>&lt;div data-jaco-content-list
-     data-jaco-fragment=&quot;element-block-de.html&quot;
-     data-jaco-title=&quot;Block oben hinzufügen&quot;
-     data-jaco-pos=&quot;top&quot;&gt;
-  &lt;div data-jaco-content-item&gt;…&lt;/div&gt;
+    <h3 data-jaco-line>Oben</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-repeater
+     data-jaco-repeater--fragment=&quot;element-block-de.html&quot;
+     data-jaco-repeater--label=&quot;Block oben hinzufügen&quot;
+     data-jaco-repeater--add=&quot;top&quot;&gt;
+  &lt;div data-jaco-repeater-item&gt;…&lt;/div&gt;
 &lt;/div&gt;</code></pre>
-    <div class="elements-list" data-jaco-content-list data-jaco-fragment="element-block-de.html" data-jaco-title="Block oben hinzufügen" data-jaco-pos="top">
-      <div data-jaco-content-item>
-        <h3 data-jaco-editable-line>Oberer Block</h3>
-        <div data-jaco-editable>
+    <div class="elements-list" data-jaco-repeater data-jaco-repeater--fragment="element-block-de.html" data-jaco-repeater--label="Block oben hinzufügen" data-jaco-repeater--add="top">
+      <div data-jaco-repeater-item>
+        <h3 data-jaco-line>Oberer Block</h3>
+        <div data-jaco-block>
           <p>Neue Blöcke werden oben eingefügt.</p>
         </div>
       </div>
     </div>
 
-    <h3 data-jaco-editable-line>Unten</h3>
-    <pre class="code-ref"><code>&lt;div data-jaco-content-list
-     data-jaco-fragment=&quot;element-block-de.html&quot;
-     data-jaco-title=&quot;Block unten hinzufügen&quot;
-     data-jaco-pos=&quot;bottom&quot;&gt;
-  &lt;div data-jaco-content-item&gt;…&lt;/div&gt;
+    <h3 data-jaco-line>Unten</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-repeater
+     data-jaco-repeater--fragment=&quot;element-block-de.html&quot;
+     data-jaco-repeater--label=&quot;Block unten hinzufügen&quot;
+     data-jaco-repeater--add=&quot;bottom&quot;&gt;
+  &lt;div data-jaco-repeater-item&gt;…&lt;/div&gt;
 &lt;/div&gt;</code></pre>
-    <div class="elements-list" data-jaco-content-list data-jaco-fragment="element-block-de.html" data-jaco-title="Block unten hinzufügen" data-jaco-pos="bottom">
-      <div data-jaco-content-item>
-        <h3 data-jaco-editable-line>Unterer Block</h3>
-        <div data-jaco-editable>
+    <div class="elements-list" data-jaco-repeater data-jaco-repeater--fragment="element-block-de.html" data-jaco-repeater--label="Block unten hinzufügen" data-jaco-repeater--add="bottom">
+      <div data-jaco-repeater-item>
+        <h3 data-jaco-line>Unterer Block</h3>
+        <div data-jaco-block>
           <p>Neue Blöcke werden unten eingefügt.</p>
         </div>
       </div>
     </div>
 
-    <h3 data-jaco-editable-line>Überall</h3>
-    <pre class="code-ref"><code>&lt;div data-jaco-content-list
-     data-jaco-fragment=&quot;element-block-de.html&quot;
-     data-jaco-title=&quot;Block hier hinzufügen&quot;
-     data-jaco-pos=&quot;any&quot;&gt;
-  &lt;div data-jaco-content-item&gt;…&lt;/div&gt;
+    <h3 data-jaco-line>Überall</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-repeater
+     data-jaco-repeater--fragment=&quot;element-block-de.html&quot;
+     data-jaco-repeater--label=&quot;Block hier hinzufügen&quot;
+     data-jaco-repeater--add=&quot;any&quot;&gt;
+  &lt;div data-jaco-repeater-item&gt;…&lt;/div&gt;
 &lt;/div&gt;</code></pre>
-    <div class="elements-list" data-jaco-content-list data-jaco-fragment="element-block-de.html" data-jaco-title="Block hier hinzufügen" data-jaco-pos="any">
-      <div data-jaco-content-item>
-        <h3 data-jaco-editable-line>Erster freier Block</h3>
-        <div data-jaco-editable>
+    <div class="elements-list" data-jaco-repeater data-jaco-repeater--fragment="element-block-de.html" data-jaco-repeater--label="Block hier hinzufügen" data-jaco-repeater--add="any">
+      <div data-jaco-repeater-item>
+        <h3 data-jaco-line>Erster freier Block</h3>
+        <div data-jaco-block>
           <p>Ein Hinzufügen-Knopf erscheint vor jedem Block und nach dem letzten.</p>
         </div>
       </div>
-      <div data-jaco-content-item>
-        <h3 data-jaco-editable-line>Zweiter freier Block</h3>
-        <div data-jaco-editable>
+      <div data-jaco-repeater-item>
+        <h3 data-jaco-line>Zweiter freier Block</h3>
+        <div data-jaco-block>
           <p>Diese Position passt, wenn die Reihenfolge weniger zählt als das Platzieren neben einem bestimmten Block.</p>
         </div>
       </div>
     </div>
 
-    <h3 data-jaco-editable-line>Verschiebbar</h3>
-    <pre class="code-ref"><code>&lt;div data-jaco-content-list
-     data-jaco-fragment=&quot;element-block-de.html&quot;
-     data-jaco-title=&quot;Verschiebbaren Block hinzufügen&quot;
-     data-jaco-pos=&quot;draggable&quot;&gt;
-  &lt;div data-jaco-content-item&gt;…&lt;/div&gt;
+    <h3 data-jaco-line>Verschiebbar</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-repeater
+     data-jaco-repeater--fragment=&quot;element-block-de.html&quot;
+     data-jaco-repeater--label=&quot;Verschiebbaren Block hinzufügen&quot;
+     data-jaco-repeater--add=&quot;top&quot; data-jaco-repeater--sortable&gt;
+  &lt;div data-jaco-repeater-item&gt;…&lt;/div&gt;
 &lt;/div&gt;</code></pre>
-    <div class="elements-list" data-jaco-content-list data-jaco-fragment="element-block-de.html" data-jaco-title="Verschiebbaren Block hinzufügen" data-jaco-pos="draggable">
-      <div data-jaco-content-item>
-        <h3 data-jaco-editable-line>Erster verschiebbarer Block</h3>
-        <div data-jaco-editable>
+    <div class="elements-list" data-jaco-repeater data-jaco-repeater--fragment="element-block-de.html" data-jaco-repeater--label="Verschiebbaren Block hinzufügen" data-jaco-repeater--add="top" data-jaco-repeater--sortable>
+      <div data-jaco-repeater-item>
+        <h3 data-jaco-line>Erster verschiebbarer Block</h3>
+        <div data-jaco-block>
           <p>Dieser Block lässt sich am Griff umsortieren.</p>
         </div>
       </div>
-      <div data-jaco-content-item>
-        <h3 data-jaco-editable-line>Zweiter verschiebbarer Block</h3>
-        <div data-jaco-editable>
+      <div data-jaco-repeater-item>
+        <h3 data-jaco-line>Zweiter verschiebbarer Block</h3>
+        <div data-jaco-block>
           <p>Ziehen Sie einen Block, um seine Reihenfolge zu ändern.</p>
         </div>
       </div>
@@ -203,8 +203,8 @@
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-editable-line>Website-Vorlagen</h2>
-    <div data-jaco-editable>
+    <h2 data-jaco-line>Website-Vorlagen</h2>
+    <div data-jaco-block>
       <p>Eine Website-Vorlage ist genau ein markiertes Wurzelelement, gepflegt unter Inhalt → Vorlagen. «Auf alle anwenden» ersetzt jedes Element mit demselben Namen im ganzen Projekt – die Navigation und die Fusszeile dieser Seite sind Beispiele dafür.</p>
     </div>
     <pre class="code-ref"><code>&lt;footer data-jaco-template=&quot;footer-de.html&quot;&gt;…&lt;/footer&gt;</code></pre>
