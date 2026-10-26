@@ -287,17 +287,26 @@ Both change: apply-to-all matches strings, so a value that is normalized into
 another one would bind a page to a template nobody wrote. A value that does not
 match the pattern is an error on save, and the API refuses it the same way. The
 rule is one function that the marker check, the template API and apply-to-all all
-use. `find_site_templates()` already walks the directory recursively; the list
-shows the relative path, and `site_template_name()` strips the directory together
-with the extension where a label is needed.
+use.
+
+**The listing already walks subdirectories.** `find_site_templates()` calls
+`find_files()`, which is `find_files_rec()` without a depth limit, so a template in
+`footers/footer-en.html` is listed today. What is missing is everything after the
+listing:
+
+```text
+validate_site_template_file()   rejects any value with a directory
+site_template_name()            strips the directory with the extension
+apply / preview / view          build their paths from the validated value
+```
+
+So the contract allows a path that three functions refuse. Phase 1 changes all
+three together: the validator takes the pattern, `site_template_name()` only strips
+the extension where a label is needed, and the list shows the relative path.
 
 The fragment (`data-jaco-repeater--fragment`) names a file in
 `jaco-data/templates/content/`, which stays flat. If it ever gets subdirectories,
 it takes the same value syntax.
-
-`site_template_name()` keeps stripping directory and extension where a label is
-needed - the template list, the preview title - but not in the marker. The marker carries what
-the file is called.
 
 The value is **required**: a template without a name is not a template, because
 "apply-to-all" has no group to apply to. This is why `data-jaco-template` is the
@@ -376,7 +385,7 @@ Errors are reported before saving, not silently dropped.
 ## Where the contract lives
 
 1. `backend/core/html.php` – the whitelist (`ALLOWED_ATTRIBUTES`), decides what survives a save.
-2. `frontend/` – selectors in `editor.js` and `contentlists.js`, and the attribute list `dataAttrs` in `lib/iframe.js`.
+2. `frontend/` – selectors in `editor.js` and `contentlists.js`. `lib/iframe.js` holds no names; see [Serialisation is not a contract](#serialisation-is-not-a-contract).
 3. Pages and templates – `*.html` in the root, `de/`, `jaco-data/templates/`.
 4. `docs/` – this file.
 
@@ -387,7 +396,8 @@ repository already has this pattern: `IgnoreRulesTest`, `MenuRoleTest`,
 constant-to-constant checks in `IgnoreRulesTest`, and is the reason the contract
 test is its own step.
 
-The whitelist holds thirteen names and none of the runtime attributes:
+After phase 1 the whitelist holds thirteen names and none of the runtime
+attributes:
 
 ```php
 'data-jaco-block', 'data-jaco-line', 'data-jaco-link', 'data-jaco-image',
@@ -400,32 +410,100 @@ The whitelist holds thirteen names and none of the runtime attributes:
 > `data-jaco-template-name` is gone: the name is the value of
 > `data-jaco-template`. Thirteen names, one rule.
 
-### One source for the names
+Today it holds eleven: `data-jaco-template` is missing (see
+[Removed bug class](#removed-bug-class)). That difference is not a detail in this
+document, it is the reason the next section exists.
 
-**Phase 2.** The names stood in four places that had to agree: the whitelist in `html.php`, the
-selectors in `editor.js` and `contentlists.js`, the copy in `lib/iframe.js`, and the
-pages. The contract file is the one place that lists them; everything else reads
-it or is checked against it. A rename is one edit in the file plus the pages.
+### The code is the source
 
-```json
-{
-  "roles": {
-    "block": {"value": "forbidden"},
-    "template": {"value": "required"},
-    "repeater-item": {"value": "forbidden"}
-  },
-  "properties": {
-    "image--resizable": {"value": "forbidden"},
-    "repeater--add": {"value": "optional", "values": ["top", "bottom", "any"]}
+The name list lives **in the code**, not in this document. `ALLOWED_ATTRIBUTES` in
+`backend/core/html.php` is the only place that decides which names exist; every
+other mention - the selectors, the pages, the tables here - is a copy that can
+drift.
+
+That is deliberate. A document cannot run:
+
+```text
+It cannot strip an attribute on save.
+It cannot select an element.
+It cannot fail when a name is missing.
+```
+
+The code can, and it is the code that decides what an author may write and what a
+save keeps. So the order of truth is: the code defines the names, this document
+describes them, and a test proves the description is still right.
+
+**The test reads the whitelist and compares it with what the document lists.** A
+name that exists in one and not in the other is a failure in both directions:
+added to the code and not described, or promised by the document and not
+implemented. The document states the same list twice - in the tables under
+[Roles](#roles) and [Properties](#properties), and in the code block above - and
+both are checked, so a rename that updates one and not the other is caught too.
+
+What the test cannot do is judge whether a name is *good*. It only proves that
+code and description agree.
+
+Where the names sit inside the code is not fixed by this document:
+
+```text
+a constant in html.php        works today, nothing changes
+a generated constant          works too, and the frontend can read the same list
+a shared file the backend loads
+                              would need a loader; the codebase has none for
+                              backend data today (only jaco/language/*.json)
+```
+
+Whichever way it goes, `ALLOWED_ATTRIBUTES` stays the name the rest of the code
+uses, and the test keeps reading it.
+
+> **Why the frontend does not read it.** The editor could ask the backend for the
+> contract at load time. It does not have to: the selectors are a handful of
+> literals, and the contract test checks them against the whitelist. A request
+> would add a failure mode - what does the editor do when the list does not
+> arrive? - for a list that changes once.
+
+### Serialisation is not a contract
+
+`getHTML()` in `frontend/lib/iframe.js` reads `body.innerHTML` and undoes one thing
+the browser does to it:
+
+```js
+const dataAttrs = ['data-jaco-editable-image', 'data-jaco-editable-image-gallery',
+  'data-jaco-editable-line', 'data-jaco-editable', 'data-jaco-content-list',
+  'data-jaco-content-item']
+dataAttrs.forEach((attr) => { bodyHtml = bodyHtml.replaceAll(attr + '=""', attr) })
+```
+
+The browser serialises **every** empty attribute as `=""`:
+
+```javascript
+document.body.innerHTML
+// <div data-jaco-editable=""></div>   – although the file says <div data-jaco-editable>
+```
+
+So the list is a workaround for the serialiser, not a contract about names. It has
+two faults, and neither is fixed by adding a seventh, eighth and ninth name:
+
+- **It is incomplete.** `data-jaco-editable-image-extended` is missing, so an image
+  with an editable size comes back as `=""`. Thirty such attributes sit in the
+  backups in this repository - it happened, and nothing noticed.
+- **Every new role needs a new line.** The list exists only because the names are
+  written there.
+
+The fix is not a longer list but a generic rule: strip empty `data-jaco-*`
+attributes, whatever they are called.
+
+```js
+for (const attr of [...element.attributes]) {
+  if (attr.value === '' && attr.name.startsWith('data-jaco-')) {
+    element.removeAttribute(attr.name)
   }
 }
 ```
 
-The whitelist is then derived from the file. The sketch shows the shape, not every
-entry. The role of a property is the part
-before the `--`, so the file does not repeat it. How the frontend receives the file
-(a generated constant or a request with the other editor data) is decided when it is
-built; the contract test checks whichever it is.
+Not every empty attribute may go - `<a href="">` is a link to the current page, not
+an absent one - which is why the prefix matters. With that rule the list disappears
+and the editor carries no name of its own.
 
 ## Migration
 
@@ -493,9 +571,27 @@ left to do for the template marker.
 ### Order
 
 Pages and templates are rewritten by a script, not by hand, because 22 pages and
-12 templates are too many for a manual pass that must be consistent. The script
-is a one-off; it is not checked in. Its output is verified by the contract test
-(step 1) and by the Playwright suite.
+12 templates are too many for a manual pass that must be consistent.
+
+**The script is checked in**, next to `build-dist.sh` and `test-dist.sh`, and removed
+again in a later commit. Not to re-run it, but because it is the only record of what
+happened to 34 files in one step:
+
+```text
+what it does   swap each old name for its new one, per page and per template
+what it cannot do
+               split pos="draggable" into add plus sortable, or add the
+               .html extension: both need a second pass and a review
+how to check it
+               it prints every file it touched and every name it replaced;
+               that output belongs in the pull request, not in a comment
+```
+
+A one-off that nobody can read afterwards is the same as a manual edit that nobody
+witnessed. If the script is wrong, the contract test finds the names it missed - but
+it cannot tell a missed name from a deliberate one.
+
+Its output is verified by the contract test (step 1) and by the Playwright suite.
 
 ### Decisions taken
 
@@ -751,21 +847,31 @@ first and is supposed to fail until the rest agrees.
 
 | # | Step | Where |
 | --- | --- | --- |
-| 1 | Contract test: read the thirteen names from the whitelist, compare them with the frontend selectors and with every page | new test next to `IgnoreRulesTest` |
+| 1 | Contract test: read the names from the whitelist and compare them with this document, the frontend selectors and every page | new test next to `IgnoreRulesTest` |
 | 2 | Whitelist and validation rules, template marker fixed | `backend/core/html.php` |
 | 3 | Selectors | `frontend/editor.js`, `frontend/contentlists.js`, `frontend/lib/iframe.js` |
 | 4 | Pages (the template marker is already done) | 14 files in the root and `de/` |
 | 5 | Templates | 12 files under `jaco-data/templates/` |
 | 6 | Suites | PHPUnit, QUnit, Playwright |
 
-**The contract test runs after every step and must be green before the next step
-starts.** With a hard break, the intermediate states are inconsistent by design
-(old names in code, new names in the whitelist, or vice versa); the test is what
-keeps the inconsistency bounded to one step. A step that leaves the test red is a
-step that is not finished.
+**The contract test runs after every step, and what it reports is expected, not
+surprising.** With a hard break the intermediate states are inconsistent by design:
+after step 2 the whitelist carries the new names and the pages still carry the old
+ones, so the test is red until step 5. The point is not a green test at every step
+but a test that **says which names still disagree, and with what** - the failure list
+is the work list for the next step.
 
-**Step 1** checks three places against each other (whitelist, frontend, pages), the
-same way `IgnoreRulesTest` guards the ignore rules and `MenuRoleTest` the menu.
+The one thing that must hold: at the end of step 6 the test is green, the suites run,
+and `./build-dist.sh` plus `./verify-dist-archive.sh` pass.
+
+A step that leaves the test red **with names the step was supposed to fix** is not
+finished, even if the suites are green: the suites do not see the pages, the contract
+test does.
+
+**Step 1** checks the whitelist against this document, the frontend selectors and the
+pages, the same way `IgnoreRulesTest` guards the ignore rules and `MenuRoleTest` the
+menu. The whitelist is what the test trusts; the document is what it compares it
+with (see [The code is the source](#the-code-is-the-source)).
 Without it a rename that missed one selector looks green. The page check parses
 HTML, which is more work than the constant-to-constant checks; this is why it is a
 step of its own.
@@ -781,9 +887,11 @@ template value is validated by one function that the marker check, the template
 API and apply-to-all share; see
 [Syntax of the value](#syntax-of-the-value).
 
-**Step 3** replaces every selector, and the list of attribute names in
-`frontend/lib/iframe.js` (`dataAttrs`), which is a copy of the contract outside the
-whitelist. The editor's four runtime attributes keep their names. With a hard
+**Step 3** replaces every selector. The list of attribute names in
+`frontend/lib/iframe.js` (`dataAttrs`) is **not** renamed but removed: it is not a
+copy of the contract, it is a workaround for the browser's serialisation and has to
+be generic (see [Serialisation is not a contract](#serialisation-is-not-a-contract)).
+The editor's four runtime attributes keep their names. With a hard
 break there is no old name to fall back to, so a missed selector silently stops
 working - the contract test from step 1 is what catches it. One behaviour changes
 with the split: `makeSortable` in `frontend/contentlists.js` runs today only when
@@ -811,7 +919,7 @@ sees.
 | # | Step | Where |
 | --- | --- | --- |
 | A | Editor state out of the DOM, see [Editor state](#editor-state) | `frontend/editor.js` |
-| B | One contract file for the names, see [One source for the names](#one-source-for-the-names); the way the frontend reads it is still open | `jaco/data-attributes.json`, `backend/core/html.php`, `frontend/` |
+| B | *(dropped)* a contract file for the names would only add a loader; see [The code is the source](#the-code-is-the-source) | – |
 
 Step A also removes the base64 data attribute. After step B the contract test reads
 the file instead of the whitelist constant.
@@ -839,6 +947,11 @@ done".
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 0.21.0 | 2026-10-26 | The rewrite script is checked in for the duration, with what it does and what it cannot do. An unread one-off leaves no trace of a change that touches 34 files. |
+| 0.20.0 | 2026-10-26 | The contract test cannot be green after every step: with a hard break it names the names that still disagree, and that list is the work list. Green at the end of step 6, with the suites and the dist checks. |
+| 0.19.0 | 2026-10-26 | The template value may contain directories, but three functions still refuse it: the contract now names them and phase 1 changes all three together. A duplicated paragraph about `site_template_name()` is gone. |
+| 0.18.0 | 2026-10-26 | `dataAttrs` in `lib/iframe.js` is a workaround for the serialiser, not a contract: it is incomplete and is replaced by a generic rule in phase 1, not renamed. |
+| 0.17.0 | 2026-10-26 | The code is the source: `ALLOWED_ATTRIBUTES` defines the names, this document describes them, and the contract test compares the two. The contract-file sketch is dropped; the whitelist block states that it holds eleven names today. |
 | 0.16.0 | 2026-10-26 | The work is split: phase 1 (the names, before the release) and phase 2 (editor state out of the DOM, one contract file). The editor's runtime attributes keep their names in phase 1. |
 | 0.15.0 | 2026-10-26 | Default add position stays `top`; all six repeaters in the pages carry a `pos`, so the migration changes no behaviour. The template value is a path relative to `jaco-data/templates/site/` with a fixed syntax and is validated, not sanitized, so templates can live in subdirectories. The three block properties are agreed. The way the frontend reads the contract file stays open. |
 | 0.14.0 | 2026-10-26 | Editor state leaves the DOM: no transient attributes, so the exception in the grammar, the `transient-*` rules and the base64 data attribute are gone. One contract file (`jaco/data-attributes.json`) lists the names; whitelist, frontend and tests read it. Steps 2 and 6 merge. |
