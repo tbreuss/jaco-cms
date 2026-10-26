@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180" role="img" aria-label="Inside a link">
+  <rect width="320" height="180" fill="#b45309"/>
+  <circle cx="80" cy="90" r="38" fill="#fcd34d"/>
+  <path d="M150 120 200 55l50 65Z" fill="#fffbeb"/>
+  <text x="160" y="166" fill="#ffffff" font-family="system-ui, sans-serif" font-size="14" text-anchor="middle">Inside a link</text>
+</svg>

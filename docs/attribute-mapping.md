@@ -170,7 +170,7 @@ like any other and is rejected on save.
 <img data-jaco-image data-jaco-image--resizable data-jaco-image--lightbox src="media/cake.jpg" width="400">
 
 <section data-jaco-repeater
-         data-jaco-repeater--fragment="feature_en.html"
+         data-jaco-repeater--fragment="feature-en.html"
          data-jaco-repeater--label="Add feature"
          data-jaco-repeater--add="top" data-jaco-repeater--sortable>
   <h2 data-jaco-line>Why Jaco CMS?</h2>
@@ -228,7 +228,7 @@ every block says `any` explicitly. The split removes the hidden coupling: the
 old value had two meanings that happened to coincide, the new attributes have
 one meaning each.
 
-Both name a file, both carry the extension: `data-jaco-repeater--fragment="feature_en.html"`
+Both name a file, both carry the extension: `data-jaco-repeater--fragment="feature-en.html"`
 and `data-jaco-template="footer.html"`. The directories hold `.html` files, both
 APIs take a file name (`template/content/view?file=…`,
 `template/site/preview` with `fileName`), and the template list in the admin shows
@@ -587,11 +587,11 @@ Link and image side by side, two edits:
 Every add position, including the default:
 
 ```html
-<section data-jaco-repeater data-jaco-repeater--fragment="feature_en.html">…</section>
-<section data-jaco-repeater data-jaco-repeater--fragment="feature_en.html" data-jaco-repeater--add="top">…</section>
-<section data-jaco-repeater data-jaco-repeater--fragment="feature_en.html" data-jaco-repeater--add="bottom">…</section>
-<section data-jaco-repeater data-jaco-repeater--fragment="feature_en.html" data-jaco-repeater--add="any">…</section>
-<section data-jaco-repeater data-jaco-repeater--fragment="feature_en.html"
+<section data-jaco-repeater data-jaco-repeater--fragment="feature-en.html">…</section>
+<section data-jaco-repeater data-jaco-repeater--fragment="feature-en.html" data-jaco-repeater--add="top">…</section>
+<section data-jaco-repeater data-jaco-repeater--fragment="feature-en.html" data-jaco-repeater--add="bottom">…</section>
+<section data-jaco-repeater data-jaco-repeater--fragment="feature-en.html" data-jaco-repeater--add="any">…</section>
+<section data-jaco-repeater data-jaco-repeater--fragment="feature-en.html"
          data-jaco-repeater--add="top" data-jaco-repeater--sortable>…</section>
 ```
 
@@ -615,7 +615,7 @@ blocks are sorted.
 
 ```html
 <section data-jaco-repeater
-         data-jaco-repeater--fragment="feature_en.html"
+         data-jaco-repeater--fragment="feature-en.html"
          data-jaco-repeater--label="Add feature"
          data-jaco-repeater--add="top" data-jaco-repeater--sortable>
   <h2 data-jaco-line>Why Jaco CMS?</h2>

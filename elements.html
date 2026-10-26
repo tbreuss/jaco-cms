@@ -8,9 +8,12 @@
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/assets/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-  <meta name="robots" content="noindex, nofollow, noarchive">
-  <meta name="googlebot" content="noindex, nofollow, noarchive">
-  <title>Editable content elements – Jaco CMS</title>
+  <title>Elements reference – Jaco CMS</title>
+  <meta name="description" content="Every marker that makes a page editable, shown on a live example with the HTML that produces it: text, links, images, repeatable blocks and site templates.">
+  <link rel="canonical" href="https://jaco.tebe.ch/elements.html">
+  <link rel="alternate" hreflang="en" href="https://jaco.tebe.ch/elements.html">
+  <link rel="alternate" hreflang="de" href="https://jaco.tebe.ch/de/elements.html">
+  <link rel="alternate" hreflang="x-default" href="https://jaco.tebe.ch/elements.html">
   <link rel="stylesheet" href="assets/site.css">
   <script src="assets/theme.js"></script>
   <script src="assets/nav.js"></script>
@@ -23,36 +26,49 @@
     <li><a href="features.html">Features</a></li>
     <li><a href="docs.html">Docs</a></li>
     <li><a href="download.html">Download</a></li>
-    <li class="nav-utility"><a href="de/index.html">DE</a><button type="button" class="theme-switch"><svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg><svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button></li>
+    <li class="nav-utility"><a href="de/elements.html">DE</a><button type="button" class="theme-switch"><svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg><svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button></li>
   </ul>
 
   <div class="page-head">
     <h1 data-jaco-editable-line>Editable content elements</h1>
     <div data-jaco-editable>
-      <p>This page demonstrates every inline-editing marker and its variants. It is intentionally not linked from the navigation and can stay in production as a reference for editors.</p>
+      <p>Every marker that makes a page editable is shown here on a live example, with the HTML that produces it. The navigation stays short on purpose; the <a href="docs.html">documentation</a> links here.</p>
     </div>
   </div>
 
   <div class="elements-section">
     <h2 data-jaco-editable-line>Single-line text</h2>
+    <pre class="code-ref"><code>&lt;h1 data-jaco-editable-line&gt;A single line&lt;/h1&gt;</code></pre>
     <p data-jaco-editable-line>A single-line marker is intended for headings and short labels.</p>
   </div>
 
   <div class="elements-section">
     <h2 data-jaco-editable-line>Rich text</h2>
+    <pre class="code-ref"><code>&lt;div data-jaco-editable&gt;&lt;p&gt;Text with &lt;strong&gt;formatting&lt;/strong&gt;.&lt;/p&gt;&lt;/div&gt;</code></pre>
     <div data-jaco-editable>
       <p>A rich-text block supports <strong>bold</strong>, <em>italic</em>, links, lists and embedded videos. The whole block is edited in one place.</p>
       <ul>
         <li>First list item</li>
         <li>Second list item</li>
       </ul>
-      <p>Embedded video example:</p>
+    </div>
+  </div>
+
+  <div class="elements-section">
+    <h2 data-jaco-editable-line>Videos</h2>
+    <pre class="code-ref"><code>&lt;!-- in a text block, added through the video dialog --&gt;
+&lt;iframe src=&quot;https://www.youtube-nocookie.com/embed/VIDEO_ID&quot;&gt;&lt;/iframe&gt;</code></pre>
+    <div data-jaco-editable>
+      <p>A video is added from a text block with the video button in the toolbar.</p>
       <iframe class="elements-video" src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ" title="Embedded video example" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
   </div>
 
   <div class="elements-section">
     <h2 data-jaco-editable-line>Editable links</h2>
+    <pre class="code-ref"><code>&lt;a href=&quot;download.html&quot; data-jaco-editable-link&gt;Same tab&lt;/a&gt;
+
+&lt;a href=&quot;download.html&quot; target=&quot;_blank&quot; data-jaco-editable-link&gt;New tab&lt;/a&gt;</code></pre>
     <p>
       <a class="cta" href="download.html" data-jaco-editable-link>Same tab</a>
       <a class="cta secondary" href="download.html" target="_blank" data-jaco-editable-link>New tab</a>
@@ -62,23 +78,47 @@
 
   <div class="elements-section">
     <h2 data-jaco-editable-line>Images</h2>
+
+    <h3 data-jaco-editable-line>Fixed size</h3>
+    <pre class="code-ref"><code>&lt;img data-jaco-editable-image src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;</code></pre>
     <div class="elements-image">
-      <img data-jaco-editable-image src="media/demo-elements.svg" alt="Simple editable image" width="320" height="180">
+      <img data-jaco-editable-image src="media/demo-elements.svg" alt="Fixed size image" width="320" height="180">
     </div>
+    <p class="elements-note">The file is replaced; width and height stay as they are in the HTML.</p>
+
+    <h3 data-jaco-editable-line>Size editable</h3>
+    <pre class="code-ref"><code>&lt;img data-jaco-editable-image-extended src=&quot;media/team.jpg&quot; width=&quot;400&quot; height=&quot;225&quot;&gt;</code></pre>
     <div class="elements-image">
-      <img data-jaco-editable-image-extended src="media/demo-elements.svg" alt="Extended editable image" width="320" height="180">
+      <img data-jaco-editable-image-extended src="media/demo-elements-extended.svg" alt="Image with editable size" width="400" height="225">
     </div>
+    <p class="elements-note">The file is replaced and the width and height can be changed in the editor – the handles stand for that.</p>
+
+    <h3 data-jaco-editable-line>Inside a link</h3>
+    <pre class="code-ref"><code>&lt;a href=&quot;shop.html&quot; data-jaco-editable-link&gt;
+  &lt;img data-jaco-editable-image src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;
+&lt;/a&gt;</code></pre>
     <div class="elements-image">
-      <a class="elements-image-link" href="media/demo-elements.svg" data-jaco-editable-link>
-        <img data-jaco-editable-image src="media/demo-elements.svg" alt="Image inside an editable link" width="320" height="180">
+      <a class="elements-image-link" href="media/demo-elements-link.svg" target="_blank" rel="noopener" data-jaco-editable-link>
+        <img data-jaco-editable-image src="media/demo-elements-link.svg" alt="Image inside an editable link" width="320" height="180">
       </a>
     </div>
+    <p class="elements-note">The image and the link are edited separately: click the image for the file, the surrounding link for its target. This link opens in a new tab, which the link dialog sets.</p>
+
+    <h3 data-jaco-editable-line>Gallery</h3>
+    <pre class="code-ref"><code>&lt;img data-jaco-editable-image data-jaco-editable-image-gallery
+     src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;
+
+&lt;!-- after saving: the server writes media/team-full.jpg and links it --&gt;
+&lt;a href=&quot;media/team-full.jpg&quot;&gt;
+  &lt;img data-jaco-editable-image data-jaco-editable-image-gallery
+       src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;
+&lt;/a&gt;</code></pre>
     <div class="elements-image">
-      <a href="media/demo-elements.svg">
-        <img data-jaco-editable-image data-jaco-editable-image-gallery src="media/demo-elements.svg" alt="Linked gallery image" width="320" height="180">
-      </a>
+      <img class="elements-gallery" data-jaco-editable-image data-jaco-editable-image-gallery
+           src="media/demo-elements-gallery.svg" alt="Gallery thumbnail" width="320" height="180"
+           data-demo-full="media/demo-elements-gallery-full.svg">
     </div>
-    <p class="elements-note">The last image is already wrapped in an explicit link. Replacing it keeps that link; without one, the gallery marker creates a full-size link automatically.</p>
+    <p class="elements-note">The thumbnail is a small file; the gallery marker writes a second, full-size one and links the thumbnail to it. Opening it here shows the larger image. Replacing the image keeps an existing link instead.</p>
   </div>
 
   <div class="elements-section">
@@ -86,7 +126,13 @@
     <p class="elements-note">The four lists use the same block template but different insertion positions.</p>
 
     <h3 data-jaco-editable-line>Top</h3>
-    <div class="elements-list" data-jaco-content-list data-jaco-fragment="element_block.html" data-jaco-title="Add top block" data-jaco-pos="top">
+    <pre class="code-ref"><code>&lt;div data-jaco-content-list
+     data-jaco-fragment=&quot;element-block-en.html&quot;
+     data-jaco-title=&quot;Add top block&quot;
+     data-jaco-pos=&quot;top&quot;&gt;
+  &lt;div data-jaco-content-item&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    <div class="elements-list" data-jaco-content-list data-jaco-fragment="element-block-en.html" data-jaco-title="Add top block" data-jaco-pos="top">
       <div data-jaco-content-item>
         <h3 data-jaco-editable-line>Top block</h3>
         <div data-jaco-editable>
@@ -96,7 +142,13 @@
     </div>
 
     <h3 data-jaco-editable-line>Bottom</h3>
-    <div class="elements-list" data-jaco-content-list data-jaco-fragment="element_block.html" data-jaco-title="Add bottom block" data-jaco-pos="bottom">
+    <pre class="code-ref"><code>&lt;div data-jaco-content-list
+     data-jaco-fragment=&quot;element-block-en.html&quot;
+     data-jaco-title=&quot;Add bottom block&quot;
+     data-jaco-pos=&quot;bottom&quot;&gt;
+  &lt;div data-jaco-content-item&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    <div class="elements-list" data-jaco-content-list data-jaco-fragment="element-block-en.html" data-jaco-title="Add bottom block" data-jaco-pos="bottom">
       <div data-jaco-content-item>
         <h3 data-jaco-editable-line>Bottom block</h3>
         <div data-jaco-editable>
@@ -106,7 +158,13 @@
     </div>
 
     <h3 data-jaco-editable-line>Any</h3>
-    <div class="elements-list" data-jaco-content-list data-jaco-fragment="element_block.html" data-jaco-title="Add block here" data-jaco-pos="any">
+    <pre class="code-ref"><code>&lt;div data-jaco-content-list
+     data-jaco-fragment=&quot;element-block-en.html&quot;
+     data-jaco-title=&quot;Add block here&quot;
+     data-jaco-pos=&quot;any&quot;&gt;
+  &lt;div data-jaco-content-item&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    <div class="elements-list" data-jaco-content-list data-jaco-fragment="element-block-en.html" data-jaco-title="Add block here" data-jaco-pos="any">
       <div data-jaco-content-item>
         <h3 data-jaco-editable-line>First any block</h3>
         <div data-jaco-editable>
@@ -122,7 +180,13 @@
     </div>
 
     <h3 data-jaco-editable-line>Draggable</h3>
-    <div class="elements-list" data-jaco-content-list data-jaco-fragment="element_block.html" data-jaco-title="Add draggable block" data-jaco-pos="draggable">
+    <pre class="code-ref"><code>&lt;div data-jaco-content-list
+     data-jaco-fragment=&quot;element-block-en.html&quot;
+     data-jaco-title=&quot;Add draggable block&quot;
+     data-jaco-pos=&quot;draggable&quot;&gt;
+  &lt;div data-jaco-content-item&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    <div class="elements-list" data-jaco-content-list data-jaco-fragment="element-block-en.html" data-jaco-title="Add draggable block" data-jaco-pos="draggable">
       <div data-jaco-content-item>
         <h3 data-jaco-editable-line>First draggable block</h3>
         <div data-jaco-editable>
@@ -138,9 +202,50 @@
     </div>
   </div>
 
+  <div class="elements-section">
+    <h2 data-jaco-editable-line>Site templates</h2>
+    <div data-jaco-editable>
+      <p>A site template is one marked root element, maintained under Content → Templates. "Apply to all" replaces every element that carries the same name across the project — the navigation and the footer on this page are examples of it.</p>
+    </div>
+    <pre class="code-ref"><code>&lt;footer data-jaco-template=&quot;footer-en.html&quot;&gt;…&lt;/footer&gt;</code></pre>
+    <p class="elements-note">The value is the file name in <code>jaco-data/templates/site/</code>, extension included.</p>
+  </div>
+
   <footer data-jaco-template="footer-en.html">
     <a href="imprint.html">Imprint</a> · <a href="privacy.html">Privacy</a>
   </footer>
+
+  <!-- Demo only: the gallery example opens the full image in a dialog. Jaco's
+       own gallery links the files, a lightbox would be the site's job. -->
+  <script>
+    (() => {
+      if (typeof HTMLDialogElement === 'undefined') {
+        return
+      }
+      document.querySelectorAll('.elements-gallery[data-demo-full]').forEach((image) => {
+        image.style.cursor = 'zoom-in'
+        image.addEventListener('click', (event) => {
+          event.preventDefault()
+          event.stopPropagation()
+
+          const dialog = document.createElement('dialog')
+          dialog.className = 'elements-modal'
+          const full = document.createElement('img')
+          full.src = image.dataset.demoFull
+          full.alt = image.alt
+          const close = document.createElement('button')
+          close.type = 'button'
+          close.textContent = image.dataset.demoClose || 'Close'
+          close.addEventListener('click', () => dialog.close())
+          dialog.addEventListener('close', () => dialog.remove())
+          dialog.append(full, close)
+          document.body.appendChild(dialog)
+          dialog.showModal()
+        }, true)
+      })
+    })()
+  </script>
 </body>
+
 
 </html>

@@ -289,16 +289,36 @@ Example:
 ## Recurring content blocks
 
 A content list lets editors add prebuilt blocks (e.g. news items) themselves.
-Put a fragment file in `jaco-data/templates/content/` (see the samples there),
-then mark where blocks may appear:
+Put a fragment file in `jaco-data/templates/content/`, then mark where blocks may
+appear:
 
 ```html
-<div data-jaco-content-list data-jaco-fragment="sample_news_section.html" data-jaco-title="Add news" data-jaco-pos="top">
+<div data-jaco-content-list data-jaco-fragment="news-section.html" data-jaco-title="Add news" data-jaco-pos="top">
     <div data-jaco-content-item>
         <h2 data-jaco-editable-line>Existing headline</h2>
     </div>
 </div>
 ```
+
+The fragment is one copy of such a block. It may use the site's own classes; this
+one places a text block and an image next to each other:
+
+```html
+<!-- jaco-data/templates/content/news-section.html -->
+<div class="news-section">
+    <div class="news-text">
+        <h2 data-jaco-editable-line>Headline</h2>
+        <p data-jaco-editable-line>Text</p>
+    </div>
+    <div class="news-img">
+        <img data-jaco-editable-image height="600" width="800" src="…">
+    </div>
+    <div class="clearer"></div>
+</div>
+```
+
+The editor inserts the fragment inside a `data-jaco-content-item` wrapper, so the
+fragment itself must not carry that wrapper.
 
 - `data-jaco-fragment` names the fragment file from `jaco-data/templates/content/`
 - `data-jaco-title` labels the add button shown in the editor

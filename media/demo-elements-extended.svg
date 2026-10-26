@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180" role="img" aria-label="Size editable">
+  <rect width="320" height="180" fill="#0f766e"/>
+  <circle cx="80" cy="90" r="38" fill="#5eead4"/>
+  <path d="M150 120 200 55l50 65Z" fill="#ecfdf5"/>
+  <text x="160" y="166" fill="#ffffff" font-family="system-ui, sans-serif" font-size="14" text-anchor="middle">Size editable</text>
+  <!-- resize handles: the visible difference to a fixed-size image -->
+  <g fill="#ffffff" stroke="#0f766e" stroke-width="2">
+    <rect x="6" y="6" width="10" height="10" rx="2"/>
+    <rect x="304" y="6" width="10" height="10" rx="2"/>
+    <rect x="6" y="164" width="10" height="10" rx="2"/>
+    <rect x="304" y="164" width="10" height="10" rx="2"/>
+    <rect x="155" y="4" width="10" height="10" rx="2"/>
+    <rect x="155" y="166" width="10" height="10" rx="2"/>
+  </g>
+  <!-- size arrows along the left edge and the top edge -->
+  <g stroke="#ffffff" stroke-width="2" fill="none" opacity="0.9">
+    <path d="M26 20v140M20 26l6-6 6 6M20 154l6 6 6-6"/>
+    <path d="M26 20h268M32 14l-6 6 6 6M288 14l6 6-6 6"/>
+  </g>
+</svg>

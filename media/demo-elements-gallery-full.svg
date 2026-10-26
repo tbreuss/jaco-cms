@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="Gallery full image">
+  <rect width="960" height="540" fill="#3b0764"/>
+  <circle cx="240" cy="270" r="114" fill="#c4b5fd"/>
+  <path d="M450 360 600 165l150 195Z" fill="#f5f3ff"/>
+  <text x="480" y="56" fill="#ffffff" font-family="system-ui, sans-serif" font-size="28" text-anchor="middle">Full size – 960 × 540</text>
+  <text x="480" y="510" fill="#e9d5ff" font-family="system-ui, sans-serif" font-size="18" text-anchor="middle">This is the file the thumbnail links to</text>
+</svg>

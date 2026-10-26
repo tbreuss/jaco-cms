@@ -84,4 +84,18 @@
     <xhtml:link rel="alternate" hreflang="de" href="https://jaco.tebe.ch/de/imprint.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://jaco.tebe.ch/imprint.html"/>
   </url>
+  <url>
+    <loc>https://jaco.tebe.ch/elements.html</loc>
+    <lastmod>2026-10-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jaco.tebe.ch/elements.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://jaco.tebe.ch/de/elements.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://jaco.tebe.ch/elements.html"/>
+  </url>
+  <url>
+    <loc>https://jaco.tebe.ch/de/elements.html</loc>
+    <lastmod>2026-10-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jaco.tebe.ch/elements.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://jaco.tebe.ch/de/elements.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://jaco.tebe.ch/elements.html"/>
+  </url>
 </urlset>
