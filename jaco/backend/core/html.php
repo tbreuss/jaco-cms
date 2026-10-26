@@ -623,9 +623,15 @@ function handle_embedded_data_url_images(Config $config, string $html): array
 /**
  * Gallery images link their thumbnail to the full version: the client sends
  * the full data url in a temporary attribute, the server stores it as a
- * second file ("name-full.ext") and wraps the thumbnail in a link. An
- * existing parent link (e.g. an editable link) is never clobbered. Without
- * the temporary attribute there is nothing to link, the thumbnail stays
+ * second file ("name-full.ext") and wraps the thumbnail in a link.
+ *
+ * An existing parent link (e.g. an editable link) keeps its target, unless it
+ * points at the gallery's own full file: then a replaced thumbnail replaces the
+ * full version as well. Without that exception the second replacement would
+ * silently keep showing the old image - the link survives, so the old guard
+ * bailed out before writing anything.
+ *
+ * Without the temporary attribute there is nothing to link, the thumbnail stays
  * plain. Returns an error message or null on success.
  */
 function write_gallery_full(\DOMDocument $dom, Config $config, \DOMElement $el, string $imgFile, string $galleryFullAttr): ?string
@@ -637,15 +643,16 @@ function write_gallery_full(\DOMDocument $dom, Config $config, \DOMElement $el, 
     $fullSrc = $el->getAttribute($galleryFullAttr);
     $el->removeAttribute($galleryFullAttr);
 
-    // an explicit parent link wins over the gallery link, no second file then
-    $parent = $el->parentNode;
-
-    if ($parent instanceof \DOMElement && \strtolower($parent->nodeName) === 'a') {
-        return null;
-    }
-
     $fullFile = \pathinfo($imgFile, PATHINFO_FILENAME) . '-full.'
         . \pathinfo($imgFile, PATHINFO_EXTENSION);
+
+    $parent = $el->parentNode;
+    $parentLink = $parent instanceof \DOMElement && \strtolower($parent->nodeName) === 'a' ? $parent : null;
+
+    if ($parentLink !== null && !is_own_gallery_full($parentLink, $config, $fullFile)) {
+        // an explicit link to somewhere else wins over the gallery link
+        return null;
+    }
 
     if (($pos = \strpos($fullSrc, ',')) === false) {
         return null;
@@ -672,6 +679,14 @@ function write_gallery_full(\DOMDocument $dom, Config $config, \DOMElement $el, 
         return 'Invalid file name or extension: ' . $fullFile;
     }
 
+    // the link already points at the full file: overwrite it in place, so a
+    // replaced thumbnail and its full version stay the same pair
+    if ($parentLink !== null) {
+        $status = filesystem\write_file_atomic($config, $config->mediaDir, $fullFile, $fullData);
+
+        return $status ? null : 'Could not write file: ' . $fullFile;
+    }
+
     [$status, $newFull] = filesystem\write_file_without_overwrite($config, $config->mediaDir, $fullFile, $fullData);
 
     if ($status === false) {
@@ -686,4 +701,24 @@ function write_gallery_full(\DOMDocument $dom, Config $config, \DOMElement $el, 
     }
 
     return null;
+}
+
+/**
+ * True when the link around a thumbnail points at the full file that belongs to
+ * this image - the pair the gallery marker itself created on an earlier save.
+ */
+function is_own_gallery_full(\DOMElement $link, Config $config, string $fullFile): bool
+{
+    $href = \trim($link->getAttribute('href'));
+
+    if ($href === '') {
+        return false;
+    }
+
+    // compare what the markup says with what the server would write: a relative
+    // path, an absolute one and a url all name the same file
+    $normalized = \ltrim((string) \preg_replace('#^[a-z]+://[^/]+#i', '', $href), '/');
+    $target = \ltrim(filesystem\combine($config->mediaUrl, $fullFile), '/');
+
+    return $normalized === $target;
 }

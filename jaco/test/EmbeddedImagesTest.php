@@ -168,6 +168,48 @@ final class EmbeddedImagesTest extends TestCase
         $this->assertFileDoesNotExist($config->mediaDir . '/' . self::GALLERY_FULL_FILE);
     }
 
+    public function testReplacingAGalleryImageReplacesItsFullVersion(): void
+    {
+        // the second save: the thumbnail sits in the link the marker created, so
+        // the old guard treated it as "explicit link" and kept the old full file
+        $config = test_config();
+        file_put_contents($config->mediaDir . '/' . self::GALLERY_FULL_FILE, 'old-full');
+
+        $html = '<html><body><a href="media/' . self::GALLERY_FULL_FILE . '">'
+            . '<img data-jaco-editable-image data-jaco-editable-image-gallery'
+            . ' src="data:image/png;base64,' . base64_encode('thumb-bytes') . '"'
+            . ' data-jaco-editable-image-file="' . self::GALLERY_FILE . '"'
+            . ' data-jaco-gallery-full="data:image/png;base64,' . base64_encode('new-full') . '" alt="test"></a></body></html>';
+
+        [$status, $result] = html\handle_embedded_data_url_images($config, $html);
+
+        $this->assertTrue($status);
+        $this->assertSame('new-full', file_get_contents($config->mediaDir . '/' . self::GALLERY_FULL_FILE), 'the full file is replaced in place');
+
+        $result = (string) $result;
+        // no doubled link and no numbered copy: the pair keeps its name
+        $this->assertStringContainsString('<a href="media/' . self::GALLERY_FULL_FILE . '"><img', $result);
+        $this->assertStringNotContainsString('-full-1.', $result);
+    }
+
+    public function testAReplacedFullVersionKeepsAnAbsoluteLinkWorking(): void
+    {
+        // the same page may store the link absolute or root relative
+        $config = test_config();
+        file_put_contents($config->mediaDir . '/' . self::GALLERY_FULL_FILE, 'old-full');
+
+        $html = '<html><body><a href="/media/' . self::GALLERY_FULL_FILE . '">'
+            . '<img data-jaco-editable-image data-jaco-editable-image-gallery'
+            . ' src="data:image/png;base64,' . base64_encode('thumb-bytes') . '"'
+            . ' data-jaco-editable-image-file="' . self::GALLERY_FILE . '"'
+            . ' data-jaco-gallery-full="data:image/png;base64,' . base64_encode('new-full') . '" alt="test"></a></body></html>';
+
+        [$status] = html\handle_embedded_data_url_images($config, $html);
+
+        $this->assertTrue($status);
+        $this->assertSame('new-full', file_get_contents($config->mediaDir . '/' . self::GALLERY_FULL_FILE));
+    }
+
     public function testBrokenGalleryFullIsReported(): void
     {
         $config = test_config();
