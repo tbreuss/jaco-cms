@@ -2,7 +2,10 @@
 
 > **Status: agreed.** The naming below is settled; the implementation is deferred
 > on purpose. The code, the pages and the tests still use the names in
-> [What exists today](#what-exists-today).
+> [What exists today](#what-exists-today), with one exception: the template
+> marker already carries its file name (`data-jaco-template="footer.html"`), in the
+> pages, the site templates, `template_with_marker()` and the tests. Only its
+> whitelist entry is still missing.
 
 The `data-jaco-*` attributes are the contract between a page and the editor. They
 are written by hand into HTML that a customer already owns, so every name here is
@@ -25,7 +28,7 @@ Sixteen attributes, three naming schemes, one namespace.
 | `data-jaco-fragment` | value | content list | yes |
 | `data-jaco-title` | value | content list | yes |
 | `data-jaco-pos` | value | content list | yes |
-| `data-jaco-template` | value | `backend/core/html.php` | **no** |
+| `data-jaco-template` | value (file name, with `.html`) | `backend/core/html.php` | **no** |
 | `data-jaco-editable-image-file` | value, runtime | editor | no |
 | `data-jaco-gallery-full` | value, runtime | editor | no |
 | `data-jaco-is-editing` | boolean, runtime | editor | no |
@@ -50,10 +53,11 @@ survives a save; everything else is stripped silently.
 One rule, and it is a rule about **roles**, not about values:
 
 ```
-data-jaco-<name>[="value"]
+data-jaco-<role>[="value"]               a role: the editor acts on the element
+data-jaco-<role>--<property>[="value"]   a property: it configures that role
 
-Every name is a role (the editor acts on the element)
-or a property of a role (it configures it).
+A role name may contain single hyphens (repeater-item).
+The double hyphen separates the property from its role.
 Whether the value is absent (boolean), optional, required
 or forbidden is a property of the name, not of the grammar.
 ```
@@ -61,7 +65,7 @@ or forbidden is a property of the name, not of the grammar.
 A name that is present is on. A name that carries a value is configured. The
 two are independent axes: a role can carry a value (`data-jaco-template="footer.html"`
 — the role is "template instance", the value is its name), and a property can be
-boolean (`data-jaco-image-resizable`).
+boolean (`data-jaco-image--resizable`).
 
 > **Why this replaced "no value grammar".** An earlier revision split the
 > namespace into "markers carry no value, keys carry a value". That split was a
@@ -72,12 +76,22 @@ boolean (`data-jaco-image-resizable`).
 
 ### Consequences
 
-The grammar is **syntactically ambiguous**: `data-jaco-<word>-<word>` can be a
-role with a compound name (`repeater-item`) or a property of a role
-(`image-resizable`). The disambiguation is the **closed list of names** below,
-not the syntax. This is a deliberate trade: an extensible namespace cannot be
-parsed by shape alone. The server validates against the list; an unknown name is
-an error (see [What the server validates](#what-the-server-validates)).
+Roles and properties are told apart **by the syntax**: a name with `--` is a
+property, and everything before the `--` is its role. A single hyphen can
+therefore stay inside a role name without making the grammar ambiguous.
+`repeater--item-label` is a property of `repeater`, `repeater-item--label` a
+property of `repeater-item`; with a single hyphen as separator the two could not
+be told apart without the list.
+
+The pairing is mechanical: a property is valid only when the element carries the
+role in front of the `--`. The **closed list of names** is still what decides
+which roles and properties exist and which values they take. The server validates
+against it; an unknown name is an error (see
+[What the server validates](#what-the-server-validates)).
+
+The separator is a double hyphen because the editor never reads these attributes
+through `dataset` (it uses `getAttribute`, `hasAttribute` and selectors), so the
+awkward camel-case key `jacoImage-Resizable` does not matter.
 
 ### Roles
 
@@ -101,32 +115,35 @@ without a role can carry none.
 
 ### Properties
 
-A property configures a role. It is only valid on its role (see
+A property configures a role. Its name is `<role>--<property>`, and it is only
+valid on an element that carries that role (see
 [What the server validates](#what-the-server-validates)).
 
 | Property | On | Value | Meaning |
 | --- | --- | --- | --- |
-| `data-jaco-image-resizable` | `data-jaco-image` | forbidden | width and height editable |
-| `data-jaco-image-lightbox` | `data-jaco-image` | forbidden | write `name-full.ext` and link the thumbnail to it |
-| `data-jaco-repeater-fragment` | `data-jaco-repeater` | required | file in `jaco-data/templates/content/` that provides a new block |
-| `data-jaco-repeater-label` | `data-jaco-repeater` | optional | label of the add button |
-| `data-jaco-repeater-add` | `data-jaco-repeater` | optional, closed set | where the add button goes: `top` (default), `bottom`, `any` |
-| `data-jaco-repeater-sortable` | `data-jaco-repeater` | forbidden | blocks can be reordered by the grip |
+| `data-jaco-image--resizable` | `data-jaco-image` | forbidden | width and height editable |
+| `data-jaco-image--lightbox` | `data-jaco-image` | forbidden | write `name-full.ext` and link the thumbnail to it |
+| `data-jaco-repeater--fragment` | `data-jaco-repeater` | required | file in `jaco-data/templates/content/` that provides a new block |
+| `data-jaco-repeater--label` | `data-jaco-repeater` | optional | label of the add button |
+| `data-jaco-repeater--add` | `data-jaco-repeater` | optional, closed set | where the add button goes: `top` (default), `bottom`, `any` |
+| `data-jaco-repeater--sortable` | `data-jaco-repeater` | forbidden | blocks can be reordered by the grip |
 
-### Transient
+### Editor state
 
-Transient attributes are roles and properties like any other. They follow the same
-grammar; the only difference is that their names are not in the whitelist, so a
-forgotten entry cannot persist editor state. The `transient-` prefix makes them
-recognisable in a saved page, which is the point: a transient attribute that
-survives is a bug that announces itself.
+The editor keeps its own state **out of the DOM**. It sets no `data-jaco-*`
+attribute while it runs, so the page the editor saves is the page the author wrote,
+and no name exists that an author could copy by mistake.
 
-| Role / property | On | Value | Meaning |
-| --- | --- | --- | --- |
-| `data-jaco-transient-active` | block, line | forbidden | editing is active |
-| `data-jaco-transient-badge` | the size badge | forbidden | editor-inserted element, removed before saving |
-| `data-jaco-transient-filename` | image | required | file name the upload is stored under |
-| `data-jaco-transient-full` | image | required | full-size data URL for the lightbox |
+| State | Today | Held in |
+| --- | --- | --- |
+| a block or line is being edited | `data-jaco-is-editing` | a CSS class set by the editor, or a `WeakSet` |
+| file name an upload is stored under | `data-jaco-editable-image-file` | `WeakMap` from the `<img>` to the name |
+| full-size data URL for the lightbox | `data-jaco-gallery-full` | `WeakMap` from the `<img>` to the data URL |
+| the size badge | `data-jaco-editable-image-temp` | a reference to the inserted element |
+
+The base64 image data therefore no longer sits in a DOM attribute. Because no
+runtime name is in the contract, an old one that turns up in a page is an
+**unknown name** like any other and is rejected on save.
 
 ## Elements
 
@@ -136,14 +153,14 @@ survives is a bug that announces itself.
 <a href="contact.html" data-jaco-link>Contact</a>
 
 <img data-jaco-image src="media/team.jpg" width="800">
-<img data-jaco-image data-jaco-image-resizable src="media/blog.jpg" width="800">
-<img data-jaco-image data-jaco-image-lightbox src="media/cake.jpg" width="400">
-<img data-jaco-image data-jaco-image-resizable data-jaco-image-lightbox src="media/cake.jpg" width="400">
+<img data-jaco-image data-jaco-image--resizable src="media/blog.jpg" width="800">
+<img data-jaco-image data-jaco-image--lightbox src="media/cake.jpg" width="400">
+<img data-jaco-image data-jaco-image--resizable data-jaco-image--lightbox src="media/cake.jpg" width="400">
 
 <section data-jaco-repeater
-         data-jaco-repeater-fragment="feature_en.html"
-         data-jaco-repeater-label="Add feature"
-         data-jaco-repeater-add="top" data-jaco-repeater-sortable>
+         data-jaco-repeater--fragment="feature_en.html"
+         data-jaco-repeater--label="Add feature"
+         data-jaco-repeater--add="top" data-jaco-repeater--sortable>
   <h2 data-jaco-line>Why Jaco CMS?</h2>
   <div data-jaco-repeater-item>
     <h3 data-jaco-line>Edit in place</h3>
@@ -159,15 +176,15 @@ survives is a bug that announces itself.
 | Form | Meaning |
 | --- | --- |
 | `data-jaco-image` | replace the file, keep `width` and `height` |
-| `+ data-jaco-image-resizable` | width and height editable |
-| `+ data-jaco-image-lightbox` | full version written, thumbnail linked |
+| `+ data-jaco-image--resizable` | width and height editable |
+| `+ data-jaco-image--lightbox` | full version written, thumbnail linked |
 | both properties | all of it |
 
 A lightbox image after saving:
 
 ```html
 <a href="media/cake-full.jpg">
-  <img data-jaco-image data-jaco-image-lightbox src="media/cake.jpg" width="400">
+  <img data-jaco-image data-jaco-image--lightbox src="media/cake.jpg" width="400">
 </a>
 ```
 
@@ -179,17 +196,17 @@ wrapped.
 Where the add button goes and whether blocks can be sorted are **independent**
 properties. Neither implies the other.
 
-| `data-jaco-repeater-add` | Behaviour |
+| `data-jaco-repeater--add` | Behaviour |
 | --- | --- |
 | `top` (default) | add button before the first block |
 | `bottom` | add button after the last block |
 | `any` | add button before every block and at the end |
 
-`data-jaco-repeater-sortable` adds the grip and lets blocks be moved; without it
+`data-jaco-repeater--sortable` adds the grip and lets blocks be moved; without it
 they stay where they are. It does **not** change the add position — a sortable
-repeater with no `-add` places its button like `top`, because `top` is the
+repeater with no `--add` places its button like `top`, because `top` is the
 default, not because sorting implies it. To place the button elsewhere, write
-`-add` explicitly. The rule holds for every add position, `any` included: button
+`--add` explicitly. The rule holds for every add position, `any` included: button
 before each block, grip on each block.
 
 Today one value mixes both: `data-jaco-pos="draggable"` means "button on top and
@@ -199,7 +216,7 @@ every block says `any` explicitly. The split removes the hidden coupling: the
 old value had two meanings that happened to coincide, the new attributes have
 one meaning each.
 
-Both name a file, both carry the extension: `data-jaco-repeater-fragment="feature_en.html"`
+Both name a file, both carry the extension: `data-jaco-repeater--fragment="feature_en.html"`
 and `data-jaco-template="footer.html"`. The directories hold `.html` files, both
 APIs take a file name (`template/content/view?file=…`,
 `template/site/preview` with `fileName`), and the template list in the admin shows
@@ -219,17 +236,55 @@ ignored and gets no delete button.
 ```html
 <footer data-jaco-template="footer.html">…</footer>
 <footer data-jaco-template="footer-en.html">…</footer>
+<footer data-jaco-template="footers/footer-en.html">…</footer>
 ```
 
-Apply-to-all replaces every instance with that name across the project. The value
-is the file name (`footer.html`), the same string the admin lists and the preview
-endpoint takes; file names are sanitized, so the value is a single token. On save
-the name is checked against `jaco-data/templates/site/`: an unknown name produces a
-**warning**, not an error, because a page may reference a template before its file
-is uploaded. "Apply to all" then simply finds nothing.
+Apply-to-all replaces every instance with that value across the project. The value
+is the path of the template file **relative to `jaco-data/templates/site/`**
+(`footer.html`, `footers/footer-en.html`), the same string the admin lists and the
+preview endpoint takes. Templates may sit in subdirectories, so the value is not a
+single token. On save the value is checked against `jaco-data/templates/site/`: an
+unknown value produces a **warning**, not an error, because a page may reference a
+template before its file is uploaded. "Apply to all" then simply finds nothing.
 
-`site_template_name()` keeps stripping the extension where a label is needed - the
-template list, the preview title - but not in the marker. The marker carries what
+### Syntax of the value
+
+```text
+value   = segment *( "/" segment ) ".html"
+segment = 1*( ALPHA / DIGIT / "-" / "_" )
+```
+
+As a regular expression: `^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*\.html$`.
+
+- The separator is `/`, on every platform. A backslash is not a separator and is
+  not allowed.
+- A segment has letters, digits, `-` and `_`. No dots, so `..` and hidden files
+  cannot occur; the one dot is the one in `.html`.
+- No leading or trailing `/`, no empty segment (`a//b.html`), no spaces, no
+  umlauts, no other characters. Nothing is escaped: a name that needs escaping is
+  not a valid name.
+- The value is compared as written, case-sensitively. `Footer.html` and
+  `footer.html` are two templates, even where the file system would treat them as
+  one.
+- There is no depth limit beyond the file system's.
+
+The value is **validated, not sanitized**. Today `validate_site_template_file()`
+normalizes through `to_filename` (which silently drops `.` and `..` segments) and
+then rejects every value that contains a directory (`basename($file) !== $file`).
+Both change: apply-to-all matches strings, so a value that is normalized into
+another one would bind a page to a template nobody wrote. A value that does not
+match the pattern is an error on save, and the API refuses it the same way. The
+rule is one function that the marker check, the template API and apply-to-all all
+use. `find_site_templates()` already walks the directory recursively; the list
+shows the relative path, and `site_template_name()` strips the directory together
+with the extension where a label is needed.
+
+The fragment (`data-jaco-repeater--fragment`) names a file in
+`jaco-data/templates/content/`, which stays flat. If it ever gets subdirectories,
+it takes the same value syntax.
+
+`site_template_name()` keeps stripping directory and extension where a label is
+needed - the template list, the preview title - but not in the marker. The marker carries what
 the file is called.
 
 The value is **required**: a template without a name is not a template, because
@@ -247,34 +302,34 @@ old "roles carry no value" rule; with that rule gone, it has no reason to exist.
 | Single line | `data-jaco-editable-line` | `data-jaco-line` | 23 → 14 |
 | Link | `data-jaco-editable-link` | `data-jaco-link` | 23 → 14 |
 | Image | `data-jaco-editable-image` | `data-jaco-image` | 24 → 15 |
-| Image, resizable | `data-jaco-editable-image-extended` | `data-jaco-image data-jaco-image-resizable` | 33 → 41 |
-| Image, lightbox | `data-jaco-editable-image-gallery` | `data-jaco-image data-jaco-image-lightbox` | 32 → 40 |
-| Image, both | two attributes | three attributes | 44 → 66 |
+| Image, resizable | `data-jaco-editable-image-extended` | `data-jaco-image data-jaco-image--resizable` | 33 → 42 |
+| Image, lightbox | `data-jaco-editable-image-gallery` | `data-jaco-image data-jaco-image--lightbox` | 32 → 41 |
+| Image, both | two attributes | three attributes | 44 → 68 |
 | Repeater | `data-jaco-content-list` | `data-jaco-repeater` | 22 → 18 |
 | Repeater item | `data-jaco-content-item` | `data-jaco-repeater-item` | 22 → 23 |
-| Fragment | `data-jaco-fragment="…"` | `data-jaco-repeater-fragment="…"` | 36 → 45 |
-| Button label | `data-jaco-title="…"` | `data-jaco-repeater-label="…"` | 29 → 38 |
-| Add position | `data-jaco-pos="…"` | `data-jaco-repeater-add="…"` | 25 → 31 |
-| Sortable | – | `data-jaco-repeater-sortable` | – → 27 |
-| Template | `data-jaco-template="footer"` | `data-jaco-template="footer.html"` | 27 → 32 |
+| Fragment | `data-jaco-fragment="…"` | `data-jaco-repeater--fragment="…"` | 36 → 46 |
+| Button label | `data-jaco-title="…"` | `data-jaco-repeater--label="…"` | 29 → 39 |
+| Add position | `data-jaco-pos="…"` | `data-jaco-repeater--add="…"` | 25 → 32 |
+| Sortable | – | `data-jaco-repeater--sortable` | – → 28 |
+| Template | `data-jaco-template="footer"` | `data-jaco-template="footer.html"` | 27 → 32, already done |
 
 Counted in the pages: 75 plain images, 31 resizable, 2 lightbox, 0 with both. The
 common case gets nine characters shorter; the expensive cases are rare. The
 "image, both" row is the only one that grows by more than a few characters
-(44 → 66); it occurs on zero pages today, so the cost is theoretical.
+(44 → 68); it occurs on zero pages today, so the cost is theoretical.
 
 A repeater with fragment and label, using the default add position:
 
 ```text
 today    112 characters (four attributes, the position is always written)
-proposal 101 characters (two attributes)
+proposal 103 characters (two attributes)
 ```
 
-With a non-default position it grows to 132, with sorting to 159. The common case
-gets shorter; `repeater` costs six characters in every name it prefixes.
+With a non-default position it grows to 135, with sorting to 163. The common case
+gets shorter; `repeater--` costs eleven characters in every property it prefixes.
 
-The migration writes the add position out, so a migrated repeater is 132
-characters, not 101: the short form is what a page looks like once the explicit
+The migration writes the add position out, so a migrated repeater is 135
+characters, not 103: the short form is what a page looks like once the explicit
 `top` is dropped. Both numbers describe the same element.
 
 The template row grows by five characters because the extension moves in:
@@ -286,21 +341,18 @@ instead of an exception.
 
 | Rule | Message |
 | --- | --- |
-| `data-jaco-image-*` only with `data-jaco-image` | property without its role |
-| `data-jaco-repeater-*` only with `data-jaco-repeater` | property on an element that is no repeater |
+| `data-jaco-<role>--<property>` only on an element that carries `data-jaco-<role>` | property without its role (one rule for every property) |
 | `data-jaco-repeater-item` only as a direct child of a repeater | item outside a repeater, or nested deeper |
 | at most one role per element | two roles on one element |
 | `data-jaco-repeater` and `data-jaco-repeater-item` never on one element | conflicting roles |
-| `data-jaco-repeater-fragment` required on a repeater | repeater without a fragment |
-| `data-jaco-repeater-fragment` names a file in `jaco-data/templates/content/` | error: unknown fragment |
-| `data-jaco-repeater-add` one of three values | unknown add position |
-| `data-jaco-repeater-sortable` carries no value | unexpected value |
+| `data-jaco-repeater--fragment` required on a repeater | repeater without a fragment |
+| `data-jaco-repeater--fragment` names a file in `jaco-data/templates/content/` | error: unknown fragment |
+| `data-jaco-repeater--add` one of three values | unknown add position |
+| `data-jaco-repeater--sortable` carries no value | unexpected value |
 | `data-jaco-template` without a value | template without a name |
-| `data-jaco-template` value carries a `.html` extension | value without the extension |
+| `data-jaco-template` value matches `^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*\.html$` | invalid template value: no extension, a `..` or backslash, an empty or leading segment, or another character |
 | `data-jaco-template` value matches a file in `jaco-data/templates/site/` | warning: unknown template, the page is still saved |
 | `data-jaco-block`, `-line`, `-link`, `-image`, `-repeater`, `-repeater-item` carry no value | unexpected value on a role |
-| `data-jaco-transient-full` only with `data-jaco-image-lightbox` | full image without a lightbox |
-| `data-jaco-transient-*` never saved | transient attribute survived |
 | unknown `data-jaco-*` name | unknown name |
 
 Errors are reported before saving, not silently dropped.
@@ -311,48 +363,75 @@ Errors are reported before saving, not silently dropped.
 
 ## Where the contract lives
 
-1. `backend/core/html.php` – the whitelist, decides what survives a save.
-2. `frontend/` – selectors in `editor.js` and `contentlists.js`.
+1. `jaco/data-attributes.json` – the one list of names (new), read by the whitelist in `backend/core/html.php`, by the frontend and by the tests.
+2. `frontend/` – selectors in `editor.js` and `contentlists.js`, and the attribute list `dataAttrs` in `lib/iframe.js`.
 3. Pages and templates – `*.html` in the root, `de/`, `jaco-data/templates/`.
 4. `docs/` – this file.
 
-A test that reads the names from the whitelist and checks them against the
+A test that reads the names from the contract file and checks them against the
 frontend selectors and the pages would catch a rename that is only half done. The
 repository already has this pattern: `IgnoreRulesTest`, `MenuRoleTest`,
 `PaletteRoleTest`. The page check parses HTML; that is more work than the
 constant-to-constant checks in `IgnoreRulesTest`, and is the reason the contract
 test is its own step.
 
-The whitelist holds thirteen names and no transient attribute:
+### One source for the names
+
+The names stood in four places that had to agree: the whitelist in `html.php`, the
+selectors in `editor.js` and `contentlists.js`, the copy in `lib/iframe.js`, and the
+pages. The contract file is the one place that lists them; everything else reads
+it or is checked against it. A rename is one edit in the file plus the pages.
+
+```json
+{
+  "roles": {
+    "block": {"value": "forbidden"},
+    "template": {"value": "required"},
+    "repeater-item": {"value": "forbidden"}
+  },
+  "properties": {
+    "image--resizable": {"value": "forbidden"},
+    "repeater--add": {"value": "optional", "values": ["top", "bottom", "any"]}
+  }
+}
+```
+
+The sketch shows the shape, not every entry. The role of a property is the part
+before the `--`, so the file does not repeat it. How the frontend receives the file
+(a generated constant or a request with the other editor data) is decided when it is
+built; the contract test checks whichever it is.
+
+The whitelist is derived from it and holds thirteen names:
 
 ```php
 'data-jaco-block', 'data-jaco-line', 'data-jaco-link', 'data-jaco-image',
 'data-jaco-repeater', 'data-jaco-repeater-item', 'data-jaco-template',
-'data-jaco-image-resizable', 'data-jaco-image-lightbox',
-'data-jaco-repeater-fragment', 'data-jaco-repeater-label',
-'data-jaco-repeater-add', 'data-jaco-repeater-sortable',
+'data-jaco-image--resizable', 'data-jaco-image--lightbox',
+'data-jaco-repeater--fragment', 'data-jaco-repeater--label',
+'data-jaco-repeater--add', 'data-jaco-repeater--sortable',
 ```
 
 > `data-jaco-template-name` is gone: the name is the value of
-> `data-jaco-template`. Thirteen names, one rule.
+> `data-jaco-template`. Thirteen names, one rule. The file holds nothing the editor
+> sets at runtime.
 
 ## Migration
 
-Renaming is a **breaking change**:
+Renaming is a **breaking change**, and that costs nothing yet: the product is not
+released, so no customer page carries the old names. The only pages that do are
+the demo site and the templates in this repository, and they are in git.
 
-- The demo site is in git; its 22 pages are mechanical.
-- A customer's page is not in git. After a rename its `data-jaco-editable` is
-  unknown, is stripped on the next save, and the page silently stops being
-  editable.
+**Decided: hard break.** No alias period, no migration path for customer pages.
+The old names disappear with the rename and every page in this repository is
+rewritten. An alias period would double every selector and every test for a
+compatibility nobody needs. The names are cheapest to change now; once the
+product is released, this decision has to be made again.
 
-**Decided: hard break.** No alias period. The old names disappear with the
-rename, every page in this repository is rewritten, and a customer's page needs a
-manual edit. An alias period would double every selector and every test for a
-compatibility nobody here needs.
-
-The migration also writes the add position explicitly, because the default
-changes from `any` to `top`, and splits `pos="draggable"` into `add="top"` plus
-`sortable`.
+The default add position is `top`. All six repeaters in the pages carry an explicit
+`pos` today (one `any`, one `bottom`, one `top`, three `draggable`), so no page
+relies on the old fallback and the migration does not change any behaviour. It
+writes the position as it stands, and splits `pos="draggable"` into `add="top"`
+plus `sortable`.
 
 ### Mapping
 
@@ -365,22 +444,22 @@ and need a human decision:
 | `data-jaco-editable-line` | `data-jaco-line` | mechanical |
 | `data-jaco-editable-link` | `data-jaco-link` | mechanical |
 | `data-jaco-editable-image` | `data-jaco-image` | mechanical |
-| `data-jaco-editable-image-extended` | `data-jaco-image data-jaco-image-resizable` | one attribute becomes two |
-| `data-jaco-editable-image-gallery` | `data-jaco-image data-jaco-image-lightbox` | one attribute becomes two |
+| `data-jaco-editable-image-extended` | `data-jaco-image data-jaco-image--resizable` | one attribute becomes two |
+| `data-jaco-editable-image-gallery` | `data-jaco-image data-jaco-image--lightbox` | one attribute becomes two |
 | `data-jaco-content-list` | `data-jaco-repeater` | mechanical |
 | `data-jaco-content-item` | `data-jaco-repeater-item` | mechanical |
-| `data-jaco-fragment="…"` | `data-jaco-repeater-fragment="…"` | mechanical |
-| `data-jaco-title="…"` | `data-jaco-repeater-label="…"` | mechanical |
-| `data-jaco-pos="draggable"` | `data-jaco-repeater-add="top" data-jaco-repeater-sortable` | **split**: one value carried two meanings |
-| `data-jaco-pos="top"` | `data-jaco-repeater-add="top"` | default is now `top`, but write it out |
-| `data-jaco-pos="bottom"` | `data-jaco-repeater-add="bottom"` | mechanical |
-| `data-jaco-pos="any"` | `data-jaco-repeater-add="any"` | mechanical |
-| *(no `pos`)* | `data-jaco-repeater-add="any"` | **preserve** the old fallback; `top` would change behaviour |
-| `data-jaco-template="footer-en"` | `data-jaco-template="footer-en.html"` | **extension added**; the whitelist entry is fixed in the same pass |
-| `data-jaco-editable-image-file` | `data-jaco-transient-filename` | runtime; not in pages |
-| `data-jaco-gallery-full` | `data-jaco-transient-full` | runtime; not in pages |
-| `data-jaco-is-editing` | `data-jaco-transient-active` | runtime; not in pages |
-| `data-jaco-editable-image-temp` | `data-jaco-transient-badge` | runtime; not in pages |
+| `data-jaco-fragment="…"` | `data-jaco-repeater--fragment="…"` | mechanical |
+| `data-jaco-title="…"` | `data-jaco-repeater--label="…"` | mechanical |
+| `data-jaco-pos="draggable"` | `data-jaco-repeater--add="top" data-jaco-repeater--sortable` | **split**: one value carried two meanings |
+| `data-jaco-pos="top"` | `data-jaco-repeater--add="top"` | default is now `top`, but write it out |
+| `data-jaco-pos="bottom"` | `data-jaco-repeater--add="bottom"` | mechanical |
+| `data-jaco-pos="any"` | `data-jaco-repeater--add="any"` | mechanical |
+| *(no `pos`)* | *(no attribute)* | none exists in the repository; the new default `top` applies, which is the one deliberate behaviour change |
+| `data-jaco-template="footer-en"` | `data-jaco-template="footer-en.html"` | **done**: extension added in pages, templates and code; the whitelist entry is still open |
+| `data-jaco-editable-image-file` | – | runtime; leaves the DOM, see [Editor state](#editor-state) |
+| `data-jaco-gallery-full` | – | runtime; leaves the DOM, see [Editor state](#editor-state) |
+| `data-jaco-is-editing` | – | runtime; leaves the DOM, see [Editor state](#editor-state) |
+| `data-jaco-editable-image-temp` | – | runtime; leaves the DOM, see [Editor state](#editor-state) |
 
 The three **semantic** cases, plus one mechanical change:
 
@@ -393,9 +472,11 @@ The three **semantic** cases, plus one mechanical change:
    attributes. Today zero pages have both, so the case is theoretical — but the
    rewrite script must handle it.
 
-A fourth change is mechanical but touches every template marker: the value gains
-its `.html` extension. The rewrite script appends it; `template_with_marker()` in
-`backend/core/html.php` takes the file name instead of `site_template_name($file)`.
+A fourth change touched every template marker: the value gained its `.html`
+extension. It is **already done** - the pages and site templates carry
+`footer-en.html`, and `template_with_marker()` in `backend/core/html.php` takes the
+file name instead of `site_template_name($file)`. The rewrite script has nothing
+left to do for the template marker.
 
 ### Order
 
@@ -409,16 +490,17 @@ is a one-off; it is not checked in. Its output is verified by the contract test
 | Question | Decision |
 | --- | --- |
 | Alias period or hard break | hard break |
-| Default add position | `top` (today an unknown value falls back to `any`) |
+| Default add position | `top` (today an unknown value falls back to `any`); no page relies on the old fallback |
 | Inline `style` for editable values | not supported, see [Block configuration](#block-configuration) |
 | Template marker | `data-jaco-template="footer.html"` — the role carries its file name as value |
 | List of repeatable blocks | called `repeater`, because `list` reads like `<ul>` |
 | Roles vs. properties | roles and properties are the same kind of name; value rules are per name |
 | `sortable` and `add` | independent; `sortable` does not imply an add position |
-| Template value | the file name **with** `.html`, like the fragment; not the label without it |
 | Unknown template name | warning, not an error: the page is saved and apply-to-all finds nothing |
 | Unknown fragment file | error: a repeater without its fragment can add nothing |
 | Roles per element | at most one; properties need their role on the same element |
+| Template value | with `.html`, like the fragment, not the label; a path relative to `jaco-data/templates/site/`, `/` as separator, segments of letters, digits, `-` and `_`, ending in `.html`; validated, not sanitized |
+| Block properties | `block--align`, `block--tone`, `block--size` with closed value sets; added to the contract with the editor feature |
 | `sortable` with `add="any"` | allowed: button before every block, grip on every block |
 
 ## Removed bug class
@@ -432,10 +514,10 @@ sanitize_html('<footer data-jaco-template="footer.html">x</footer>')
 ```
 
 A page that is edited once loses its template binding. The rename touches the
-template attribute anyway, so the whitelist entry comes with it. Note that the
-attribute keeps its shape; only the value gains the extension. The bug is in the
-whitelist, not in the name, so the rename fixes the whitelist and leaves the
-marker's mechanism alone.
+template attribute anyway, so the whitelist entry comes with it. The attribute
+is one attribute with a required value, and the value gains the extension. The
+bug is in the whitelist, not in the name, so the rename fixes the whitelist and
+leaves the marker's mechanism alone.
 
 ## Appendix: every form
 
@@ -458,9 +540,9 @@ marker's mechanism alone.
 
 ```html
 <img data-jaco-image src="media/team.jpg" alt="Team" width="800" height="600">
-<img data-jaco-image data-jaco-image-resizable src="media/blog.jpg" alt="Post" width="800">
-<img data-jaco-image data-jaco-image-lightbox src="media/cake.jpg" alt="Cake" width="400">
-<img data-jaco-image data-jaco-image-resizable data-jaco-image-lightbox
+<img data-jaco-image data-jaco-image--resizable src="media/blog.jpg" alt="Post" width="800">
+<img data-jaco-image data-jaco-image--lightbox src="media/cake.jpg" alt="Cake" width="400">
+<img data-jaco-image data-jaco-image--resizable data-jaco-image--lightbox
      src="media/cake.jpg" alt="Cake" width="400">
 ```
 
@@ -468,7 +550,7 @@ After saving a lightbox image:
 
 ```html
 <a href="media/cake-full.jpg">
-  <img data-jaco-image data-jaco-image-lightbox src="media/cake.jpg" alt="Cake" width="400">
+  <img data-jaco-image data-jaco-image--lightbox src="media/cake.jpg" alt="Cake" width="400">
 </a>
 ```
 
@@ -476,7 +558,7 @@ An image with its own link wins: no `-full` file.
 
 ```html
 <a href="shop.html">
-  <img data-jaco-image data-jaco-image-lightbox src="media/cake.jpg" width="400">
+  <img data-jaco-image data-jaco-image--lightbox src="media/cake.jpg" width="400">
 </a>
 ```
 
@@ -493,27 +575,27 @@ Link and image side by side, two edits:
 Every add position, including the default:
 
 ```html
-<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html">…</section>
-<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html" data-jaco-repeater-add="top">…</section>
-<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html" data-jaco-repeater-add="bottom">…</section>
-<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html" data-jaco-repeater-add="any">…</section>
-<section data-jaco-repeater data-jaco-repeater-fragment="feature_en.html"
-         data-jaco-repeater-add="top" data-jaco-repeater-sortable>…</section>
+<section data-jaco-repeater data-jaco-repeater--fragment="feature_en.html">…</section>
+<section data-jaco-repeater data-jaco-repeater--fragment="feature_en.html" data-jaco-repeater--add="top">…</section>
+<section data-jaco-repeater data-jaco-repeater--fragment="feature_en.html" data-jaco-repeater--add="bottom">…</section>
+<section data-jaco-repeater data-jaco-repeater--fragment="feature_en.html" data-jaco-repeater--add="any">…</section>
+<section data-jaco-repeater data-jaco-repeater--fragment="feature_en.html"
+         data-jaco-repeater--add="top" data-jaco-repeater--sortable>…</section>
 ```
 
 With and without a label:
 
 ```html
 <section data-jaco-repeater
-         data-jaco-repeater-fragment="news_item.html"
-         data-jaco-repeater-add="top" data-jaco-repeater-sortable
-         data-jaco-repeater-label="Add news">…</section>
+         data-jaco-repeater--fragment="news_item.html"
+         data-jaco-repeater--add="top" data-jaco-repeater--sortable
+         data-jaco-repeater--label="Add news">…</section>
 
 <section data-jaco-repeater
-         data-jaco-repeater-fragment="news_item.html">…</section>
+         data-jaco-repeater--fragment="news_item.html">…</section>
 ```
 
-Without `data-jaco-repeater-label` the add button carries no text. Deriving one
+Without `data-jaco-repeater--label` the add button carries no text. Deriving one
 from the fragment name is listed under [Out of scope](#out-of-scope).
 
 A complete repeater. The heading is not an item: no delete button, not moved when
@@ -521,9 +603,9 @@ blocks are sorted.
 
 ```html
 <section data-jaco-repeater
-         data-jaco-repeater-fragment="feature_en.html"
-         data-jaco-repeater-label="Add feature"
-         data-jaco-repeater-add="top" data-jaco-repeater-sortable>
+         data-jaco-repeater--fragment="feature_en.html"
+         data-jaco-repeater--label="Add feature"
+         data-jaco-repeater--add="top" data-jaco-repeater--sortable>
   <h2 data-jaco-line>Why Jaco CMS?</h2>
 
   <div data-jaco-repeater-item>
@@ -541,13 +623,13 @@ blocks are sorted.
 Two repeaters on one page, the second inside a wrapper:
 
 ```html
-<section data-jaco-repeater data-jaco-repeater-fragment="news_item.html"
-         data-jaco-repeater-label="Add news">…</section>
+<section data-jaco-repeater data-jaco-repeater--fragment="news_item.html"
+         data-jaco-repeater--label="Add news">…</section>
 
 <div class="team">
-  <section data-jaco-repeater data-jaco-repeater-fragment="member.html"
-           data-jaco-repeater-label="Add member"
-           data-jaco-repeater-add="top" data-jaco-repeater-sortable>…</section>
+  <section data-jaco-repeater data-jaco-repeater--fragment="member.html"
+           data-jaco-repeater--label="Add member"
+           data-jaco-repeater--add="top" data-jaco-repeater--sortable>…</section>
 </div>
 ```
 
@@ -564,53 +646,20 @@ Two repeaters on one page, the second inside a wrapper:
 <footer data-jaco-template="footer.html">…</footer>
 ```
 
-### Transient, while it runs
+### One image through the whole cycle
 
-```html
-<!-- upload without lightbox -->
-<img data-jaco-image
-     data-jaco-transient-filename="IMG_0042.jpg"
-     src="media/team.jpg" width="800">
-
-<!-- upload with lightbox -->
-<img data-jaco-image data-jaco-image-lightbox
-     data-jaco-transient-filename="IMG_0042.jpg"
-     data-jaco-transient-full="data:image/jpeg;base64,/9j/4AAQSkZJRg…"
-     src="media/cake.jpg" width="400">
-
-<!-- picked from the media library: nothing is written, no transient attributes -->
-<img data-jaco-image src="media/existing.jpg" width="800">
-
-<!-- while a block or a line is being edited -->
-<div data-jaco-block data-jaco-transient-active>…</div>
-<h2 data-jaco-line data-jaco-transient-active>…</h2>
-
-<!-- the size badge, inline or block depending on the parent -->
-<p>Text <img data-jaco-image src="media/icon.svg" width="24">
-   <span data-jaco-transient-badge>Image size: HTML 24x24, …</span>
-</p>
-
-<div class="figure">
-  <img data-jaco-image src="media/team.jpg" width="800">
-  <div data-jaco-transient-badge>Image size: HTML 800x600, …</div>
-</div>
-```
-
-One image through the whole cycle:
+The editor adds no attribute while it works; only the saved result differs.
 
 ```html
 <!-- in the file -->
-<img data-jaco-image data-jaco-image-lightbox src="media/cake.jpg" width="400">
+<img data-jaco-image data-jaco-image--lightbox src="media/cake.jpg" width="400">
 
-<!-- while uploading -->
-<img data-jaco-image data-jaco-image-lightbox
-     data-jaco-transient-filename="IMG_0042.jpg"
-     data-jaco-transient-full="data:image/jpeg;base64,…"
-     src="media/cake.jpg" width="400">
+<!-- while uploading: the same element, the file name and the full-size data live in the editor -->
+<img data-jaco-image data-jaco-image--lightbox src="media/cake.jpg" width="400">
 
 <!-- saved -->
 <a href="media/cake-full.jpg">
-  <img data-jaco-image data-jaco-image-lightbox src="media/cake.jpg" width="400">
+  <img data-jaco-image data-jaco-image--lightbox src="media/cake.jpg" width="400">
 </a>
 ```
 
@@ -620,19 +669,19 @@ Each of these has to produce a message on save instead of being ignored.
 
 | Form | Why it is rejected |
 | --- | --- |
-| `<img data-jaco-image-resizable>` | property without its role |
-| `<section data-jaco-repeater data-jaco-repeater-add="top">` | repeater without a fragment |
-| `<section data-jaco-repeater data-jaco-repeater-add="middle" …>` | unknown add position |
+| `<img data-jaco-image--resizable>` | property without its role |
+| `<section data-jaco-repeater data-jaco-repeater--add="top">` | repeater without a fragment |
+| `<section data-jaco-repeater data-jaco-repeater--add="middle" …>` | unknown add position |
 | `<div data-jaco-repeater-item>` outside a repeater | item outside its container |
 | `<section data-jaco-repeater data-jaco-repeater-item>` | both roles on one element |
-| `<div data-jaco-repeater-item data-jaco-repeater-fragment="x.html">` | property on an item |
+| `<div data-jaco-repeater-item data-jaco-repeater--fragment="x.html">` | property on an item |
 | `<footer data-jaco-template>` | role without its required value |
 | `<footer data-jaco-template="footer">` | value without the extension |
 | `<div data-jaco-block="x">` | value on a role that takes none |
 | `<div data-jaco-block data-jaco-line>` | two roles on one element |
-| `<section data-jaco-repeater data-jaco-repeater-fragment="nosuch.html">` | fragment file does not exist |
+| `<section data-jaco-repeater data-jaco-repeater--fragment="nosuch.html">` | fragment file does not exist |
 | `<div><div data-jaco-repeater-item>` inside a repeater | item is not a direct child |
-| `<img data-jaco-image data-jaco-transient-full="…">` | full image without a lightbox |
+| `<div data-jaco-transient-active>` | a runtime name from the old code is unknown |
 
 ## Block configuration
 
@@ -647,15 +696,15 @@ has to work through CSS, and CSS cannot read a number out of an attribute.
 
 | Candidate | Works as | Why |
 | --- | --- | --- |
-| Alignment | `data-jaco-block-align="left\|center\|right"` | closed vocabulary, CSS can select it |
-| Background | `data-jaco-block-tone="light\|dark\|brand"` | tones from the design, not arbitrary colours |
-| Height and width | `data-jaco-block-size="small\|medium\|large"` | steps, CSS-selectable |
+| Alignment | `data-jaco-block--align="left\|center\|right"` | closed vocabulary, CSS can select it |
+| Background | `data-jaco-block--tone="light\|dark\|brand"` | tones from the design, not arbitrary colours |
+| Height and width | `data-jaco-block--size="small\|medium\|large"` | steps, CSS-selectable |
 | Exact pixels | – | needs inline `style`, which the sanitizer strips |
 
 ```css
-[data-jaco-block-align="center"] { text-align: center }
-[data-jaco-block-tone="dark"]    { background: #1a1a1a; color: #f5f5f5 }
-[data-jaco-block-size="large"]   { padding: 4rem 2rem }
+[data-jaco-block--align="center"] { text-align: center }
+[data-jaco-block--tone="dark"]    { background: #1a1a1a; color: #f5f5f5 }
+[data-jaco-block--size="large"]   { padding: 4rem 2rem }
 ```
 
 `style` is stripped today, on purpose:
@@ -670,8 +719,11 @@ Allowing it would mean a CSS sanitizer of its own - `expression()`, `url()`,
 rename. **Decided: no `style` support.** Free values are not offered for blocks;
 images keep using the `width` and `height` attributes they already have.
 
-If block settings are added later, they follow the same shape as the rest:
-a property on the role with a closed set of values. The fact that a role can carry
+**Decided: the three block properties are agreed** as shown in the table:
+`data-jaco-block--align`, `--tone` and `--size`, each with the closed set of values
+listed there. They are not among the thirteen names yet; they join the contract
+file when the editor offers them, and no earlier. Further block settings follow
+the same shape: a property on the role with a closed set of values. The fact that a role can carry
 a value (`data-jaco-template="footer.html"`) does not open the door to free values: the
 value rule is per name, and a new name is added to the closed list before it is
 used.
@@ -684,13 +736,12 @@ to fail until the rest agrees.
 
 | # | Step | Where |
 | --- | --- | --- |
-| 1 | Contract test: read the thirteen names from the whitelist, compare them with the frontend selectors and with every page | new test next to `IgnoreRulesTest` |
-| 2 | Whitelist and validation rules | `backend/core/html.php` |
-| 3 | Selectors | `frontend/editor.js`, `frontend/contentlists.js` |
-| 4 | Pages, add position written out | 14 files in the root and `de/` |
+| 1 | Contract file and contract test: read the thirteen names from the file, compare them with the whitelist, the frontend selectors and every page | `jaco/data-attributes.json`, new test next to `IgnoreRulesTest` |
+| 2 | Whitelist derived from the file, validation rules, template marker fixed | `backend/core/html.php` |
+| 3 | Selectors read the names; editor state leaves the DOM | `frontend/editor.js`, `frontend/contentlists.js`, `frontend/lib/iframe.js` |
+| 4 | Pages (the template marker is already done) | 14 files in the root and `de/` |
 | 5 | Templates | 12 files under `jaco-data/templates/` |
-| 6 | Fix the template marker (see `docs/backlog.md`) | `backend/core/html.php` |
-| 7 | Suites | PHPUnit, QUnit, Playwright |
+| 6 | Suites | PHPUnit, QUnit, Playwright |
 
 **The contract test runs after every step and must be green before the next step
 starts.** With a hard break, the intermediate states are inconsistent by design
@@ -698,55 +749,55 @@ starts.** With a hard break, the intermediate states are inconsistent by design
 keeps the inconsistency bounded to one step. A step that leaves the test red is a
 step that is not finished.
 
-**Step 1** checks three places against each other, the same way `IgnoreRulesTest`
+**Step 1** writes the contract file and checks four places against each other (file, whitelist, frontend, pages), the same way `IgnoreRulesTest`
 guards the ignore rules and `MenuRoleTest` the menu. Without it a rename that
 missed one selector looks green. The page check parses HTML, which is more work
 than the constant-to-constant checks; this is why it is a step of its own.
 
-**Step 2** holds the thirteen persistent names and deliberately none of the
-transient ones, so a transient attribute cannot survive a save. The pairing rules
+**Step 2** derives the whitelist from the contract file, so it holds exactly its
+thirteen names, and fixes the template marker from `docs/backlog.md`: `data-jaco-template`
+is missing from the whitelist today and is stripped on every save, which the file
+makes impossible. The pairing rules
 from [What the server validates](#what-the-server-validates) go in the same place:
 a property without its role, an item outside a repeater, a repeater without a
 fragment, an unknown add position, a value on a role that takes none, a missing
 value on a role that requires one, an unknown name.
 
-**Step 3** replaces every selector. With a hard break there is no old name to fall
+**Step 3** replaces every selector, and the list of attribute names in
+`frontend/lib/iframe.js` (`dataAttrs`), which is a copy of the contract outside the
+whitelist. The editor also stops writing `data-jaco-is-editing`, `-image-file`,
+`-gallery-full` and `-image-temp` and keeps that state in JavaScript, see
+[Editor state](#editor-state). With a hard break there is no old name to fall
 back to, so a missed selector silently stops working - the contract test from step
 1 is what catches it. One behaviour changes with the split: `makeSortable` in
 `frontend/contentlists.js` runs today only when the position is `draggable`. It has
-to run whenever `data-jaco-repeater-sortable` is present, for every add position,
+to run whenever `data-jaco-repeater--sortable` is present, for every add position,
 otherwise `add="bottom"` with sorting silently stays fixed.
 
 **Step 4** rewrites 14 pages. The add position becomes explicit (`top` was
 implicit `any` before), `pos="draggable"` splits into `add="top"` plus `sortable`,
-image capabilities become two properties, the template marker keeps its string
-but loses its second attribute.
+image capabilities become two properties, the template marker needs no change: it already
+carries `.html` and has no second attribute.
 
 **Step 5** touches 12 templates: six content fragments, two page templates, four
 site templates. They carry the same attributes as the pages.
 
-**Step 6** is the bug from `docs/backlog.md`: `data-jaco-template` is missing from
-the whitelist and is stripped on every save. The rename touches the whitelist
-anyway (thirteen names, no `-name`), so the entry comes with it.
-
-**Step 7** runs everything: PHPUnit (400 tests), QUnit (180), Playwright (35), and
+**Step 6** runs everything: PHPUnit (400 tests), QUnit (180), Playwright (35), and
 `./build-dist.sh` plus `./verify-dist-archive.sh`.
 
 ### Why the contract test comes first
 
 With a hard break, a page that still carries `data-jaco-editable` does not fail
 loudly - the sanitizer strips the attribute and the page quietly stops being
-editable. A test that compares the three sources is the only thing that makes the
+editable. A test that compares the contract file, the whitelist, the frontend and the pages is the only thing that makes the
 rename verifiable instead of hopeful. Running it after every step is the
 difference between "the rename is done" and "the rename looks done".
 
 ## Out of scope
 
 - The `-full.ext` convention behind the lightbox.
-- `data-jaco-transient-full` carries base64 image data in a DOM attribute; the
-  rename does not make that cheaper.
 - Deriving the add-button label from the fragment name, which would make
-  `data-jaco-repeater-label` optional in practice. It fixes the "labels carry the page
+  `data-jaco-repeater--label` optional in practice. It fixes the "labels carry the page
   language" item in `docs/backlog.md` and belongs in its own change.
 - Deriving a template name when it is absent. The value is required because an
   anonymous template has no apply-to-all group; if that changes, it is a new
@@ -756,6 +807,10 @@ difference between "the rename is done" and "the rename looks done".
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 0.15.0 | 2026-10-26 | Default add position stays `top`; all six repeaters in the pages carry a `pos`, so the migration changes no behaviour. The template value is a path relative to `jaco-data/templates/site/` with a fixed syntax and is validated, not sanitized, so templates can live in subdirectories. The three block properties are agreed. The way the frontend reads the contract file stays open. |
+| 0.14.0 | 2026-10-26 | Editor state leaves the DOM: no transient attributes, so the exception in the grammar, the `transient-*` rules and the base64 data attribute are gone. One contract file (`jaco/data-attributes.json`) lists the names; whitelist, frontend and tests read it. Steps 2 and 6 merge. |
+| 0.13.0 | 2026-10-26 | Properties are separated from their role by a double hyphen: `data-jaco-image--resizable`, `data-jaco-repeater--fragment`. The grammar is no longer ambiguous, the pairing rule is one rule instead of one per role, and the "Consequences" section changes from a trade-off to a statement. Transient attributes keep their names and are the one documented exception; a surviving one is an error. `lib/iframe.js` joins the places that carry the contract. |
+| 0.12.1 | 2026-10-26 | Template extension is implemented (commit `3072786`); the document marks it done and leaves only the whitelist entry open. |
 | 0.12.0 | 2026-10-26 | Both file references carry the extension: `data-jaco-template="footer.html"`. The template label without extension stays a display concern in `site_template_name()`. |
 | 0.11.0 | 2026-10-25 | Five details settled: at most one role per element, fragment takes the extension while the template name does not, `sortable` works with every add position, an item must be a direct child, a missing fragment is an error while a missing template is a warning. |
 | 0.10.0 | 2026-10-25 | One rule about roles, not about values: roles may carry a required value (`data-jaco-template="…"`), so `-template-name` is gone. `sortable` no longer implies an add position. Transient attributes follow the same grammar; the `transient-` prefix is a recognisability aid, not a second scheme. Role/property ambiguity documented. Migration mapping and per-step contract gate added. Whitelist is thirteen names. Corrections after review: the template value rule was inverted, a missing `pos` maps to `any` to keep the old behaviour, an unknown template name is a warning, and `makeSortable` has to run for every add position. |
