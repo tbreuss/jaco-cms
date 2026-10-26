@@ -1987,10 +1987,14 @@ QUnit.module('content lists', {
   }
 })
 
-const contentListHtml = (pos = 'top') =>
-  `<div data-jaco-repeater data-jaco-repeater--fragment="news.html" data-jaco-repeater--label="Add news" data-jaco-repeater--add="${pos}">` +
+const contentListHtml = (pos = 'top', sortable = false) =>
+  `<div data-jaco-repeater data-jaco-repeater--fragment="news.html" data-jaco-repeater--label="Add news" data-jaco-repeater--add="${pos}"` +
+  (sortable ? ' data-jaco-repeater--sortable' : '') + '>' +
   '<div data-jaco-repeater-item><h2>Existing</h2></div>' +
   '</div>'
+
+// a list whose blocks can be reordered: position and capability are separate
+const sortableListHtml = (pos = 'top') => contentListHtml(pos, true)
 
 const stubFetcher = (html = '<p>Fresh</p>') => () => Promise.resolve(html)
 
@@ -2006,8 +2010,8 @@ QUnit.test('posOf reads top, bottom and defaults anything else to any', (assert)
   assert.strictEqual(lists.posOf(list('top')), 'top')
   assert.strictEqual(lists.posOf(list('bottom')), 'bottom')
   assert.strictEqual(lists.posOf(list('any')), 'any')
-  assert.strictEqual(lists.posOf(list('draggable')), 'draggable')
   assert.strictEqual(lists.posOf(list(null)), 'any', 'missing pos follows')
+  assert.strictEqual(lists.posOf(list('draggable')), 'any', 'a capability is no position')
 })
 
 QUnit.test('top inserts fetched fragments at the beginning', (assert) => {
@@ -2102,12 +2106,33 @@ const pointerEvent = (type, x, y) => new PointerEvent(type, {
   button: 0,
 })
 
-QUnit.test('draggable adds on top and reorders via the grip', (assert) => {
+QUnit.test('add="top" with the sortable property shows the grip', (assert) => {
+  // the two are independent: before the split "draggable" meant top plus sorting,
+  // and a list that only said top got no grip
+  m.render(fixture(), m.trust(sortableListHtml('top')))
+
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+
+  assert.strictEqual(fixture().querySelectorAll('.jaco-content-grip').length, 1, 'one grip for one block')
+  assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, 1, 'the button is on top')
+})
+
+QUnit.test('add="bottom" with the sortable property shows the grip too', (assert) => {
+  m.render(fixture(), m.trust(sortableListHtml('bottom')))
+
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+
+  assert.strictEqual(fixture().querySelectorAll('.jaco-content-grip').length, 1, 'sorting is independent of the position')
+})
+
+QUnit.test('a sortable list adds on top and reorders via the grip', (assert) => {
   m.render(fixture(), m.trust(
-    '<div data-jaco-repeater data-jaco-repeater--fragment="news.html" data-jaco-repeater--label="Add news" data-jaco-repeater--add="draggable">' +
-    '<div data-jaco-repeater-item><h2>First</h2></div>' +
-    '<div data-jaco-repeater-item><h2>Second</h2></div>' +
-    '</div>'
+    `<div data-jaco-repeater data-jaco-repeater--fragment="news.html"
+          data-jaco-repeater--label="Add news" data-jaco-repeater--add="top"
+          data-jaco-repeater--sortable>
+       <div data-jaco-repeater-item><h2>First</h2></div>
+       <div data-jaco-repeater-item><h2>Second</h2></div>
+     </div>`
   ))
   const list = fixture().querySelector('[data-jaco-repeater]')
 
@@ -2140,10 +2165,12 @@ QUnit.test('draggable adds on top and reorders via the grip', (assert) => {
 
 QUnit.test('a click on the grip without movement drags nothing', (assert) => {
   m.render(fixture(), m.trust(
-    '<div data-jaco-repeater data-jaco-repeater--fragment="news.html" data-jaco-repeater--label="Add news" data-jaco-repeater--add="draggable">' +
-    '<div data-jaco-repeater-item><h2>First</h2></div>' +
-    '<div data-jaco-repeater-item><h2>Second</h2></div>' +
-    '</div>'
+    `<div data-jaco-repeater data-jaco-repeater--fragment="news.html"
+          data-jaco-repeater--label="Add news" data-jaco-repeater--add="top"
+          data-jaco-repeater--sortable>
+       <div data-jaco-repeater-item><h2>First</h2></div>
+       <div data-jaco-repeater-item><h2>Second</h2></div>
+     </div>`
   ))
   const list = fixture().querySelector('[data-jaco-repeater]')
 
@@ -2167,10 +2194,12 @@ QUnit.test('dragging near the bottom edge scrolls down', (assert) => {
   spacer.style.height = '3000px'
   document.body.appendChild(spacer)
   m.render(fixture(), m.trust(
-    '<div data-jaco-repeater data-jaco-repeater--fragment="news.html" data-jaco-repeater--label="Add news" data-jaco-repeater--add="draggable">' +
-    '<div data-jaco-repeater-item><h2>First</h2></div>' +
-    '<div data-jaco-repeater-item><h2>Second</h2></div>' +
-    '</div>'
+    `<div data-jaco-repeater data-jaco-repeater--fragment="news.html"
+          data-jaco-repeater--label="Add news" data-jaco-repeater--add="top"
+          data-jaco-repeater--sortable>
+       <div data-jaco-repeater-item><h2>First</h2></div>
+       <div data-jaco-repeater-item><h2>Second</h2></div>
+     </div>`
   ))
   const list = fixture().querySelector('[data-jaco-repeater]')
   const scroller = document.scrollingElement || document.documentElement
@@ -2198,7 +2227,7 @@ QUnit.test('dragging near the bottom edge scrolls down', (assert) => {
   }, 400)
 })
 
-QUnit.test('only draggable lists show a grip', (assert) => {
+QUnit.test('only sortable lists show a grip', (assert) => {
   for (const pos of ['top', 'bottom', 'any']) {
     m.render(fixture(), m.trust(contentListHtml(pos)))
     window.JacoContentLists.initContentLists(fixture(), stubFetcher())
@@ -2241,7 +2270,7 @@ QUnit.test('init twice does not duplicate buttons', (assert) => {
 })
 
 QUnit.test('content-list controls can be mounted again after chrome removal', (assert) => {
-  m.render(fixture(), m.trust(contentListHtml('draggable')))
+  m.render(fixture(), m.trust(sortableListHtml()))
   const frame = fixture()
 
   window.JacoContentLists.initContentLists(frame, stubFetcher())

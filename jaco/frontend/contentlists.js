@@ -25,16 +25,19 @@ window.JacoContentLists = (() => {
   const GRIP_CLASS = 'jaco-content-grip'
   const DRAGGING_CLASS = 'is-dragging'
 
+  const ADD_ATTR = 'data-jaco-repeater--add'
+  const SORTABLE_ATTR = 'data-jaco-repeater--sortable'
+
+  // Where the add button goes. Anything but top and bottom means "any".
   const posOf = (list) => {
-    const ADD = 'data-jaco-repeater--add'
-    const SORTABLE = 'data-jaco-repeater--sortable'
-    const add = (list.getAttribute(ADD) || '').toLowerCase()
-    const sortable = list.hasAttribute(SORTABLE)
-    // "draggable" was a position and a capability at once; it is now add="top" plus
-    // the sortable property, and the old value stays readable while the pages migrate
-    const pos = add === 'draggable' ? 'draggable' : add
-    return pos === 'top' || pos === 'bottom' || pos === 'draggable' ? pos : 'any'
+    const pos = (list.getAttribute(ADD_ATTR) || '').toLowerCase()
+    return pos === 'top' || pos === 'bottom' ? pos : 'any'
   }
+
+  // Whether the blocks can be reordered. A separate question, answered by a
+  // separate attribute: the position says where a button goes, this says whether
+  // blocks move.
+  const isSortable = (list) => list.hasAttribute(SORTABLE_ATTR)
 
   const fetchFragment = (file) => {
     const token = window.sessionStorage.getItem('AUTHORIZATION_TOKEN')
@@ -73,8 +76,8 @@ window.JacoContentLists = (() => {
     const item = document.createElement('div')
     item.setAttribute(ITEM_ATTR, '')
     item.innerHTML = html
-    attachItemOverlay(item, pos === 'draggable')
-    if (pos === 'top' || pos === 'draggable') {
+    attachItemOverlay(item, isSortable(list))
+    if (pos === 'top') {
       list.prepend(item)
     } else if (pos === 'bottom' || !refNode) {
       list.append(item)
@@ -97,10 +100,10 @@ window.JacoContentLists = (() => {
     setTimeout(() => button.classList.remove('is-error'), 3000)
   }
 
-  const attachItemOverlay = (item, draggable) => {
+  const attachItemOverlay = (item, sortable) => {
     const overlay = document.createElement('div')
     overlay.className = OVERLAY_CLASS
-    if (draggable) {
+    if (sortable) {
       overlay.append(showGrip())
     }
     overlay.append(showDeleteButton(item))
@@ -259,23 +262,24 @@ window.JacoContentLists = (() => {
     }
     list._jacoContentListsInit = true
     const pos = posOf(list)
+    const sortable = isSortable(list)
     const onAdd = (button) => loadAndInsert(list, pos, pos === 'any' ? button : null, fetcher)
       .catch(() => markButtonFailed(button))
-    if (pos === 'top' || pos === 'draggable') {
+    if (pos === 'top') {
       list.before(createAddButton(list, onAdd))
     } else if (pos === 'bottom') {
       list.after(createAddButton(list, onAdd))
     } else {
       list.querySelectorAll(':scope > [' + ITEM_ATTR + ']').forEach((item) => {
         item.before(createAddButton(list, onAdd))
-        attachItemOverlay(item, pos === 'draggable')
+        attachItemOverlay(item, sortable)
       })
       list.append(createAddButton(list, onAdd))
     }
     if (pos !== 'any') {
-      list.querySelectorAll(':scope > [' + ITEM_ATTR + ']').forEach((item) => attachItemOverlay(item, pos === 'draggable'))
+      list.querySelectorAll(':scope > [' + ITEM_ATTR + ']').forEach((item) => attachItemOverlay(item, sortable))
     }
-    if (pos === 'draggable') {
+    if (sortable) {
       makeSortable(list)
     }
   }
