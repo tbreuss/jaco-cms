@@ -72,7 +72,7 @@ or forbidden is a property of the name, not of the grammar.
 A name that is present is on. A name that carries a value is configured. The
 two are independent axes: a role can carry a value (`data-jaco-template="footer.html"`
 — the role is "template instance", the value is its name), and a property can be
-boolean (`data-jaco-image--resizable`).
+boolean (`data-jaco-repeater--sortable`).
 
 > **Why this replaced "no value grammar".** An earlier revision split the
 > namespace into "markers carry no value, keys carry a value". That split was a
@@ -110,7 +110,7 @@ identity; the table says whether a value is optional, required or forbidden.
 | `data-jaco-block` | forbidden | rich text block |
 | `data-jaco-line` | forbidden | single line of text |
 | `data-jaco-link` | forbidden | link, edited in a dialog |
-| `data-jaco-image` | forbidden | image, replace |
+| `data-jaco-image` | forbidden | image; replaces the file and nothing else |
 | `data-jaco-repeater` | forbidden | container of repeatable blocks |
 | `data-jaco-repeater-item` | forbidden | one block inside such a container |
 | `data-jaco-template` | **required** | site template instance; the value is the template file name |
@@ -122,13 +122,31 @@ without a role can carry none.
 
 ### Properties
 
+A property configures a role. **One rule for all of them: a property is optional,
+and a role without it does the least it can.** More function is asked for
+explicitly. A forgotten property therefore gives a smaller editor, which shows at
+once and does no harm - the other default would grant more than the author meant,
+unnoticed. A value is required only where without it something is missing
+(`--fragment`, `data-jaco-template`). Three kinds, and the kind decides the name:
+
+- **mode** (`--mode`): values that exclude each other and make the same element
+  work differently (`data-jaco-image--mode="auto|manual"`). One per role at most.
+- **switch** (`--sortable`): independent of everything else, present or absent.
+- **named value** (`--add`, `--label`, `--fragment`): the value means something of
+  its own, not a way of working.
+
+`block` and `line` stay two roles, decided: one role `text` with a mode would
+be more uniform, but the two roles say what the editor does (several lines or one),
+and the block properties (`align`, `tone`, `size`) belong to `block`. What a text
+editor offers is a property of its own, see [Text tools](#text-tools).
+
 A property configures a role. Its name is `<role>--<property>`, and it is only
 valid on an element that carries that role (see
 [What the server validates](#what-the-server-validates)).
 
 | Property | On | Value | Meaning |
 | --- | --- | --- | --- |
-| `data-jaco-image--resizable` | `data-jaco-image` | forbidden | width and height editable |
+| `data-jaco-image--mode` | `data-jaco-image` | optional, closed set | how the image is cut: `auto` (to `width`/`height` of the layout), `manual` (in the dialog); without it the file is only replaced |
 | `data-jaco-repeater--fragment` | `data-jaco-repeater` | required | file in `jaco-data/templates/content/` that provides a new block |
 | `data-jaco-repeater--label` | `data-jaco-repeater` | optional | label of the add button |
 | `data-jaco-repeater--add` | `data-jaco-repeater` | optional, closed set | where the add button goes: `top` (default), `bottom`, `any` |
@@ -163,10 +181,9 @@ like any other and is rejected on save.
 <h2 data-jaco-line>…</h2>
 <a href="contact.html" data-jaco-link>Contact</a>
 
-<img data-jaco-image src="media/team.jpg" width="800">
-<img data-jaco-image data-jaco-image--resizable src="media/blog.jpg" width="800">
-<img data-jaco-image data-jaco-image--lightbox src="media/cake.jpg" width="400">
-<img data-jaco-image data-jaco-image--resizable data-jaco-image--lightbox src="media/cake.jpg" width="400">
+<img data-jaco-image src="media/photo.jpg">
+<img data-jaco-image data-jaco-image--mode="auto" src="media/team.jpg" width="640" height="360">
+<img data-jaco-image data-jaco-image--mode="manual" src="media/blog.jpg" width="1200" height="600">
 
 <section data-jaco-repeater
          data-jaco-repeater--fragment="feature-en.html"
@@ -186,8 +203,22 @@ like any other and is rejected on save.
 
 | Form | Meaning |
 | --- | --- |
-| `data-jaco-image` | replace the file, keep `width` and `height` |
-| `+ data-jaco-image--resizable` | width and height editable |
+| `data-jaco-image` | replace the file, nothing is cut or scaled |
+| `+ data-jaco-image--mode="auto"` | cut to `width` and `height` of the layout (today's `data-jaco-image`) |
+| `+ data-jaco-image--mode="manual"` | cut in the dialog, with the tools (today's `--resizable`) |
+
+The mode says **who decides the cut**: the layout (`auto`) or the editor (`manual`).
+The bare role has no mode on purpose: it is one spelling, and `--mode="basic"` is
+rejected. Alt text and the media library are offered in every form.
+
+> **Status: decided, not built.** The code, the pages and the tests still use
+> `data-jaco-image` as "cut to the layout" and `data-jaco-image--resizable`. The
+> migration is `data-jaco-image` → `data-jaco-image--mode="auto"` and
+> `+ --resizable` → `--mode="manual"`. The bare `data-jaco-image` changes its meaning
+> in the same change, so the migration has to touch every page and template before
+> the contract test can pass. Open before building: the size limit for an
+> unscaled upload (the file travels as a data URL in the page body) and whether the
+> bare form offers the media library.
 
 **The gallery is out.** `data-jaco-image--lightbox` was removed from the contract:
 an attribute on an `<img>` that promised a second file, a wrapper link and - in the
@@ -205,6 +236,37 @@ knows that a click on an image in it replaces a pair. Uploading scales the full
 version to 1920 px and derives the thumbnail from `width`/`height`. Until that is
 built, `data-jaco-gallery` is not in the whitelist and a save removes it - an image
 is an image.
+
+## Text tools
+
+`block` and `line` stay two roles. What each one offers is a property, `--tools`,
+with a closed set of values **per role**. Without it the element is `plain`.
+
+| Role | `--tools` | Offers |
+| --- | --- | --- |
+| `data-jaco-block` | *(none)* = `plain` | no formatting, paragraphs only |
+| | `basic` | bold, italic, link |
+| | `full` | headings, bold, italic, underline, strike, quote, code, lists, indent, link, video |
+| `data-jaco-line` | *(none)* = `plain` | no formatting |
+| | `inline` | bold, italic, underline, strike, link |
+
+```html
+<div data-jaco-block>…</div>
+<div data-jaco-block data-jaco-block--tools="basic">…</div>
+<div data-jaco-block data-jaco-block--tools="full">…</div>
+<h1 data-jaco-line>…</h1>
+<h1 data-jaco-line data-jaco-line--tools="inline">…</h1>
+```
+
+The server binds the allowed tags to the value, otherwise a hand-written `<strong>`
+survives in a `plain` block. The bare `block` and `line` change their meaning with
+this rule: today they offer everything. The name is a property of what the editor offers; it is
+not a mode, because it changes what is shown, not how the element is treated.
+`list` (lists only) waits for a case that needs it. The image follows the same rule: the bare `data-jaco-image` only replaces the file.
+
+> **Status: decided, not built.** `--tools` joins the whitelist together with the
+> editor feature, not before. Open: what happens to existing formatting when a
+> block is switched to a smaller set - removed on save or kept.
 
 ## Repeater
 
@@ -245,6 +307,40 @@ name that does not exist is a **warning** - the page still renders and only
 `data-jaco-repeater-item` marks a **direct child** as one block. An item nested
 deeper is an error, not silently ignored. A heading inside the container is
 ignored and gets no delete button.
+
+### Simplifying the repeater
+
+**Status: proposed, not decided and not built.** Today a repeater is seven names:
+the role, the item, `--fragment`, `--label`, `--add`, `--sortable`. Four changes
+would shrink that; they are independent of each other.
+
+| # | Change | Effect | State |
+| --- | --- | --- | --- |
+| 1 | `--fragment` becomes the value of the role: `data-jaco-repeater="news.html"` | one name less; the same pattern as `data-jaco-template="footer.html"`; a missing fragment is the existing "role without its required value" check | recommended |
+| 2 | `--label` stays optional and gets a default: without it the button says "Add block" in the editor language | most repeaters need no label; the page no longer decides the language of the button (see `docs/backlog.md`); follows the rule that a property is optional | recommended |
+| 3 | `data-jaco-repeater-item` goes: every direct child of the container is an item | one name less and no "item outside a repeater" rule; but nothing else may stand in the container, and the editor has to tell its own chrome from the items | open |
+| 4 | `--add="any"` goes: only `top` and `bottom` | with `--sortable` a block can be moved, so buttons between all blocks are redundant; `--add` could become a switch for "bottom" | open until counted in the pages |
+
+```html
+<!-- today -->
+<div data-jaco-repeater
+     data-jaco-repeater--fragment="news.html"
+     data-jaco-repeater--label="Add news"
+     data-jaco-repeater--add="bottom"
+     data-jaco-repeater--sortable>
+  <div data-jaco-repeater-item>…</div>
+</div>
+
+<!-- with 1 to 3 -->
+<div data-jaco-repeater="news.html"
+     data-jaco-repeater--add="bottom"
+     data-jaco-repeater--sortable>
+  <article>…</article>
+</div>
+```
+
+With 1 to 3 the repeater is the role plus three optional properties
+(`--label`, `--add`, `--sortable`) instead of six names.
 
 ## Template
 
@@ -683,11 +779,9 @@ leaves the marker's mechanism alone.
 ### Images
 
 ```html
-<img data-jaco-image src="media/team.jpg" alt="Team" width="800" height="600">
-<img data-jaco-image data-jaco-image--resizable src="media/blog.jpg" alt="Post" width="800">
-<img data-jaco-image data-jaco-image--lightbox src="media/cake.jpg" alt="Cake" width="400">
-<img data-jaco-image data-jaco-image--resizable data-jaco-image--lightbox
-     src="media/cake.jpg" alt="Cake" width="400">
+<img data-jaco-image src="media/photo.jpg" alt="Photo">
+<img data-jaco-image data-jaco-image--mode="auto" src="media/team.jpg" alt="Team" width="640" height="360">
+<img data-jaco-image data-jaco-image--mode="manual" src="media/blog.jpg" alt="Post" width="1200" height="600">
 ```
 
 After saving a lightbox image:
@@ -813,7 +907,9 @@ Each of these has to produce a message on save instead of being ignored.
 
 | Form | Why it is rejected |
 | --- | --- |
-| `<img data-jaco-image--resizable>` | property without its role |
+| `<img data-jaco-image--mode="auto">` | property without its role |
+| `<img data-jaco-image data-jaco-image--mode="crop">` | unknown mode |
+| `<img data-jaco-image data-jaco-image--mode="basic">` | the bare role is the only spelling of "replace" |
 | `<section data-jaco-repeater data-jaco-repeater--add="top">` | repeater without a fragment |
 | `<section data-jaco-repeater data-jaco-repeater--add="middle" …>` | unknown add position |
 | `<div data-jaco-repeater-item>` outside a repeater | item outside its container |
@@ -999,6 +1095,9 @@ done".
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 0.27.0 | 2026-10-27 | The repeater could shrink from seven names to four: the fragment as the value of the role, an optional label with a default, no item attribute, perhaps no `any` position. Proposed, not decided. |
+| 0.26.0 | 2026-10-27 | `block` and `line` stay two roles; the tools each offers are a property `--tools` with a closed set per role (`plain`, `basic`, `full` for block; `plain`, `inline` for line). **One rule for all properties: optional, and without it the role does the least it can.** Decided, not built. |
+| 0.25.0 | 2026-10-27 | Image decision: one role `data-jaco-image` plus `data-jaco-image--mode="auto|manual"`; the bare role only replaces the file. `--resizable` is replaced by `--mode`, so the whitelist keeps its size. Three kinds of property named (mode, switch, named value). Not built yet. |
 | 0.24.0 | 2026-10-26 | Step 2 is implemented: the whitelist, the pairing rules and a check that rejects a save which breaks the contract. |
 | 0.23.0 | 2026-10-26 | The release comes after phase 1: the template marker is fixed inside the new whitelist, not before it, where the same code would be edited twice. |
 | 0.22.0 | 2026-10-26 | The length section gets the total: the rename is 1.835 characters shorter over 11.193, not longer. The lightbox rule states what happens on the second save, and the block properties are candidates in shape, not names in the contract. |
