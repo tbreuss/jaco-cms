@@ -276,7 +276,6 @@ These attributes designate editable spots in the existing HTML:
 - `data-jaco-link` — link (URL and target via dialog)
 - `data-jaco-image` — image (replacement via dialog)
 - `data-jaco-image--resizable` — on an image, additionally scales it
-- `data-jaco-image--lightbox` — on an image, links the thumbnail to a full-size file
 
 Example:
 
@@ -339,24 +338,23 @@ any other iframe source is removed, along with event handler attributes.
 
 ## Image gallery
 
-An image with `data-jaco-image--lightbox` (in addition to `data-jaco-image`)
-links its thumbnail to the full version:
+**Being redesigned.** The gallery is gone from this version: an image is an image,
+the editor replaces the file and nothing else. A save does not write a second file.
 
-```html
-<img data-jaco-image data-jaco-image--lightbox width="800" src="media/thumb.jpg" alt="Gallery">
+The model that replaces it gives the author both files and a container that marks
+the group - a `div` with an attribute, holding one link per image:
+
+```text
+<container> -> <a href=".../cake.jpg"> -> <img src=".../cake-thumb.jpg">
 ```
 
-When a file is picked in the editor, the thumbnail follows the `width`/`height`
-attributes as usual, while the full version is capped at 1920px wide. On save
-both files are stored (`thumb.jpg` and `thumb-full.jpg`) and the thumbnail is
-wrapped in `<a href="media/thumb-full.jpg">`. An explicit parent link always
-wins and stays untouched.
+The editor reads the sizes from `width`/`height`, scales the uploaded file to that
+size for the thumbnail and caps the full version at 1920 px. Until that exists, the
+container attribute is not in the whitelist either, and a save removes it.
 
-The editor sets the attributes `data-jaco-editable-image-file`,
-`data-jaco-editable-image-temp` and `data-jaco-is-editing` itself at runtime;
-they do not belong in the source HTML. The same holds for
-`data-jaco-gallery-full`, which carries the full version to the server on save
-and is removed there.
+The editor still sets `data-jaco-editable-image-file`,
+`data-jaco-editable-image-temp` and `data-jaco-is-editing` itself at runtime; they do
+not belong in the source HTML.
 
 ## Keyboard shortcuts
 

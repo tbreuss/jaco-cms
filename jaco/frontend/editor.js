@@ -182,11 +182,6 @@ const chooseNewImage = (editableImage) => {
     reader.onload = readerEvent => {
       resizeImage(readerEvent.target.result, file.type, width, height, 'fill', editableImage)
       editableImage.setAttribute('data-jaco-editable-image-file', file.name)
-      if (editableImage.hasAttribute('data-jaco-image--lightbox')) {
-        scaleDataUrlToWidth(readerEvent.target.result, file.type, GALLERY_FULL_MAX_WIDTH, (fullDataUrl) => {
-          editableImage.setAttribute('data-jaco-gallery-full', fullDataUrl)
-        })
-      }
     }
     reader.readAsDataURL(file)
   }
@@ -296,7 +291,6 @@ window.openMediaPicker = async (targetImage, onUpload = null) => {
         button.onclick = () => {
           targetImage.src = mediaSrc
           targetImage.removeAttribute('data-jaco-editable-image-file')
-          targetImage.removeAttribute('data-jaco-gallery-full')
           close()
         }
         grid.append(button)
@@ -702,27 +696,6 @@ window.resizeImage = (dataUrl, fileType, width, height, scaleType, editableImage
     }
     image.src = dataUrl
   }
-}
-
-// full version for gallery images, downscaled to a sane lightbox width
-const GALLERY_FULL_MAX_WIDTH = 1920
-
-window.scaleDataUrlToWidth = (dataUrl, fileType, maxWidth, callback) => {
-  const image = new Image()
-  image.onload = () => {
-    let width = image.width
-    let height = image.height
-    if (width > maxWidth) {
-      height = Math.round(height * maxWidth / width)
-      width = maxWidth
-    }
-    const canvas = document.createElement('canvas')
-    canvas.width = width
-    canvas.height = height
-    canvas.getContext('2d').drawImage(image, 0, 0, width, height)
-    callback(canvas.toDataURL(fileType, 0.92))
-  }
-  image.src = dataUrl
 }
 
 window.detectImageSize = (image) => {

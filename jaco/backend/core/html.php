@@ -255,7 +255,6 @@ const ALLOWED_ATTRIBUTES = [
         'data-jaco-repeater-item',
         'data-jaco-template',
         'data-jaco-image--resizable',
-        'data-jaco-image--lightbox',
         'data-jaco-repeater--fragment',
         'data-jaco-repeater--label',
         'data-jaco-repeater--add',
@@ -639,10 +638,8 @@ function handle_embedded_data_url_images(Config $config, string $html): array
     $imgAttrs = ['data-jaco-image'];
     $imgSrcAttr = 'src';
     $imgFileAttr = 'data-jaco-editable-image-file';
-    $galleryAttr = 'data-jaco-image--lightbox';
-    $galleryFullAttr = 'data-jaco-gallery-full';
 
-    // snapshot: gallery handling moves nodes, which a live list would not survive
+    // snapshot: the collection is live, replacing an <img> while iterating it is unsafe
     $images = \iterator_to_array($dom->getElementsByTagName('img'));
 
     $handled = 0;
@@ -709,13 +706,10 @@ function handle_embedded_data_url_images(Config $config, string $html): array
         $el->setAttribute('src', filesystem\combine($config->mediaUrl, $newFile));
         $el->removeAttribute($imgFileAttr);
 
-        if ($el->hasAttribute($galleryAttr)) {
-            $galleryError = write_gallery_full($dom, $config, $el, $imgFile, $galleryFullAttr);
-            if ($galleryError !== null) {
-                $errors[] = $galleryError;
-                continue;
-            }
-        }
+        // The gallery path stays in the code for now, but nothing reaches it: the
+        // model is being replaced by one where the author writes both files and a
+        // container carries data-jaco-gallery. Until that exists, an image is just
+        // an image - no second file, no wrapper.
 
         $handled++;
     }

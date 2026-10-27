@@ -213,18 +213,6 @@ final class HtmlFunctionsTest extends TestCase
         $this->assertStringContainsString('data-jaco-line', $result);
     }
 
-    public function testGalleryMarkerSurvivesSanitizing(): void
-    {
-        $html = '<a href="/keep.html"><img data-jaco-image data-jaco-image--lightbox'
-            . ' data-jaco-gallery-full="data:image/png;base64,AAAA" src="upload/a.png" alt="test"></a>';
-
-        $result = html\sanitize_html($html);
-
-        $this->assertStringContainsString('data-jaco-image--lightbox', $result);
-        $this->assertStringNotContainsString('data-jaco-gallery-full', $result);
-        $this->assertStringContainsString('<a href="/keep.html">', $result);
-    }
-
     public function testYouTubeEmbedSurvivesSanitizing(): void
     {
         $html = '<p>Watch</p><iframe width="560" height="315"'

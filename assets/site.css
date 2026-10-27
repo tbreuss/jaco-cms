@@ -460,30 +460,6 @@ th {
     pointer-events: none;
 }
 
-/* The dialog itself: a native popover opened by a script, styled by the browser.
-   Kept minimal on purpose - it is a demo, not a lightbox library. */
-.elements-modal {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 0;
-    max-width: min(90vw, 640px);
-    background: var(--background);
-}
-
-.elements-modal::backdrop {
-    background: rgba(0, 0, 0, 0.6);
-}
-
-.elements-modal img {
-    display: block;
-    max-width: 100%;
-    height: auto;
-}
-
-.elements-modal button {
-    margin: 0.75rem;
-}
-
 iframe.elements-video {
     display: block;
     width: 100%;

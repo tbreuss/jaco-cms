@@ -129,7 +129,6 @@ valid on an element that carries that role (see
 | Property | On | Value | Meaning |
 | --- | --- | --- | --- |
 | `data-jaco-image--resizable` | `data-jaco-image` | forbidden | width and height editable |
-| `data-jaco-image--lightbox` | `data-jaco-image` | forbidden | write `name-full.ext` and link the thumbnail to it |
 | `data-jaco-repeater--fragment` | `data-jaco-repeater` | required | file in `jaco-data/templates/content/` that provides a new block |
 | `data-jaco-repeater--label` | `data-jaco-repeater` | optional | label of the add button |
 | `data-jaco-repeater--add` | `data-jaco-repeater` | optional, closed set | where the add button goes: `top` (default), `bottom`, `any` |
@@ -189,26 +188,23 @@ like any other and is rejected on save.
 | --- | --- |
 | `data-jaco-image` | replace the file, keep `width` and `height` |
 | `+ data-jaco-image--resizable` | width and height editable |
-| `+ data-jaco-image--lightbox` | full version written, thumbnail linked |
-| both properties | all of it |
 
-A lightbox image after saving:
+**The gallery is out.** `data-jaco-image--lightbox` was removed from the contract:
+an attribute on an `<img>` that promised a second file, a wrapper link and - in the
+demo - a dialog, and delivered a different structure before and after a save. The
+replacement is designed, not built:
 
 ```html
-<a href="media/cake-full.jpg">
-  <img data-jaco-image data-jaco-image--lightbox src="media/cake.jpg" width="400">
-</a>
+<div class="gallery" data-jaco-gallery>
+  <a href="media/cake.jpg"><img src="media/cake-thumb.jpg" alt="Cake" width="300" height="100"></a>
+</div>
 ```
 
-The marker keeps the link it wrote itself. On a second save the thumbnail sits in
-that link, so the full version is replaced in place - same file name, same pair. The
-old guard stopped at any parent link and silently kept the first full image; that is
-fixed in `a80874a`.
-
-A link to **somewhere else** still wins: the thumbnail stays inside it, no
-`-full.ext` is written, and the old full image is left alone. That case is open in
-`docs/backlog.md` - decide whether the link should be rewritten or whether the
-editor should say that no full version is produced.
+The author writes both files; `data-jaco-gallery` marks the container, so the editor
+knows that a click on an image in it replaces a pair. Uploading scales the full
+version to 1920 px and derives the thumbnail from `width`/`height`. Until that is
+built, `data-jaco-gallery` is not in the whitelist and a save removes it - an image
+is an image.
 
 ## Repeater
 
