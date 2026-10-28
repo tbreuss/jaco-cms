@@ -146,9 +146,14 @@ page is written, not later.
 | Form | What happens to the file | The editor chooses |
 | --- | --- | --- |
 | `data-jaco-image` | replaced as it is, nothing is scaled; `width` and `height` are layout only | - |
-| `+ data-jaco-image--mode="fill"` | scaled and cut to `width` x `height` | nothing |
-| `+ data-jaco-image--mode="fit"` | scaled so the whole image fits into `width` x `height` | nothing |
+| `+ data-jaco-image--mode="fill"` | the file is `width` x `height`; the image covers that box and what does not fit is cut | nothing |
+| `+ data-jaco-image--mode="fit"` | the file is `width` x `height`; the whole image sits in that box and the rest stays transparent | nothing |
 | `+ data-jaco-image--mode="choice"` | like `fill` or `fit`, as chosen in the dialog, for that upload | `fit` or `fill` |
+
+**The file always has the size of the markup.** A scaled upload is a
+`width` x `height` image, whatever its source was: `fill` covers the box, `fit`
+puts the whole picture into it and leaves the rest transparent. The box is the
+layout, so what the editor shows is what the page shows.
 
 **`width` and `height` belong to the page.** The editor reads them and never
 writes them; there is no field for them in the dialog, and what the author
