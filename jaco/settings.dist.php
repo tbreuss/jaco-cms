@@ -6,17 +6,13 @@
 // tokens, it needs at least 32 random characters - never deploy an example
 // key, generate one (the browser installer does this for you).
 //
-// Roles: viewer (read), editor (write pages and uploads), admin (everything,
-// including settings, CSS and backups). A user's password is a digest, and a
-// record may also carry optional preferences:
+// Roles: editor (write pages and uploads), admin (everything, including
+// settings, CSS and backups). A read-only account keeps its role (usually
+// admin) and sets 'readOnly' => true; the router refuses every write for it.
+// A user's password is a digest, and a record may also carry optional
+// preferences:
 //
 //     'users' => [
-//         'kunde' => [
-//             'password' => '<password-hash>',
-//             'role' => 'viewer',
-//             // ui language, empty falls back to defaultLanguage below
-//             'language' => 'de',
-//         ],
 //         'readonly' => [
 //             'password' => '<password-hash>',
 //             // a real admin, so the whole interface can be shown; 'readOnly'
@@ -51,8 +47,9 @@
 // record. Existing login tokens are not revoked by a password change.
 
 return [
-    // users and roles: viewer (read), editor (write pages and uploads), admin
-    // (everything, including settings, CSS and backups). The password is a digest.
+    // users and roles: editor (write pages and uploads), admin (everything,
+    // including settings, CSS and backups). A read-only account sets
+    // 'readOnly' => true. The password is a digest.
     'users' => [
         // 'admin' => ['password' => '<password-hash>', 'role' => 'admin'],
     ],
