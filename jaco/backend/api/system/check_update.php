@@ -1,0 +1,27 @@
+<?php declare(strict_types=1);
+
+namespace jaco\api\system\check_update;
+
+use jaco\core\config\Config;
+use jaco\core\http\Response;
+use jaco\domain\Payload;
+
+use function jaco\core\http\json_response;
+use function jaco\core\responder\api_errors;
+use function jaco\domain\update\check_update;
+
+function action(Config $config): Response
+{
+    $payload = check_update($config);
+
+    return responder($payload);
+}
+
+function responder(Payload $payload): Response
+{
+    if ($payload->isSuccess) {
+        return json_response($payload->data);
+    }
+
+    return api_errors($payload);
+}

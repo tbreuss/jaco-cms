@@ -370,6 +370,48 @@ In the edit views, `Cmd/Ctrl+S` saves and `Cmd/Ctrl+Shift+S` saves and
 closes (where a Save & Close button exists: page, CSS and JS editor). The
 browser's own save dialog is suppressed while an edit view is open.
 
+## Updating
+
+Jaco can update itself from a published release. Only the `jaco/` application
+directory is replaced; `jaco-data/settings.php`, `backups/`, `runtime/`,
+`templates/`, `media/` and the public pages are left untouched. Breaking
+changes (new `settings.php` keys, changed template markers, PHP version
+requirements) are **not** migrated automatically — check the release notes.
+
+### Check for updates
+
+From the command line:
+
+    php jaco/cli.php sys:check-update
+
+Or from the admin: System → "Check for updates".
+
+### Install an update
+
+From the command line (latest release):
+
+    php jaco/cli.php sys:update
+
+Or a specific version or direct URL:
+
+    php jaco/cli.php sys:update -t v0.2.0
+    php jaco/cli.php sys:update -u https://example.com/jaco-dist-0.2.0.zip
+
+Or from the admin: System → "Install update". The update runs with an extended
+time limit; keep the browser tab open until it finishes. A backup of the
+previous `jaco/` is written to `jaco-data/backups/jaco-<version>-<timestamp>/`
+and can be restored by copying it back over `jaco/`.
+
+### What happens during an update
+
+1. The latest release is fetched from GitHub and compared with the installed version.
+2. The dist archive (`jaco-dist-*.zip`) is downloaded into a temporary directory.
+3. The archive is validated and extracted.
+4. The current `jaco/` is backed up to `jaco-data/backups/`.
+5. The contents of `jaco/` are replaced with the new version.
+6. `jaco/api.php` is checked for existence; on failure the backup is restored.
+7. Temporary files are cleaned up.
+
 ## Log in
 
 Open `/jaco/` in the browser and log in with the credentials you created in

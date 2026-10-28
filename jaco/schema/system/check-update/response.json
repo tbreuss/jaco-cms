@@ -1,0 +1,13 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "current": { "type": "string" },
+        "latest": { "type": "string" },
+        "available": { "type": "boolean" },
+        "downloadUrl": { "type": "string" },
+        "releaseUrl": { "type": "string" }
+    },
+    "required": ["current", "latest", "available", "downloadUrl", "releaseUrl"],
+    "additionalProperties": false
+}

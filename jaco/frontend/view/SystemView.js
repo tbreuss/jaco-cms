@@ -49,6 +49,33 @@ const checksTable = (title, checks) => checks
     ))
   : ''
 
+const updatePanel = () => {
+  const u = SystemModel.update || {}
+  return m('div',
+    m('h2', t('Updates')),
+    u.available === true
+      ? m('div',
+          m('p', t('Update available') + ': ' + u.current + ' → ' + u.latest),
+          m('button.btn', {
+            onclick: () => {
+              if (!confirm(t('Install update?'))) return
+              SystemModel.performUpdate(u.downloadUrl, u.latest)
+                .then(() => m.redraw())
+                .catch(() => m.redraw())
+            }
+          }, t('Install update')),
+          u.result ? m('p', t('Updated') + ': ' + u.result.from + ' → ' + u.result.to) : '',
+          u.error ? m('p', t('Update failed') + ': ' + (u.error.message || u.error)) : '',
+        )
+      : (u.available === false
+          ? m('p', t('Already up to date') + ' (' + (u.current || '') + ').')
+          : ''),
+    m('button.btn', {
+      onclick: () => SystemModel.checkUpdate().then(() => m.redraw()).catch(() => m.redraw())
+    }, t('Check for updates')),
+  )
+}
+
 export const SystemView = {
   oninit: () => {
     if (!app.hasAuthToken()) {
@@ -70,6 +97,7 @@ export const SystemView = {
       checksTable(t('Requirements'), SystemModel.info.checks),
       overviewTable(SystemModel.info.overview),
       keyValueTable(t('Configuration'), SystemModel.info.config),
+      updatePanel(),
     )
   )
 }

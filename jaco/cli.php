@@ -44,6 +44,26 @@ $app->command('sys:log', 'Show log entries.')
         exit($exitCode);
     });
 
+$app->command('sys:check-update', 'Check for a newer release.')
+    ->action(function () use ($config): void {
+        [$output, $exitCode] = \jaco\cli\system\check_update\command($config);
+        echo $output;
+        exit($exitCode);
+    });
+
+$app->command('sys:update', 'Download and install the latest release.')
+    ->option('-t --target', 'Target version tag (default: latest)', 'strval', '')
+    ->option('-u --url', 'Direct download URL (default: latest release)', 'strval', '')
+    ->action(function (string $target, string $url) use ($config): void {
+        [$output, $exitCode] = \jaco\cli\system\update\command(
+            $config,
+            $target !== '' ? $target : null,
+            $url !== '' ? $url : null,
+        );
+        echo $output;
+        exit($exitCode);
+    });
+
 $app->command('auth:token', 'Get token for credential.')
     ->option('-u --user', 'The Username', 'strval', '')
     ->option('-p --pass', 'The Password', 'strval', '')
