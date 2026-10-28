@@ -30,22 +30,22 @@
   </ul>
 
   <div class="page-head">
-    <h1 data-jaco-line>Editable content elements</h1>
-    <div data-jaco-block>
+    <h1 data-jaco-line data-jaco-line--tools="basic">Editable content elements</h1>
+    <div data-jaco-block data-jaco-block--tools="full">
       <p>Every marker that makes a page editable is shown here on a live example, with the HTML that produces it. The navigation stays short on purpose; the <a href="docs.html">documentation</a> links here.</p>
     </div>
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-line>Single-line text</h2>
-    <pre class="code-ref"><code>&lt;h1 data-jaco-line&gt;A single line&lt;/h1&gt;</code></pre>
-    <p data-jaco-line>A single-line marker is intended for headings and short labels.</p>
+    <h2 data-jaco-line data-jaco-line--tools="basic">Single-line text</h2>
+    <pre class="code-ref"><code>&lt;h1 data-jaco-line data-jaco-line--tools="basic"&gt;A single line&lt;/h1&gt;</code></pre>
+    <p data-jaco-line data-jaco-line--tools="basic">A single-line marker is intended for headings and short labels.</p>
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-line>Rich text</h2>
-    <pre class="code-ref"><code>&lt;div data-jaco-block&gt;&lt;p&gt;Text with &lt;strong&gt;formatting&lt;/strong&gt;.&lt;/p&gt;&lt;/div&gt;</code></pre>
-    <div data-jaco-block>
+    <h2 data-jaco-line data-jaco-line--tools="basic">Rich text</h2>
+    <pre class="code-ref"><code>&lt;div data-jaco-block data-jaco-block--tools="full"&gt;&lt;p&gt;Text with &lt;strong&gt;formatting&lt;/strong&gt;.&lt;/p&gt;&lt;/div&gt;</code></pre>
+    <div data-jaco-block data-jaco-block--tools="full">
       <p>A rich-text block supports <strong>bold</strong>, <em>italic</em>, links, lists and embedded videos. The whole block is edited in one place.</p>
       <ul>
         <li>First list item</li>
@@ -55,17 +55,17 @@
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-line>Videos</h2>
+    <h2 data-jaco-line data-jaco-line--tools="basic">Videos</h2>
     <pre class="code-ref"><code>&lt;!-- in a text block, added through the video dialog --&gt;
 &lt;iframe src=&quot;https://www.youtube-nocookie.com/embed/VIDEO_ID&quot;&gt;&lt;/iframe&gt;</code></pre>
-    <div data-jaco-block>
+    <div data-jaco-block data-jaco-block--tools="full">
       <p>A video is added from a text block with the video button in the toolbar.</p>
       <iframe class="ql-video elements-video" src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ" title="Embedded video example" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-line>Editable links</h2>
+    <h2 data-jaco-line data-jaco-line--tools="basic">Editable links</h2>
     <pre class="code-ref"><code>&lt;a href=&quot;download.html&quot; data-jaco-link&gt;Same tab&lt;/a&gt;
 
 &lt;a href=&quot;download.html&quot; target=&quot;_blank&quot; data-jaco-link&gt;New tab&lt;/a&gt;</code></pre>
@@ -77,23 +77,23 @@
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-line>Images</h2>
+    <h2 data-jaco-line data-jaco-line--tools="basic">Images</h2>
 
-    <h3 data-jaco-line>Fixed size</h3>
+    <h3 data-jaco-line data-jaco-line--tools="basic">Fixed size</h3>
     <pre class="code-ref"><code>&lt;img data-jaco-image src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;</code></pre>
     <div class="elements-image">
       <img data-jaco-image src="media/demo-elements.svg" alt="Fixed size image" width="320" height="180">
     </div>
     <p class="elements-note">The file is replaced; width and height stay as they are in the HTML.</p>
 
-    <h3 data-jaco-line>Size editable</h3>
+    <h3 data-jaco-line data-jaco-line--tools="basic">Size editable</h3>
     <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image--mode="choice" src=&quot;media/team.jpg&quot; width=&quot;400&quot; height=&quot;225&quot;&gt;</code></pre>
     <div class="elements-image">
       <img data-jaco-image data-jaco-image--mode="choice" src="media/demo-elements-extended.svg" alt="Image with editable size" width="400" height="225">
     </div>
     <p class="elements-note">The file is replaced and the width and height can be changed in the editor – the handles stand for that.</p>
 
-    <h3 data-jaco-line>Inside a link</h3>
+    <h3 data-jaco-line data-jaco-line--tools="basic">Inside a link</h3>
     <pre class="code-ref"><code>&lt;a href=&quot;shop.html&quot; data-jaco-link&gt;
   &lt;img data-jaco-image src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;
 &lt;/a&gt;</code></pre>
@@ -106,10 +106,10 @@
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-line>Repeatable content: positions</h2>
+    <h2 data-jaco-line data-jaco-line--tools="basic">Repeatable content: positions</h2>
     <p class="elements-note">The four lists use the same block template but different insertion positions.</p>
 
-    <h3 data-jaco-line>Top</h3>
+    <h3 data-jaco-line data-jaco-line--tools="basic">Top</h3>
     <pre class="code-ref"><code>&lt;div data-jaco-repeater=&quot;element-block-en.html&quot;
      data-jaco-repeater--label=&quot;Add top block&quot;
      data-jaco-repeater--position=&quot;top&quot;&gt;
@@ -117,14 +117,14 @@
 &lt;/div&gt;</code></pre>
     <div class="elements-list" data-jaco-repeater="element-block-en.html" data-jaco-repeater--label="Add top block" data-jaco-repeater--position="top">
       <div>
-        <h3 data-jaco-line>Top block</h3>
-        <div data-jaco-block>
+        <h3 data-jaco-line data-jaco-line--tools="basic">Top block</h3>
+        <div data-jaco-block data-jaco-block--tools="full">
           <p>New blocks are inserted at the top.</p>
         </div>
       </div>
     </div>
 
-    <h3 data-jaco-line>Bottom</h3>
+    <h3 data-jaco-line data-jaco-line--tools="basic">Bottom</h3>
     <pre class="code-ref"><code>&lt;div data-jaco-repeater=&quot;element-block-en.html&quot;
      data-jaco-repeater--label=&quot;Add bottom block&quot;
      data-jaco-repeater--position=&quot;bottom&quot;&gt;
@@ -132,14 +132,14 @@
 &lt;/div&gt;</code></pre>
     <div class="elements-list" data-jaco-repeater="element-block-en.html" data-jaco-repeater--label="Add bottom block" data-jaco-repeater--position="bottom">
       <div>
-        <h3 data-jaco-line>Bottom block</h3>
-        <div data-jaco-block>
+        <h3 data-jaco-line data-jaco-line--tools="basic">Bottom block</h3>
+        <div data-jaco-block data-jaco-block--tools="full">
           <p>New blocks are inserted at the bottom.</p>
         </div>
       </div>
     </div>
 
-    <h3 data-jaco-line>Any</h3>
+    <h3 data-jaco-line data-jaco-line--tools="basic">Any</h3>
     <pre class="code-ref"><code>&lt;div data-jaco-repeater=&quot;element-block-en.html&quot;
      data-jaco-repeater--label=&quot;Add block here&quot;
      data-jaco-repeater--position=&quot;any&quot;&gt;
@@ -147,20 +147,20 @@
 &lt;/div&gt;</code></pre>
     <div class="elements-list" data-jaco-repeater="element-block-en.html" data-jaco-repeater--label="Add block here" data-jaco-repeater--position="any">
       <div>
-        <h3 data-jaco-line>First any block</h3>
-        <div data-jaco-block>
+        <h3 data-jaco-line data-jaco-line--tools="basic">First any block</h3>
+        <div data-jaco-block data-jaco-block--tools="full">
           <p>An add button appears before every block and after the last one.</p>
         </div>
       </div>
       <div>
-        <h3 data-jaco-line>Second any block</h3>
-        <div data-jaco-block>
+        <h3 data-jaco-line data-jaco-line--tools="basic">Second any block</h3>
+        <div data-jaco-block data-jaco-block--tools="full">
           <p>Use this position when order matters less than placing a block next to another one.</p>
         </div>
       </div>
     </div>
 
-    <h3 data-jaco-line>Draggable</h3>
+    <h3 data-jaco-line data-jaco-line--tools="basic">Draggable</h3>
     <pre class="code-ref"><code>&lt;div data-jaco-repeater=&quot;element-block-en.html&quot;
      data-jaco-repeater--label=&quot;Add draggable block&quot;
      data-jaco-repeater--position=&quot;top&quot; data-jaco-repeater--sortable&gt;
@@ -168,14 +168,14 @@
 &lt;/div&gt;</code></pre>
     <div class="elements-list" data-jaco-repeater="element-block-en.html" data-jaco-repeater--label="Add draggable block" data-jaco-repeater--position="top" data-jaco-repeater--sortable>
       <div>
-        <h3 data-jaco-line>First draggable block</h3>
-        <div data-jaco-block>
+        <h3 data-jaco-line data-jaco-line--tools="basic">First draggable block</h3>
+        <div data-jaco-block data-jaco-block--tools="full">
           <p>This block can be reordered with the grip handle.</p>
         </div>
       </div>
       <div>
-        <h3 data-jaco-line>Second draggable block</h3>
-        <div data-jaco-block>
+        <h3 data-jaco-line data-jaco-line--tools="basic">Second draggable block</h3>
+        <div data-jaco-block data-jaco-block--tools="full">
           <p>Drag a block to change its order.</p>
         </div>
       </div>
@@ -183,8 +183,8 @@
   </div>
 
   <div class="elements-section">
-    <h2 data-jaco-line>Site templates</h2>
-    <div data-jaco-block>
+    <h2 data-jaco-line data-jaco-line--tools="basic">Site templates</h2>
+    <div data-jaco-block data-jaco-block--tools="full">
       <p>A site template is one marked root element, maintained under Content → Templates. "Apply to all" replaces every element that carries the same name across the project — the navigation and the footer on this page are examples of it.</p>
     </div>
     <pre class="code-ref"><code>&lt;footer data-jaco-template=&quot;footer-en.html&quot;&gt;…&lt;/footer&gt;</code></pre>

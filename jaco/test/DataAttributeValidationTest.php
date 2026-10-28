@@ -155,6 +155,50 @@ final class DataAttributeValidationTest extends TestCase
         $this->assertSame([], html\fragment_file_problems(test_config(), ['nosuch.html']));
     }
 
+    public function testPlainToolsDropFormattingButKeepParagraphs(): void
+    {
+        $html = '<div data-jaco-block><p>keep <strong>drop</strong></p></div>';
+
+        $this->assertSame(
+            '<div data-jaco-block><p>keep drop</p></div>',
+            html\sanitize_html($html),
+        );
+    }
+
+    public function testBasicToolsKeepInlineFormattingButNoHeadings(): void
+    {
+        $html = '<div data-jaco-block data-jaco-block--tools="basic">'
+            . '<p>keep <strong>this</strong></p><h2>heading</h2></div>';
+
+        $this->assertSame(
+            '<div data-jaco-block data-jaco-block--tools="basic"><p>keep <strong>this</strong></p>heading</div>',
+            html\sanitize_html($html),
+        );
+    }
+
+    public function testFullToolsKeepStructureAndFormatting(): void
+    {
+        $html = '<div data-jaco-block data-jaco-block--tools="full">'
+            . '<p>keep <strong>this</strong></p><h2>heading</h2></div>';
+
+        $this->assertSame($html, html\sanitize_html($html));
+    }
+
+    public function testToolsDoNotReachOutsideTheTextElement(): void
+    {
+        // a heading in the page's own layout is the page's business
+        $html = '<h2>layout heading</h2><div data-jaco-block><p>plain</p></div>';
+
+        $this->assertSame($html, html\sanitize_html($html));
+    }
+
+    public function testAHeadingWithoutToolsLosesItsFormatting(): void
+    {
+        $html = '<h1 data-jaco-line>keep <em>drop</em></h1>';
+
+        $this->assertSame('<h1 data-jaco-line>keep drop</h1>', html\sanitize_html($html));
+    }
+
     public function testAFragmentWithOneRootIsAccepted(): void
     {
         $this->assertTrue(html\fragment_has_one_root("\n  <section><p>x</p></section>\n"));

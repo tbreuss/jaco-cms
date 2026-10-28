@@ -2414,13 +2414,38 @@ QUnit.test('blocks introduce no positioned ancestor for editor chrome', (assert)
   }, 50)
 })
 
-QUnit.test('the block toolbar offers video embeds', (assert) => {
-  m.render(fixture(), m.trust('<div data-jaco-block><p>with video</p></div>'))
+QUnit.test('the full block toolbar offers video embeds', (assert) => {
+  // the toolbar follows --tools: video is part of "full" only
+  m.render(fixture(), m.trust('<div data-jaco-block data-jaco-block--tools="full"><p>with video</p></div>'))
 
   fixture().querySelector('[data-jaco-block] p')
     .dispatchEvent(new MouseEvent('click', {bubbles: true}))
 
   assert.ok(document.querySelector('.ql-toolbar .ql-video'), 'video button is in the toolbar')
+})
+
+QUnit.test('a plain block opens without toolbar buttons', (assert) => {
+  m.render(fixture(), m.trust('<div data-jaco-block><p>no tools</p></div>'))
+
+  fixture().querySelector('[data-jaco-block] p')
+    .dispatchEvent(new MouseEvent('click', {bubbles: true}))
+
+  assert.ok(document.querySelector('.ql-container'), 'the editor opens')
+  const toolbar = document.querySelector('.ql-toolbar')
+  assert.strictEqual(toolbar ? toolbar.querySelectorAll('button, .ql-picker').length : 0, 0,
+    'plain offers no buttons')
+})
+
+QUnit.test('a basic block offers formatting but no video', (assert) => {
+  m.render(fixture(), m.trust('<div data-jaco-block data-jaco-block--tools="basic"><p>basic</p></div>'))
+
+  fixture().querySelector('[data-jaco-block] p')
+    .dispatchEvent(new MouseEvent('click', {bubbles: true}))
+
+  const toolbar = document.querySelector('.ql-toolbar')
+  assert.ok(toolbar, 'a toolbar is there')
+  assert.ok(toolbar.querySelector('.ql-bold'), 'bold is offered')
+  assert.strictEqual(toolbar.querySelector('.ql-video'), null, 'no video')
 })
 
 QUnit.test('chrome is stripped but content markers survive', (assert) => {

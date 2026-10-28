@@ -135,6 +135,15 @@ window.initImages = (root) => {
   })
 }
 
+// What the toolbar offers: the value of <role>--tools, or plain when it is absent
+const toolsOf = (element, allowed) => {
+  const name = [...element.attributes]
+    .map((attribute) => attribute.name)
+    .find((attributeName) => attributeName.endsWith('--tools'))
+  const value = name ? (element.getAttribute(name) || '').toLowerCase() : ''
+  return allowed.includes(value) ? value : 'plain'
+}
+
 window.getDisplayType = (element) => {
   let cStyle = element.currentStyle || window.getComputedStyle(element, '')
   return cStyle.display
@@ -409,15 +418,21 @@ window.addClickHandler = () => {
     let editable = event.target.closest('[data-jaco-block]')
     if (editable) {
       editable.setAttribute('data-jaco-is-editing', '')
-      let toolbarOptions = [
-        [{'header': [1, 2, 3, 4, 5, 6, false]}],
-        ['bold', 'italic', 'underline', 'strike'],
-        ['blockquote', 'code-block'],
-        [{'list': 'ordered'}, {'list': 'bullet'}],
-        [{'indent': '-1'}, {'indent': '+1'}],
-        ['link', 'video'],
-        ['clean']
-      ]
+      // --tools decides what the toolbar offers; without it the block is plain
+      const tools = toolsOf(editable, ['basic', 'full'])
+      let toolbarOptions = tools === 'full'
+        ? [
+          [{'header': [1, 2, 3, 4, 5, 6, false]}],
+          ['bold', 'italic', 'underline', 'strike'],
+          ['blockquote', 'code-block'],
+          [{'list': 'ordered'}, {'list': 'bullet'}],
+          [{'indent': '-1'}, {'indent': '+1'}],
+          ['link', 'video'],
+          ['clean']
+        ]
+        : tools === 'basic'
+          ? [['bold', 'italic', 'underline', 'strike'], ['link'], ['clean']]
+          : []
       let editorOptions = {
         modules: {
           toolbar: toolbarOptions
@@ -434,11 +449,10 @@ window.addClickHandler = () => {
     let editableLine = event.target.closest('[data-jaco-line]')
     if (editableLine) {
       editableLine.setAttribute('data-jaco-is-editing', '')
-      let toolbarLineOptions = [
-        ['bold', 'italic', 'underline', 'strike'],
-        ['link'],
-        ['clean']
-      ]
+      const lineTools = toolsOf(editableLine, ['basic'])
+      let toolbarLineOptions = lineTools === 'basic'
+        ? [['bold', 'italic', 'underline', 'strike'], ['link'], ['clean']]
+        : []
       let editorLineOptions = {
         modules: {
           toolbar: toolbarLineOptions,

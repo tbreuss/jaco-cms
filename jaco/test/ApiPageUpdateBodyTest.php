@@ -32,7 +32,7 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
     {
         $response = $this->api('page/update-body', [
             'fileName' => self::PAGE,
-            'body' => '<div data-jaco-block><p>neu</p></div>',
+            'body' => '<div data-jaco-block data-jaco-block--tools="full"><p>neu</p></div>',
         ]);
 
         $this->assertSame(Status::CREATED, $response->status);
@@ -46,7 +46,7 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
         $this->assertStringContainsString('href="/style.css"', $content);
 
         // the body is the new one, markers included
-        $this->assertStringContainsString('<div data-jaco-block><p>neu</p></div>', $content);
+        $this->assertStringContainsString('<div data-jaco-block data-jaco-block--tools="full"><p>neu</p></div>', $content);
         $this->assertStringNotContainsString('<p>alt</p>', $content);
     }
 
@@ -54,7 +54,8 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
     {
         $response = $this->api('page/update-body', [
             'fileName' => self::PAGE,
-            'body' => '<div data-jaco-block><p onclick="steal()">text</p></div>'
+            'body' => '<div data-jaco-block data-jaco-block--tools="full">'
+                . '<p onclick="steal()">text</p></div>'
                 . '<script src="https://evil.example/x.js"></script>'
                 . '<link rel="stylesheet" href="https://evil.example/x.css">'
                 . '<title>Injected</title>',

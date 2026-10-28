@@ -235,6 +235,19 @@ const ALLOWED_TAGS = [
     'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'time', 'tr', 'u', 'ul', 'var',
 ];
 
+// What a text element may keep: --tools decides, and without it only paragraphs.
+// An element that offers "full" keeps structure, one that offers "basic" keeps the
+// inline formatting, and "plain" keeps neither.
+const TOOLS_TAGS = [
+    // a text block stays a block of paragraphs whatever the tools offer
+    'plain' => ['br', 'p'],
+    'basic' => ['a', 'b', 'br', 'em', 'i', 'p', 's', 'strike', 'strong', 'u'],
+    'full' => [
+        'a', 'b', 'blockquote', 'br', 'code', 'em', 'h1', 'h2', 'h3', 'h4', 'h5',
+        'h6', 'i', 'iframe', 'li', 'ol', 'p', 'pre', 's', 'strike', 'strong', 'u', 'ul',
+    ],
+];
+
 const REMOVE_TAGS = [
     'applet', 'base', 'embed', 'link', 'math', 'meta', 'noscript', 'object',
     'script', 'style', 'template',
@@ -476,6 +489,61 @@ function data_attribute_errors(string $html): array
     return \array_values(\array_unique($problems));
 }
 
+/**
+ * The tools value of a text element, or `plain` when it carries none.
+ */
+function tools_of(\DOMElement $el): string
+{
+    foreach (['data-jaco-block--tools', 'data-jaco-line--tools'] as $name) {
+        if (!$el->hasAttribute($name)) {
+            continue;
+        }
+        $value = \strtolower(\trim($el->getAttribute($name)));
+
+        return isset(TOOLS_TAGS[$value]) ? $value : 'plain';
+    }
+
+    return 'plain';
+}
+
+/**
+ * Remove the markup a text element's tools do not offer.
+ *
+ * Only inside a text element: a heading or a list in a page's own layout is the
+ * page's business, and `data-jaco-block` is where the editor decides. Everything
+ * else in the document keeps the tags the whitelist allows.
+ */
+function strip_tags_below_tools(\DOMElement $el): void
+{
+    // the tools belong to the text element; they apply to everything inside it, so
+    // the set is passed down instead of being read from each child
+    apply_tools_to_children($el, TOOLS_TAGS[tools_of($el)]);
+}
+
+/**
+ * @param list<string> $allowed
+ */
+function apply_tools_to_children(\DOMElement $el, array $allowed): void
+{
+    $children = \iterator_to_array($el->childNodes);
+    foreach ($children as $child) {
+        if (!$child instanceof \DOMElement) {
+            continue;
+        }
+
+        $childTag = \strtolower($child->nodeName);
+        if (!\in_array($childTag, $allowed, true)) {
+            while ($child->firstChild !== null) {
+                $el->insertBefore($child->firstChild, $child);
+            }
+            $el->removeChild($child);
+            continue;
+        }
+
+        apply_tools_to_children($child, $allowed);
+    }
+}
+
 function sanitize_node(\DOMElement $el): void
 {
     $tag = \strtolower($el->nodeName);
@@ -488,6 +556,11 @@ function sanitize_node(\DOMElement $el): void
     }
     foreach ($remove as $name) {
         $el->removeAttribute($name);
+    }
+
+    // a text element keeps only what its tools offer
+    if ($el->hasAttribute('data-jaco-block') || $el->hasAttribute('data-jaco-line')) {
+        strip_tags_below_tools($el);
     }
 
     $children = \iterator_to_array($el->childNodes);
