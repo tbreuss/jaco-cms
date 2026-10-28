@@ -297,7 +297,10 @@ function update_page(
         // the page manager owns the document: doctype and head stay as sent,
         // only the body is treated as content and sanitized
         $body = html\sanitize_html($htmlOrErrors);
-        $contractErrors = html\data_attribute_errors($body);
+        $contractErrors = \array_merge(
+            html\data_attribute_errors($body),
+            html\fragment_file_problems($config, html\repeater_fragments($body)),
+        );
 
         if (\count($contractErrors) > 0) {
             return Payload::invalid(\array_map(
@@ -499,7 +502,10 @@ function update_page_body(Config $config, string $file, string $withBody): Paylo
     // the client owns the content, the stored document keeps doctype and head
     $document = filesystem\read_file($config->webDir, $data['file']) ?? '';
     $body = html\sanitize_html($htmlOrErrors);
-    $contractErrors = html\data_attribute_errors($body);
+    $contractErrors = \array_merge(
+        html\data_attribute_errors($body),
+        html\fragment_file_problems($config, html\repeater_fragments($body)),
+    );
 
     if (\count($contractErrors) > 0) {
         return Payload::invalid(\array_map(

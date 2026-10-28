@@ -381,6 +381,74 @@ function data_attribute_unknown_names(string $html): array
     return \array_values(\array_unique($unknown));
 }
 
+/**
+ * The repeater fragments a body refers to, as the values written in the markup.
+ *
+ * @return list<string>
+ */
+function repeater_fragments(string $html): array
+{
+    \libxml_use_internal_errors(true);
+    $dom = new \DOMDocument();
+    $loaded = $dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><body>' . $html . '</body>');
+    \libxml_clear_errors();
+
+    if (!$loaded) {
+        return [];
+    }
+
+    $fragments = [];
+    foreach ($dom->getElementsByTagName('*') as $el) {
+        if (!$el->hasAttribute('data-jaco-repeater')) {
+            continue;
+        }
+        $value = \trim($el->getAttribute('data-jaco-repeater'));
+        if ($value !== '') {
+            $fragments[] = $value;
+        }
+    }
+
+    return \array_values(\array_unique($fragments));
+}
+
+/**
+ * Problems with the fragment files a body refers to.
+ *
+ * A fragment becomes one block, so a file with two roots (or text beside its root)
+ * would silently turn one insertion into several blocks. The file is read from the
+ * content directory; a value that does not name a file there is left to the file
+ * value rules, which report it on their own.
+ *
+ * @param list<string> $fragments
+ * @return list<string>
+ */
+function fragment_file_problems(Config $config, array $fragments): array
+{
+    $problems = [];
+
+    foreach ($fragments as $fragment) {
+        if (\str_contains($fragment, '..') || \str_starts_with($fragment, '/')) {
+            continue;
+        }
+
+        $path = $config->templateContentDir . '/' . $fragment;
+        if (!\is_file($path)) {
+            continue;
+        }
+
+        $content = \file_get_contents($path);
+        if ($content === false) {
+            continue;
+        }
+
+        if (!fragment_has_one_root($content)) {
+            $problems[] = 'fragment without exactly one root element: ' . $fragment;
+        }
+    }
+
+    return $problems;
+}
+
 function data_attribute_errors(string $html): array
 {
     \libxml_use_internal_errors(true);

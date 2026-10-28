@@ -119,6 +119,42 @@ final class DataAttributeValidationTest extends TestCase
         ));
     }
 
+    public function testAPageThatUsesAFragmentWithTwoRootsIsReported(): void
+    {
+        $config = test_config();
+        $name = 'two-roots.html';
+        file_put_contents($config->templateContentDir . '/' . $name, '<div>x</div><div>y</div>');
+
+        try {
+            $problems = html\fragment_file_problems($config, [$name]);
+        } finally {
+            @unlink($config->templateContentDir . '/' . $name);
+        }
+
+        $this->assertSame(['fragment without exactly one root element: ' . $name], $problems);
+    }
+
+    public function testEveryShippedFragmentHasOneRoot(): void
+    {
+        // the repository's own fragments, not the test sandbox: they are what the
+        // demo pages insert
+        $root = \dirname(__DIR__, 2) . '/jaco-data/templates/content';
+        $files = \glob($root . '/*.html') ?: [];
+
+        $this->assertNotSame([], $files, 'the repository ships fragments');
+
+        foreach ($files as $file) {
+            $content = (string) \file_get_contents($file);
+            $this->assertTrue(html\fragment_has_one_root($content), \basename($file) . ' has exactly one root');
+        }
+    }
+
+    public function testAFragmentThatDoesNotExistIsLeftToTheFileRules(): void
+    {
+        // the file value rules report it; the root check stays quiet
+        $this->assertSame([], html\fragment_file_problems(test_config(), ['nosuch.html']));
+    }
+
     public function testAFragmentWithOneRootIsAccepted(): void
     {
         $this->assertTrue(html\fragment_has_one_root("\n  <section><p>x</p></section>\n"));
