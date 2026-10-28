@@ -1998,6 +1998,10 @@ const sortableListHtml = (pos = 'top') => contentListHtml(pos, true)
 
 const stubFetcher = (html = '<p>Fresh</p>') => () => Promise.resolve(html)
 
+// every direct child is a block, except the chrome the editor brings along
+const blocksOf = (list) => [...list.children]
+  .filter((child) => !child.classList.contains('jaco-content-add-button'))
+
 QUnit.test('posOf reads top, bottom and defaults anything else to any', (assert) => {
   const lists = window.JacoContentLists
   const list = (pos) => {
@@ -2031,7 +2035,7 @@ QUnit.test('top inserts fetched fragments at the beginning', (assert) => {
 
   button.click()
   setTimeout(() => {
-    const items = [...list.querySelectorAll(':scope > *')]
+    const items = [...list.children].filter((el) => !el.classList.contains('jaco-content-add-button'))
     assert.strictEqual(items.length, 2, 'a block was added')
     assert.ok(items[0].textContent.includes('Fresh'), 'the new block is first')
     assert.ok(items[0].querySelector('.jaco-content-item-bar'), 'the new block has a delete overlay')
@@ -2051,7 +2055,7 @@ QUnit.test('bottom appends fetched fragments at the end', (assert) => {
 
   button.click()
   setTimeout(() => {
-    const items = [...list.querySelectorAll(':scope > *')]
+    const items = blocksOf(list)
     assert.strictEqual(items.length, 2, 'a block was added')
     assert.ok(items[1].textContent.includes('Fresh'), 'the new block is last')
     done()
@@ -2071,7 +2075,7 @@ QUnit.test('any puts a button before every block and at the end', (assert) => {
 
   buttons[0].click()
   setTimeout(() => {
-    const items = [...list.querySelectorAll(':scope > *')]
+    const items = blocksOf(list)
     assert.strictEqual(items.length, 2, 'a block was added')
     assert.ok(items[0].textContent.includes('Fresh'), 'the new block follows the clicked button')
     done()
@@ -2345,7 +2349,7 @@ QUnit.test('clicking a dynamically inserted block opens the editor toolbar', (as
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))
 
-  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<h2 data-jaco-line>Fresh headline</h2>'))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<div><h2 data-jaco-line>Fresh headline</h2></div>'))
   fixture().querySelector('.jaco-content-add-button').click()
 
   setTimeout(() => {
@@ -2389,12 +2393,13 @@ QUnit.test('blocks introduce no positioned ancestor for editor chrome', (assert)
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))
 
-  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<h2 data-jaco-line>Fresh</h2>'))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<div><h2 data-jaco-line>Fresh</h2></div>'))
   fixture().querySelector('.jaco-content-add-button').click()
 
   setTimeout(() => {
-    const item = [...fixture().querySelectorAll('[data-jaco-repeater] > *')]
+    const item = blocksOf(fixture().querySelector('[data-jaco-repeater]'))
       .find((el) => el.textContent.includes('Fresh'))
+    assert.ok(item, 'the inserted block is rendered')
     assert.strictEqual(window.getComputedStyle(item).position, 'static', 'items stay static')
 
     const headline = item.querySelector('h2')

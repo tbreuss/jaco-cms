@@ -81,10 +81,9 @@ window.JacoContentLists = (() => {
       list.prepend(item)
     } else if (pos === 'bottom' || !refNode) {
       list.append(item)
-    } else if (refNode.parentElement === list) {
-      refNode.before(item)
     } else {
-      // the any-buttons stand before their block, one level up from the list
+      // the button stands before its block: the new block goes before that one,
+      // whether the button sits inside the list or just in front of it
       const next = refNode.nextElementSibling
       if (next) {
         next.before(item)
@@ -279,7 +278,9 @@ window.JacoContentLists = (() => {
       list.after(createAddButton(list, onAdd))
     } else {
       ;[...list.children].forEach((item) => {
-        item.before(createAddButton(list, onAdd))
+        // the button goes inside the container, before its block: a button outside
+        // would not move with the block when blocks are sorted
+        list.insertBefore(createAddButton(list, onAdd), item)
         attachItemOverlay(item, sortable)
       })
       list.append(createAddButton(list, onAdd))
