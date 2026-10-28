@@ -482,6 +482,30 @@ iframe.elements-video {
     border-radius: var(--radius);
 }
 
+/* the contents list at the top of the elements page */
+.elements-overview {
+    margin: 1.5rem 0 2.5rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.elements-overview ul {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+    columns: 2;
+    column-gap: 2rem;
+}
+
+.elements-overview li {
+    margin: 0.25rem 0;
+    break-inside: avoid;
+}
+
+.elements-overview a {
+    font-weight: 600;
+}
+
 .elements-note {
     color: var(--muted);
     font-size: 0.9rem;

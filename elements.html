@@ -36,14 +36,54 @@
     </div>
   </div>
 
-  <div class="elements-section">
+  <nav class="elements-overview" aria-label="Contents">
+    <h2 data-jaco-line data-jaco-line--tools="basic">Contents</h2>
+    <ul>
+      <li><a href="#elements-line">Single-line text</a> – plain, basic</li>
+      <li><a href="#elements-block">Rich text</a> – plain, basic, full</li>
+      <li><a href="#elements-video">Videos</a> – a tool of the full block</li>
+      <li><a href="#elements-link">Links</a> – same tab, new tab, around an image</li>
+      <li><a href="#elements-image">Images</a> – replaced as it is, fill, fit, choice</li>
+      <li><a href="#elements-repeater">Repeatable content</a> – top, bottom, any, sortable, no label</li>
+      <li><a href="#elements-template">Site templates</a> – top level and in a folder</li>
+    </ul>
+  </nav>
+
+  <div class="elements-section" id="elements-line">
     <h2 data-jaco-line data-jaco-line--tools="basic">Single-line text</h2>
+    <div data-jaco-block data-jaco-block--tools="full">
+      <p>A single-line marker is intended for headings and short labels.</p>
+    </div>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Plain</h3>
+    <pre class="code-ref"><code>&lt;h1 data-jaco-line&gt;A single line&lt;/h1&gt;</code></pre>
+    <p data-jaco-line>A single line without tools: the text is edited, nothing is formatted.</p>
+    <p class="elements-note">Without <code>--tools</code> the editor offers no formatting at all.</p>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Basic</h3>
     <pre class="code-ref"><code>&lt;h1 data-jaco-line data-jaco-line--tools="basic"&gt;A single line&lt;/h1&gt;</code></pre>
-    <p data-jaco-line data-jaco-line--tools="basic">A single-line marker is intended for headings and short labels.</p>
+    <p data-jaco-line data-jaco-line--tools="basic">A single line with <strong>bold</strong>, <em>italic</em>, underline, strike and a <a href="docs.html">link</a>.</p>
+    <p class="elements-note">A line offers <code>basic</code> or nothing; headings and lists belong to a block.</p>
   </div>
 
-  <div class="elements-section">
+  <div class="elements-section" id="elements-block">
     <h2 data-jaco-line data-jaco-line--tools="basic">Rich text</h2>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Plain</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-block&gt;&lt;p&gt;A paragraph.&lt;/p&gt;&lt;/div&gt;</code></pre>
+    <div data-jaco-block>
+      <p>A block without tools: paragraphs and line breaks, nothing else.</p>
+    </div>
+    <p class="elements-note">Without <code>--tools</code> the editor offers no formatting, and a <code>&lt;strong&gt;</code> written by hand is removed when the page is saved.</p>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Basic</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-block data-jaco-block--tools="basic"&gt;&lt;p&gt;Text with &lt;strong&gt;formatting&lt;/strong&gt;.&lt;/p&gt;&lt;/div&gt;</code></pre>
+    <div data-jaco-block data-jaco-block--tools="basic">
+      <p>A block with <strong>bold</strong>, <em>italic</em>, underline, strike and a <a href="docs.html">link</a>, but no structure.</p>
+    </div>
+    <p class="elements-note">A heading or a list inside a <code>basic</code> block loses its markup when the page is saved.</p>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Full</h3>
     <pre class="code-ref"><code>&lt;div data-jaco-block data-jaco-block--tools="full"&gt;&lt;p&gt;Text with &lt;strong&gt;formatting&lt;/strong&gt;.&lt;/p&gt;&lt;/div&gt;</code></pre>
     <div data-jaco-block data-jaco-block--tools="full">
       <p>A rich-text block supports <strong>bold</strong>, <em>italic</em>, links, lists and embedded videos. The whole block is edited in one place.</p>
@@ -54,7 +94,7 @@
     </div>
   </div>
 
-  <div class="elements-section">
+  <div class="elements-section" id="elements-video">
     <h2 data-jaco-line data-jaco-line--tools="basic">Videos</h2>
     <pre class="code-ref"><code>&lt;!-- in a text block, added through the video dialog --&gt;
 &lt;iframe src=&quot;https://www.youtube-nocookie.com/embed/VIDEO_ID&quot;&gt;&lt;/iframe&gt;</code></pre>
@@ -64,8 +104,8 @@
     </div>
   </div>
 
-  <div class="elements-section">
-    <h2 data-jaco-line data-jaco-line--tools="basic">Editable links</h2>
+  <div class="elements-section" id="elements-link">
+    <h2 data-jaco-line data-jaco-line--tools="basic">Links</h2>
     <pre class="code-ref"><code>&lt;a href=&quot;download.html&quot; data-jaco-link&gt;Same tab&lt;/a&gt;
 
 &lt;a href=&quot;download.html&quot; target=&quot;_blank&quot; data-jaco-link&gt;New tab&lt;/a&gt;</code></pre>
@@ -76,8 +116,15 @@
     <p class="elements-note">Both the URL and target are changed through the link dialog.</p>
   </div>
 
-  <div class="elements-section">
+  <div class="elements-section" id="elements-image">
     <h2 data-jaco-line data-jaco-line--tools="basic">Images</h2>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Replaced as it is</h3>
+    <pre class="code-ref"><code>&lt;img data-jaco-image src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;</code></pre>
+    <div class="elements-image">
+      <img data-jaco-image src="media/demo-elements.svg" alt="Image that is stored as it is" width="320" height="180">
+    </div>
+    <p class="elements-note">Without <code>--mode</code> the file is stored as the redactor uploaded it; <code>width</code> and <code>height</code> only shape the layout.</p>
 
     <h3 data-jaco-line data-jaco-line--tools="basic">Fixed size</h3>
     <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image--mode=&quot;fill&quot; src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;</code></pre>
@@ -112,8 +159,8 @@
     <p class="elements-note">The image and the link are edited separately: click the image for the file, the surrounding link for its target. This link opens in a new tab, which the link dialog sets.</p>
   </div>
 
-  <div class="elements-section">
-    <h2 data-jaco-line data-jaco-line--tools="basic">Repeatable content: positions</h2>
+  <div class="elements-section" id="elements-repeater">
+    <h2 data-jaco-line data-jaco-line--tools="basic">Repeatable content</h2>
     <p class="elements-note">The four lists use the same block template but different insertion positions.</p>
 
     <h3 data-jaco-line data-jaco-line--tools="basic">Top</h3>
@@ -189,13 +236,34 @@
     </div>
   </div>
 
-  <div class="elements-section">
+    <h3 data-jaco-line data-jaco-line--tools="basic">Without label</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-repeater=&quot;element-block-en.html&quot; data-jaco-repeater--position=&quot;top&quot;&gt;
+  &lt;div&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    <div class="elements-list" data-jaco-repeater="element-block-en.html" data-jaco-repeater--position="top">
+      <div>
+        <h3 data-jaco-line data-jaco-line--tools="basic">So far without buttons</h3>
+        <div data-jaco-block data-jaco-block--tools="full">
+          <p>The add button says "Add block" in the editor's language.</p>
+        </div>
+      </div>
+    </div>
+    <p class="elements-note">Without <code>--label</code> the button is translated by the editor, so the page does not decide the language.</p>
+  </div>
+
+  <div class="elements-section" id="elements-template">
     <h2 data-jaco-line data-jaco-line--tools="basic">Site templates</h2>
     <div data-jaco-block data-jaco-block--tools="full">
       <p>A site template is one marked root element, maintained under Content → Templates. "Apply to all" replaces every element that carries the same name across the project — the navigation and the footer on this page are examples of it.</p>
     </div>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Top level</h3>
     <pre class="code-ref"><code>&lt;footer data-jaco-template=&quot;footer-en.html&quot;&gt;…&lt;/footer&gt;</code></pre>
-    <p class="elements-note">The value is the file name in <code>jaco-data/templates/site/</code>, extension included.</p>
+    <p class="elements-note">The value is the file name in <code>jaco-data/templates/site/</code>, extension included. The footer at the bottom of this page is this template.</p>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">In a folder</h3>
+    <pre class="code-ref"><code>&lt;footer data-jaco-template=&quot;footers/footer-en.html&quot;&gt;…&lt;/footer&gt;</code></pre>
+    <p class="elements-note">The value is the path relative to <code>jaco-data/templates/site/</code>: segments separated by <code>/</code>, each of them letters, digits, <code>-</code> and <code>_</code>. No page in this project uses a folder yet; the rule is the same one fragments follow.</p>
   </div>
 
   <footer data-jaco-template="footer-en.html">

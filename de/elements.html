@@ -36,15 +36,55 @@
     </div>
   </div>
 
-  <div class="elements-section">
+  <nav class="elements-overview" aria-label="Inhalt">
+    <h2 data-jaco-line data-jaco-line--tools="basic">Inhalt</h2>
+    <ul>
+      <li><a href="#elements-line">Einzeiliger Text</a> – plain, basic</li>
+      <li><a href="#elements-block">Rich-Text</a> – plain, basic, full</li>
+      <li><a href="#elements-video">Videos</a> – ein Werkzeug des full-Blocks</li>
+      <li><a href="#elements-link">Links</a> – gleiches Tab, neues Tab, um ein Bild</li>
+      <li><a href="#elements-image">Bilder</a> – unverändert, füllen, einpassen, Auswahl</li>
+      <li><a href="#elements-repeater">Wiederholbarer Inhalt</a> – oben, unten, überall, verschiebbar, ohne Label</li>
+      <li><a href="#elements-template">Website-Vorlagen</a> – oberste Ebene und im Ordner</li>
+    </ul>
+  </nav>
+
+  <div class="elements-section" id="elements-line">
     <h2 data-jaco-line data-jaco-line--tools="basic">Einzeiliger Text</h2>
-    <pre class="code-ref"><code>&lt;h1 data-jaco-line data-jaco-line--tools="basic"&gt;A single line&lt;/h1&gt;</code></pre>
-    <p data-jaco-line data-jaco-line--tools="basic">Ein Einzeiler-Marker ist für Überschriften und kurze Bezeichnungen gedacht.</p>
+    <div data-jaco-block data-jaco-block--tools="full">
+      <p>Ein Einzeiler-Marker ist für Überschriften und kurze Bezeichnungen gedacht.</p>
+    </div>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Plain</h3>
+    <pre class="code-ref"><code>&lt;h1 data-jaco-line&gt;Eine einzelne Zeile&lt;/h1&gt;</code></pre>
+    <p data-jaco-line>Eine Zeile ohne Werkzeuge: Der Text wird bearbeitet, nichts formatiert.</p>
+    <p class="elements-note">Ohne <code>--tools</code> bietet der Editor gar keine Formatierung.</p>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Basic</h3>
+    <pre class="code-ref"><code>&lt;h1 data-jaco-line data-jaco-line--tools="basic"&gt;Eine einzelne Zeile&lt;/h1&gt;</code></pre>
+    <p data-jaco-line data-jaco-line--tools="basic">Eine Zeile mit <strong>fett</strong>, <em>kursiv</em>, Unterstreichen, Durchstreichen und einem <a href="de/docs.html">Link</a>.</p>
+    <p class="elements-note">Eine Zeile bietet <code>basic</code> oder nichts; Überschriften und Listen gehören in einen Block.</p>
   </div>
 
-  <div class="elements-section">
+  <div class="elements-section" id="elements-block">
     <h2 data-jaco-line data-jaco-line--tools="basic">Rich-Text</h2>
-    <pre class="code-ref"><code>&lt;div data-jaco-block data-jaco-block--tools="full"&gt;&lt;p&gt;Text with &lt;strong&gt;formatting&lt;/strong&gt;.&lt;/p&gt;&lt;/div&gt;</code></pre>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Plain</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-block&gt;&lt;p&gt;Ein Absatz.&lt;/p&gt;&lt;/div&gt;</code></pre>
+    <div data-jaco-block>
+      <p>Ein Block ohne Werkzeuge: Absätze und Zeilenumbrüche, mehr nicht.</p>
+    </div>
+    <p class="elements-note">Ohne <code>--tools</code> bietet der Editor keine Formatierung, und ein von Hand geschriebenes <code>&lt;strong&gt;</code> wird beim Speichern entfernt.</p>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Basic</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-block data-jaco-block--tools=&quot;basic&quot;&gt;&lt;p&gt;Text mit &lt;strong&gt;Auszeichnung&lt;/strong&gt;.&lt;/p&gt;&lt;/div&gt;</code></pre>
+    <div data-jaco-block data-jaco-block--tools="basic">
+      <p>Ein Block mit <strong>fett</strong>, <em>kursiv</em>, Unterstreichen, Durchstreichen und einem <a href="de/docs.html">Link</a>, aber ohne Struktur.</p>
+    </div>
+    <p class="elements-note">Eine Überschrift oder eine Liste in einem <code>basic</code>-Block verliert beim Speichern ihre Auszeichnung.</p>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Full</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-block data-jaco-block--tools=&quot;full&quot;&gt;&lt;p&gt;Text mit &lt;strong&gt;Auszeichnung&lt;/strong&gt;.&lt;/p&gt;&lt;/div&gt;</code></pre>
     <div data-jaco-block data-jaco-block--tools="full">
       <p>Ein Rich-Text-Block unterstützt <strong>fett</strong>, <em>kursiv</em>, Links, Listen und eingebettete Videos. Der ganze Block wird an einer Stelle bearbeitet.</p>
       <ul>
@@ -54,7 +94,7 @@
     </div>
   </div>
 
-  <div class="elements-section">
+  <div class="elements-section" id="elements-video">
     <h2 data-jaco-line data-jaco-line--tools="basic">Videos</h2>
     <pre class="code-ref"><code>&lt;!-- in a text block, added through the video dialog --&gt;
 &lt;iframe src=&quot;https://www.youtube-nocookie.com/embed/VIDEO_ID&quot;&gt;&lt;/iframe&gt;</code></pre>
@@ -64,8 +104,8 @@
     </div>
   </div>
 
-  <div class="elements-section">
-    <h2 data-jaco-line data-jaco-line--tools="basic">Bearbeitbare Links</h2>
+  <div class="elements-section" id="elements-link">
+    <h2 data-jaco-line data-jaco-line--tools="basic">Links</h2>
     <pre class="code-ref"><code>&lt;a href=&quot;de/download.html&quot; data-jaco-link&gt;Gleicher Tab&lt;/a&gt;
 
 &lt;a href=&quot;de/download.html&quot; target=&quot;_blank&quot; data-jaco-link&gt;Neuer Tab&lt;/a&gt;</code></pre>
@@ -78,8 +118,15 @@
   </div>
 
 
-  <div class="elements-section">
+  <div class="elements-section" id="elements-image">
     <h2 data-jaco-line data-jaco-line--tools="basic">Bilder</h2>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Unverändert übernommen</h3>
+    <pre class="code-ref"><code>&lt;img data-jaco-image src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;</code></pre>
+    <div class="elements-image">
+      <img data-jaco-image src="media/demo-elements.svg" alt="Bild, das unverändert gespeichert wird" width="320" height="180">
+    </div>
+    <p class="elements-note">Ohne <code>--mode</code> wird die Datei so gespeichert, wie der Redakteur sie hochgeladen hat; <code>width</code> und <code>height</code> formen nur das Layout.</p>
 
     <h3 data-jaco-line data-jaco-line--tools="basic">Feste Grösse</h3>
     <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image--mode=&quot;fill&quot; src=&quot;media/team.jpg&quot; width=&quot;320&quot; height=&quot;180&quot;&gt;</code></pre>
@@ -114,8 +161,8 @@
     <p class="elements-note">Bild und Link werden getrennt bearbeitet: Klick auf das Bild für die Datei, Klick auf den umgebenden Link für sein Ziel. Dieser Link öffnet ein neues Tab – das stellt der Link-Dialog ein.</p>
   </div>
 
-  <div class="elements-section">
-    <h2 data-jaco-line data-jaco-line--tools="basic">Wiederholbarer Inhalt: Positionen</h2>
+  <div class="elements-section" id="elements-repeater">
+    <h2 data-jaco-line data-jaco-line--tools="basic">Wiederholbarer Inhalt</h2>
     <p class="elements-note">Die vier Listen nutzen dasselbe Block-Fragment, aber unterschiedliche Einfügepositionen.</p>
 
     <h3 data-jaco-line data-jaco-line--tools="basic">Oben</h3>
@@ -191,13 +238,33 @@
     </div>
   </div>
 
-  <div class="elements-section">
+    <h3 data-jaco-line data-jaco-line--tools="basic">Ohne Label</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-repeater=&quot;element-block-de.html&quot; data-jaco-repeater--position=&quot;top&quot;&gt;
+  &lt;div&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    <div class="elements-list" data-jaco-repeater="element-block-de.html" data-jaco-repeater--position="top">
+      <div>
+        <h3 data-jaco-line data-jaco-line--tools="basic">Bisher ohne Knöpfe</h3>
+        <div data-jaco-block data-jaco-block--tools="full">
+          <p>Der Knopf heisst «Add block» in der Sprache des Editors.</p>
+        </div>
+      </div>
+    </div>
+    <p class="elements-note">Ohne <code>--label</code> übersetzt der Editor den Knopf, die Seite entscheidet nicht über die Sprache.</p>
+  </div>
+
+  <div class="elements-section" id="elements-template">
     <h2 data-jaco-line data-jaco-line--tools="basic">Website-Vorlagen</h2>
     <div data-jaco-block data-jaco-block--tools="full">
       <p>Eine Website-Vorlage ist genau ein markiertes Wurzelelement, gepflegt unter Inhalt → Vorlagen. «Auf alle anwenden» ersetzt jedes Element mit demselben Namen im ganzen Projekt – die Navigation und die Fusszeile dieser Seite sind Beispiele dafür.</p>
     </div>
+    <h3 data-jaco-line data-jaco-line--tools="basic">Oberste Ebene</h3>
     <pre class="code-ref"><code>&lt;footer data-jaco-template=&quot;footer-de.html&quot;&gt;…&lt;/footer&gt;</code></pre>
-    <p class="elements-note">Der Wert ist der Dateiname in <code>jaco-data/templates/site/</code>, mit Endung.</p>
+    <p class="elements-note">Der Wert ist der Dateiname in <code>jaco-data/templates/site/</code>, mit Endung. Die Fusszeile unten auf dieser Seite ist diese Vorlage.</p>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Im Ordner</h3>
+    <pre class="code-ref"><code>&lt;footer data-jaco-template=&quot;footers/footer-de.html&quot;&gt;…&lt;/footer&gt;</code></pre>
+    <p class="elements-note">Der Wert ist der Pfad relativ zu <code>jaco-data/templates/site/</code>: Abschnitte durch <code>/</code> getrennt, jeder aus Buchstaben, Ziffern, <code>-</code> und <code>_</code>. In diesem Projekt nutzt noch keine Seite einen Ordner; die Regel ist dieselbe wie bei den Fragmenten.</p>
   </div>
 
   <footer data-jaco-template="footer-de.html">
