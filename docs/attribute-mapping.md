@@ -54,7 +54,7 @@ missing (the fragment, the template file). The kind of property decides its name
 | --- | --- | --- | --- |
 | `data-jaco-block--tools` | `data-jaco-block` | `basic`, `full` | what the editor offers; without it `plain` |
 | `data-jaco-line--tools` | `data-jaco-line` | `basic` | what the editor offers; without it `plain` |
-| `data-jaco-image--mode` | `data-jaco-image` | `fill`, `fit`, `any` | how the file is scaled to `width` x `height`; without it the file is only replaced |
+| `data-jaco-image--mode` | `data-jaco-image` | `fill`, `fit`, `choice` | how the file is scaled to `width` x `height`; without it the file is only replaced |
 | `data-jaco-repeater--label` | `data-jaco-repeater` | text | label of the add button; without it "Add block" in the editor language |
 | `data-jaco-repeater--add` | `data-jaco-repeater` | `top`, `bottom` | where the add button goes; without it `top` |
 | `data-jaco-repeater--sortable` | `data-jaco-repeater` | none | blocks can be reordered by the grip |
@@ -87,7 +87,7 @@ block.
 | `data-jaco-image` | replaced as it is; `width` and `height` are layout only | - |
 | `+ data-jaco-image--mode="fill"` | scaled and cut to `width` x `height` | nothing |
 | `+ data-jaco-image--mode="fit"` | scaled so the whole image fits into `width` x `height` | nothing |
-| `+ data-jaco-image--mode="any"` | like `fill` or `fit`, as chosen in the dialog (default `fill`) | `fit` or `fill` |
+| `+ data-jaco-image--mode="choice"` | like `fill` or `fit`, as chosen in the dialog (default `fill`) | `fit` or `fill` |
 
 The attribute decides, not the presence of `width` and `height`. The editor has no
 field for them: they come from the markup and stay as written. A mode needs at least
@@ -95,7 +95,7 @@ one of them, otherwise there is nothing to scale to; with only one, `fill` and `
 scale in proportion. The bare role is the only spelling of "replace".
 
 The dialog is the same in every form: alt text, choose a file, choose from the
-media library; `any` adds the choice between `fit` and `fill`. Replacing the file
+media library; `choice` lets the editor choose between `fit` and `fill`. Replacing the file
 clears the alt text or asks for it again, because the old one describes another
 picture. An unscaled upload has no size limit of its own. A file with another aspect
 ratio than the markup needs `height: auto` in the CSS.
@@ -134,7 +134,10 @@ new block (see [File values](#file-values)).
 
 Every **direct child** of the container is one block, with a delete bar and, with
 `--sortable`, a grip. Nothing else stands in the container: a heading belongs in a
-wrapper around it. The editor's own elements (buttons, bars) are never saved.
+wrapper around it, and text directly in the container is an error (whitespace and
+comments are ignored). A fragment has **exactly one root element**, because it
+becomes one block; two roots would become two blocks. The editor's own elements
+(buttons, bars) are never saved.
 
 `--add` puts the button before the first block (`top`, the default) or after the
 last (`bottom`); it is independent of `--sortable`. Without `--label` the button
@@ -148,6 +151,22 @@ The value is the template file in `jaco-data/templates/site/` (see
 across the project. The value is **required**: a template without a name has no
 group to apply to.
 
+## Nesting
+
+Which role may stand inside which is decided by the click: the editor opens the
+innermost editor that the click hits, and `block` and `line` take the click before
+anything inside them.
+
+| Inside | Allowed roles |
+| --- | --- |
+| `block`, `line` | none: a link or an image inside is plain content of the text |
+| `link` | `image` (the image is edited by a click on it, the link by a click beside it) |
+| `repeater` | any role, inside the blocks |
+| `template` | any role |
+| `image` | none |
+
+A role inside a `block` or `line` is an error on save; it could never be reached.
+
 ## What the server validates
 
 | Rule | Message |
@@ -158,11 +177,14 @@ group to apply to.
 | `data-jaco-repeater`, `data-jaco-template` without a value | repeater without a fragment, template without a name |
 | their value matches the pattern in [File values](#file-values) | invalid fragment or template value |
 | `data-jaco-repeater` value names a file in `jaco-data/templates/content/` | error: unknown fragment |
+| the fragment has exactly one root element | fragment with several roots |
+| no text directly in a repeater container | text outside a block |
+| no role inside `data-jaco-block` or `data-jaco-line` | role inside a text element |
 | `data-jaco-template` value names a file in `jaco-data/templates/site/` | warning: unknown template, the page is still saved |
 | `data-jaco-repeater--add` is `top` or `bottom` | unknown add position |
 | `data-jaco-repeater--sortable` carries no value | unexpected value |
 | `data-jaco-block--tools` is `basic` or `full`; `data-jaco-line--tools` is `basic` | unknown tools |
-| `data-jaco-image--mode` is `fill`, `fit` or `any` | unknown mode |
+| `data-jaco-image--mode` is `fill`, `fit` or `choice` | unknown mode |
 | `data-jaco-image--mode` needs `width` or `height` on the element | mode without a dimension |
 | unknown `data-jaco-*` name | unknown name |
 
@@ -241,6 +263,7 @@ ignoring it.
 | `<div data-jaco-block data-jaco-block--tools="plain">` | `plain` is the absence of the property |
 | `<div data-jaco-block data-jaco-block--align="center">` | unknown name |
 | `<div data-jaco-block="x">` | value on a role that takes none |
+| `<div data-jaco-block><a data-jaco-link href="a.html">x</a></div>` | role inside a text element |
 
 ### Line
 
@@ -277,7 +300,7 @@ The dialog edits `href` and `target`.
 <img data-jaco-image src="media/photo.jpg" width="640" height="360" alt="Photo">
 <img data-jaco-image data-jaco-image--mode="fill" src="media/team.jpg" alt="Team" width="640" height="360">
 <img data-jaco-image data-jaco-image--mode="fit" src="media/logo.jpg" alt="Logo" width="640" height="360">
-<img data-jaco-image data-jaco-image--mode="any" src="media/blog.jpg" alt="Post" width="1200" height="600">
+<img data-jaco-image data-jaco-image--mode="choice" src="media/blog.jpg" alt="Post" width="1200" height="600">
 ```
 
 | Rejected | Why |
@@ -316,6 +339,7 @@ A complete repeater. Every direct child is a block; a heading goes outside:
 | `<section data-jaco-repeater>` | repeater without a fragment |
 | `<section data-jaco-repeater="nosuch.html">` | fragment file does not exist |
 | `<section data-jaco-repeater="../x.html">` | invalid fragment value |
+| `<section data-jaco-repeater="x.html">text<div>…</div></section>` | text outside a block |
 | `<section data-jaco-repeater="x.html" data-jaco-repeater--add="any">` | unknown add position |
 | `<section data-jaco-repeater="x.html" data-jaco-repeater--sortable="true">` | a switch carries no value |
 
