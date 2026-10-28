@@ -290,6 +290,8 @@ Example:
 <img data-jaco-image src="media/image.jpg" alt="Image" width="800">
 ```
 
+A live example of every marker is on `elements.html` (English and German).
+
 ## Recurring content blocks
 
 A content list lets editors add prebuilt blocks (e.g. news items) themselves.

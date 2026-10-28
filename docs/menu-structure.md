@@ -117,21 +117,25 @@ The inline editor toolbar offers **Page settings**, **Cancel** and **Save**.
 
 ## Roles
 
-| Element | Admin | Editor | Viewer |
-| --- | --- | --- | --- |
-| Content: Pages, Media, Backups | active | active | active |
-| Content: Templates | active | read-only | read-only |
-| Design | writable | read-only | read-only |
-| This page: Edit page | active | active | active, no save |
-| This page: Copy/Delete page | active | active | visible-disabled |
-| This page: Page settings | active | active | visible-disabled |
-| Admin entries | active | visible-disabled | visible-disabled |
-| Account: About, Logout | active | active | active |
-| Account: Change password | active | active | active; a `readOnly` account reaches the form and is refused on save |
-| Theme | active | active | active |
-| Jump to page (Commands) | active | active | active |
-| Commands | active | active | active |
-| Pages: Add/View/Edit content/Edit/Copy/Delete | active | active | visible-disabled |
+| Element | Admin | Editor |
+| --- | --- | --- |
+| Content: Pages, Media, Backups | active | active |
+| Content: Templates | writable | read-only |
+| Design | writable | read-only |
+| This page: Edit page | active | active |
+| This page: Copy/Delete page | active | active |
+| This page: Page settings | active | active |
+| Admin entries | active | visible-disabled |
+| Account: About, Logout | active | active |
+| Account: Change password | active | active |
+| Theme | active | active |
+| Jump to page (Commands) | active | active |
+| Commands | active | active |
+| Pages: Add/View/Edit content/Edit/Copy/Delete | active | active |
+
+A read-only account keeps its role (usually `admin`) and sees the whole
+interface; the router refuses every write for it, so the save buttons stay
+visible but disabled and nothing is stored.
 
 Disabled controls stay visible and use `aria-disabled`; the API remains the
 security boundary.
