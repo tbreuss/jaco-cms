@@ -192,7 +192,7 @@ export const PageListView = {
                     title: auth.can('editor') ? t('Edit content') : t('Edit content') + ' – ' + t('Your role does not allow this.'),
                     'aria-label': t('Edit content'),
                   }, m(Icon, {name: 'edit-content'})),
-                  // edit the page document (Ace editor; read-only for a viewer)
+                  // edit the page document (Ace editor; read-only for a read-only account)
                   m(ButtonSecondary, {
                     onclick: () => {
                       editPage(page.file)

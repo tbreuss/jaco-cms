@@ -81,7 +81,7 @@ export const PageAddView = {
       m.route.set('/logout')
       return
     }
-    // creating a page needs editor; a stale link from a viewer goes back to the site
+    // creating a page needs editor; a stale link from a read-only account goes back to the site
     if (!auth.can('editor')) {
       m.route.set('/')
       return

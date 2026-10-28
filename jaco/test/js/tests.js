@@ -771,22 +771,6 @@ QUnit.test('the account menu shows the logged-in user and role', (assert) => {
   }
 })
 
-QUnit.test('the account menu localizes the viewer role', (assert) => {
-  const savedStatus = i18n.status
-  i18n.status = 'idle'
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('viewer', '', true, 'bob'))
-
-  try {
-    m.render(fixture(), m(DefaultLayout, m('div')))
-
-    const info = fixture().querySelector('.nav-account-info')
-    assert.strictEqual(info.textContent, `bob (${t('Viewer')})`)
-  } finally {
-    i18n.status = savedStatus
-    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
-  }
-})
-
 QUnit.module('menu dropdowns', {
   beforeEach: () => {
     window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))

@@ -28,7 +28,7 @@ const captureSavedBody = () => {
 }
 
 const isDirty = () => {
-  // a viewer may try the editor, but nothing can be saved: do not trap them in
+  // a read-only account may try the editor, but nothing can be saved: do not trap them in
   // a discard dialog for changes that would be thrown away anyway
   if (!auth.can('editor') || savedBody === null) {
     return false
@@ -174,7 +174,7 @@ const setEditLayout = (on) => {
 const bindShortcut = () => {
   unbindSaveShortcuts.forEach((unbind) => unbind())
   unbindSaveShortcuts = []
-  // a viewer has no save: binding Ctrl+S would only offer a shortcut that
+  // a read-only account has no save: binding Ctrl+S would only offer a shortcut that
   // silently does nothing
   if (!auth.can('editor')) {
     return

@@ -80,7 +80,7 @@ const roleLabel = (role) => {
   if (role === 'editor') {
     return t('Editor')
   }
-  return t('Viewer')
+  return role
 }
 
 const accountInfo = () => {

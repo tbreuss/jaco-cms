@@ -2,7 +2,7 @@ import {app} from './app.js'
 
 // The ui mirrors the role matrix from the backend (see docs/constraints.md). It is not a
 // security boundary: every route still checks the signed token. Hiding a button only
-// keeps a viewer from clicking something that would answer 403.
+// keeps a read-only account from clicking something that would answer 403.
 export const ROLE_EDITOR = 'editor'
 export const ROLE_ADMIN = 'admin'
 

@@ -81,7 +81,7 @@ const onCreateComponent = () => {
     indentedSoftWrap: false,
     behavioursEnabled: false, // disable autopairing of brackets and tags
     showLineNumbers: false, // hide the gutter
-    // a viewer opens the same document to read it, not to produce a save that
+    // a read-only account opens the same document to read it, not to produce a save that
     // the route would refuse with 403
     readOnly: !canEdit
   })
@@ -130,7 +130,7 @@ const onInitComponent = (vnode) => {
 
 export const onSaveButtonClicked = (e) => {
   e.redraw = false
-  // the buttons and shortcuts are gone for a viewer; this is the last guard
+  // the buttons and shortcuts are gone for a read-only account; this is the last guard
   // before a handler that would only end in 403
   if (!auth.can('editor')) {
     return Promise.resolve()

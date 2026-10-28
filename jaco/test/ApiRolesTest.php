@@ -12,8 +12,8 @@ use jaco\core\http\Status;
 use jaco\core\router;
 
 /**
- * The role matrix: admin may everything, editor may write content, viewer may read,
- * and an unknown role falls back to viewer instead of guessing.
+ * The role matrix: admin may everything, editor may write content, and an
+ * unknown role is rejected at login instead of being granted access.
  */
 #[TestDox('Roles over the api')]
 final class ApiRolesTest extends ApiTestCase

@@ -66,7 +66,7 @@ const ensureEditor = () => {
     indentedSoftWrap: false,
     behavioursEnabled: false, // disable autopairing of brackets and tags
     showLineNumbers: false, // hide the gutter
-    // editor and viewer may open the stylesheet, but only admin may write it
+    // editors and read-only accounts may open the stylesheet, but only admin may write it
     readOnly: !canEdit
   })
   editor.resize(false)

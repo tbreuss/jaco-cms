@@ -10,7 +10,7 @@ use jaco\core\router;
 /**
  * The role matrix in docs/constraints.md and the route table must not drift apart. Every
  * route named there has to exist with exactly that role, and every route that needs more
- * than viewer has to be named there.
+ * than editor has to be named there.
  */
 #[TestDox('Roles documented in constraints.md')]
 final class DocsRolesTest extends TestCase
