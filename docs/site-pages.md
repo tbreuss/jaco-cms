@@ -12,7 +12,8 @@ English file names, so a page maps to its translation by prefixing `de/`:
 | `privacy.html` | `de/privacy.html` |
 | `imprint.html` | `de/imprint.html` |
 
-`404.html` and `elements.html` exist in English only.
+`404.html` exists in English only; `elements.html` ships in both languages
+(`de/elements.html`).
 
 Keep the pattern for new pages: an English slug in both trees. Renaming a page
 means updating the internal links, the `canonical`, `hreflang` and `og:url`

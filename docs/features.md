@@ -11,7 +11,6 @@ the admin navigation in [menu-structure.md](menu-structure.md), and installation
 | --- | --- | --- |
 | Flat-file pages | Pages are `.htm`/`.html` files below the web root; the file itself is the data store. | [Glossary](glossary.md) |
 | Content blocks | Editors add, remove and, where the list uses `draggable`, reorder reusable blocks from templates. | [Glossary](glossary.md) |
-| Image gallery | Marked gallery images show thumbnails that link to generated full-size versions. | [Glossary](glossary.md) |
 | Media library | Editors upload, view and delete images and PDFs with extension checks and size limits, and name collisions never overwrite existing files. | [Constraints](constraints.md) |
 | Templates | Page and block templates are files under `jaco-data/templates` and are selected by the admin when creating pages and blocks. | [Glossary](glossary.md) |
 
@@ -19,7 +18,7 @@ the admin navigation in [menu-structure.md](menu-structure.md), and installation
 
 | Feature | What it does | Details |
 | --- | --- | --- |
-| Inline editing | Editors change marked regions directly in the live preview, with rich text, images, links, embedded videos and gallery images; a read-only account can open the same editor but cannot save. | [Constraints](constraints.md) |
+| Inline editing | Editors change marked regions directly in the live preview, with rich text, images, links and embedded videos; a read-only account can open the same editor but cannot save. | [Constraints](constraints.md) |
 | Page manager | Editors create pages from templates, copy, edit and delete pages, and continue a newly created page in the inline editor. | [Constraints](constraints.md) |
 | Page settings | Editors manage the page title, meta description and robots value from a dialog in the inline editor or the raw page view; the body is left untouched. | [Constraints](constraints.md) |
 | Site templates | Admins change the reusable HTML fragments under `jaco-data/templates/site`; editors read them and apply one to every public page by replacing elements marked with `data-jaco-template`. Writes are atomic, and every page that applying rewrites is backed up first, like a page edit. | [Constraints](constraints.md) |

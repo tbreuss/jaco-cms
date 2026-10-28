@@ -337,10 +337,10 @@ The plan names twelve names and no editor state:
 'data-jaco-repeater--sortable',
 ```
 
-The whitelist holds more than that today (among them `data-jaco-repeater-item`
-and `data-jaco-repeater--add`) and less (`--tools` and `--mode` do not exist
-yet). That difference is the work, not an error: the contract test guards the
-places against each other, and the backlog closes the gap in one hard break.
+The whitelist now holds exactly those twelve names, so the code and this plan
+agree on the names. What remains is the rollout: the pages and templates still
+have to be moved to the new semantics (for example, a bare `data-jaco-image`
+means "replace only"), and the backlog closes that gap in one hard break.
 
 ### Serialisation
 
