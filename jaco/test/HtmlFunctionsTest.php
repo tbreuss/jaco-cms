@@ -39,7 +39,7 @@ final class HtmlFunctionsTest extends TestCase
         'bold link' => ['<p><a href="https://example.com" target="_blank">x</a> <strong>b</strong></p>', '<p><a href="https://example.com" target="_blank">x</a> <strong>b</strong></p>'],
         'mailto' => ['<a href="mailto:a@b.c">mail</a>', '<a href="mailto:a@b.c">mail</a>'],
         'relative link' => ['<a href="/page">x</a>', '<a href="/page">x</a>'],
-        'data-jaco attrs' => ['<img src="upload/a.png" data-jaco-image data-jaco-image--resizable>', '<img src="upload/a.png" data-jaco-image data-jaco-image--resizable>'],
+        'data-jaco attrs' => ['<img src="upload/a.png" data-jaco-image data-jaco-image--mode="fill" width="320">', '<img src="upload/a.png" data-jaco-image data-jaco-image--mode="fill" width="320">'],
         'utf-8' => ['<p>Grüße — über</p>', '<p>Grüße — über</p>'],
         'heading list table' => ['<h1>T</h1><ul><li>a</li></ul><table><tr><td colspan="2">x</td></tr></table>', '<h1>T</h1><ul><li>a</li></ul><table><tr><td colspan="2">x</td></tr></table>'],
         'data-url image survives' => ['<img src="data:image/png;base64,iVBOR">', '<img src="data:image/png;base64,iVBOR">'],
@@ -197,19 +197,18 @@ final class HtmlFunctionsTest extends TestCase
         $this->assertStringContainsString('data-jaco-image>', $result);
     }
 
-    public function testContentListMarkersSurviveSanitizing(): void
+    public function testRepeaterMarkersSurviveSanitizing(): void
     {
-        $html = '<div data-jaco-repeater data-jaco-repeater--fragment="news.html" data-jaco-repeater--label="Add news" data-jaco-repeater--add="top">'
-            . '<div data-jaco-repeater-item><h2 data-jaco-line>Headline</h2></div>'
+        $html = '<div data-jaco-repeater="news.html" data-jaco-repeater--label="Add news"'
+            . ' data-jaco-repeater--position="top">'
+            . '<div><h2 data-jaco-line>Headline</h2></div>'
             . '</div>';
 
         $result = html\sanitize_html($html);
 
-        $this->assertStringContainsString('data-jaco-repeater', $result);
-        $this->assertStringContainsString('data-jaco-repeater-item', $result);
-        $this->assertStringContainsString('data-jaco-repeater--fragment="news.html"', $result);
+        $this->assertStringContainsString('data-jaco-repeater="news.html"', $result);
         $this->assertStringContainsString('data-jaco-repeater--label="Add news"', $result);
-        $this->assertStringContainsString('data-jaco-repeater--add="top"', $result);
+        $this->assertStringContainsString('data-jaco-repeater--position="top"', $result);
         $this->assertStringContainsString('data-jaco-line', $result);
     }
 

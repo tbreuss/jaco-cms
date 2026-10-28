@@ -98,14 +98,29 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
 
     public function testABodyThatBreaksTheAttributeContractIsRejected(): void
     {
-        // saving would store a marker that does nothing: a property without its role
+        // saving would store a marker that cannot work: a mode without a dimension
         $response = $this->api('page/update-body', [
             'fileName' => self::PAGE,
-            'body' => '<img data-jaco-image--resizable src="photo.png">',
+            'body' => '<img data-jaco-image data-jaco-image--mode="fill" src="photo.png">',
         ]);
 
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
-        $this->assertStringContainsString('needs data-jaco-image', (string) $response->body);
+        $this->assertStringContainsString('needs width or height', (string) $response->body);
+
+        $stored = (string) file_get_contents($this->config->webDir . '/' . self::PAGE);
+        $this->assertSame(self::DOCUMENT, $stored, 'the page stays as it was');
+    }
+
+    public function testAnUnknownNameIsRejectedInsteadOfRemoved(): void
+    {
+        // the sanitizer would drop it; the save path checks before that runs
+        $response = $this->api('page/update-body', [
+            'fileName' => self::PAGE,
+            'body' => '<div data-jaco-block data-jaco-not-a-name="x"><p>text</p></div>',
+        ]);
+
+        $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
+        $this->assertStringContainsString('unknown name: data-jaco-not-a-name', (string) $response->body);
 
         $stored = (string) file_get_contents($this->config->webDir . '/' . self::PAGE);
         $this->assertSame(self::DOCUMENT, $stored, 'the page stays as it was');

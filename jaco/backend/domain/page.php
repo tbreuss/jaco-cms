@@ -285,6 +285,15 @@ function update_page(
     [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($config, $data['withContent']);
 
     if ($status) {
+        $unknownNames = html\data_attribute_unknown_names((string) $htmlOrErrors);
+
+        if (\count($unknownNames) > 0) {
+            return Payload::invalid(\array_map(
+                static fn(string $name): array => ['withContent', 'unknown name: ' . $name],
+                $unknownNames,
+            ));
+        }
+
         // the page manager owns the document: doctype and head stay as sent,
         // only the body is treated as content and sanitized
         $body = html\sanitize_html($htmlOrErrors);
@@ -476,6 +485,15 @@ function update_page_body(Config $config, string $file, string $withBody): Paylo
 
     if (!$status) {
         return Payload::error([['withBody', \reset($htmlOrErrors)]]);
+    }
+
+    $unknownNames = html\data_attribute_unknown_names((string) $htmlOrErrors);
+
+    if (\count($unknownNames) > 0) {
+        return Payload::invalid(\array_map(
+            static fn(string $name): array => ['withBody', 'unknown name: ' . $name],
+            $unknownNames,
+        ));
     }
 
     // the client owns the content, the stored document keeps doctype and head

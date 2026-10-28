@@ -19,19 +19,13 @@ final class DataAttributeValidationTest extends TestCase
 {
     public function testAValidBodyHasNoProblems(): void
     {
-        $html = '<section data-jaco-repeater data-jaco-repeater--fragment="a.html"'
-            . ' data-jaco-repeater--add="top" data-jaco-repeater--sortable>'
-            . '<div data-jaco-repeater-item><div data-jaco-block><p>text</p></div></div>'
-            . '</section>';
+        $html = '<section data-jaco-repeater="a.html"'
+            . ' data-jaco-repeater--position="any" data-jaco-repeater--sortable>'
+            . '<div><div data-jaco-block data-jaco-block--tools="full"><p>text</p></div></div>'
+            . '</section>'
+            . '<img data-jaco-image data-jaco-image--mode="fill" src="a.png" width="320">';
 
         $this->assertSame([], html\data_attribute_errors($html));
-    }
-
-    public function testAPropertyWithoutItsRoleIsReported(): void
-    {
-        $problems = html\data_attribute_errors('<img data-jaco-image--resizable src="a.png">');
-
-        $this->assertSame(['data-jaco-image--resizable needs data-jaco-image on the same element'], $problems);
     }
 
     public function testTwoRolesOnOneElementAreReported(): void
@@ -42,34 +36,106 @@ final class DataAttributeValidationTest extends TestCase
         $this->assertStringContainsString('one role per element', $problems[0]);
     }
 
-    public function testAnItemOutsideARepeaterIsReported(): void
+    public function testAPropertyWithoutItsRoleIsReported(): void
     {
-        $problems = html\data_attribute_errors('<div data-jaco-repeater-item>text</div>');
+        $problems = html\data_attribute_errors('<div data-jaco-repeater--sortable>text</div>');
 
-        $this->assertSame(['data-jaco-repeater-item outside a repeater'], $problems);
+        $this->assertSame(
+            ['data-jaco-repeater--sortable needs data-jaco-repeater on the same element'],
+            $problems,
+        );
     }
 
-    public function testAKnownNameWithAnUnknownValueIsRemovedNotReported(): void
+    public function testARoleInsideATextElementIsReported(): void
     {
-        // the sanitizer drops the attribute; what is left is valid, so the page saves
-        $body = html\sanitize_html('<section data-jaco-repeater data-jaco-repeater--fragment="a.html"'
-            . ' data-jaco-repeater--add="middle">x</section>');
+        // the text editor owns the click, so an inner role could never be reached
+        $problems = html\data_attribute_errors(
+            '<div data-jaco-block><a data-jaco-link href="a.html">x</a></div>',
+        );
 
-        $this->assertStringNotContainsString('data-jaco-repeater--add', $body);
-        $this->assertSame([], html\data_attribute_errors($body));
+        $this->assertSame(['role data-jaco-link inside data-jaco-block'], $problems);
     }
 
-    public function testAnUnknownNameIsRemovedNotReported(): void
+    public function testAnUnknownValueIsReported(): void
     {
-        $body = html\sanitize_html('<div data-jaco-not-a-name>x</div>');
+        $problems = html\data_attribute_errors(
+            '<div data-jaco-block data-jaco-block--tools="superb"><p>x</p></div>',
+        );
 
-        $this->assertSame('<div>x</div>', $body);
-        $this->assertSame([], html\data_attribute_errors($body));
+        $this->assertSame(['unknown value for data-jaco-block--tools: superb'], $problems);
     }
 
-    public function testTheTwoEditorNamesAreNotPartOfTheContract(): void
+    public function testFullToolsExistForBlocksOnly(): void
     {
-        // they never reach a page; a body that carries one breaks no pairing rule
-        $this->assertSame([], html\data_attribute_errors('<img data-jaco-image src="a.png">'));
+        $problems = html\data_attribute_errors(
+            '<h1 data-jaco-line data-jaco-line--tools="full">x</h1>',
+        );
+
+        $this->assertSame(['unknown value for data-jaco-line--tools: full'], $problems);
+    }
+
+    public function testAModeNeedsADimension(): void
+    {
+        $problems = html\data_attribute_errors(
+            '<img data-jaco-image data-jaco-image--mode="fit" src="a.png">',
+        );
+
+        $this->assertSame(['data-jaco-image--mode needs width or height'], $problems);
+    }
+
+    public function testASwitchCarriesNoValue(): void
+    {
+        $problems = html\data_attribute_errors(
+            '<section data-jaco-repeater="a.html" data-jaco-repeater--sortable="true">'
+            . '<div>x</div></section>',
+        );
+
+        $this->assertSame(['data-jaco-repeater--sortable carries no value'], $problems);
+    }
+
+    public function testTextDirectlyInARepeaterIsReported(): void
+    {
+        $problems = html\data_attribute_errors(
+            '<section data-jaco-repeater="a.html">loose text<div>x</div></section>',
+        );
+
+        $this->assertSame(['text directly in a repeater container'], $problems);
+    }
+
+    public function testAnUnknownNameIsCollectedBeforeTheSanitizerRemovesIt(): void
+    {
+        $html = '<div data-jaco-block data-jaco-not-a-name="x">text</div>';
+
+        $this->assertSame(['data-jaco-not-a-name'], html\data_attribute_unknown_names($html));
+
+        // the sanitizer removes it, which is why the save path checks before it runs
+        $this->assertSame('<div data-jaco-block>text</div>', html\sanitize_html($html));
+    }
+
+    public function testAKnownNameIsNotUnknown(): void
+    {
+        $this->assertSame([], html\data_attribute_unknown_names(
+            '<div data-jaco-block data-jaco-block--tools="basic">x</div>',
+        ));
+    }
+
+    public function testAFragmentWithOneRootIsAccepted(): void
+    {
+        $this->assertTrue(html\fragment_has_one_root("\n  <section><p>x</p></section>\n"));
+    }
+
+    public function testAFragmentWithTwoRootsIsRejected(): void
+    {
+        $this->assertFalse(html\fragment_has_one_root('<div>x</div><div>y</div>'));
+    }
+
+    public function testAFragmentWithTextBesideItsRootIsRejected(): void
+    {
+        $this->assertFalse(html\fragment_has_one_root('loose text<div>x</div>'));
+    }
+
+    public function testAnEmptyFragmentIsRejected(): void
+    {
+        $this->assertFalse(html\fragment_has_one_root(''));
     }
 }

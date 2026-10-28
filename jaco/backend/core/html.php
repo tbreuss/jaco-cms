@@ -252,12 +252,12 @@ const ALLOWED_ATTRIBUTES = [
         'data-jaco-link',
         'data-jaco-image',
         'data-jaco-repeater',
-        'data-jaco-repeater-item',
         'data-jaco-template',
-        'data-jaco-image--resizable',
-        'data-jaco-repeater--fragment',
+        'data-jaco-block--tools',
+        'data-jaco-line--tools',
+        'data-jaco-image--mode',
         'data-jaco-repeater--label',
-        'data-jaco-repeater--add',
+        'data-jaco-repeater--position',
         'data-jaco-repeater--sortable',
     ],
     'a' => ['href', 'rel', 'target', 'title'],
@@ -344,6 +344,43 @@ function replace_body(string $document, string $body): string
  * @param string $html a body fragment, already sanitized or not
  * @return list<string>
  */
+/**
+ * The data-jaco-* names in a body that the whitelist does not know.
+ *
+ * The sanitizer removes them, which is why they are collected before it runs: an
+ * unknown name stops the save instead of silently vanishing from the page.
+ *
+ * @return list<string>
+ */
+function data_attribute_unknown_names(string $html): array
+{
+    \libxml_use_internal_errors(true);
+    $dom = new \DOMDocument();
+    $loaded = $dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><body>' . $html . '</body>');
+    \libxml_clear_errors();
+
+    if (!$loaded) {
+        return [];
+    }
+
+    $known = ALLOWED_ATTRIBUTES['*'];
+    $unknown = [];
+
+    foreach ($dom->getElementsByTagName('*') as $el) {
+        foreach ($el->attributes as $attr) {
+            $name = \strtolower($attr->nodeName);
+            if (!\str_starts_with($name, 'data-jaco-')) {
+                continue;
+            }
+            if (!\in_array($name, $known, true)) {
+                $unknown[] = $name;
+            }
+        }
+    }
+
+    return \array_values(\array_unique($unknown));
+}
+
 function data_attribute_errors(string $html): array
 {
     \libxml_use_internal_errors(true);
@@ -358,6 +395,12 @@ function data_attribute_errors(string $html): array
     $problems = [];
     foreach ($dom->getElementsByTagName('*') as $el) {
         foreach (data_attribute_problems($el) as $problem) {
+            $problems[] = $problem;
+        }
+        foreach (data_attribute_structure_problems($el) as $problem) {
+            $problems[] = $problem;
+        }
+        foreach (data_attribute_body_problems($el) as $problem) {
             $problems[] = $problem;
         }
     }
@@ -481,15 +524,139 @@ function data_attribute_problems(\DOMElement $el): array
         }
     }
 
-    // the repeater item is a direct child of its container, never a sibling of it
-    if ($el->hasAttribute('data-jaco-repeater-item')) {
-        $parent = $el->parentNode;
-        if (!$parent instanceof \DOMElement || !$parent->hasAttribute('data-jaco-repeater')) {
-            $problems[] = 'data-jaco-repeater-item outside a repeater';
+    return $problems;
+}
+
+/**
+ * The values a property accepts, and whether it takes one at all.
+ *
+ * `null` means "no closed set"; `false` means "carries no value".
+ *
+ * @return array<string, list<string>|false|null>
+ */
+function data_attribute_values(): array
+{
+    return [
+        'data-jaco-block--tools' => ['basic', 'full'],
+        'data-jaco-line--tools' => ['basic'],
+        'data-jaco-image--mode' => ['fill', 'fit', 'choice'],
+        'data-jaco-repeater--position' => ['top', 'bottom', 'any'],
+        'data-jaco-repeater--label' => null,
+        'data-jaco-repeater--sortable' => false,
+    ];
+}
+
+/**
+ * Problems of one element that need its neighbours: the parent for nesting, the
+ * children for "every direct child of a repeater is a block".
+ *
+ * @return list<string>
+ */
+function data_attribute_structure_problems(\DOMElement $el): array
+{
+    $problems = [];
+    $values = data_attribute_values();
+
+    foreach ($values as $name => $allowed) {
+        if (!$el->hasAttribute($name)) {
+            continue;
+        }
+        if ($allowed === false && \trim($el->getAttribute($name)) !== '') {
+            $problems[] = $name . ' carries no value';
+            continue;
+        }
+        if (\is_array($allowed)) {
+            $value = \trim($el->getAttribute($name));
+            if (!\in_array($value, $allowed, true)) {
+                $problems[] = 'unknown value for ' . $name . ': ' . $value;
+            }
+        }
+    }
+
+    // a mode needs something to scale to
+    if ($el->hasAttribute('data-jaco-image--mode')
+        && !$el->hasAttribute('width')
+        && !$el->hasAttribute('height')) {
+        $problems[] = 'data-jaco-image--mode needs width or height';
+    }
+
+    // a role inside a text element can never be reached: the text editor owns the click
+    $parent = $el->parentNode;
+    if ($parent instanceof \DOMElement) {
+        $parentRoles = \array_filter(
+            data_attribute_contract()['roles'],
+            static fn(string $role): bool => $parent->hasAttribute($role),
+        );
+        foreach ($parentRoles as $parentRole) {
+            if ($parentRole !== 'data-jaco-block' && $parentRole !== 'data-jaco-line') {
+                continue;
+            }
+            foreach (data_attribute_contract()['roles'] as $role) {
+                if ($el->hasAttribute($role)) {
+                    $problems[] = 'role ' . $role . ' inside ' . $parentRole;
+                }
+            }
+            break;
         }
     }
 
     return $problems;
+}
+
+/**
+ * Problems of the whole body: what the repeater container itself has to obey.
+ *
+ * @return list<string>
+ */
+function data_attribute_body_problems(\DOMElement $el): array
+{
+    if (!$el->hasAttribute('data-jaco-repeater')) {
+        return [];
+    }
+
+    $problems = [];
+
+    foreach ($el->childNodes as $child) {
+        if ($child instanceof \DOMText && \trim($child->textContent) !== '') {
+            $problems[] = 'text directly in a repeater container';
+        }
+    }
+
+    return $problems;
+}
+
+/**
+ * True when the file holds exactly one root element and nothing else but
+ * whitespace and comments. A fragment becomes one block, so it must have one root.
+ */
+function fragment_has_one_root(string $html): bool
+{
+    \libxml_use_internal_errors(true);
+    $dom = new \DOMDocument();
+    $loaded = $dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><body>' . $html . '</body>');
+    \libxml_clear_errors();
+
+    if (!$loaded) {
+        return false;
+    }
+
+    $body = $dom->getElementsByTagName('body')->item(0);
+    if ($body === null) {
+        return false;
+    }
+
+    $roots = 0;
+    foreach ($body->childNodes as $child) {
+        if ($child instanceof \DOMElement) {
+            $roots++;
+            continue;
+        }
+        if ($child instanceof \DOMText && \trim($child->textContent) !== '') {
+            return false;
+        }
+    }
+
+    return $roots === 1;
 }
 
 function is_allowed_attribute(string $tag, string $name, string $value): bool
@@ -506,11 +673,6 @@ function is_allowed_attribute(string $tag, string $name, string $value): bool
         $value = \str_replace(["\t", "\n", "\r", "\0"], '', \trim($value));
 
         return \preg_match('#^https://(www\.youtube\.com/embed/|www\.youtube-nocookie\.com/embed/)#i', $value) === 1;
-    }
-
-    // the add position is a closed set; anything else would silently fall back
-    if ($name === 'data-jaco-repeater--add') {
-        return \in_array($value, ['top', 'bottom', 'any'], true);
     }
 
     if ($name !== 'href' && $name !== 'src') {
