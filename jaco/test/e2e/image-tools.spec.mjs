@@ -13,8 +13,8 @@ test('a resizable image opens its tools, not the media picker', async ({page}) =
   await page.evaluate(() => window.m.route.set('/page-edit'))
   await expect(frame.locator('.jaco-content-add-button').first()).toBeVisible()
 
-  // the resizable image carries both names
-  const image = frame.locator('img[data-jaco-image--resizable]').first()
+  // an image with a mode carries the role and the property
+  const image = frame.locator('img[data-jaco-image--mode]').first()
   await expect(image).toBeVisible()
   await image.evaluate((el) => el.click())
 

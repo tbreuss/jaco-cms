@@ -271,11 +271,15 @@ post_max_size = 24M
 Without markers there is nothing to edit inline (only source via Ace).
 These attributes designate editable spots in the existing HTML:
 
-- `data-jaco-block` — text block (Quill editor with full toolbar)
+- `data-jaco-block` — text block
 - `data-jaco-line` — single line, e.g. headings
 - `data-jaco-link` — link (URL and target via dialog)
 - `data-jaco-image` — image (replacement via dialog)
-- `data-jaco-image--resizable` — on an image, additionally scales it
+- `data-jaco-template="<file>.html"` — instance of a site template
+
+A block or a line takes `data-jaco-block--tools="basic"` or `"full"` to offer
+more than plain paragraphs; an image takes `data-jaco-image--mode="fill"`, `"fit"`
+or `"choice"` to scale the file to its `width` and `height`.
 
 Example:
 
@@ -293,9 +297,9 @@ Put a fragment file in `jaco-data/templates/content/`, then mark where blocks ma
 appear:
 
 ```html
-<div data-jaco-repeater data-jaco-repeater--fragment="news-section.html"
-     data-jaco-repeater--label="Add news" data-jaco-repeater--add="top">
-    <div data-jaco-repeater-item>
+<div data-jaco-repeater="news-section.html"
+     data-jaco-repeater--label="Add news" data-jaco-repeater--position="top">
+    <div>
         <h2 data-jaco-line>Existing headline</h2>
     </div>
 </div>
@@ -318,16 +322,18 @@ one places a text block and an image next to each other:
 </div>
 ```
 
-The editor inserts the fragment inside a `data-jaco-repeater-item` wrapper, so the
-fragment itself must not carry that wrapper.
+The fragment becomes one block, so it must have **exactly one root element** -
+the `<div class="news-section">` above. The editor does not wrap it.
 
-- `data-jaco-repeater--fragment` names the fragment file from `jaco-data/templates/content/`
+- the value of `data-jaco-repeater` names the fragment file from
+  `jaco-data/templates/content/`
 - `data-jaco-repeater--label` labels the add button shown in the editor
-- `data-jaco-repeater--add` is `top` (new blocks first), `bottom` (new blocks
-  last) or `any` (a button before every block plus one at the end)
+- `data-jaco-repeater--position` is `top` (new blocks first), `bottom` (new
+  blocks last) or `any` (a button before every block plus one at the end)
 - `data-jaco-repeater--sortable` adds the ⠿ grip, so blocks can be reordered
-- existing blocks are wrapped in `<div data-jaco-repeater-item>` and can be
-  deleted in the editor (two-step: ×, then ✓)
+- every direct child of the repeater is one block; it can be deleted in the
+  editor (two-step: ×, then ✓). Anything else - a heading, text - belongs inside
+  a block, not beside one.
 
 ## Embedded videos
 

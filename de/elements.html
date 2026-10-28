@@ -89,9 +89,9 @@
     <p class="elements-note">Die Datei wird ersetzt; Breite und Höhe bleiben, wie sie im HTML stehen.</p>
 
     <h3 data-jaco-line>Grösse bearbeitbar</h3>
-    <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image--resizable src=&quot;media/team.jpg&quot; width=&quot;400&quot; height=&quot;225&quot;&gt;</code></pre>
+    <pre class="code-ref"><code>&lt;img data-jaco-image data-jaco-image--mode="choice" src=&quot;media/team.jpg&quot; width=&quot;400&quot; height=&quot;225&quot;&gt;</code></pre>
     <div class="elements-image">
-      <img data-jaco-image data-jaco-image--resizable src="media/demo-elements-extended.svg" alt="Bild mit bearbeitbarer Grösse" width="400" height="225">
+      <img data-jaco-image data-jaco-image--mode="choice" src="media/demo-elements-extended.svg" alt="Bild mit bearbeitbarer Grösse" width="400" height="225">
     </div>
     <p class="elements-note">Die Datei wird ersetzt, und Breite und Höhe lassen sich im Editor ändern – dafür stehen die Griffe.</p>
 
@@ -112,14 +112,13 @@
     <p class="elements-note">Die vier Listen nutzen dasselbe Block-Fragment, aber unterschiedliche Einfügepositionen.</p>
 
     <h3 data-jaco-line>Oben</h3>
-    <pre class="code-ref"><code>&lt;div data-jaco-repeater
-     data-jaco-repeater--fragment=&quot;element-block-de.html&quot;
+    <pre class="code-ref"><code>&lt;div data-jaco-repeater=&quot;element-block-de.html&quot;
      data-jaco-repeater--label=&quot;Block oben hinzufügen&quot;
-     data-jaco-repeater--add=&quot;top&quot;&gt;
-  &lt;div data-jaco-repeater-item&gt;…&lt;/div&gt;
+     data-jaco-repeater--position=&quot;top&quot;&gt;
+  &lt;div&gt;…&lt;/div&gt;
 &lt;/div&gt;</code></pre>
-    <div class="elements-list" data-jaco-repeater data-jaco-repeater--fragment="element-block-de.html" data-jaco-repeater--label="Block oben hinzufügen" data-jaco-repeater--add="top">
-      <div data-jaco-repeater-item>
+    <div class="elements-list" data-jaco-repeater="element-block-de.html" data-jaco-repeater--label="Block oben hinzufügen" data-jaco-repeater--position="top">
+      <div>
         <h3 data-jaco-line>Oberer Block</h3>
         <div data-jaco-block>
           <p>Neue Blöcke werden oben eingefügt.</p>
@@ -128,14 +127,13 @@
     </div>
 
     <h3 data-jaco-line>Unten</h3>
-    <pre class="code-ref"><code>&lt;div data-jaco-repeater
-     data-jaco-repeater--fragment=&quot;element-block-de.html&quot;
+    <pre class="code-ref"><code>&lt;div data-jaco-repeater=&quot;element-block-de.html&quot;
      data-jaco-repeater--label=&quot;Block unten hinzufügen&quot;
-     data-jaco-repeater--add=&quot;bottom&quot;&gt;
-  &lt;div data-jaco-repeater-item&gt;…&lt;/div&gt;
+     data-jaco-repeater--position=&quot;bottom&quot;&gt;
+  &lt;div&gt;…&lt;/div&gt;
 &lt;/div&gt;</code></pre>
-    <div class="elements-list" data-jaco-repeater data-jaco-repeater--fragment="element-block-de.html" data-jaco-repeater--label="Block unten hinzufügen" data-jaco-repeater--add="bottom">
-      <div data-jaco-repeater-item>
+    <div class="elements-list" data-jaco-repeater="element-block-de.html" data-jaco-repeater--label="Block unten hinzufügen" data-jaco-repeater--position="bottom">
+      <div>
         <h3 data-jaco-line>Unterer Block</h3>
         <div data-jaco-block>
           <p>Neue Blöcke werden unten eingefügt.</p>
@@ -144,20 +142,19 @@
     </div>
 
     <h3 data-jaco-line>Überall</h3>
-    <pre class="code-ref"><code>&lt;div data-jaco-repeater
-     data-jaco-repeater--fragment=&quot;element-block-de.html&quot;
+    <pre class="code-ref"><code>&lt;div data-jaco-repeater=&quot;element-block-de.html&quot;
      data-jaco-repeater--label=&quot;Block hier hinzufügen&quot;
-     data-jaco-repeater--add=&quot;any&quot;&gt;
-  &lt;div data-jaco-repeater-item&gt;…&lt;/div&gt;
+     data-jaco-repeater--position=&quot;any&quot;&gt;
+  &lt;div&gt;…&lt;/div&gt;
 &lt;/div&gt;</code></pre>
-    <div class="elements-list" data-jaco-repeater data-jaco-repeater--fragment="element-block-de.html" data-jaco-repeater--label="Block hier hinzufügen" data-jaco-repeater--add="any">
-      <div data-jaco-repeater-item>
+    <div class="elements-list" data-jaco-repeater="element-block-de.html" data-jaco-repeater--label="Block hier hinzufügen" data-jaco-repeater--position="any">
+      <div>
         <h3 data-jaco-line>Erster freier Block</h3>
         <div data-jaco-block>
           <p>Ein Hinzufügen-Knopf erscheint vor jedem Block und nach dem letzten.</p>
         </div>
       </div>
-      <div data-jaco-repeater-item>
+      <div>
         <h3 data-jaco-line>Zweiter freier Block</h3>
         <div data-jaco-block>
           <p>Diese Position passt, wenn die Reihenfolge weniger zählt als das Platzieren neben einem bestimmten Block.</p>
@@ -166,20 +163,19 @@
     </div>
 
     <h3 data-jaco-line>Verschiebbar</h3>
-    <pre class="code-ref"><code>&lt;div data-jaco-repeater
-     data-jaco-repeater--fragment=&quot;element-block-de.html&quot;
+    <pre class="code-ref"><code>&lt;div data-jaco-repeater=&quot;element-block-de.html&quot;
      data-jaco-repeater--label=&quot;Verschiebbaren Block hinzufügen&quot;
-     data-jaco-repeater--add=&quot;top&quot; data-jaco-repeater--sortable&gt;
-  &lt;div data-jaco-repeater-item&gt;…&lt;/div&gt;
+     data-jaco-repeater--position=&quot;top&quot; data-jaco-repeater--sortable&gt;
+  &lt;div&gt;…&lt;/div&gt;
 &lt;/div&gt;</code></pre>
-    <div class="elements-list" data-jaco-repeater data-jaco-repeater--fragment="element-block-de.html" data-jaco-repeater--label="Verschiebbaren Block hinzufügen" data-jaco-repeater--add="top" data-jaco-repeater--sortable>
-      <div data-jaco-repeater-item>
+    <div class="elements-list" data-jaco-repeater="element-block-de.html" data-jaco-repeater--label="Verschiebbaren Block hinzufügen" data-jaco-repeater--position="top" data-jaco-repeater--sortable>
+      <div>
         <h3 data-jaco-line>Erster verschiebbarer Block</h3>
         <div data-jaco-block>
           <p>Dieser Block lässt sich am Griff umsortieren.</p>
         </div>
       </div>
-      <div data-jaco-repeater-item>
+      <div>
         <h3 data-jaco-line>Zweiter verschiebbarer Block</h3>
         <div data-jaco-block>
           <p>Ziehen Sie einen Block, um seine Reihenfolge zu ändern.</p>
