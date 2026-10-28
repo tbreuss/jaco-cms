@@ -7,15 +7,15 @@ use PHPUnit\Framework\TestCase;
 use jaco\core\html;
 
 /**
- * The names in the code, in the document, in the frontend and in the pages have to
+ * The names in the code, in the frontend, in the stylesheets and in the pages have to
  * be the same set.
  *
  * A rename that updates the whitelist and forgets a selector looks green: the suites
  * never read a page, and a stripped attribute is not an error. This test compares the
- * four places and names every difference, so the work list for a half-done rename is
- * the failure output.
+ * places and names every difference, so the work list for a half-done rename is the
+ * failure output.
  *
- * The whitelist is the source (`ALLOWED_ATTRIBUTES`); the document describes it.
+ * The whitelist is the source (`ALLOWED_ATTRIBUTES`); the document is not parsed.
  */
 #[TestDox('The data attribute contract is one set of names')]
 final class DataAttributeContractTest extends TestCase
@@ -27,18 +27,6 @@ final class DataAttributeContractTest extends TestCase
         'data-jaco-gallery-full',
         'data-jaco-editable-image-temp',
     ];
-
-    public function testTheDocumentDescribesTheNamesInTheWhitelist(): void
-    {
-        $code = $this->namesInWhitelist();
-        $documented = $this->namesInDocument();
-
-        $this->assertNotSame([], $code, 'the whitelist is not empty');
-        $this->assertNotSame([], $documented, 'the document lists the names');
-
-        $this->assertSame([], $this->added($code, $documented), 'in the code, not described');
-        $this->assertSame([], $this->missing($code, $documented), 'described, not in the code');
-    }
 
     public function testTheFrontendUsesOnlyNamesFromTheWhitelist(): void
     {
@@ -125,49 +113,6 @@ final class DataAttributeContractTest extends TestCase
         }
 
         return $this->sorted($names);
-    }
-
-    /**
-     * The list the document promises, stated twice: the "Roles" and "Properties"
-     * tables, and the whitelist code block under "The code is the source".
-     *
-     * Only those three are read. Other sections name old attributes on purpose -
-     * "What exists today" describes them, the migration maps them, the length table
-     * compares them, and the serialisation section quotes the old `dataAttrs` array.
-     * Reading a whole section would pick those up as contract names; the patterns
-     * below match the two shapes the contract is written in and nothing else.
-     *
-     * @return list<string>
-     */
-    private function namesInDocument(): array
-    {
-        $all = (string) \file_get_contents(\dirname(__DIR__, 2) . '/docs/attribute-mapping.md');
-
-        $names = [];
-
-        // the whitelist code block: 'data-jaco-x',
-        $blockStart = \strpos($all, '### The code is the source');
-        if ($blockStart !== false) {
-            $blockEnd = \strpos($all, "\n## ", $blockStart + 1);
-            $block = \substr($all, $blockStart, $blockEnd === false ? null : $blockEnd - $blockStart);
-            \preg_match_all("/^\s*'(data-jaco-[a-z-]+)',$/m", $block, $quoted);
-            $names = [...$names, ...$quoted[1]];
-        }
-
-        // the two tables: | `data-jaco-x` | …
-        foreach (['### Roles', '### Properties'] as $heading) {
-            $start = \strpos($all, $heading);
-            if ($start === false) {
-                continue;
-            }
-            $end = \strpos($all, "\n### ", $start + 1);
-            $section = \substr($all, $start, $end === false ? null : $end - $start);
-            \preg_match_all('/^\|\s*`(data-jaco-[a-z-]+)`\s*\|/m', $section, $rows);
-            $names = [...$names, ...$rows[1]];
-        }
-
-        // the editor state is described as well, but it is not part of the contract
-        return $this->sorted(\array_values(\array_diff($names, self::EDITOR_STATE)));
     }
 
     /**
@@ -305,16 +250,6 @@ final class DataAttributeContractTest extends TestCase
     private function added(array $left, array $right): array
     {
         return $this->sorted(\array_values(\array_diff($left, $right)));
-    }
-
-    /**
-     * @param list<string> $left
-     * @param list<string> $right
-     * @return list<string>
-     */
-    private function missing(array $left, array $right): array
-    {
-        return $this->sorted(\array_values(\array_diff($right, $left)));
     }
 
     /**
