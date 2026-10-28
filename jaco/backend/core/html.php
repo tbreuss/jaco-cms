@@ -235,6 +235,19 @@ const ALLOWED_TAGS = [
     'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'time', 'tr', 'u', 'ul', 'var',
 ];
 
+// What a text element may keep: --tools decides, and without it only paragraphs.
+// An element that offers "full" keeps structure, one that offers "basic" keeps the
+// inline formatting, and "plain" keeps neither.
+const TOOLS_TAGS = [
+    // a text block stays a block of paragraphs whatever the tools offer
+    'plain' => ['br', 'p'],
+    'basic' => ['a', 'b', 'br', 'em', 'i', 'p', 's', 'strike', 'strong', 'u'],
+    'full' => [
+        'a', 'b', 'blockquote', 'br', 'code', 'em', 'h1', 'h2', 'h3', 'h4', 'h5',
+        'h6', 'i', 'iframe', 'li', 'ol', 'p', 'pre', 's', 'strike', 'strong', 'u', 'ul',
+    ],
+];
+
 const REMOVE_TAGS = [
     'applet', 'base', 'embed', 'link', 'math', 'meta', 'noscript', 'object',
     'script', 'style', 'template',
@@ -244,17 +257,21 @@ const ALLOWED_ATTRIBUTES = [
     '*' => [
         'class',
         'id',
-        'data-jaco-editable',
-        'data-jaco-editable-line',
-        'data-jaco-editable-link',
-        'data-jaco-editable-image',
-        'data-jaco-editable-image-extended',
-        'data-jaco-editable-image-gallery',
-        'data-jaco-content-list',
-        'data-jaco-content-item',
-        'data-jaco-fragment',
-        'data-jaco-title',
-        'data-jaco-pos',
+        // The contract: the only place that decides which data-jaco-* names exist.
+        // Every other mention - the selectors, the pages, docs/attribute-mapping.md -
+        // is a copy that DataAttributeContractTest compares against this list.
+        'data-jaco-block',
+        'data-jaco-line',
+        'data-jaco-link',
+        'data-jaco-image',
+        'data-jaco-repeater',
+        'data-jaco-template',
+        'data-jaco-block--tools',
+        'data-jaco-line--tools',
+        'data-jaco-image--mode',
+        'data-jaco-repeater--label',
+        'data-jaco-repeater--position',
+        'data-jaco-repeater--sortable',
     ],
     'a' => ['href', 'rel', 'target', 'title'],
     'button' => ['aria-expanded', 'aria-label', 'title', 'type'],
@@ -330,6 +347,203 @@ function replace_body(string $document, string $body): string
     return $replaced;
 }
 
+/**
+ * The data-jaco-* names in a body that the whitelist does not know.
+ *
+ * The sanitizer removes them, which is why they are collected before it runs: an
+ * unknown name stops the save instead of silently vanishing from the page.
+ *
+ * @return list<string>
+ */
+function data_attribute_unknown_names(string $html): array
+{
+    \libxml_use_internal_errors(true);
+    $dom = new \DOMDocument();
+    $loaded = $dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><body>' . $html . '</body>');
+    \libxml_clear_errors();
+
+    if (!$loaded) {
+        return [];
+    }
+
+    $known = ALLOWED_ATTRIBUTES['*'];
+    $unknown = [];
+
+    foreach ($dom->getElementsByTagName('*') as $el) {
+        foreach ($el->attributes as $attr) {
+            $name = \strtolower($attr->nodeName);
+            if (!\str_starts_with($name, 'data-jaco-')) {
+                continue;
+            }
+            if (!\in_array($name, $known, true)) {
+                $unknown[] = $name;
+            }
+        }
+    }
+
+    return \array_values(\array_unique($unknown));
+}
+
+/**
+ * The repeater fragments a body refers to, as the values written in the markup.
+ *
+ * @return list<string>
+ */
+function repeater_fragments(string $html): array
+{
+    \libxml_use_internal_errors(true);
+    $dom = new \DOMDocument();
+    $loaded = $dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><body>' . $html . '</body>');
+    \libxml_clear_errors();
+
+    if (!$loaded) {
+        return [];
+    }
+
+    $fragments = [];
+    foreach ($dom->getElementsByTagName('*') as $el) {
+        if (!$el->hasAttribute('data-jaco-repeater')) {
+            continue;
+        }
+        $value = \trim($el->getAttribute('data-jaco-repeater'));
+        if ($value !== '') {
+            $fragments[] = $value;
+        }
+    }
+
+    return \array_values(\array_unique($fragments));
+}
+
+/**
+ * Problems with the fragment files a body refers to.
+ *
+ * A fragment becomes one block, so a file with two roots (or text beside its root)
+ * would silently turn one insertion into several blocks. The file is read from the
+ * content directory; a value that does not name a file there is left to the file
+ * value rules, which report it on their own.
+ *
+ * @param list<string> $fragments
+ * @return list<string>
+ */
+function fragment_file_problems(Config $config, array $fragments): array
+{
+    $problems = [];
+
+    foreach ($fragments as $fragment) {
+        if (\str_contains($fragment, '..') || \str_starts_with($fragment, '/')) {
+            continue;
+        }
+
+        $path = $config->templateContentDir . '/' . $fragment;
+        if (!\is_file($path)) {
+            continue;
+        }
+
+        $content = \file_get_contents($path);
+        if ($content === false) {
+            continue;
+        }
+
+        if (!fragment_has_one_root($content)) {
+            $problems[] = 'fragment without exactly one root element: ' . $fragment;
+        }
+    }
+
+    return $problems;
+}
+
+/**
+ * The problems a sanitized body still has with the attribute contract.
+ *
+ * The sanitizer separates what may stay from what must go; this reports what is
+ * there but makes no sense - a property without its role, two roles on one element,
+ * flow content where a block belongs. The page is not written when the list is not
+ * empty.
+ *
+ * @return list<string>
+ */
+function data_attribute_errors(string $html): array
+{
+    \libxml_use_internal_errors(true);
+    $dom = new \DOMDocument();
+    $loaded = $dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><body>' . $html . '</body>');
+    \libxml_clear_errors();
+
+    if (!$loaded) {
+        return [];
+    }
+
+    $problems = [];
+    foreach ($dom->getElementsByTagName('*') as $el) {
+        foreach (data_attribute_problems($el) as $problem) {
+            $problems[] = $problem;
+        }
+        foreach (data_attribute_structure_problems($el) as $problem) {
+            $problems[] = $problem;
+        }
+        foreach (data_attribute_body_problems($el) as $problem) {
+            $problems[] = $problem;
+        }
+    }
+
+    return \array_values(\array_unique($problems));
+}
+
+/**
+ * The tools value of a text element, or `plain` when it carries none.
+ */
+function tools_of(\DOMElement $el): string
+{
+    foreach (['data-jaco-block--tools', 'data-jaco-line--tools'] as $name) {
+        if (!$el->hasAttribute($name)) {
+            continue;
+        }
+        $value = \strtolower(\trim($el->getAttribute($name)));
+
+        return isset(TOOLS_TAGS[$value]) ? $value : 'plain';
+    }
+
+    return 'plain';
+}
+
+/**
+ * Remove the markup a text element's tools do not offer.
+ *
+ * Only inside a text element: a heading or a list in a page's own layout is the
+ * page's business, and `data-jaco-block` is where the editor decides. Everything
+ * else in the document keeps the tags the whitelist allows.
+ */
+function strip_tags_below_tools(\DOMElement $el): void
+{
+    // the tools belong to the text element; they apply to everything inside it, so
+    // the set is passed down instead of being read from each child
+    apply_tools_to_children($el, TOOLS_TAGS[tools_of($el)]);
+}
+
+/**
+ * @param list<string> $allowed
+ */
+function apply_tools_to_children(\DOMElement $el, array $allowed): void
+{
+    $children = \iterator_to_array($el->childNodes);
+    foreach ($children as $child) {
+        if (!$child instanceof \DOMElement) {
+            continue;
+        }
+
+        $childTag = \strtolower($child->nodeName);
+        if (!\in_array($childTag, $allowed, true)) {
+            while ($child->firstChild !== null) {
+                $el->insertBefore($child->firstChild, $child);
+            }
+            $el->removeChild($child);
+            continue;
+        }
+
+        apply_tools_to_children($child, $allowed);
+    }
+}
+
 function sanitize_node(\DOMElement $el): void
 {
     $tag = \strtolower($el->nodeName);
@@ -342,6 +556,11 @@ function sanitize_node(\DOMElement $el): void
     }
     foreach ($remove as $name) {
         $el->removeAttribute($name);
+    }
+
+    // a text element keeps only what its tools offer
+    if ($el->hasAttribute('data-jaco-block') || $el->hasAttribute('data-jaco-line')) {
+        strip_tags_below_tools($el);
     }
 
     $children = \iterator_to_array($el->childNodes);
@@ -373,6 +592,212 @@ function sanitize_node(\DOMElement $el): void
             $el->removeChild($child);
         }
     }
+}
+
+/**
+ * The names the contract knows, split into roles and properties.
+ *
+ * A property carries its role in front of the double hyphen, so the pairing is one
+ * rule: `data-jaco-image--resizable` needs `data-jaco-image` on the same element.
+ *
+ * @return array{roles: list<string>, properties: list<string>}
+ */
+function data_attribute_contract(): array
+{
+    $roles = [];
+    $properties = [];
+
+    foreach (ALLOWED_ATTRIBUTES['*'] as $attribute) {
+        if (!\str_starts_with($attribute, 'data-jaco-')) {
+            continue;
+        }
+
+        if (\str_contains($attribute, '--')) {
+            $properties[] = $attribute;
+            continue;
+        }
+
+        $roles[] = $attribute;
+    }
+
+    return ['roles' => $roles, 'properties' => $properties];
+}
+
+/**
+ * The role a property belongs to: `data-jaco-image--resizable` -> `data-jaco-image`.
+ */
+function data_attribute_role_of(string $property): string
+{
+    return \strstr($property, '--', true) ?: $property;
+}
+
+/**
+ * Check the data attributes on one element against the pairing rules.
+ *
+ * Only names the contract knows are inspected; an unknown one is removed by the
+ * whitelist before this runs. Returns one message per broken rule.
+ *
+ * @return list<string> human-readable problems, empty when the element is fine
+ */
+function data_attribute_problems(\DOMElement $el): array
+{
+    $roles = [];
+    foreach (data_attribute_contract()['roles'] as $role) {
+        if ($el->hasAttribute($role)) {
+            $roles[] = $role;
+        }
+    }
+
+    $problems = [];
+
+    if (\count($roles) > 1) {
+        $problems[] = 'one role per element, found: ' . \implode(', ', $roles);
+    }
+
+    foreach (data_attribute_contract()['properties'] as $property) {
+        if (!$el->hasAttribute($property)) {
+            continue;
+        }
+
+        $role = data_attribute_role_of($property);
+        if (!\in_array($role, $roles, true)) {
+            $problems[] = $property . ' needs ' . $role . ' on the same element';
+        }
+    }
+
+    return $problems;
+}
+
+/**
+ * The values a property accepts, and whether it takes one at all.
+ *
+ * `null` means "no closed set"; `false` means "carries no value".
+ *
+ * @return array<string, list<string>|false|null>
+ */
+function data_attribute_values(): array
+{
+    return [
+        'data-jaco-block--tools' => ['basic', 'full'],
+        'data-jaco-line--tools' => ['basic'],
+        'data-jaco-image--mode' => ['fill', 'fit', 'choice'],
+        'data-jaco-repeater--position' => ['top', 'bottom', 'any'],
+        'data-jaco-repeater--label' => null,
+        'data-jaco-repeater--sortable' => false,
+    ];
+}
+
+/**
+ * Problems of one element that need its neighbours: the parent for nesting, the
+ * children for "every direct child of a repeater is a block".
+ *
+ * @return list<string>
+ */
+function data_attribute_structure_problems(\DOMElement $el): array
+{
+    $problems = [];
+    $values = data_attribute_values();
+
+    foreach ($values as $name => $allowed) {
+        if (!$el->hasAttribute($name)) {
+            continue;
+        }
+        if ($allowed === false && \trim($el->getAttribute($name)) !== '') {
+            $problems[] = $name . ' carries no value';
+            continue;
+        }
+        if (\is_array($allowed)) {
+            $value = \trim($el->getAttribute($name));
+            if (!\in_array($value, $allowed, true)) {
+                $problems[] = 'unknown value for ' . $name . ': ' . $value;
+            }
+        }
+    }
+
+    // a mode needs something to scale to
+    if ($el->hasAttribute('data-jaco-image--mode')
+        && !$el->hasAttribute('width')
+        && !$el->hasAttribute('height')) {
+        $problems[] = 'data-jaco-image--mode needs width or height';
+    }
+
+    // a role inside a text element can never be reached: the text editor owns the click
+    $parent = $el->parentNode;
+    if ($parent instanceof \DOMElement) {
+        $parentRoles = \array_filter(
+            data_attribute_contract()['roles'],
+            static fn(string $role): bool => $parent->hasAttribute($role),
+        );
+        foreach ($parentRoles as $parentRole) {
+            if ($parentRole !== 'data-jaco-block' && $parentRole !== 'data-jaco-line') {
+                continue;
+            }
+            foreach (data_attribute_contract()['roles'] as $role) {
+                if ($el->hasAttribute($role)) {
+                    $problems[] = 'role ' . $role . ' inside ' . $parentRole;
+                }
+            }
+            break;
+        }
+    }
+
+    return $problems;
+}
+
+/**
+ * Problems of the whole body: what the repeater container itself has to obey.
+ *
+ * @return list<string>
+ */
+function data_attribute_body_problems(\DOMElement $el): array
+{
+    if (!$el->hasAttribute('data-jaco-repeater')) {
+        return [];
+    }
+
+    $problems = [];
+
+    foreach ($el->childNodes as $child) {
+        if ($child instanceof \DOMText && \trim($child->textContent) !== '') {
+            $problems[] = 'text directly in a repeater container';
+        }
+    }
+
+    return $problems;
+}
+
+/**
+ * True when the file holds exactly one root element and nothing else but
+ * whitespace and comments. A fragment becomes one block, so it must have one root.
+ */
+function fragment_has_one_root(string $html): bool
+{
+    \libxml_use_internal_errors(true);
+    $dom = new \DOMDocument();
+    $loaded = $dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><body>' . $html . '</body>');
+    \libxml_clear_errors();
+
+    if (!$loaded) {
+        return false;
+    }
+
+    $body = $dom->getElementsByTagName('body')->item(0);
+    if ($body === null) {
+        return false;
+    }
+
+    $roots = 0;
+    foreach ($body->childNodes as $child) {
+        if ($child instanceof \DOMElement) {
+            $roots++;
+            continue;
+        }
+        if ($child instanceof \DOMText && \trim($child->textContent) !== '') {
+            return false;
+        }
+    }
+
+    return $roots === 1;
 }
 
 function is_allowed_attribute(string $tag, string $name, string $value): bool
@@ -511,13 +936,13 @@ function handle_embedded_data_url_images(Config $config, string $html): array
         return [false, ['Could not load HTML']];
     }
 
-    $imgAttrs = ['data-jaco-editable-image', 'data-jaco-editable-image-extended'];
+    // The role is new, the editor state is not: the file name and the full-size data
+    // stay under their old names in phase 1 and leave the DOM in phase 2.
+    $imgAttrs = ['data-jaco-image'];
     $imgSrcAttr = 'src';
     $imgFileAttr = 'data-jaco-editable-image-file';
-    $galleryAttr = 'data-jaco-editable-image-gallery';
-    $galleryFullAttr = 'data-jaco-gallery-full';
 
-    // snapshot: gallery handling moves nodes, which a live list would not survive
+    // snapshot: the collection is live, replacing an <img> while iterating it is unsafe
     $images = \iterator_to_array($dom->getElementsByTagName('img'));
 
     $handled = 0;
@@ -584,13 +1009,10 @@ function handle_embedded_data_url_images(Config $config, string $html): array
         $el->setAttribute('src', filesystem\combine($config->mediaUrl, $newFile));
         $el->removeAttribute($imgFileAttr);
 
-        if ($el->hasAttribute($galleryAttr)) {
-            $galleryError = write_gallery_full($dom, $config, $el, $imgFile, $galleryFullAttr);
-            if ($galleryError !== null) {
-                $errors[] = $galleryError;
-                continue;
-            }
-        }
+        // The gallery path stays in the code for now, but nothing reaches it: the
+        // model is being replaced by one where the author writes both files and a
+        // container carries data-jaco-gallery. Until that exists, an image is just
+        // an image - no second file, no wrapper.
 
         $handled++;
     }
@@ -618,107 +1040,4 @@ function handle_embedded_data_url_images(Config $config, string $html): array
     }
 
     return [true, $newHtml];
-}
-
-/**
- * Gallery images link their thumbnail to the full version: the client sends
- * the full data url in a temporary attribute, the server stores it as a
- * second file ("name-full.ext") and wraps the thumbnail in a link.
- *
- * An existing parent link (e.g. an editable link) keeps its target, unless it
- * points at the gallery's own full file: then a replaced thumbnail replaces the
- * full version as well. Without that exception the second replacement would
- * silently keep showing the old image - the link survives, so the old guard
- * bailed out before writing anything.
- *
- * Without the temporary attribute there is nothing to link, the thumbnail stays
- * plain. Returns an error message or null on success.
- */
-function write_gallery_full(\DOMDocument $dom, Config $config, \DOMElement $el, string $imgFile, string $galleryFullAttr): ?string
-{
-    if (!$el->hasAttribute($galleryFullAttr)) {
-        return null;
-    }
-
-    $fullSrc = $el->getAttribute($galleryFullAttr);
-    $el->removeAttribute($galleryFullAttr);
-
-    $fullFile = \pathinfo($imgFile, PATHINFO_FILENAME) . '-full.'
-        . \pathinfo($imgFile, PATHINFO_EXTENSION);
-
-    $parent = $el->parentNode;
-    $parentLink = $parent instanceof \DOMElement && \strtolower($parent->nodeName) === 'a' ? $parent : null;
-
-    if ($parentLink !== null && !is_own_gallery_full($parentLink, $config, $fullFile)) {
-        // an explicit link to somewhere else wins over the gallery link
-        return null;
-    }
-
-    if (($pos = \strpos($fullSrc, ',')) === false) {
-        return null;
-    }
-
-    $fullData = \base64_decode(\str_replace(' ', '+', \substr($fullSrc, $pos + 1)), true);
-
-    if ($fullData === false) {
-        return 'Could not decode image data: ' . $fullFile;
-    }
-
-    // svg uploads are scrubbed of active content on both write paths
-    if (\strtolower((string) \pathinfo($fullFile, PATHINFO_EXTENSION)) === 'svg') {
-        [$svgOk, $svgCleaned] = sanitize_svg($fullData);
-        if ($svgOk !== true || !\is_string($svgCleaned)) {
-            return 'Invalid SVG file: ' . $fullFile;
-        }
-        $fullData = $svgCleaned;
-    }
-
-    if (\str_contains($fullFile, DIRECTORY_SEPARATOR)
-        || !filesystem\validate_filename($fullFile)
-        || !filesystem\validate_extension($fullFile, $config->uploadExtensions)) {
-        return 'Invalid file name or extension: ' . $fullFile;
-    }
-
-    // the link already points at the full file: overwrite it in place, so a
-    // replaced thumbnail and its full version stay the same pair
-    if ($parentLink !== null) {
-        $status = filesystem\write_file_atomic($config, $config->mediaDir, $fullFile, $fullData);
-
-        return $status ? null : 'Could not write file: ' . $fullFile;
-    }
-
-    [$status, $newFull] = filesystem\write_file_without_overwrite($config, $config->mediaDir, $fullFile, $fullData);
-
-    if ($status === false) {
-        return 'Could not write file: ' . $fullFile;
-    }
-
-    if ($parent instanceof \DOMElement) {
-        $link = $dom->createElement('a');
-        $link->setAttribute('href', filesystem\combine($config->mediaUrl, $newFull));
-        $parent->replaceChild($link, $el);
-        $link->appendChild($el);
-    }
-
-    return null;
-}
-
-/**
- * True when the link around a thumbnail points at the full file that belongs to
- * this image - the pair the gallery marker itself created on an earlier save.
- */
-function is_own_gallery_full(\DOMElement $link, Config $config, string $fullFile): bool
-{
-    $href = \trim($link->getAttribute('href'));
-
-    if ($href === '') {
-        return false;
-    }
-
-    // compare what the markup says with what the server would write: a relative
-    // path, an absolute one and a url all name the same file
-    $normalized = \ltrim((string) \preg_replace('#^[a-z]+://[^/]+#i', '', $href), '/');
-    $target = \ltrim(filesystem\combine($config->mediaUrl, $fullFile), '/');
-
-    return $normalized === $target;
 }

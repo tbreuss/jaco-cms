@@ -113,7 +113,7 @@ window.initRichTextEditor = () => {
 }
 
 window.initImages = (root) => {
-  const selector = '[data-jaco-editable-image], [data-jaco-editable-image-extended]'
+  const selector = '[data-jaco-image]'
   ;(root || document).querySelectorAll(selector).forEach((image) => {
     if (image.nextElementSibling && image.nextElementSibling.hasAttribute('data-jaco-editable-image-temp')) {
       return // already initialized
@@ -133,6 +133,39 @@ window.initImages = (root) => {
       }
     })
   })
+}
+
+// What the contract says about an element. All three helpers read the same
+// attributes the server validates, and fall back to the documented default.
+const TOOLS_ATTRS = ['data-jaco-block--tools', 'data-jaco-line--tools']
+
+const attrOf = (element, names) => {
+  const name = names.find((candidate) => element.hasAttribute(candidate))
+  return name ? (element.getAttribute(name) || '').toLowerCase() : ''
+}
+
+// How an image treats its file. 'replace' is the name for "no mode" - it is not
+// a value of the attribute, just the absence of one.
+const imageModeOf = (image) => {
+  const value = attrOf(image, ['data-jaco-image--mode'])
+  return ['fill', 'fit', 'choice'].includes(value) ? value : 'replace'
+}
+
+const imageScaleType = (image, chosen) => {
+  const mode = imageModeOf(image)
+  if (mode === 'fill' || mode === 'fit') {
+    return mode
+  }
+  if (mode === 'choice') {
+    return chosen === 'fit' ? 'fit' : 'fill'
+  }
+  return null
+}
+
+// What the toolbar offers: the value of <role>--tools, or plain when it is absent
+const toolsOf = (element, allowed) => {
+  const value = attrOf(element, TOOLS_ATTRS)
+  return allowed.includes(value) ? value : 'plain'
 }
 
 window.getDisplayType = (element) => {
@@ -168,30 +201,6 @@ window.disableRichTextEditor = () => {
   })
 }
 
-
-const chooseNewImage = (editableImage) => {
-  const [width, height] = detectImageSize(editableImage)
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.onchange = e => {
-    const file = e.target.files[0]
-    if (!file) {
-      return
-    }
-    const reader = new FileReader()
-    reader.onload = readerEvent => {
-      resizeImage(readerEvent.target.result, file.type, width, height, 'fill', editableImage)
-      editableImage.setAttribute('data-jaco-editable-image-file', file.name)
-      if (editableImage.hasAttribute('data-jaco-editable-image-gallery')) {
-        scaleDataUrlToWidth(readerEvent.target.result, file.type, GALLERY_FULL_MAX_WIDTH, (fullDataUrl) => {
-          editableImage.setAttribute('data-jaco-gallery-full', fullDataUrl)
-        })
-      }
-    }
-    reader.readAsDataURL(file)
-  }
-  input.click()
-}
 
 window.removeMediaPicker = () => {
   document.getElementById('editableMedia')?.remove()
@@ -296,7 +305,6 @@ window.openMediaPicker = async (targetImage, onUpload = null) => {
         button.onclick = () => {
           targetImage.src = mediaSrc
           targetImage.removeAttribute('data-jaco-editable-image-file')
-          targetImage.removeAttribute('data-jaco-gallery-full')
           close()
         }
         grid.append(button)
@@ -405,25 +413,31 @@ window.addClickHandler = () => {
       return
     }
 
-    if (event.target.closest('[data-jaco-editable-image], [data-jaco-editable-image-extended], [data-jaco-editable-link]')) {
+    if (event.target.closest('[data-jaco-image], [data-jaco-link]')) {
       await editorMessagesReady
     }
     removeRichTextEditorElements()
     removeExtendedImages()
     removeLinks()
 
-    let editable = event.target.closest('[data-jaco-editable]')
+    let editable = event.target.closest('[data-jaco-block]')
     if (editable) {
       editable.setAttribute('data-jaco-is-editing', '')
-      let toolbarOptions = [
-        [{'header': [1, 2, 3, 4, 5, 6, false]}],
-        ['bold', 'italic', 'underline', 'strike'],
-        ['blockquote', 'code-block'],
-        [{'list': 'ordered'}, {'list': 'bullet'}],
-        [{'indent': '-1'}, {'indent': '+1'}],
-        ['link', 'video'],
-        ['clean']
-      ]
+      // --tools decides what the toolbar offers; without it the block is plain
+      const tools = toolsOf(editable, ['basic', 'full'])
+      let toolbarOptions = tools === 'full'
+        ? [
+          [{'header': [1, 2, 3, 4, 5, 6, false]}],
+          ['bold', 'italic', 'underline', 'strike'],
+          ['blockquote', 'code-block'],
+          [{'list': 'ordered'}, {'list': 'bullet'}],
+          [{'indent': '-1'}, {'indent': '+1'}],
+          ['link', 'video'],
+          ['clean']
+        ]
+        : tools === 'basic'
+          ? [['bold', 'italic', 'underline', 'strike'], ['link'], ['clean']]
+          : []
       let editorOptions = {
         modules: {
           toolbar: toolbarOptions
@@ -437,14 +451,13 @@ window.addClickHandler = () => {
       return
     }
 
-    let editableLine = event.target.closest('[data-jaco-editable-line]')
+    let editableLine = event.target.closest('[data-jaco-line]')
     if (editableLine) {
       editableLine.setAttribute('data-jaco-is-editing', '')
-      let toolbarLineOptions = [
-        ['bold', 'italic', 'underline', 'strike'],
-        ['link'],
-        ['clean']
-      ]
+      const lineTools = toolsOf(editableLine, ['basic'])
+      let toolbarLineOptions = lineTools === 'basic'
+        ? [['bold', 'italic', 'underline', 'strike'], ['link'], ['clean']]
+        : []
       let editorLineOptions = {
         modules: {
           toolbar: toolbarLineOptions,
@@ -478,19 +491,9 @@ window.addClickHandler = () => {
       return
     }
 
-    const editableImage = event.target.closest('[data-jaco-editable-image]')
-    if (editableImage) {
-
-      editableImage.onload = () => {
-        console.debug('image loaded')
-        window.resize()
-      }
-
-      window.openMediaPicker(editableImage, () => chooseNewImage(editableImage))
-      return
-    }
-
-    let editableImageExtended = event.target.closest('[data-jaco-editable-image-extended]')
+    // Every image opens the same dialog: alt text, a new file, the media library.
+    // --mode decides which of those apply, not whether the dialog appears.
+    let editableImageExtended = event.target.closest('[data-jaco-image]')
     if (editableImageExtended) {
 
       const [width, height] = detectImageSize(editableImageExtended)
@@ -511,7 +514,10 @@ window.addClickHandler = () => {
       }
       divElement.appendChild(inputAlt)
 
-      if (width > 0 && height > 0) {
+      // the fit/fill switch exists for choice only: fill and fit decide on their
+      // own, and an image without a mode is not scaled at all
+      const choiceOffered = imageModeOf(editableImageExtended) === 'choice'
+      if (width > 0 && height > 0 && choiceOffered) {
         // see https://www.bannerbear.com/help/articles/26-difference-between-fit-and-fill/
         const imageScalingLabel = document.createElement('label')
         imageScalingLabel.innerText = t('Image Scaling', 'Image Scaling') + ' '
@@ -564,11 +570,13 @@ window.addClickHandler = () => {
           const reader = new FileReader()
           reader.readAsDataURL(file)
           reader.onload = readerEvent => {
-            let scaleType = 'fit'
-            if (width > 0 && height > 0) {
-              scaleType = document.querySelector('input[name=type]:checked').value
+            const chosen = document.querySelector('input[name=type]:checked')?.value ?? null
+            const scaleType = imageScaleType(editableImageExtended, chosen)
+            if (scaleType === null) {
+              editableImageExtended.src = readerEvent.target.result
+            } else {
+              resizeImage(readerEvent.target.result, file.type, width, height, scaleType, editableImageExtended)
             }
-            resizeImage(readerEvent.target.result, file.type, width, height, scaleType, editableImageExtended)
             editableImageExtended.setAttribute('data-jaco-editable-image-file', file.name)
           }
         }
@@ -580,6 +588,8 @@ window.addClickHandler = () => {
       mediaButton.type = 'button'
       mediaButton.innerText = t('Choose from media', 'Choose from media')
       mediaButton.onclick = () => {
+        // the picker is a library of files: it assigns an existing one, so the mode
+        // does not apply to it - the file is used as it is
         window.removeExtendedImages()
         window.openMediaPicker(editableImageExtended)
       }
@@ -595,7 +605,7 @@ window.addClickHandler = () => {
       return
     }
 
-    const editableLink = event.target.closest('[data-jaco-editable-link]')
+    const editableLink = event.target.closest('[data-jaco-link]')
     if (editableLink) {
 
       const divElement = document.createElement('div')
@@ -701,27 +711,6 @@ window.resizeImage = (dataUrl, fileType, width, height, scaleType, editableImage
   }
 }
 
-// full version for gallery images, downscaled to a sane lightbox width
-const GALLERY_FULL_MAX_WIDTH = 1920
-
-window.scaleDataUrlToWidth = (dataUrl, fileType, maxWidth, callback) => {
-  const image = new Image()
-  image.onload = () => {
-    let width = image.width
-    let height = image.height
-    if (width > maxWidth) {
-      height = Math.round(height * maxWidth / width)
-      width = maxWidth
-    }
-    const canvas = document.createElement('canvas')
-    canvas.width = width
-    canvas.height = height
-    canvas.getContext('2d').drawImage(image, 0, 0, width, height)
-    callback(canvas.toDataURL(fileType, 0.92))
-  }
-  image.src = dataUrl
-}
-
 window.detectImageSize = (image) => {
   const width = parseInt(image.getAttribute('width') ?? '0')
   const height = parseInt(image.getAttribute('height') ?? '0')
@@ -791,9 +780,9 @@ window.removeRichTextEditorElements = () => {
       element.parentElement.removeAttribute('class')
     }
     element.parentElement.removeAttribute('data-jaco-is-editing')
-    if (element.parentElement.hasAttribute('data-jaco-editable-line')) {
+    if (element.parentElement.hasAttribute('data-jaco-line')) {
       element.parentElement.innerHTML = removeBlockTags(element)
-    } else if (element.parentElement.hasAttribute('data-jaco-editable')) {
+    } else if (element.parentElement.hasAttribute('data-jaco-block')) {
       removeBoundaryEmptyParagraphs(element)
       normalizeVideoFrames(element)
       element.parentElement.innerHTML = element.innerHTML

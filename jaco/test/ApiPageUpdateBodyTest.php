@@ -17,7 +17,7 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
 
     private const DOCUMENT = "<!DOCTYPE html>\n<html lang=\"en\"><head><base href=\"/\">"
         . "<meta charset=\"utf-8\"><title>Body test</title><link rel=\"stylesheet\" href=\"/style.css\">"
-        . "</head>\n<body><div data-jaco-editable><p>alt</p></div></body>\n</html>\n";
+        . "</head>\n<body><div data-jaco-block><p>alt</p></div></body>\n</html>\n";
 
     protected function setUp(): void
     {
@@ -32,7 +32,7 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
     {
         $response = $this->api('page/update-body', [
             'fileName' => self::PAGE,
-            'body' => '<div data-jaco-editable><p>neu</p></div>',
+            'body' => '<div data-jaco-block data-jaco-block--tools="full"><p>neu</p></div>',
         ]);
 
         $this->assertSame(Status::CREATED, $response->status);
@@ -46,7 +46,7 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
         $this->assertStringContainsString('href="/style.css"', $content);
 
         // the body is the new one, markers included
-        $this->assertStringContainsString('<div data-jaco-editable><p>neu</p></div>', $content);
+        $this->assertStringContainsString('<div data-jaco-block data-jaco-block--tools="full"><p>neu</p></div>', $content);
         $this->assertStringNotContainsString('<p>alt</p>', $content);
     }
 
@@ -54,7 +54,8 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
     {
         $response = $this->api('page/update-body', [
             'fileName' => self::PAGE,
-            'body' => '<div data-jaco-editable><p onclick="steal()">text</p></div>'
+            'body' => '<div data-jaco-block data-jaco-block--tools="full">'
+                . '<p onclick="steal()">text</p></div>'
                 . '<script src="https://evil.example/x.js"></script>'
                 . '<link rel="stylesheet" href="https://evil.example/x.css">'
                 . '<title>Injected</title>',
@@ -94,6 +95,47 @@ final class ApiPageUpdateBodyTest extends ApiTestCase
         $newBackups = $this->newEntriesIn($this->config->backupDir);
         $this->assertCount(1, $newBackups);
         $this->assertSame(self::DOCUMENT, file_get_contents($this->config->backupDir . '/' . $newBackups[0]));
+    }
+
+    public function testABodyThatBreaksTheAttributeContractIsRejected(): void
+    {
+        // saving would store a marker that cannot work: a mode without a dimension
+        $response = $this->api('page/update-body', [
+            'fileName' => self::PAGE,
+            'body' => '<img data-jaco-image data-jaco-image--mode="fill" src="photo.png">',
+        ]);
+
+        $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
+        $this->assertStringContainsString('needs width or height', (string) $response->body);
+
+        $stored = (string) file_get_contents($this->config->webDir . '/' . self::PAGE);
+        $this->assertSame(self::DOCUMENT, $stored, 'the page stays as it was');
+    }
+
+    public function testAnUnknownNameIsRejectedInsteadOfRemoved(): void
+    {
+        // the sanitizer would drop it; the save path checks before that runs
+        $response = $this->api('page/update-body', [
+            'fileName' => self::PAGE,
+            'body' => '<div data-jaco-block data-jaco-not-a-name="x"><p>text</p></div>',
+        ]);
+
+        $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
+        $this->assertStringContainsString('unknown name: data-jaco-not-a-name', (string) $response->body);
+
+        $stored = (string) file_get_contents($this->config->webDir . '/' . self::PAGE);
+        $this->assertSame(self::DOCUMENT, $stored, 'the page stays as it was');
+    }
+
+    public function testTwoRolesOnOneElementAreRejected(): void
+    {
+        $response = $this->api('page/update-body', [
+            'fileName' => self::PAGE,
+            'body' => '<div data-jaco-block data-jaco-line>text</div>',
+        ]);
+
+        $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
+        $this->assertStringContainsString('one role per element', (string) $response->body);
     }
 
     public function testEmptyBodyIsRejected(): void

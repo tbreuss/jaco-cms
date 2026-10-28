@@ -130,9 +130,11 @@ These are the invariants and edge cases that tests cannot express on their own.
   compares the first path segment case-insensitively, because `Jaco/...`
   resolves to the app directory on macOS and Windows
   (`jaco/backend/core/filesystem.php`, `jaco/test/FileSystemNamingTest.php`).
-- **The editable markers are allowlisted.** `data-jaco-editable`, `-line`, `-link`, `-image`
-  and `-image-extended` must stay in `ALLOWED_ATTRIBUTES`: dropping one silently makes the
-  page uneditable in place, because the editor finds its blocks through these attributes.
+- **The editable markers are allowlisted.** Every `data-jaco-*` name in
+  `ALLOWED_ATTRIBUTES` must stay there: dropping one silently makes the page uneditable
+  in place, because the editor finds its blocks through these attributes.
+  `DataAttributeContractTest` compares the whitelist with the document, the selectors,
+  the stylesheets and every page.
   `<script>` is removed from the body, so a script include belongs in the `<head>`, which
   the page manager owns.
 - **Lists do not ship content.** `page/list` and `upload/list` return `content: null`,

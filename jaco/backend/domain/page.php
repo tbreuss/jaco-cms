@@ -285,9 +285,31 @@ function update_page(
     [$status, $htmlOrErrors] = html\handle_embedded_data_url_images($config, $data['withContent']);
 
     if ($status) {
+        $unknownNames = html\data_attribute_unknown_names((string) $htmlOrErrors);
+
+        if (\count($unknownNames) > 0) {
+            return Payload::invalid(\array_map(
+                static fn(string $name): array => ['withContent', 'unknown name: ' . $name],
+                $unknownNames,
+            ));
+        }
+
         // the page manager owns the document: doctype and head stay as sent,
         // only the body is treated as content and sanitized
-        $data['withContent'] = html\replace_body($data['withContent'], html\sanitize_html($htmlOrErrors));
+        $body = html\sanitize_html($htmlOrErrors);
+        $contractErrors = \array_merge(
+            html\data_attribute_errors($body),
+            html\fragment_file_problems($config, html\repeater_fragments($body)),
+        );
+
+        if (\count($contractErrors) > 0) {
+            return Payload::invalid(\array_map(
+                static fn(string $problem): array => ['withContent', $problem],
+                $contractErrors,
+            ));
+        }
+
+        $data['withContent'] = html\replace_body($data['withContent'], $body);
     } else {
         return Payload::error([['withContent', \reset($htmlOrErrors)]]);
     }
@@ -468,9 +490,31 @@ function update_page_body(Config $config, string $file, string $withBody): Paylo
         return Payload::error([['withBody', \reset($htmlOrErrors)]]);
     }
 
+    $unknownNames = html\data_attribute_unknown_names((string) $htmlOrErrors);
+
+    if (\count($unknownNames) > 0) {
+        return Payload::invalid(\array_map(
+            static fn(string $name): array => ['withBody', 'unknown name: ' . $name],
+            $unknownNames,
+        ));
+    }
+
     // the client owns the content, the stored document keeps doctype and head
     $document = filesystem\read_file($config->webDir, $data['file']) ?? '';
-    $data['withBody'] = html\replace_body($document, html\sanitize_html($htmlOrErrors));
+    $body = html\sanitize_html($htmlOrErrors);
+    $contractErrors = \array_merge(
+        html\data_attribute_errors($body),
+        html\fragment_file_problems($config, html\repeater_fragments($body)),
+    );
+
+    if (\count($contractErrors) > 0) {
+        return Payload::invalid(\array_map(
+            static fn(string $problem): array => ['withBody', $problem],
+            $contractErrors,
+        ));
+    }
+
+    $data['withBody'] = html\replace_body($document, $body);
 
     $status = filesystem\backup_file($config->webDir, $data['file'], $config->backupDir);
 

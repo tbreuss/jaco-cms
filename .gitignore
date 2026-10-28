@@ -15,3 +15,5 @@
 /jaco/test/runtime
 /inspiration
 /test
+/jaco-dist-*.zip
+/jaco-dist-dev/

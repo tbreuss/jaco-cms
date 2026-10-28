@@ -271,19 +271,23 @@ post_max_size = 24M
 Without markers there is nothing to edit inline (only source via Ace).
 These attributes designate editable spots in the existing HTML:
 
-- `data-jaco-editable` — text block (Quill editor with full toolbar)
-- `data-jaco-editable-line` — single line, e.g. headings
-- `data-jaco-editable-link` — link (URL and target via dialog)
-- `data-jaco-editable-image` — image (replacement via dialog)
-- `data-jaco-editable-image-extended` — image with scaling options
+- `data-jaco-block` — text block
+- `data-jaco-line` — single line, e.g. headings
+- `data-jaco-link` — link (URL and target via dialog)
+- `data-jaco-image` — image (replacement via dialog)
+- `data-jaco-template="<file>.html"` — instance of a site template
+
+A block or a line takes `data-jaco-block--tools="basic"` or `"full"` to offer
+more than plain paragraphs; an image takes `data-jaco-image--mode="fill"`, `"fit"`
+or `"choice"` to scale the file to its `width` and `height`.
 
 Example:
 
 ```html
-<h1 data-jaco-editable-line>My headline</h1>
-<div data-jaco-editable><p>My paragraph.</p></div>
-<a href="page.html" data-jaco-editable-link>My link</a>
-<img data-jaco-editable-image src="media/image.jpg" alt="Image" width="800">
+<h1 data-jaco-line>My headline</h1>
+<div data-jaco-block><p>My paragraph.</p></div>
+<a href="page.html" data-jaco-link>My link</a>
+<img data-jaco-image src="media/image.jpg" alt="Image" width="800">
 ```
 
 ## Recurring content blocks
@@ -293,9 +297,10 @@ Put a fragment file in `jaco-data/templates/content/`, then mark where blocks ma
 appear:
 
 ```html
-<div data-jaco-content-list data-jaco-fragment="news-section.html" data-jaco-title="Add news" data-jaco-pos="top">
-    <div data-jaco-content-item>
-        <h2 data-jaco-editable-line>Existing headline</h2>
+<div data-jaco-repeater="news-section.html"
+     data-jaco-repeater--label="Add news" data-jaco-repeater--position="top">
+    <div>
+        <h2 data-jaco-line>Existing headline</h2>
     </div>
 </div>
 ```
@@ -307,54 +312,55 @@ one places a text block and an image next to each other:
 <!-- jaco-data/templates/content/news-section.html -->
 <div class="news-section">
     <div class="news-text">
-        <h2 data-jaco-editable-line>Headline</h2>
-        <p data-jaco-editable-line>Text</p>
+        <h2 data-jaco-line>Headline</h2>
+        <p data-jaco-line>Text</p>
     </div>
     <div class="news-img">
-        <img data-jaco-editable-image height="600" width="800" src="…">
+        <img data-jaco-image height="600" width="800" src="…">
     </div>
     <div class="clearer"></div>
 </div>
 ```
 
-The editor inserts the fragment inside a `data-jaco-content-item` wrapper, so the
-fragment itself must not carry that wrapper.
+The fragment becomes one block, so it must have **exactly one root element** -
+the `<div class="news-section">` above. The editor does not wrap it.
 
-- `data-jaco-fragment` names the fragment file from `jaco-data/templates/content/`
-- `data-jaco-title` labels the add button shown in the editor
-- `data-jaco-pos` is `top` (new blocks first), `bottom` (new blocks last),
-  `any` (a button before every block plus one at the end) or `draggable`
-  (like `top`, plus blocks can be reordered with the ⠿ grip)
-- existing blocks are wrapped in `<div data-jaco-content-item>` and can be
-  deleted in the editor (two-step: ×, then ✓)
+- the value of `data-jaco-repeater` names the fragment file from
+  `jaco-data/templates/content/`
+- `data-jaco-repeater--label` labels the add button shown in the editor
+- `data-jaco-repeater--position` is `top` (new blocks first), `bottom` (new
+  blocks last) or `any` (a button before every block plus one at the end)
+- `data-jaco-repeater--sortable` adds the ⠿ grip, so blocks can be reordered
+- every direct child of the repeater is one block; it can be deleted in the
+  editor (two-step: ×, then ✓). Anything else - a heading, text - belongs inside
+  a block, not beside one.
 
 ## Embedded videos
 
-In a text block (`data-jaco-editable`), the toolbar video button embeds a
+In a text block (`data-jaco-block`), the toolbar video button embeds a
 video from its URL. Only YouTube embeds survive saving
 (`https://www.youtube.com/embed/…` and `https://www.youtube-nocookie.com/embed/…`);
 any other iframe source is removed, along with event handler attributes.
 
 ## Image gallery
 
-An image with `data-jaco-editable-image-gallery` (in addition to
-`data-jaco-editable-image`) links its thumbnail to the full version:
+**Being redesigned.** The gallery is gone from this version: an image is an image,
+the editor replaces the file and nothing else. A save does not write a second file.
 
-```html
-<img data-jaco-editable-image data-jaco-editable-image-gallery width="800" src="media/thumb.jpg" alt="Gallery">
+The model that replaces it gives the author both files and a container that marks
+the group - a `div` with an attribute, holding one link per image:
+
+```text
+<container> -> <a href=".../cake.jpg"> -> <img src=".../cake-thumb.jpg">
 ```
 
-When a file is picked in the editor, the thumbnail follows the `width`/`height`
-attributes as usual, while the full version is capped at 1920px wide. On save
-both files are stored (`thumb.jpg` and `thumb-full.jpg`) and the thumbnail is
-wrapped in `<a href="media/thumb-full.jpg">`. An explicit parent link always
-wins and stays untouched.
+The editor reads the sizes from `width`/`height`, scales the uploaded file to that
+size for the thumbnail and caps the full version at 1920 px. Until that exists, the
+container attribute is not in the whitelist either, and a save removes it.
 
-The editor sets the attributes `data-jaco-editable-image-file`,
-`data-jaco-editable-image-temp` and `data-jaco-is-editing` itself at runtime;
-they do not belong in the source HTML. The same holds for
-`data-jaco-gallery-full`, which carries the full version to the server on save
-and is removed there.
+The editor still sets `data-jaco-editable-image-file`,
+`data-jaco-editable-image-temp` and `data-jaco-is-editing` itself at runtime; they do
+not belong in the source HTML.
 
 ## Keyboard shortcuts
 

@@ -10,7 +10,7 @@ final class ApiTemplateContentTest extends ApiTestCase
 {
     private const TEMPLATE = 'api-content-list.html';
 
-    private const CONTENT = "<div class=\"news-section\">\n<h2 data-jaco-editable-line>Headline</h2>\n</div>\n";
+    private const CONTENT = "<div class=\"news-section\">\n<h2 data-jaco-line>Headline</h2>\n</div>\n";
 
     protected function setUp(): void
     {

@@ -5,29 +5,38 @@
 //
 // Authoring:
 //
-//   <div data-jaco-content-list data-jaco-fragment="news.html"
-//        data-jaco-title="Add news" data-jaco-pos="top">
-//     <div data-jaco-content-item>…existing block…</div>
+//   <div data-jaco-repeater="news.html"
+//        data-jaco-repeater--label="Add news" data-jaco-repeater--position="top">
+//     <div>…existing block…</div>
 //   </div>
 //
-// data-jaco-pos is "top", "bottom" or "any" (anything else behaves like "any").
-// The button label comes from data-jaco-title, so no translations are needed.
+// The value of data-jaco-repeater is the fragment; every direct child is one block.
+// data-jaco-repeater--position is "top", "bottom" or "any"; --sortable adds the
+// grip. The button label comes from --label, so no translations are needed.
 // Fragments are fetched from the template/content/view API, which serves files
 // from jaco-data/templates/content. Item order lives in the DOM - save needs no
 // changes, but editor chrome has to be stripped (removeContentListChrome)
 // before the body is sent, see iframe.getHTML().
 window.JacoContentLists = (() => {
-  const LIST_ATTR = 'data-jaco-content-list'
-  const ITEM_ATTR = 'data-jaco-content-item'
+  const LIST_ATTR = 'data-jaco-repeater'
   const ADD_BUTTON_CLASS = 'jaco-content-add-button'
   const OVERLAY_CLASS = 'jaco-content-item-bar'
   const GRIP_CLASS = 'jaco-content-grip'
   const DRAGGING_CLASS = 'is-dragging'
 
+  const POSITION_ATTR = 'data-jaco-repeater--position'
+  const SORTABLE_ATTR = 'data-jaco-repeater--sortable'
+
+  // Where the add button goes. Anything but top and bottom means "any".
   const posOf = (list) => {
-    const pos = (list.getAttribute('data-jaco-pos') || '').toLowerCase()
-    return pos === 'top' || pos === 'bottom' || pos === 'draggable' ? pos : 'any'
+    const pos = (list.getAttribute(POSITION_ATTR) || '').toLowerCase()
+    return pos === 'top' || pos === 'bottom' ? pos : 'any'
   }
+
+  // Whether the blocks can be reordered. A separate question, answered by a
+  // separate attribute: the position says where a button goes, this says whether
+  // blocks move.
+  const isSortable = (list) => list.hasAttribute(SORTABLE_ATTR)
 
   const fetchFragment = (file) => {
     const token = window.sessionStorage.getItem('AUTHORIZATION_TOKEN')
@@ -45,7 +54,7 @@ window.JacoContentLists = (() => {
   const createAddButton = (list, onAdd) => {
     const button = document.createElement('div')
     button.className = ADD_BUTTON_CLASS
-    const title = list.getAttribute('data-jaco-title') || ''
+    const title = list.getAttribute('data-jaco-repeater--label') || ''
     const setLabel = () => {
       button.textContent = '+ ' + (window.jacoEditorT
         ? window.jacoEditorT(title, title)
@@ -63,16 +72,24 @@ window.JacoContentLists = (() => {
   }
 
   const insertItem = (list, pos, html, refNode) => {
-    const item = document.createElement('div')
-    item.setAttribute(ITEM_ATTR, '')
-    item.innerHTML = html
-    attachItemOverlay(item, pos === 'draggable')
-    if (pos === 'top' || pos === 'draggable') {
+    // the fragment has exactly one root element, and that root becomes the block
+    const holder = document.createElement('div')
+    holder.innerHTML = html.trim()
+    const item = holder.firstElementChild || document.createElement('div')
+    attachItemOverlay(item, isSortable(list))
+    if (pos === 'top') {
       list.prepend(item)
     } else if (pos === 'bottom' || !refNode) {
       list.append(item)
     } else {
-      refNode.after(item)
+      // the button stands before its block: the new block goes before that one,
+      // whether the button sits inside the list or just in front of it
+      const next = refNode.nextElementSibling
+      if (next) {
+        next.before(item)
+      } else {
+        list.append(item)
+      }
     }
     if (typeof window.initImages === 'function') {
       window.initImages(item)
@@ -81,7 +98,7 @@ window.JacoContentLists = (() => {
   }
 
   const loadAndInsert = (list, pos, refNode, fetcher) => {
-    const file = list.getAttribute('data-jaco-fragment') || ''
+    const file = list.getAttribute(LIST_ATTR) || ''
     return (fetcher || fetchFragment)(file).then((html) => insertItem(list, pos, html, refNode))
   }
 
@@ -90,10 +107,10 @@ window.JacoContentLists = (() => {
     setTimeout(() => button.classList.remove('is-error'), 3000)
   }
 
-  const attachItemOverlay = (item, draggable) => {
+  const attachItemOverlay = (item, sortable) => {
     const overlay = document.createElement('div')
     overlay.className = OVERLAY_CLASS
-    if (draggable) {
+    if (sortable) {
       overlay.append(showGrip())
     }
     overlay.append(showDeleteButton(item))
@@ -140,8 +157,7 @@ window.JacoContentLists = (() => {
     }
 
     const elementAfter = (clientY) => {
-      const items = [...list.querySelectorAll(':scope > [' + ITEM_ATTR + ']')]
-        .filter((item) => item !== dragged)
+      const items = [...list.children].filter((item) => item !== dragged)
       return items.find((item) => {
         const rect = item.getBoundingClientRect()
         return clientY < rect.top + rect.height / 2
@@ -173,7 +189,8 @@ window.JacoContentLists = (() => {
       if (!grip || (event.pointerType === 'mouse' && event.button !== 0)) {
         return
       }
-      dragged = grip.closest('[' + ITEM_ATTR + ']')
+      // the grip sits in the overlay, the overlay in the block
+      dragged = grip.closest('.' + OVERLAY_CLASS)?.parentElement ?? null
       if (!dragged) {
         return
       }
@@ -252,23 +269,26 @@ window.JacoContentLists = (() => {
     }
     list._jacoContentListsInit = true
     const pos = posOf(list)
+    const sortable = isSortable(list)
     const onAdd = (button) => loadAndInsert(list, pos, pos === 'any' ? button : null, fetcher)
       .catch(() => markButtonFailed(button))
-    if (pos === 'top' || pos === 'draggable') {
+    if (pos === 'top') {
       list.before(createAddButton(list, onAdd))
     } else if (pos === 'bottom') {
       list.after(createAddButton(list, onAdd))
     } else {
-      list.querySelectorAll(':scope > [' + ITEM_ATTR + ']').forEach((item) => {
-        item.before(createAddButton(list, onAdd))
-        attachItemOverlay(item, pos === 'draggable')
+      ;[...list.children].forEach((item) => {
+        // the button goes inside the container, before its block: a button outside
+        // would not move with the block when blocks are sorted
+        list.insertBefore(createAddButton(list, onAdd), item)
+        attachItemOverlay(item, sortable)
       })
       list.append(createAddButton(list, onAdd))
     }
     if (pos !== 'any') {
-      list.querySelectorAll(':scope > [' + ITEM_ATTR + ']').forEach((item) => attachItemOverlay(item, pos === 'draggable'))
+      ;[...list.children].forEach((item) => attachItemOverlay(item, sortable))
     }
-    if (pos === 'draggable') {
+    if (sortable) {
       makeSortable(list)
     }
   }

@@ -86,8 +86,8 @@ first, and the marker is preserved on the replacement root.
 For a bilingual footer, use separate names and markers:
 
 ```text
-jaco-data/templates/site/footer-en.html  →  data-jaco-template="footer-en"
-jaco-data/templates/site/footer-de.html  →  data-jaco-template="footer-de"
+jaco-data/templates/site/footer-en.html  →  data-jaco-template="footer-en.html"
+jaco-data/templates/site/footer-de.html  →  data-jaco-template="footer-de.html"
 ```
 
 “Preview & apply” then changes only the pages carrying that exact marker. There is

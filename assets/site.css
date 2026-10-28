@@ -229,7 +229,7 @@ li {
 }
 
 .hero p,
-.hero [data-jaco-editable] {
+.hero [data-jaco-block] {
     font-size: 1.15rem;
     color: var(--muted);
     max-width: 44rem;
@@ -276,7 +276,7 @@ li {
 }
 
 .page-head p,
-.page-head [data-jaco-editable] {
+.page-head [data-jaco-block] {
     color: var(--muted);
     max-width: 44rem;
     margin-bottom: 0;
@@ -290,12 +290,12 @@ li {
     margin: 1.5rem 0 2rem;
 }
 
-.features > [data-jaco-content-item] {
+.features > [data-jaco-repeater] > * {
     display: flex;
     flex-direction: column;
 }
 
-.features > [data-jaco-content-item] > .feature {
+.features > [data-jaco-repeater] > * > .feature {
     flex: 1;
 }
 
@@ -310,7 +310,7 @@ li {
 }
 
 .feature p,
-.feature [data-jaco-editable] {
+.feature [data-jaco-block] {
     margin-bottom: 0;
     color: var(--muted);
     font-size: 0.95rem;
@@ -460,30 +460,6 @@ th {
     pointer-events: none;
 }
 
-/* The dialog itself: a native popover opened by a script, styled by the browser.
-   Kept minimal on purpose - it is a demo, not a lightbox library. */
-.elements-modal {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 0;
-    max-width: min(90vw, 640px);
-    background: var(--background);
-}
-
-.elements-modal::backdrop {
-    background: rgba(0, 0, 0, 0.6);
-}
-
-.elements-modal img {
-    display: block;
-    max-width: 100%;
-    height: auto;
-}
-
-.elements-modal button {
-    margin: 0.75rem;
-}
-
 iframe.elements-video {
     display: block;
     width: 100%;
@@ -500,10 +476,34 @@ iframe.elements-video {
     margin: 1rem 0;
 }
 
-.elements-list > [data-jaco-content-item] {
+.elements-list > [data-jaco-repeater] > * {
     padding: 1rem;
     border: 1px solid var(--border);
     border-radius: var(--radius);
+}
+
+/* the contents list at the top of the elements page */
+.elements-overview {
+    margin: 1.5rem 0 2.5rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.elements-overview ul {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+    columns: 2;
+    column-gap: 2rem;
+}
+
+.elements-overview li {
+    margin: 0.25rem 0;
+    break-inside: avoid;
+}
+
+.elements-overview a {
+    font-weight: 600;
 }
 
 .elements-note {
