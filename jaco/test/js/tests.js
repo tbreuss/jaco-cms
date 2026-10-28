@@ -2414,6 +2414,39 @@ QUnit.test('blocks introduce no positioned ancestor for editor chrome', (assert)
   }, 50)
 })
 
+QUnit.test('the image dialog follows the mode', (assert) => {
+  const done = assert.async()
+  const modes = [
+    ['replace', '<img data-jaco-image src="media/a.png" width="320" height="180">', 0],
+    ['fill', '<img data-jaco-image data-jaco-image--mode="fill" src="media/a.png" width="320" height="180">', 0],
+    ['fit', '<img data-jaco-image data-jaco-image--mode="fit" src="media/a.png" width="320" height="180">', 0],
+    ['choice', '<img data-jaco-image data-jaco-image--mode="choice" src="media/a.png" width="320" height="180">', 2],
+  ]
+
+  // the dialog is built after the translation messages resolve, so each case
+  // needs its own turn
+  const run = (index) => {
+    if (index === modes.length) {
+      done()
+      return
+    }
+    const [label, html, expected] = modes[index]
+    window.removeExtendedImages?.()
+    m.render(fixture(), m.trust(html))
+    const image = fixture().querySelector('img')
+    image.dispatchEvent(new MouseEvent('click', {bubbles: true}))
+
+    setTimeout(() => {
+      const dialog = document.getElementById('editableImageExtended')
+      const offered = dialog ? dialog.querySelectorAll('input[type=radio]').length : 0
+      assert.strictEqual(offered, expected, label)
+      run(index + 1)
+    }, 0)
+  }
+
+  run(0)
+})
+
 QUnit.test('the full block toolbar offers video embeds', (assert) => {
   // the toolbar follows --tools: video is part of "full" only
   m.render(fixture(), m.trust('<div data-jaco-block data-jaco-block--tools="full"><p>with video</p></div>'))

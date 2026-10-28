@@ -135,6 +135,23 @@ window.initImages = (root) => {
   })
 }
 
+// How an image treats its file: --mode, or replace when the property is absent
+const imageModeOf = (image) => {
+  const value = (image.getAttribute('data-jaco-image--mode') || '').toLowerCase()
+  return ['fill', 'fit', 'choice'].includes(value) ? value : 'replace'
+}
+
+const imageScaleType = (image, chosen) => {
+  const mode = imageModeOf(image)
+  if (mode === 'fill' || mode === 'fit') {
+    return mode
+  }
+  if (mode === 'choice') {
+    return chosen === 'fit' ? 'fit' : 'fill'
+  }
+  return null
+}
+
 // What the toolbar offers: the value of <role>--tools, or plain when it is absent
 const toolsOf = (element, allowed) => {
   const name = [...element.attributes]
@@ -177,25 +194,6 @@ window.disableRichTextEditor = () => {
   })
 }
 
-
-const chooseNewImage = (editableImage) => {
-  const [width, height] = detectImageSize(editableImage)
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.onchange = e => {
-    const file = e.target.files[0]
-    if (!file) {
-      return
-    }
-    const reader = new FileReader()
-    reader.onload = readerEvent => {
-      resizeImage(readerEvent.target.result, file.type, width, height, 'fill', editableImage)
-      editableImage.setAttribute('data-jaco-editable-image-file', file.name)
-    }
-    reader.readAsDataURL(file)
-  }
-  input.click()
-}
 
 window.removeMediaPicker = () => {
   document.getElementById('editableMedia')?.remove()
@@ -486,10 +484,9 @@ window.addClickHandler = () => {
       return
     }
 
-    // An image with a mode has its own tools, so the more specific question has to
-    // come first: asking for the plain role would open the media picker and never
-    // reach them. The tools themselves follow --mode in a later step.
-    let editableImageExtended = event.target.closest('[data-jaco-image--mode]')
+    // Every image opens the same dialog: alt text, a new file, the media library.
+    // --mode decides which of those apply, not whether the dialog appears.
+    let editableImageExtended = event.target.closest('[data-jaco-image]')
     if (editableImageExtended) {
 
       const [width, height] = detectImageSize(editableImageExtended)
@@ -510,7 +507,10 @@ window.addClickHandler = () => {
       }
       divElement.appendChild(inputAlt)
 
-      if (width > 0 && height > 0) {
+      // the fit/fill switch exists for choice only: fill and fit decide on their
+      // own, and an image without a mode is not scaled at all
+      const choiceOffered = imageModeOf(editableImageExtended) === 'choice'
+      if (width > 0 && height > 0 && choiceOffered) {
         // see https://www.bannerbear.com/help/articles/26-difference-between-fit-and-fill/
         const imageScalingLabel = document.createElement('label')
         imageScalingLabel.innerText = t('Image Scaling', 'Image Scaling') + ' '
@@ -563,11 +563,13 @@ window.addClickHandler = () => {
           const reader = new FileReader()
           reader.readAsDataURL(file)
           reader.onload = readerEvent => {
-            let scaleType = 'fit'
-            if (width > 0 && height > 0) {
-              scaleType = document.querySelector('input[name=type]:checked').value
+            const chosen = document.querySelector('input[name=type]:checked')?.value ?? null
+            const scaleType = imageScaleType(editableImageExtended, chosen)
+            if (scaleType === null) {
+              editableImageExtended.src = readerEvent.target.result
+            } else {
+              resizeImage(readerEvent.target.result, file.type, width, height, scaleType, editableImageExtended)
             }
-            resizeImage(readerEvent.target.result, file.type, width, height, scaleType, editableImageExtended)
             editableImageExtended.setAttribute('data-jaco-editable-image-file', file.name)
           }
         }
@@ -579,6 +581,8 @@ window.addClickHandler = () => {
       mediaButton.type = 'button'
       mediaButton.innerText = t('Choose from media', 'Choose from media')
       mediaButton.onclick = () => {
+        // the picker is a library of files: it assigns an existing one, so the mode
+        // does not apply to it - the file is used as it is
         window.removeExtendedImages()
         window.openMediaPicker(editableImageExtended)
       }
@@ -591,18 +595,6 @@ window.addClickHandler = () => {
       const top = rect.top +  window.scrollY - divElement.offsetHeight
       divElement.style.top = (top).toString() + 'px'
       divElement.style.minWidth = (rect.width - 2 * 8).toString() + 'px'
-      return
-    }
-
-    const editableImage = event.target.closest('[data-jaco-image]')
-    if (editableImage) {
-
-      editableImage.onload = () => {
-        console.debug('image loaded')
-        window.resize()
-      }
-
-      window.openMediaPicker(editableImage, () => chooseNewImage(editableImage))
       return
     }
 

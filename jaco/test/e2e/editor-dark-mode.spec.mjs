@@ -24,9 +24,10 @@ test('inline editor chrome follows the dark site theme', async ({page}) => {
   await expect(toolbar).toBeVisible()
   await expect(toolbar).toHaveCSS('background-color', 'rgb(15, 17, 21)')
 
+  // the image dialog takes the theme as well - it is chrome like the toolbar
   const image = frame.locator('img[data-jaco-image]').first()
   await image.click()
-  const picker = frame.locator('.jaco-media-dialog')
-  await expect(picker).toBeVisible()
-  await expect(picker).toHaveCSS('background-color', 'rgb(15, 17, 21)')
+  const tools = frame.locator('#editableImageExtended')
+  await expect(tools).toBeVisible()
+  await expect(tools).toHaveCSS('background-color', 'rgb(15, 17, 21)')
 })

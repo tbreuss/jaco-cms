@@ -24,6 +24,11 @@ test('admin can choose an existing image from the media picker', async ({page}) 
   await expect(image).toBeVisible()
   await image.evaluate((element) => element.click())
 
+  // every image opens the same dialog; the library is one of its buttons
+  const tools = frame.locator('#editableImageExtended')
+  await expect(tools).toBeVisible()
+  await tools.getByRole('button', {name: 'Choose from media'}).click()
+
   await expect(frame.locator('#editableMedia')).toBeVisible()
   const fixture = frame.locator('.jaco-media-item[title="media/e2e-smoke.png"]')
   await expect(fixture).toBeVisible()
