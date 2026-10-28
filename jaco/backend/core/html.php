@@ -1041,4 +1041,3 @@ function handle_embedded_data_url_images(Config $config, string $html): array
 
     return [true, $newHtml];
 }
-
