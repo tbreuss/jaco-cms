@@ -135,9 +135,19 @@ window.initImages = (root) => {
   })
 }
 
-// How an image treats its file: --mode, or replace when the property is absent
+// What the contract says about an element. All three helpers read the same
+// attributes the server validates, and fall back to the documented default.
+const TOOLS_ATTRS = ['data-jaco-block--tools', 'data-jaco-line--tools']
+
+const attrOf = (element, names) => {
+  const name = names.find((candidate) => element.hasAttribute(candidate))
+  return name ? (element.getAttribute(name) || '').toLowerCase() : ''
+}
+
+// How an image treats its file. 'replace' is the name for "no mode" - it is not
+// a value of the attribute, just the absence of one.
 const imageModeOf = (image) => {
-  const value = (image.getAttribute('data-jaco-image--mode') || '').toLowerCase()
+  const value = attrOf(image, ['data-jaco-image--mode'])
   return ['fill', 'fit', 'choice'].includes(value) ? value : 'replace'
 }
 
@@ -154,10 +164,7 @@ const imageScaleType = (image, chosen) => {
 
 // What the toolbar offers: the value of <role>--tools, or plain when it is absent
 const toolsOf = (element, allowed) => {
-  const name = [...element.attributes]
-    .map((attribute) => attribute.name)
-    .find((attributeName) => attributeName.endsWith('--tools'))
-  const value = name ? (element.getAttribute(name) || '').toLowerCase() : ''
+  const value = attrOf(element, TOOLS_ATTRS)
   return allowed.includes(value) ? value : 'plain'
 }
 

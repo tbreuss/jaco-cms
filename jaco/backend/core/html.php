@@ -348,16 +348,6 @@ function replace_body(string $document, string $body): string
 }
 
 /**
- * The problems a sanitized body still has with the attribute contract.
- *
- * The sanitizer separates what may stay from what must go; this reports what is
- * there but makes no sense - a property without its role, two roles on one element,
- * an item outside its repeater. The page is not written when the list is not empty.
- *
- * @param string $html a body fragment, already sanitized or not
- * @return list<string>
- */
-/**
  * The data-jaco-* names in a body that the whitelist does not know.
  *
  * The sanitizer removes them, which is why they are collected before it runs: an
@@ -462,6 +452,16 @@ function fragment_file_problems(Config $config, array $fragments): array
     return $problems;
 }
 
+/**
+ * The problems a sanitized body still has with the attribute contract.
+ *
+ * The sanitizer separates what may stay from what must go; this reports what is
+ * there but makes no sense - a property without its role, two roles on one element,
+ * flow content where a block belongs. The page is not written when the list is not
+ * empty.
+ *
+ * @return list<string>
+ */
 function data_attribute_errors(string $html): array
 {
     \libxml_use_internal_errors(true);
@@ -1042,105 +1042,3 @@ function handle_embedded_data_url_images(Config $config, string $html): array
     return [true, $newHtml];
 }
 
-/**
- * Gallery images link their thumbnail to the full version: the client sends
- * the full data url in a temporary attribute, the server stores it as a
- * second file ("name-full.ext") and wraps the thumbnail in a link.
- *
- * An existing parent link (e.g. an editable link) keeps its target, unless it
- * points at the gallery's own full file: then a replaced thumbnail replaces the
- * full version as well. Without that exception the second replacement would
- * silently keep showing the old image - the link survives, so the old guard
- * bailed out before writing anything.
- *
- * Without the temporary attribute there is nothing to link, the thumbnail stays
- * plain. Returns an error message or null on success.
- */
-function write_gallery_full(\DOMDocument $dom, Config $config, \DOMElement $el, string $imgFile, string $galleryFullAttr): ?string
-{
-    if (!$el->hasAttribute($galleryFullAttr)) {
-        return null;
-    }
-
-    $fullSrc = $el->getAttribute($galleryFullAttr);
-    $el->removeAttribute($galleryFullAttr);
-
-    $fullFile = \pathinfo($imgFile, PATHINFO_FILENAME) . '-full.'
-        . \pathinfo($imgFile, PATHINFO_EXTENSION);
-
-    $parent = $el->parentNode;
-    $parentLink = $parent instanceof \DOMElement && \strtolower($parent->nodeName) === 'a' ? $parent : null;
-
-    if ($parentLink !== null && !is_own_gallery_full($parentLink, $config, $fullFile)) {
-        // an explicit link to somewhere else wins over the gallery link
-        return null;
-    }
-
-    if (($pos = \strpos($fullSrc, ',')) === false) {
-        return null;
-    }
-
-    $fullData = \base64_decode(\str_replace(' ', '+', \substr($fullSrc, $pos + 1)), true);
-
-    if ($fullData === false) {
-        return 'Could not decode image data: ' . $fullFile;
-    }
-
-    // svg uploads are scrubbed of active content on both write paths
-    if (\strtolower((string) \pathinfo($fullFile, PATHINFO_EXTENSION)) === 'svg') {
-        [$svgOk, $svgCleaned] = sanitize_svg($fullData);
-        if ($svgOk !== true || !\is_string($svgCleaned)) {
-            return 'Invalid SVG file: ' . $fullFile;
-        }
-        $fullData = $svgCleaned;
-    }
-
-    if (\str_contains($fullFile, DIRECTORY_SEPARATOR)
-        || !filesystem\validate_filename($fullFile)
-        || !filesystem\validate_extension($fullFile, $config->uploadExtensions)) {
-        return 'Invalid file name or extension: ' . $fullFile;
-    }
-
-    // the link already points at the full file: overwrite it in place, so a
-    // replaced thumbnail and its full version stay the same pair
-    if ($parentLink !== null) {
-        $status = filesystem\write_file_atomic($config, $config->mediaDir, $fullFile, $fullData);
-
-        return $status ? null : 'Could not write file: ' . $fullFile;
-    }
-
-    [$status, $newFull] = filesystem\write_file_without_overwrite($config, $config->mediaDir, $fullFile, $fullData);
-
-    if ($status === false) {
-        return 'Could not write file: ' . $fullFile;
-    }
-
-    if ($parent instanceof \DOMElement) {
-        $link = $dom->createElement('a');
-        $link->setAttribute('href', filesystem\combine($config->mediaUrl, $newFull));
-        $parent->replaceChild($link, $el);
-        $link->appendChild($el);
-    }
-
-    return null;
-}
-
-/**
- * True when the link around a thumbnail points at the full file that belongs to
- * this image - the pair the gallery marker itself created on an earlier save.
- */
-function is_own_gallery_full(\DOMElement $link, Config $config, string $fullFile): bool
-{
-    $href = \trim($link->getAttribute('href'));
-
-    if ($href === '') {
-        return false;
-    }
-
-    // compare what the markup says with what the server would write: a relative
-    // path, an absolute one and a url all name the same file
-    $normalized = \ltrim((string) \preg_replace('#^[a-z]+://[^/]+#i', '', $href), '/');
-    $target = \ltrim(filesystem\combine($config->mediaUrl, $fullFile), '/');
-
-    return $normalized === $target;
-}
