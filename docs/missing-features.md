@@ -13,20 +13,17 @@ installations rot. This is the largest structural risk in the project.
 Size: medium (version check against releases, copy new files, keep
 `settings.php` and user content untouched).
 
-## 2. Multiple users and roles
+## 2. Account management UI
 
-One login, no second editor, no roles — a real obstacle for clubs run by
-volunteers and companies shared between owner and agency. It also blocks two
-use cases that keep coming up: a client who may only read, and a public demo
-installation (one viewer account plus sample content).
+Roles and multiple users now exist: `settings.php` lists users with `admin` and
+`editor` roles, and a `readOnly` flag gives a read-only account for clients and
+public demos. What is still missing is an interface to create, edit and remove
+accounts from the admin instead of editing `settings.php` by hand.
 
-Size: medium for a minimal version — users in `settings.php` (name → hash and
-role), three roles (`admin`, `editor`, `viewer`), the role in the token (it
-already carries `user` and an `admin` flag) and one check per route. The
-existing single login becomes the `admin` user. Protection against concurrent
-editing (last write wins, backups are the only net) is a separate item, and so
-is an account management UI: a documented format in `settings.php` is enough
-for one to three users.
+Size: medium — user records, password resets and TOTP enrolment already have
+CLI counterparts; the UI work is the form and the route. Protection against
+concurrent editing (last write wins, backups are the only net) is a separate
+item.
 
 ## 3. SEO basics
 

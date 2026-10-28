@@ -18,7 +18,6 @@ is one click.
 - Page manager: create from templates, copy and delete — with backups
 - Page settings: title, meta description and robots, without editing HTML by hand
 - Content blocks: editors add, remove and reorder recurring sections by drag and drop
-- Image galleries: thumbnails link to generated full versions
 - Stylesheet editor with backups, upload manager with extension and size checks
 
 **Operating**
