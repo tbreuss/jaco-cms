@@ -46,7 +46,7 @@
     outline: 1px solid var(--border, #ddd);
 }
 
-[data-jaco-image--resizable] {
+[data-jaco-image--mode] {
     outline: 1px solid var(--border, #ddd);
 }
 
@@ -56,7 +56,7 @@
 }
 
 [data-jaco-link]:has(> [data-jaco-image])::before,
-[data-jaco-link]:has(> [data-jaco-image--resizable])::before {
+[data-jaco-link]:has(> [data-jaco-image--mode])::before {
     content: 'Editable Link';
 }
 
@@ -67,11 +67,11 @@
 [data-jaco-block]:hover,
 [data-jaco-line]:hover,
 [data-jaco-image]:hover,
-[data-jaco-image--resizable]:hover {
+[data-jaco-image--mode]:hover {
     cursor: pointer;
 }
 
-[data-jaco-image--resizable] {
+[data-jaco-image--mode] {
     position: relative;
 }
 
@@ -216,10 +216,11 @@
     border-color: var(--accent, #999);
 }
 
-/* NOTE: items must not be positioned (no relative/absolute): they would become
+/* NOTE: blocks must not be positioned (no relative/absolute): they would become
    the offset parent of the absolutely positioned Quill toolbar and dialogs,
-   whose coordinates handlePosition computes document-relative. */
-[data-jaco-repeater-item] {
+   whose coordinates handlePosition computes document-relative. Every direct
+   child of a repeater is one block. */
+[data-jaco-repeater] > * {
     position: static;
 }
 
@@ -262,7 +263,7 @@
     cursor: grabbing;
 }
 
-[data-jaco-repeater-item].is-dragging {
+[data-jaco-repeater] > .is-dragging {
     opacity: 0.4;
 }
 

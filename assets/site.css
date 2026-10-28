@@ -290,12 +290,12 @@ li {
     margin: 1.5rem 0 2rem;
 }
 
-.features > [data-jaco-repeater-item] {
+.features > [data-jaco-repeater] > * {
     display: flex;
     flex-direction: column;
 }
 
-.features > [data-jaco-repeater-item] > .feature {
+.features > [data-jaco-repeater] > * > .feature {
     flex: 1;
 }
 
@@ -476,7 +476,7 @@ iframe.elements-video {
     margin: 1rem 0;
 }
 
-.elements-list > [data-jaco-repeater-item] {
+.elements-list > [data-jaco-repeater] > * {
     padding: 1rem;
     border: 1px solid var(--border);
     border-radius: var(--radius);

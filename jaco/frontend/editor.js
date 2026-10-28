@@ -472,10 +472,10 @@ window.addClickHandler = () => {
       return
     }
 
-    // A resizable image carries both names, so the more specific question has to
+    // An image with a mode has its own tools, so the more specific question has to
     // come first: asking for the plain role would open the media picker and never
-    // reach the tools.
-    let editableImageExtended = event.target.closest('[data-jaco-image--resizable]')
+    // reach them. The tools themselves follow --mode in a later step.
+    let editableImageExtended = event.target.closest('[data-jaco-image--mode]')
     if (editableImageExtended) {
 
       const [width, height] = detectImageSize(editableImageExtended)
