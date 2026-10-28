@@ -47,7 +47,7 @@ missing (the fragment, the template file). The kind of property decides its name
   work differently. At most one per role.
 - **switch** (`--sortable`): present or absent, never with a value. `="true"` and
   `="false"` do not exist: in HTML the presence of an attribute is the answer.
-- **named value** (`--add`, `--label`, `--tools`): the value means something of
+- **named value** (`--insert`, `--label`, `--tools`): the value means something of
   its own.
 
 | Property | On | Value | Meaning |
@@ -56,7 +56,7 @@ missing (the fragment, the template file). The kind of property decides its name
 | `data-jaco-line--tools` | `data-jaco-line` | `basic` | what the editor offers; without it `plain` |
 | `data-jaco-image--mode` | `data-jaco-image` | `fill`, `fit`, `choice` | how the file is scaled to `width` x `height`; without it the file is only replaced |
 | `data-jaco-repeater--label` | `data-jaco-repeater` | text | label of the add button; without it "Add block" in the editor language |
-| `data-jaco-repeater--add` | `data-jaco-repeater` | `top`, `bottom` | where the add button goes; without it `top` |
+| `data-jaco-repeater--insert` | `data-jaco-repeater` | `top`, `bottom` | where new blocks are inserted, and where the add button stands; without it `top` |
 | `data-jaco-repeater--sortable` | `data-jaco-repeater` | none | blocks can be reordered by the grip |
 
 Properties describe what the editor offers or does. What the page looks like is the
@@ -139,8 +139,8 @@ comments are ignored). A fragment has **exactly one root element**, because it
 becomes one block; two roots would become two blocks. The editor's own elements
 (buttons, bars) are never saved.
 
-`--add` puts the button before the first block (`top`, the default) or after the
-last (`bottom`); it is independent of `--sortable`. Without `--label` the button
+`--insert` puts new blocks, and the add button, before the first block (`top`, the
+default) or after the last (`bottom`); it is independent of `--sortable`. Without `--label` the button
 says "Add block", translated by the editor, so the page does not decide the
 language of the button.
 
@@ -181,7 +181,7 @@ A role inside a `block` or `line` is an error on save; it could never be reached
 | no text directly in a repeater container | text outside a block |
 | no role inside `data-jaco-block` or `data-jaco-line` | role inside a text element |
 | `data-jaco-template` value names a file in `jaco-data/templates/site/` | warning: unknown template, the page is still saved |
-| `data-jaco-repeater--add` is `top` or `bottom` | unknown add position |
+| `data-jaco-repeater--insert` is `top` or `bottom` | unknown insert position |
 | `data-jaco-repeater--sortable` carries no value | unexpected value |
 | `data-jaco-block--tools` is `basic` or `full`; `data-jaco-line--tools` is `basic` | unknown tools |
 | `data-jaco-image--mode` is `fill`, `fit` or `choice` | unknown mode |
@@ -208,7 +208,7 @@ holds twelve names and none of the editor's own state:
 'data-jaco-block', 'data-jaco-line', 'data-jaco-link', 'data-jaco-image',
 'data-jaco-repeater', 'data-jaco-template',
 'data-jaco-block--tools', 'data-jaco-line--tools', 'data-jaco-image--mode',
-'data-jaco-repeater--label', 'data-jaco-repeater--add', 'data-jaco-repeater--sortable',
+'data-jaco-repeater--label', 'data-jaco-repeater--insert', 'data-jaco-repeater--sortable',
 ```
 
 The test compares it with the tables under [Roles](#roles) and
@@ -313,7 +313,7 @@ The dialog edits `href` and `target`.
 
 ```html
 <section data-jaco-repeater="feature-en.html">…</section>
-<section data-jaco-repeater="feature-en.html" data-jaco-repeater--add="bottom">…</section>
+<section data-jaco-repeater="feature-en.html" data-jaco-repeater--insert="bottom">…</section>
 ```
 
 A complete repeater. Every direct child is a block; a heading goes outside:
@@ -340,7 +340,7 @@ A complete repeater. Every direct child is a block; a heading goes outside:
 | `<section data-jaco-repeater="nosuch.html">` | fragment file does not exist |
 | `<section data-jaco-repeater="../x.html">` | invalid fragment value |
 | `<section data-jaco-repeater="x.html">text<div>…</div></section>` | text outside a block |
-| `<section data-jaco-repeater="x.html" data-jaco-repeater--add="any">` | unknown add position |
+| `<section data-jaco-repeater="x.html" data-jaco-repeater--insert="any">` | unknown insert position |
 | `<section data-jaco-repeater="x.html" data-jaco-repeater--sortable="true">` | a switch carries no value |
 
 ### Template
