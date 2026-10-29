@@ -38,7 +38,7 @@ final class UpdateTest extends TestCase
     protected function tearDown(): void
     {
         if (is_dir($this->root)) {
-            filesystem\_rrmdir($this->root);
+            filesystem\remove_dir_rec(dirname($this->root), basename($this->root));
         }
     }
 
@@ -102,7 +102,7 @@ final class UpdateTest extends TestCase
             }
 
             shell_exec('cd ' . escapeshellarg($tmp) . ' && zip -qr ' . escapeshellarg($path) . ' .');
-            filesystem\_rrmdir($tmp);
+            filesystem\remove_dir_rec(dirname($tmp), basename($tmp));
         }
 
         return $path;
@@ -161,7 +161,7 @@ final class UpdateTest extends TestCase
 
         $this->assertSame($root . '/release-name/jaco', find_jaco_dir($root));
 
-        filesystem\_rrmdir($root);
+        filesystem\remove_dir_rec(dirname($root), basename($root));
     }
 
     public function testFindJacoDirFlat(): void
@@ -173,6 +173,6 @@ final class UpdateTest extends TestCase
 
         $this->assertSame($root, find_jaco_dir($root));
 
-        filesystem\_rrmdir($root);
+        filesystem\remove_dir_rec(dirname($root), basename($root));
     }
 }

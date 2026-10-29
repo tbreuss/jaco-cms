@@ -141,12 +141,12 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
     }
 
     // ensure backup dir exists (use the configured data dir, not a hardcoded path)
-    if (!is_dir($backupDir) && !@mkdir($backupDir, $config->directoryPermissions, true)) {
+    if (!is_dir($backupDir) && !mkdir($backupDir, $config->directoryPermissions, true)) {
         return Payload::error([['', 'Could not create backup directory.']]);
     }
 
     $tempDir = sys_get_temp_dir() . '/jaco-update-' . uniqid('', true);
-    if (!mkdir($tempDir, 0755, true)) {
+    if (!mkdir($tempDir, $config->directoryPermissions, true)) {
         return Payload::error([['', 'Could not create temp directory.']]);
     }
 
@@ -215,7 +215,7 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
 
         $backupPath = $backupDir . '/' . $backupName;
 
-        if (!copy_dir_rec($appDir, $backupPath)) {
+        if (!copy_dir_rec($appDir, $backupPath, $config->directoryPermissions)) {
             throw new \RuntimeException('Backup of jaco/ failed.');
         }
 
@@ -231,24 +231,30 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
             if (is_dir($path) && !is_link($path)) {
                 remove_dir_rec($path);
             } else {
-                @unlink($path);
+                if (is_file($path) || is_link($path)) {
+                    unlink($path);
+                }
             }
         }
 
         // copy new contents
-        if (!copy_dir_rec($sourceJaco, $appDir)) {
+        if (!copy_dir_rec($sourceJaco, $appDir, $config->directoryPermissions)) {
             // attempt restore
             remove_dir_rec($appDir);
-            @mkdir($appDir, 0755, true);
-            copy_dir_rec($backupPath, $appDir);
+            if (!is_dir($appDir)) {
+                mkdir($appDir, $config->directoryPermissions, true);
+            }
+            copy_dir_rec($backupPath, $appDir, $config->directoryPermissions);
             throw new \RuntimeException('Install failed, restored from backup.');
         }
 
         // verify
         if (!file_exists($appDir . '/api.php')) {
             remove_dir_rec($appDir);
-            @mkdir($appDir, 0755, true);
-            copy_dir_rec($backupPath, $appDir);
+            if (!is_dir($appDir)) {
+                mkdir($appDir, $config->directoryPermissions, true);
+            }
+            copy_dir_rec($backupPath, $appDir, $config->directoryPermissions);
             throw new \RuntimeException('Verification failed, restored from backup.');
         }
 
@@ -311,13 +317,13 @@ function find_jaco_dir(string $root, int $depth = 0): ?string
     return null;
 }
 
-function copy_dir_rec(string $src, string $dst): bool
+function copy_dir_rec(string $src, string $dst, int $permissions = 0755): bool
 {
     if (!is_dir($src)) {
         return false;
     }
 
-    if (!is_dir($dst) && !mkdir($dst, 0755, true)) {
+    if (!is_dir($dst) && !mkdir($dst, $permissions, true)) {
         return false;
     }
 
@@ -330,7 +336,7 @@ function copy_dir_rec(string $src, string $dst): bool
         $dstPath = $dst . '/' . $item;
 
         if (is_dir($srcPath) && !is_link($srcPath)) {
-            if (!copy_dir_rec($srcPath, $dstPath)) {
+            if (!copy_dir_rec($srcPath, $dstPath, $permissions)) {
                 return false;
             }
         } else {
@@ -359,11 +365,15 @@ function remove_dir_rec(string $dir): void
         if (is_dir($path) && !is_link($path)) {
             remove_dir_rec($path);
         } else {
-            @unlink($path);
+            if (is_file($path) || is_link($path)) {
+                unlink($path);
+            }
         }
     }
 
-    @rmdir($dir);
+    if (is_dir($dir)) {
+        rmdir($dir);
+    }
 }
 
 function prune_app_backups(string $dir, int $keep): void
@@ -382,8 +392,8 @@ function prune_app_backups(string $dir, int $keep): void
         $path = $dir . '/' . $item;
 
         if (is_dir($path) && str_starts_with($item, 'jaco-')) {
-            $mtime = @filemtime($path);
-            $files[] = ['path' => $path, 'mtime' => $mtime === false ? 0 : $mtime, 'isDir' => true];
+            $mtime = filemtime($path);
+            $files[] = ['path' => $path, 'mtime' => $mtime === false ? 0 : (int) $mtime, 'isDir' => true];
         }
     }
 
@@ -391,7 +401,7 @@ function prune_app_backups(string $dir, int $keep): void
         return;
     }
 
-    usort($files, fn(array $a, array $b): int => $a['mtime'] <=> $b['mtime']);
+    usort($files, fn(array $a, array $b): int => $a['mtime'] <=> $b['mtime'] ?: strcmp($a['path'], $b['path']));
 
     $toDelete = count($files) - $keep;
 
