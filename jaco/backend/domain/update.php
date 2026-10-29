@@ -39,7 +39,7 @@ function check_update(Config $config): Payload
  * @return array{0: string, 1: string, 2: string, 3: string|null} latest tag,
  *   download url, release url, error message
  */
-function fetch_latest_release(): array
+function fetch_latest_release(?string $tag = null): array
 {
     $context = stream_context_create([
         'http' => [
@@ -49,7 +49,13 @@ function fetch_latest_release(): array
         ],
     ]);
 
-    $json = @file_get_contents('https://api.github.com/repos/tbreuss/jaco-cms/releases/latest', false, $context);
+    if ($tag === null || $tag === '') {
+        $url = 'https://api.github.com/repos/tbreuss/jaco-cms/releases/latest';
+    } else {
+        $url = 'https://api.github.com/repos/tbreuss/jaco-cms/releases/tags/' . rawurlencode($tag);
+    }
+
+    $json = @file_get_contents($url, false, $context);
 
     if ($json === false) {
         return ['', '', '', 'Could not reach GitHub.'];
@@ -96,7 +102,7 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
 
     // resolve download url if not given
     if ($downloadUrl === null) {
-        [$latest, $url, , $error] = fetch_latest_release();
+        [$latest, $url, , $error] = fetch_latest_release($targetVersion);
 
         if ($error !== null) {
             return Payload::error([['', $error]]);
