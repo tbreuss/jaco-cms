@@ -142,22 +142,35 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
             throw new \RuntimeException('Could not write download.');
         }
 
-        // verify zip
-        $zip = new \ZipArchive();
-
-        if ($zip->open($zipPath) !== true) {
-            throw new \RuntimeException('Invalid ZIP archive.');
-        }
-
-        // extract
+        // verify and extract zip
         $extractDir = $tempDir . '/extracted';
 
-        if (!$zip->extractTo($extractDir)) {
-            $zip->close();
-            throw new \RuntimeException('Could not extract archive.');
-        }
+        if (class_exists('ZipArchive')) {
+            $zip = new \ZipArchive();
 
-        $zip->close();
+            if ($zip->open($zipPath) !== true) {
+                throw new \RuntimeException('Invalid ZIP archive.');
+            }
+
+            if (!$zip->extractTo($extractDir)) {
+                $zip->close();
+                throw new \RuntimeException('Could not extract archive.');
+            }
+
+            $zip->close();
+        } elseif (function_exists('shell_exec')) {
+            if (!is_dir($extractDir) && !mkdir($extractDir, 0755, true)) {
+                throw new \RuntimeException('Could not create extraction directory.');
+            }
+
+            $output = @shell_exec('unzip -q ' . escapeshellarg($zipPath) . ' -d ' . escapeshellarg($extractDir) . ' 2>&1');
+
+            if (!file_exists($extractDir . '/jaco/api.php') && !file_exists($extractDir . '/api.php')) {
+                throw new \RuntimeException('Could not extract archive: ' . trim((string) $output));
+            }
+        } else {
+            throw new \RuntimeException('ZIP extension missing and no unzip binary available. Install the php-zip extension.');
+        }
 
         // find the jaco/ directory in the extracted tree
         $sourceJaco = find_jaco_dir($extractDir);

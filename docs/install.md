@@ -8,7 +8,7 @@ in the archive root; in the git repository it lives here as `docs/install.md`.
 
 ## Requirements
 
-- PHP `^8.2` with the `dom`, `libxml` and `openssl` extensions
+- PHP `^8.2` with the `dom`, `libxml` and `openssl` extensions (plus `zip` for the self-updater, or the `unzip` binary on the server)
 - A web server with PHP (Apache/nginx + php-fpm; `php -S` for development only)
 - Composer, only for the alternative install from git (option B)
 
