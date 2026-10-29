@@ -53,6 +53,9 @@ const updatePanel = () => {
   const u = SystemModel.update || {}
   return m('div',
     m('h2', t('Updates')),
+    m('button.btn', {
+      onclick: () => SystemModel.checkUpdate().then(() => m.redraw()).catch(() => m.redraw())
+    }, t('Check for updates')),
     u.available === true
       ? m('div',
           m('p', t('Update available') + ': ' + u.current + ' → ' + u.latest),
@@ -70,9 +73,6 @@ const updatePanel = () => {
       : (u.available === false
           ? m('p', t('Already up to date') + ' (' + (u.current || '') + ').')
           : ''),
-    m('button.btn', {
-      onclick: () => SystemModel.checkUpdate().then(() => m.redraw()).catch(() => m.redraw())
-    }, t('Check for updates')),
   )
 }
 
