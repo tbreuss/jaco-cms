@@ -10,6 +10,14 @@ const JSON_SCHEMA_URL = 'https://jaco.tebe.ch';
 
 function validate_data(array|string|null $data, string $schema): array
 {
+    $schemaFile = dirname(__DIR__, 2) . '/schema/' . $schema;
+
+    // if the schema file is missing (e.g. after an update replaced jaco/),
+    // skip validation instead of crashing with "Schema not found"
+    if (!is_file($schemaFile)) {
+        return [];
+    }
+
     $validator = new Validator();
     $validator->setMaxErrors(20);
     $validator->resolver()?->registerPrefix(JSON_SCHEMA_URL, dirname(__DIR__, 2) . '/schema/');
