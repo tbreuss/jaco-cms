@@ -116,6 +116,32 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
         return Payload::invalid([['', 'No download URL.']]);
     }
 
+    // validate the URL scheme: only HTTPS (or file:// for local testing)
+    $scheme = (string) parse_url($downloadUrl, PHP_URL_SCHEME);
+
+    if (!in_array($scheme, ['https', 'file'], true)) {
+        return Payload::invalid([['', 'Download URL must use HTTPS.']]);
+    }
+
+    // for HTTPS, restrict to GitHub release assets
+    if ($scheme === 'https') {
+        $host = (string) parse_url($downloadUrl, PHP_URL_HOST);
+
+        if ($host !== 'github.com') {
+            return Payload::invalid([['', 'Download URL must point to a GitHub release asset.']]);
+        }
+    }
+
+    // reject downgrades: only same or newer versions are allowed
+    if ($targetVersion !== null && $targetVersion !== '') {
+        $current = ltrim($config->appVersion, 'v');
+        $target = ltrim($targetVersion, 'v');
+
+        if (version_compare($target, $current, '<')) {
+            return Payload::invalid([['', 'Downgrade not allowed: ' . $target . ' is older than ' . $current . '.']]);
+        }
+    }
+
     // ensure backup dir exists
     if (!is_dir($backupDir) && !filesystem\make_dir_rec($config, $webDir, 'jaco-data/backups')) {
         return Payload::error([['', 'Could not create backup directory.']]);

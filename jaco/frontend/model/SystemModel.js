@@ -11,13 +11,17 @@ export const SystemModel = {
         SystemModel.info = {}
       })
   },
+  _errorMessage: (err) => {
+    const resp = Array.isArray(err?.response) ? err.response[0] : err?.response
+    return (resp?.detail || resp?.title || err?.message || String(err))
+  },
   checkUpdate: () => {
     return api.get('system/check-update')
       .then((data) => {
         SystemModel.update = data
         return data
       }, (err) => {
-        SystemModel.update = {error: err}
+        SystemModel.update = {error: SystemModel._errorMessage(err)}
         throw err
       })
   },
@@ -27,7 +31,7 @@ export const SystemModel = {
         SystemModel.update = {...SystemModel.update, result: data}
         return data
       }, (err) => {
-        SystemModel.update = {...SystemModel.update, error: err}
+        SystemModel.update = {...SystemModel.update, error: SystemModel._errorMessage(err)}
         throw err
       })
   }

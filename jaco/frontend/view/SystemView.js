@@ -65,7 +65,7 @@ const updatePanel = () => {
             }
           }, t('Install update')),
           u.result ? m('p', t('Updated') + ': ' + u.result.from + ' → ' + u.result.to) : '',
-          u.error ? m('p', t('Update failed') + ': ' + (u.error.message || u.error)) : '',
+          u.error ? m('p', t('Update failed') + ': ' + u.error) : '',
         )
       : (u.available === false
           ? m('p', t('Already up to date') + ' (' + (u.current || '') + ').')
