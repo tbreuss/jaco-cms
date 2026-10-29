@@ -210,11 +210,6 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
             throw new \RuntimeException('No jaco/ directory in archive.');
         }
 
-        // ensure backup dir exists
-        if (!is_dir($backupDir) && !@mkdir($backupDir, $config->directoryPermissions, true)) {
-            throw new \RuntimeException('Could not create app backup directory.');
-        }
-
         // backup current jaco/ as a directory copy
         $backupName = 'jaco-' . preg_replace('/[^a-zA-Z0-9._-]/', '', (string) $config->appVersion)
             . '-' . date('Ymd_His');
@@ -388,7 +383,8 @@ function prune_app_backups(string $dir, int $keep): void
         $path = $dir . '/' . $item;
 
         if (is_dir($path) && str_starts_with($item, 'jaco-')) {
-            $files[] = ['path' => $path, 'mtime' => filemtime($path), 'isDir' => true];
+            $mtime = @filemtime($path);
+            $files[] = ['path' => $path, 'mtime' => $mtime === false ? 0 : $mtime, 'isDir' => true];
         }
     }
 
