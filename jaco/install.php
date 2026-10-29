@@ -103,7 +103,7 @@ if (is_file($config->dataDir . '/settings.php')) {
 // directory and its deny file here. An existing file is never overwritten.
 function install_protect_data(Config $config): void
 {
-    foreach (['backups', 'templates/page', 'templates/content', 'templates/site'] as $dir) {
+    foreach (['backups', 'app-backups', 'templates/page', 'templates/content', 'templates/site'] as $dir) {
         @make_dir_rec($config, $config->webDir, 'jaco-data/' . $dir);
     }
     if (!is_dir($config->dataDir) || is_file($config->dataDir . '/.htaccess')) {
