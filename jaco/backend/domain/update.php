@@ -258,8 +258,8 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
             throw new \RuntimeException('Verification failed, restored from backup.');
         }
 
-        // prune old app backups: keep only the 3 newest
-        prune_app_backups($backupDir, 3);
+        // prune old app backups: keep only the 5 newest
+        prune_app_backups($backupDir, 5);
 
         return Payload::success([
             'from' => $config->appVersion,

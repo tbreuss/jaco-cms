@@ -400,7 +400,7 @@ Or a specific version or direct URL:
 Or from the admin: System → "Install update". The update runs with an extended
 time limit; keep the browser tab open until it finishes. A backup of the
 previous `jaco/` is written as a directory to
-`jaco-data/app-backups/jaco-<version>-<timestamp>/` (only the 3 newest
+`jaco-data/app-backups/jaco-<version>-<timestamp>/` (only the 5 newest
 backups are kept) and can be restored by copying it back over `jaco/`.
 
 ### What happens during an update
