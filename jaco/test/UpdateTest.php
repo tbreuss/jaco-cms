@@ -89,7 +89,6 @@ final class UpdateTest extends TestCase
 
             $zip->close();
         } else {
-            // fallback: create dir + use zip binary
             $tmp = sys_get_temp_dir() . '/zipsrc-' . uniqid();
             mkdir($tmp, 0755, true);
 

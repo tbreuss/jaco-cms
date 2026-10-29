@@ -37,7 +37,7 @@ a text file and Open Graph fields on top of the existing metadata endpoint.
 ## 4. Contact form
 
 Restaurants (reservations), hairdressers (appointments), small companies
-(quotes) — nearly every target group needs exactly this, and a flat-file
+(quotes) — nearly every target group needs exactly this, and a file-based
 CMS can only offer a `mailto:` hack or an external service. Scoping decision
 required: a simple form mailer (one action, spam protection, destination
 address in settings) is small and would complete the product for these

@@ -26,7 +26,7 @@ export const AboutView = {
     return m('div.main',
       m('.content',
         m('h1', t('About')),
-        m('p', t('Jaco CMS is a flat-file CMS that manages static HTML files directly in the web directory. No database, no build step — just PHP 8.2+ on any shared host.')),
+        m('p', t('Jaco CMS is the CMS that turns static HTML into editable pages. No database, no build step — just PHP 8.2+ on any shared host.')),
         m('table.table.table-system-view',
           m('tbody',
             m('tr', m('td', t('Version')), m('td', version || t('Loading') + '...')),

@@ -1,0 +1,71 @@
+# Jaco CMS
+
+> The CMS that turns static HTML into editable pages.
+> No database, no build step — PHP 8.2+ on a typical shared host.
+
+## What it is
+
+Jaco CMS is a PHP 8.2+ CMS that turns static HTML into editable pages. Site content lives as `.html` files in
+the web root; editable regions are marked with `data-jaco-*` attributes. An
+admin SPA (Mithril.js) runs in `/jaco/` and talks to a PHP API. All changes
+are backed up before writing.
+
+## Key directories
+
+- `jaco/` — application (admin UI, API, PHP code, vendor). Replaced on update.
+- `jaco-data/` — operator data: settings.php, templates, backups, runtime logs. Never served.
+- `media/` — editor uploads, served as static files.
+- `docs/` — maintainer documentation (index: docs/readme.md).
+
+## Documentation
+
+- [README.md](README.md) — overview, features, requirements, install in 5 minutes
+- [docs/install.md](docs/install.md) — installation, server setup, markers, recurring blocks
+- [docs/development.md](docs/development.md) — clone, Docker, tests, conventions
+- [docs/constraints.md](docs/constraints.md) — invariants, roles, edge cases, test map
+- [docs/attribute-mapping.md](docs/attribute-mapping.md) — data attribute contract (plan + code)
+- [docs/features.md](docs/features.md) — one-sentence feature catalogue
+- [docs/glossary.md](docs/glossary.md) — shared terms
+- [docs/menu-structure.md](docs/menu-structure.md) — admin navigation, roles, command palette
+- [docs/backend-naming.md](docs/backend-naming.md) — PHP function/file naming
+- [docs/site-pages.md](docs/site-pages.md) — public page file names (en/de)
+- [docs/missing-features.md](docs/missing-features.md) — known gaps
+- [docs/backlog.md](docs/backlog.md) — open product/technical items
+
+## Architecture
+
+- **Backend**: PHP 8.2+, no framework, layered (core/domain/api/cli). Deptrac rules in `jaco/deptrac.yaml`.
+- **Frontend**: Mithril.js SPA, no build step, hash routes in `jaco/frontend/app.js`.
+- **No database**: pages are `.html` files; backups in `jaco-data/backups/`.
+- **Auth**: JWT (HS256), roles `editor`/`admin`, optional per-user TOTP, login throttle per address.
+- **Config**: `jaco-data/settings.php` overrides defaults from `create_default_config()`.
+
+## Conventions
+
+- Commit messages: `fix:`, `feat:`, `style:`, `docs:`, `refactor:`, `test:`, `chore:` — short subject, English.
+- User-visible strings in all four language files: `jaco/language/{en,de,fr,it}.json`.
+- Tests: PHPUnit (`composer test`), QUnit (`node jaco/test/js/runner.mjs`), Playwright E2E.
+- Static analysis: PHPStan, PHP CS Fixer, Deptrac.
+- PHP naming: `verb_object`, `get_`/`find_`/`read_`/`load_`, `is_`/`has_`/`can_` predicates. See `docs/backend-naming.md`.
+
+## Key invariants
+
+- Nothing is touched without a backup (`page/update`, `page/update-body`, `page/delete`, `css/update`, `upload/delete`).
+- The app directory `jaco/` is out of reach for page operations (path guard).
+- Only YouTube embeds survive sanitizing; event handlers never survive.
+- Uploads are never overwritten (name collision gets `-1` appended).
+- Roles gate every API route; a route without an explicit role needs `admin`.
+- `readOnly` accounts keep their role but the router refuses every write.
+
+## Self-update
+
+- CLI: `php jaco/cli.php sys:check-update` / `sys:update [-t version] [-u url]`
+- Web: System page → "Check for updates" → "Install update"
+- Only `jaco/` is replaced; settings, backups, runtime, templates, media and public pages stay.
+- Backup of previous `jaco/` is stored in `jaco-data/app-backups/` (directory copy, 5 retained).
+- Downgrades are rejected; only HTTPS URLs (or file:// for local testing) accepted.
+- Requires `zip` extension or `unzip` binary for extraction.
+
+## License
+
+Freeware, including commercial use. Source falls back to MIT if no stable release for 365 days. See `LICENSE`.
