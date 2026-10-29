@@ -1,98 +1,101 @@
 # Jaco CMS
 
+[![CI](https://github.com/tbreuss/jaco-cms/actions/workflows/jobs.yml/badge.svg)](https://github.com/tbreuss/jaco-cms/actions/workflows/jobs.yml)
+[![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white)](https://www.php.net/)
+[![License: Freeware](https://img.shields.io/badge/License-Freeware-green.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/tbreuss/jaco-cms)](https://github.com/tbreuss/jaco-cms/releases)
+
 **The flat-file CMS that manages static HTML files directly in the web directory.**
 
-No database, no build step — just PHP 8.2+ on a typical shared host. Mark regions of
-your pages — existing or new — with `data-jaco-*` attributes, then edit them
-inline on the live site: rich text, images, links, embedded videos, reorderable
-content blocks. Every overwrite or delete keeps a timestamped backup, restoring
-is one click.
+Mark regions of your pages — existing or new — with `data-jaco-*` attributes,
+then edit them inline on the live site: rich text, images, links, embedded
+videos, reorderable content blocks. Every overwrite or delete keeps a
+timestamped backup; restoring is one click.
+
+<!-- Screenshot placeholder: add a screenshot of the inline editor here -->
+<!-- ![Jaco CMS inline editor](media/screenshot-editor.png) -->
+
+## Highlights
+
+- **Edit in place** — click a marked region on the live site, change it, save
+- **No database** — plain HTML files, portable and versionable
+- **No build step** — PHP 8.2+ on cheap shared hosting
+- **Self-updating** — one command or one click, with automatic backup
+- **Four admin languages** — English, German, French, Italian
 
 ## Features
 
 **Editing**
 
-- Inline editor on the live site: rich text, single lines, links, images, YouTube embeds
-- Media library: upload once and reuse images and PDFs from the image picker
-- Site templates: reuse HTML fragments across pages, with separate names/markers for language variants, and apply one to all marked elements at once; the public navigation and footer use this mechanism
-- Page manager: create from templates, copy and delete — with backups
-- Page settings: title, meta description and robots, without editing HTML by hand
-- Content blocks: editors add, remove and reorder recurring sections by drag and drop
-- Stylesheet editor with backups, upload manager with extension and size checks
+- Inline editor: rich text, single lines, links, images, YouTube embeds
+- Media library: upload once, reuse images and PDFs from the image picker
+- Site templates: reusable HTML fragments, apply to all marked elements at once
+- Page manager: create from templates, copy, delete
+- Page settings: title, meta description, robots — without editing HTML
+- Content blocks: add, remove, reorder recurring sections by drag and drop
+- Stylesheet editor; upload manager with extension and size checks
 
 **Operating**
 
-- The pages are the database: plain HTML files, portable and versionable
-- Token login (JWT) with brute-force throttle, optional TOTP second factor, maintenance mode
+- Token login (JWT), brute-force throttle, optional TOTP, maintenance mode
 - Automatic backups before every change, one-click restore
-- Admin interface in English, German, French and Italian
-- Hardened web root (`.htaccess` ships, Nginx example included) with status checks on the System page
+- Hardened web root (`.htaccess` ships, Nginx example included)
 - Freeware, including commercial use — no licence validation, no phone home
 
 ## Who Jaco is for
 
-Jaco fits small static sites — existing or new — where a developer or template
-marks the editable regions once, then owners and editors keep the content up to
-date, typically on cheap shared hosting:
+Small static sites — existing or new — where a developer marks editable regions
+once, then owners and editors keep content up to date on cheap shared hosting:
 
-- Restaurants, cafés, hairdressers and other local businesses: opening hours, menus, price lists and photos, edited in place on the live page
-- Clubs and associations: news, events and member info maintained by volunteers, no HTML knowledge needed
-- Small companies and freelancers: company site or portfolio with a contact page, editable without a backend workflow
-- Private individuals: family, hobby or portfolio sites that should stay online for years with minimal care
+- **Restaurants, cafés, hairdressers** — opening hours, menus, price lists, photos
+- **Tradespeople and local services** — plumbers, electricians, cleaners: services, prices, contact
+- **Clubs and associations** — news, events, member info by volunteers
+- **Small companies and freelancers** — company site or portfolio
+- **Private individuals** — family, hobby or portfolio sites
 
-The pattern is always the same: a developer (or the site template) marks the
-editable regions once, then editors work directly on the page. A new site can
-start from any static HTML template; the same edit markers apply. If you need
-user accounts, comments or a shop, Jaco is the wrong tool — it edits static
-pages, nothing more.
+If you need a shop, a database-backed application or real-time features,
+Jaco is the wrong tool — it edits static pages, nothing more.
 
 ## Requirements
 
-- PHP `^8.2` with the `dom`, `libxml` and `openssl` extensions
-- Composer (only for installing dependencies, not needed on the server with the dist archive)
+- PHP `^8.2` with `dom`, `libxml`, `openssl` (plus `zip` for the self-updater)
+- Composer (only for installing from git; not needed with the dist archive)
 - Apache or Nginx with PHP; `php -S` for development only
 
 ## Install in five minutes
 
-Full guide with markers reference: [`docs/install.md`](docs/install.md).
+Full guide: [`docs/install.md`](docs/install.md).
 
 1. Download `jaco-dist-<version>.zip` from the [releases page](https://github.com/tbreuss/jaco-cms/releases) (dependencies included) and extract it next to your `index.html`.
-2. Open `https://example.com/jaco/install.php` and create your login: username, password (≥ 8 characters), language, media directory (`media` by default), two-factor authentication on. The installer writes `jaco-data/settings.php` and deletes itself.
+2. Open `https://example.com/jaco/install.php` and create your login.
 3. Grant write permissions: editable `.html` files, `jaco-data/backups/`, `media/`, `jaco-data/runtime/log/`.
-4. Mark editable regions in your HTML and log in at `/jaco/`:
+4. Mark editable regions and log in at `/jaco/`:
 
 ```html
 <h1 data-jaco-line>My headline</h1>
 <div data-jaco-block><p>My paragraph.</p></div>
 ```
 
-The three directories next to your pages: `jaco/` is the application (replaced on
-update), `jaco-data/` holds templates, backups, the runtime logs and the
-credentials (never publicly reachable), `media/` holds editor uploads. An update
-replaces `jaco/`, the pages and `jaco-data/templates/`; `settings.php`, `backups/`
-and `runtime/` stay as they are on the server.
+Three directories next to your pages: `jaco/` (application, replaced on update),
+`jaco-data/` (templates, backups, runtime, credentials — never public),
+`media/` (editor uploads). An update replaces `jaco/`; `settings.php`, `backups/`
+and `runtime/` stay untouched.
 
-Heads-up for servers: on Nginx copy the blocks from `docs/nginx-jaco.conf.example`
-into the server context (`.htaccess` is Apache-only). With a dist archive on
-Apache, one `Authorization` forwarding rule belongs in the site root
-`.htaccess` — see “Protect the internals” in [`docs/install.md`](docs/install.md).
+Nginx: copy blocks from [`docs/nginx-jaco.conf.example`](docs/nginx-jaco.conf.example).
+Apache: one `Authorization` forwarding rule in the site root `.htaccess` — see
+[`docs/install.md`](docs/install.md).
 
 ## Development
 
-Working from git uses Docker (PHP 8.2–8.5) and Node ≥ 22 for frontend tests.
-Clone, run the site locally, static analysis, PHPUnit, QUnit, and the Playwright
-smoke suite: [docs/development.md](docs/development.md). How we expect changes:
-[docs/contributing.md](docs/contributing.md). Doc index: [docs/readme.md](docs/readme.md).
+Working from git: [docs/development.md](docs/development.md) · Contributing: [docs/contributing.md](docs/contributing.md) · Doc index: [docs/readme.md](docs/readme.md).
 
 ## License
 
-Freeware, including commercial websites you build with it — no licence
-validation, no phone home. If no stable release appears for 365 consecutive
-days, the source automatically falls back to MIT terms. Details in
-[`LICENSE`](LICENSE).
+Freeware, including commercial websites — no licence validation, no phone home.
+If no stable release appears for 365 days, the source falls back to MIT.
+Details: [`LICENSE`](LICENSE).
 
 ## Links
 
-- Features and docs: `features.html`, `docs.html` (German versions in `de/`)
-- Documentation: [`docs/readme.md`](docs/readme.md) (installation, contributing, development)
-- Releases (dist archives): <https://github.com/tbreuss/jaco-cms/releases>
+- [Features & docs](features.html) · [Editable elements reference](elements.html)
+- [Documentation](docs/readme.md) · [Releases](https://github.com/tbreuss/jaco-cms/releases)
