@@ -106,6 +106,19 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
             return Payload::error([['', $error]]);
         }
 
+        // nothing to do if already up to date
+        $current = ltrim($config->appVersion, 'v');
+        $latestClean = ltrim($latest, 'v');
+
+        if (version_compare($latestClean, $current, '<=')) {
+            return Payload::success([
+                'upToDate' => true,
+                'from' => $config->appVersion,
+                'to' => $latest,
+                'backup' => '',
+            ]);
+        }
+
         $downloadUrl = $url;
         $targetVersion = $latest;
     }

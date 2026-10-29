@@ -29,6 +29,10 @@ function responder(Payload $payload): array
 
     $d = $payload->data;
 
+    if (!empty($d['upToDate'])) {
+        return ['Already up to date (' . $d['from'] . ').' . PHP_EOL, 0];
+    }
+
     return [
         'Updated ' . $d['from'] . ' -> ' . $d['to'] . PHP_EOL
         . 'Backup: ' . $d['backup'] . PHP_EOL,

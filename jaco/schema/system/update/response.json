@@ -2,6 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
+        "upToDate": { "type": "boolean" },
         "from": { "type": "string" },
         "to": { "type": "string" },
         "backup": { "type": "string" }

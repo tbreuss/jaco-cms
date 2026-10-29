@@ -175,4 +175,51 @@ final class UpdateTest extends TestCase
 
         filesystem\remove_dir_rec(dirname($root), basename($root));
     }
+
+    public function testDowngradeIsRejected(): void
+    {
+        $zipPath = $this->makeZip('downgrade.zip', [
+            'jaco/api.php' => "<?php\n",
+            'jaco/autoload.php' => "<?php\n",
+        ]);
+
+        $config = $this->config();
+        $payload = perform_update($config, 'file://' . $zipPath, 'v0.0.1');
+
+        $this->assertFalse($payload->isSuccess);
+        $this->assertStringContainsString('Downgrade not allowed', (string) ($payload->data[0][1] ?? ''));
+
+        @unlink($zipPath);
+    }
+
+    public function testUntrustedUrlIsRejected(): void
+    {
+        $config = $this->config();
+        $payload = perform_update($config, 'http://example.com/x.zip');
+
+        $this->assertFalse($payload->isSuccess);
+        $this->assertStringContainsString('HTTPS', (string) ($payload->data[0][1] ?? ''));
+
+        $payload2 = perform_update($config, 'https://evil.com/x.txt');
+
+        $this->assertFalse($payload2->isSuccess);
+        $this->assertStringContainsString('.zip', (string) ($payload2->data[0][1] ?? ''));
+    }
+
+    public function testDirectUrlDoesNotCheckUpToDate(): void
+    {
+        $zipPath = $this->makeZip('direct.zip', [
+            'jaco/api.php' => "<?php\n",
+            'jaco/autoload.php' => "<?php\n",
+        ]);
+
+        $config = $this->config();
+        $payload = perform_update($config, 'file://' . $zipPath);
+
+        // direct URL installs without checking up-to-date status
+        $this->assertTrue($payload->isSuccess);
+        $this->assertArrayNotHasKey('upToDate', $payload->data ?? []);
+
+        @unlink($zipPath);
+    }
 }

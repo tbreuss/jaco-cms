@@ -67,7 +67,7 @@ const updatePanel = () => {
                 .catch(() => m.redraw())
             }
           }, t('Install update')),
-          u.result ? m('p', t('Updated') + ': ' + u.result.from + ' → ' + u.result.to) : '',
+          u.result?.upToDate ? m('p', t('Already up to date') + ' (' + u.result.from + ').') : (u.result ? m('p', t('Updated') + ': ' + u.result.from + ' → ' + u.result.to) : ''),
           u.error ? m('p', t('Update failed') + ': ' + u.error) : '',
         )
       : (u.available === false
