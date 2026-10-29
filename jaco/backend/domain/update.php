@@ -97,7 +97,6 @@ function fetch_latest_release(?string $tag = null): array
 function perform_update(Config $config, ?string $downloadUrl = null, ?string $targetVersion = null): Payload
 {
     $appDir = $config->appDir;
-    $webDir = $config->webDir;
     $backupDir = $config->backupDir;
 
     // resolve download url if not given
@@ -142,8 +141,8 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
         }
     }
 
-    // ensure backup dir exists
-    if (!is_dir($backupDir) && !filesystem\make_dir_rec($config, $webDir, 'jaco-data/backups')) {
+    // ensure backup dir exists (use the configured data dir, not a hardcoded path)
+    if (!is_dir($backupDir) && !@mkdir($backupDir, $config->directoryPermissions, true)) {
         return Payload::error([['', 'Could not create backup directory.']]);
     }
 
