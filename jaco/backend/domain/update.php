@@ -215,38 +215,15 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
             throw new \RuntimeException('Could not create app backup directory.');
         }
 
-        // backup current jaco/ as a zip archive
+        // backup current jaco/ as a directory copy
         $backupName = 'jaco-' . preg_replace('/[^a-zA-Z0-9._-]/', '', (string) $config->appVersion)
-            . '-' . date('Ymd_His') . '.zip';
+            . '-' . date('Ymd_His');
 
         $backupPath = $backupDir . '/' . $backupName;
 
-        if (!class_exists('ZipArchive')) {
-            throw new \RuntimeException('ZIP extension required for backups.');
+        if (!copy_dir_rec($appDir, $backupPath)) {
+            throw new \RuntimeException('Backup of jaco/ failed.');
         }
-
-        $zip = new \ZipArchive();
-
-        if ($zip->open($backupPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-            throw new \RuntimeException('Could not create backup archive.');
-        }
-
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($appDir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::LEAVES_ONLY
-        );
-
-        foreach ($files as $file) {
-            if ($file->isDir()) {
-                continue;
-            }
-
-            $filePath = $file->getRealPath();
-            $relativePath = substr($filePath, strlen($appDir) + 1);
-            $zip->addFile($filePath, $relativePath);
-        }
-
-        $zip->close();
 
         // replace jaco/ contents
         // remove old contents (keep the dir itself)
@@ -269,11 +246,7 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
             // attempt restore
             remove_dir_rec($appDir);
             @mkdir($appDir, 0755, true);
-            $rz = new \ZipArchive();
-            if ($rz->open($backupPath) === true) {
-                $rz->extractTo($appDir);
-                $rz->close();
-            }
+            copy_dir_rec($backupPath, $appDir);
             throw new \RuntimeException('Install failed, restored from backup.');
         }
 
@@ -281,11 +254,7 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
         if (!file_exists($appDir . '/api.php')) {
             remove_dir_rec($appDir);
             @mkdir($appDir, 0755, true);
-            $rz = new \ZipArchive();
-            if ($rz->open($backupPath) === true) {
-                $rz->extractTo($appDir);
-                $rz->close();
-            }
+            copy_dir_rec($backupPath, $appDir);
             throw new \RuntimeException('Verification failed, restored from backup.');
         }
 
@@ -418,8 +387,8 @@ function prune_app_backups(string $dir, int $keep): void
 
         $path = $dir . '/' . $item;
 
-        if (is_file($path) && str_ends_with($item, '.zip')) {
-            $files[] = ['path' => $path, 'mtime' => filemtime($path)];
+        if (is_dir($path) && str_starts_with($item, 'jaco-')) {
+            $files[] = ['path' => $path, 'mtime' => filemtime($path), 'isDir' => true];
         }
     }
 
@@ -432,6 +401,6 @@ function prune_app_backups(string $dir, int $keep): void
     $toDelete = count($files) - $keep;
 
     for ($i = 0; $i < $toDelete; $i++) {
-        @unlink($files[$i]['path']);
+        remove_dir_rec($files[$i]['path']);
     }
 }
