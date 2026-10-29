@@ -123,12 +123,12 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
         return Payload::invalid([['', 'Download URL must use HTTPS.']]);
     }
 
-    // for HTTPS, restrict to GitHub release assets
+    // for HTTPS, accept any host but require a .zip path
     if ($scheme === 'https') {
-        $host = (string) parse_url($downloadUrl, PHP_URL_HOST);
+        $path = (string) parse_url($downloadUrl, PHP_URL_PATH);
 
-        if ($host !== 'github.com') {
-            return Payload::invalid([['', 'Download URL must point to a GitHub release asset.']]);
+        if (!str_ends_with(strtolower($path), '.zip')) {
+            return Payload::invalid([['', 'Download URL must point to a .zip archive.']]);
         }
     }
 
@@ -270,18 +270,27 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
     }
 }
 
-function find_jaco_dir(string $root): ?string
+function find_jaco_dir(string $root, int $depth = 0): ?string
 {
+    if ($depth > 5) {
+        return null;
+    }
+
+    // direct jaco/ directory
     if (is_dir($root . '/jaco') && file_exists($root . '/jaco/api.php')) {
         return $root . '/jaco';
     }
 
-    // maybe extracted flat
-    if (file_exists($root . '/api.php')) {
+    // extracted flat (root itself is jaco/)
+    if (file_exists($root . '/api.php') && file_exists($root . '/autoload.php')) {
         return $root;
     }
 
-    // search one level
+    // recurse into subdirectories
+    if (!is_dir($root)) {
+        return null;
+    }
+
     foreach (scandir($root) as $item) {
         if ($item === '.' || $item === '..') {
             continue;
@@ -289,8 +298,12 @@ function find_jaco_dir(string $root): ?string
 
         $path = $root . '/' . $item;
 
-        if (is_dir($path) && file_exists($path . '/jaco/api.php')) {
-            return $path . '/jaco';
+        if (is_dir($path) && !is_link($path)) {
+            $found = find_jaco_dir($path, $depth + 1);
+
+            if ($found !== null) {
+                return $found;
+            }
         }
     }
 
