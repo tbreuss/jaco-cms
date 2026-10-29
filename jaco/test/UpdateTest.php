@@ -6,7 +6,6 @@ use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use jaco\core\config\Config;
 use jaco\core\filesystem;
-use jaco\domain\Payload;
 
 use function jaco\domain\update\perform_update;
 use function jaco\domain\update\find_jaco_dir;

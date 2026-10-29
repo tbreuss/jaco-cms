@@ -3,7 +3,6 @@
 namespace jaco\domain\update;
 
 use jaco\core\config\Config;
-use jaco\core\filesystem;
 use jaco\domain\Payload;
 
 /**
