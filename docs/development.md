@@ -5,7 +5,7 @@ Technical guide for contributors and automated tools. Process and PR expectation
 
 ## What this project is
 
-- **Flat-file CMS**: site content lives as `.html` (and assets) in the web root.
+- **File-based CMS**: site content lives as `.html` (and assets) in the web root.
 - **Admin UI**: Mithril.js SPA under `jaco/frontend/`, no frontend build step.
 - **API**: PHP 8.2+ under `jaco/backend/`, entry `jaco/api.php`, CLI `jaco/cli.php`.
 - **No database**; backups in `jaco-data/backups/`, runtime data in `jaco-data/runtime/`.

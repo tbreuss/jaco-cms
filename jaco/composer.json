@@ -1,6 +1,6 @@
 {
     "name": "tbreuss/jaco-cms",
-    "description": "Flat-file CMS that manages static HTML files directly in the web directory",
+    "description": "The CMS that turns static HTML into editable pages",
     "license": "proprietary",
     "require": {
         "php": "^8.2",
