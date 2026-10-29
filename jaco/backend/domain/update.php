@@ -97,7 +97,7 @@ function fetch_latest_release(?string $tag = null): array
 function perform_update(Config $config, ?string $downloadUrl = null, ?string $targetVersion = null): Payload
 {
     $appDir = $config->appDir;
-    $backupDir = $config->backupDir;
+    $backupDir = $config->appBackupDir;
 
     // resolve download url if not given
     if ($downloadUrl === null) {
@@ -210,15 +210,43 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
             throw new \RuntimeException('No jaco/ directory in archive.');
         }
 
-        // backup current jaco/
+        // ensure backup dir exists
+        if (!is_dir($backupDir) && !@mkdir($backupDir, $config->directoryPermissions, true)) {
+            throw new \RuntimeException('Could not create app backup directory.');
+        }
+
+        // backup current jaco/ as a zip archive
         $backupName = 'jaco-' . preg_replace('/[^a-zA-Z0-9._-]/', '', (string) $config->appVersion)
-            . '-' . date('Ymd_His');
+            . '-' . date('Ymd_His') . '.zip';
 
         $backupPath = $backupDir . '/' . $backupName;
 
-        if (!copy_dir_rec($appDir, $backupPath)) {
-            throw new \RuntimeException('Backup of jaco/ failed.');
+        if (!class_exists('ZipArchive')) {
+            throw new \RuntimeException('ZIP extension required for backups.');
         }
+
+        $zip = new \ZipArchive();
+
+        if ($zip->open($backupPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            throw new \RuntimeException('Could not create backup archive.');
+        }
+
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($appDir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($files as $file) {
+            if ($file->isDir()) {
+                continue;
+            }
+
+            $filePath = $file->getRealPath();
+            $relativePath = substr($filePath, strlen($appDir) + 1);
+            $zip->addFile($filePath, $relativePath);
+        }
+
+        $zip->close();
 
         // replace jaco/ contents
         // remove old contents (keep the dir itself)
@@ -241,7 +269,11 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
             // attempt restore
             remove_dir_rec($appDir);
             @mkdir($appDir, 0755, true);
-            copy_dir_rec($backupPath, $appDir);
+            $rz = new \ZipArchive();
+            if ($rz->open($backupPath) === true) {
+                $rz->extractTo($appDir);
+                $rz->close();
+            }
             throw new \RuntimeException('Install failed, restored from backup.');
         }
 
@@ -249,9 +281,16 @@ function perform_update(Config $config, ?string $downloadUrl = null, ?string $ta
         if (!file_exists($appDir . '/api.php')) {
             remove_dir_rec($appDir);
             @mkdir($appDir, 0755, true);
-            copy_dir_rec($backupPath, $appDir);
+            $rz = new \ZipArchive();
+            if ($rz->open($backupPath) === true) {
+                $rz->extractTo($appDir);
+                $rz->close();
+            }
             throw new \RuntimeException('Verification failed, restored from backup.');
         }
+
+        // prune old app backups: keep only the 3 newest
+        prune_app_backups($backupDir, 3);
 
         return Payload::success([
             'from' => $config->appVersion,
@@ -362,4 +401,37 @@ function remove_dir_rec(string $dir): void
     }
 
     @rmdir($dir);
+}
+
+function prune_app_backups(string $dir, int $keep): void
+{
+    if (!is_dir($dir)) {
+        return;
+    }
+
+    $files = [];
+
+    foreach (scandir($dir) as $item) {
+        if ($item === '.' || $item === '..') {
+            continue;
+        }
+
+        $path = $dir . '/' . $item;
+
+        if (is_file($path) && str_ends_with($item, '.zip')) {
+            $files[] = ['path' => $path, 'mtime' => filemtime($path)];
+        }
+    }
+
+    if (count($files) <= $keep) {
+        return;
+    }
+
+    usort($files, fn(array $a, array $b): int => $a['mtime'] <=> $b['mtime']);
+
+    $toDelete = count($files) - $keep;
+
+    for ($i = 0; $i < $toDelete; $i++) {
+        @unlink($files[$i]['path']);
+    }
 }

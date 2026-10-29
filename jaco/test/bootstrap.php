@@ -47,6 +47,7 @@ function test_config(): Config
         // app directory used to hide bugs where operator data was read as content
         dataDir: $dataDir,
         backupDir: $dataDir . '/backups',
+        appBackupDir: $dataDir . '/app-backups',
         templatePageDir: $dataDir . '/templates/page',
         templateContentDir: $dataDir . '/templates/content',
         templateSiteDir: $dataDir . '/templates/site',
