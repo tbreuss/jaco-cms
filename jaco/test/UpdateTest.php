@@ -337,6 +337,48 @@ final class UpdateTest extends TestCase
         filesystem\remove_dir_rec(dirname($root), basename($root));
     }
 
+    #[TestDox('A restore cleans up a half-written install completely')]
+    public function testRestoreFromAPartialInstall(): void
+    {
+        $root = sys_get_temp_dir() . '/partial-' . uniqid('', true);
+        $app = $root . '/jaco';
+        $backup = $root . '/backup';
+
+        // the backup: a complete application with its modes
+        mkdir($backup . '/vendor', 0755, true);
+        file_put_contents($backup . '/api.php', '<?php // restored');
+        file_put_contents($backup . '/cli.php', '#!/bin/sh');
+        file_put_contents($backup . '/vendor/lib.php', 'x');
+        chmod($backup . '/cli.php', 0755);
+        chmod($backup . '/vendor/lib.php', 0640);
+
+        // what an interrupted install leaves behind: some new files, some old
+        // ones, dangling directories and content the backup does not know about
+        mkdir($app . '/vendor', 0755, true);
+        mkdir($app . '/leftover/deep', 0755, true);
+        file_put_contents($app . '/api.php', '<?php // new, half written');
+        file_put_contents($app . '/vendor/lib.php', 'new lib');
+        file_put_contents($app . '/leftover/deep/file.php', 'x');
+        file_put_contents($app . '/unknown.php', 'from the new release');
+
+        $this->assertTrue(restore_app_dir($app, $backup, $this->config()));
+
+        // everything of the new release is gone, the backup is in place
+        $this->assertStringContainsString('restored', (string) file_get_contents($app . '/api.php'));
+        $this->assertSame('x', file_get_contents($app . '/vendor/lib.php'));
+        $this->assertFileDoesNotExist($app . '/leftover');
+        $this->assertFileDoesNotExist($app . '/unknown.php');
+
+        // and it carries the modes it was backed up with
+        $this->assertSame('755', decoct(fileperms($app . '/cli.php') & 0777));
+        $this->assertSame('640', decoct(fileperms($app . '/vendor/lib.php') & 0777));
+
+        // nothing of the attempt stays next to the application
+        $this->assertSame([], glob($root . '/jaco.restore-*'));
+
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
     #[TestDox('A restore puts the backup back without removing the directory')]
     public function testRestoreKeepsTheApplicationDirectory(): void
     {
