@@ -573,14 +573,29 @@ function find_jaco_dir(string $root, int $depth = 0): ?string
     return null;
 }
 
+/**
+ * Copy a directory tree. Source permissions are carried over: copy() creates the
+ * target with 0666 & ~umask and loses the source mode, which would turn an
+ * executable script into a plain file and silently widen a restricted one. The
+ * backup has to restore what was there, so the mode travels with each entry.
+ */
 function copy_dir_rec(string $src, string $dst, int $permissions = 0755): bool
 {
     if (!is_dir($src)) {
         return false;
     }
 
-    if (!is_dir($dst) && !mkdir($dst, $permissions, true)) {
-        return false;
+    if (!is_dir($dst)) {
+        if (!mkdir($dst, $permissions, true)) {
+            return false;
+        }
+
+        // mkdir() applies the umask too, restore what the source directory had
+        $sourceMode = fileperms($src);
+
+        if ($sourceMode !== false) {
+            @chmod($dst, $sourceMode & 0777);
+        }
     }
 
     foreach (scandir($src) as $item) {
@@ -598,6 +613,12 @@ function copy_dir_rec(string $src, string $dst, int $permissions = 0755): bool
         } else {
             if (!copy($srcPath, $dstPath)) {
                 return false;
+            }
+
+            $sourceMode = fileperms($srcPath);
+
+            if ($sourceMode !== false) {
+                @chmod($dstPath, $sourceMode & 0777);
             }
         }
     }

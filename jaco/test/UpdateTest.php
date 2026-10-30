@@ -8,6 +8,7 @@ use jaco\core\config\Config;
 use jaco\core\filesystem;
 
 use function jaco\domain\update\perform_update;
+use function jaco\domain\update\copy_dir_rec;
 use function jaco\domain\update\find_jaco_dir;
 use function jaco\domain\update\missing_extractor_error;
 use function jaco\domain\update\checksum_url;
@@ -182,6 +183,54 @@ final class UpdateTest extends TestCase
         $this->assertNotEmpty($backups, 'Backup should be created in custom app-backups dir');
 
         @unlink($zipPath);
+    }
+
+    #[TestDox('A copied tree keeps the permissions of its source')]
+    public function testCopyDirRecKeepsPermissions(): void
+    {
+        $source = sys_get_temp_dir() . '/permsrc-' . uniqid('', true);
+        $target = $source . '-copy';
+        mkdir($source . '/vendor', 0750, true);
+        file_put_contents($source . '/cli.php', '#!/bin/sh');
+        file_put_contents($source . '/vendor/lib.php', '<?php');
+        chmod($source . '/cli.php', 0755);
+        chmod($source . '/vendor', 0750);
+        chmod($source . '/vendor/lib.php', 0600);
+
+        $this->assertTrue(copy_dir_rec($source, $target, 0755));
+
+        // copy() would hand out 0666 & ~umask: the executable bit and the
+        // restricted mode are exactly what a backup must not lose
+        $this->assertSame('755', decoct(fileperms($target . '/cli.php') & 0777));
+        $this->assertSame('600', decoct(fileperms($target . '/vendor/lib.php') & 0777));
+        $this->assertSame('750', decoct(fileperms($target . '/vendor') & 0777));
+
+        filesystem\remove_dir_rec(dirname($source), basename($source));
+        filesystem\remove_dir_rec(dirname($target), basename($target));
+    }
+
+    #[TestDox('A restore brings back the permissions it backed up')]
+    public function testBackupAndRestoreKeepsPermissions(): void
+    {
+        $root = sys_get_temp_dir() . '/restore-' . uniqid('', true);
+        $app = $root . '/app';
+        $backup = $root . '/backup';
+
+        mkdir($app . '/vendor', 0755, true);
+        file_put_contents($app . '/api.php', '<?php');
+        file_put_contents($app . '/vendor/lib.php', '<?php');
+        chmod($app . '/vendor/lib.php', 0640);
+        chmod($app . '/vendor', 0750);
+
+        // the rollback path: back up, wipe, copy the backup back
+        $this->assertTrue(copy_dir_rec($app, $backup, 0755));
+        filesystem\remove_dir_rec(dirname($app), basename($app));
+        $this->assertTrue(copy_dir_rec($backup, $app, 0755));
+
+        $this->assertSame('640', decoct(fileperms($app . '/vendor/lib.php') & 0777));
+        $this->assertSame('750', decoct(fileperms($app . '/vendor') & 0777));
+
+        filesystem\remove_dir_rec($root, '');
     }
 
     public function testFindJacoDirNested(): void
