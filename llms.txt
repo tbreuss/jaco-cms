@@ -63,8 +63,9 @@ are backed up before writing.
 - Web: System page → "Check for updates" → "Install update"
 - Only `jaco/` is replaced; settings, backups, runtime, templates, media and public pages stay.
 - Backup of previous `jaco/` is stored in `jaco-data/app-backups/` (directory copy, 5 retained).
-- Downgrades are rejected; only HTTPS URLs (or file:// for local testing) accepted.
-- Requires `zip` extension or `unzip` binary for extraction.
+- Only the `tbreuss/jaco-cms` release asset is accepted, verified against its published `.sha256`; `file://` is CLI-only.
+- Downgrades are rejected; a branch or ref is not a release tag.
+- Requires the `zip` extension (suggested, not required): the rest of Jaco runs without it.
 
 ## License
 

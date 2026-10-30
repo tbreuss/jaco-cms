@@ -79,4 +79,4 @@ See [LICENSE](LICENSE).
 
 ## Links
 
-[Features & docs](features.html) · [Elements reference](elements.html) · [Releases](https://github.com/tbreuss/jaco-cms/releases)
+[Documentation](docs/readme.md) · [Installation guide](docs/install.md) · [Development](docs/development.md) · [Releases](https://github.com/tbreuss/jaco-cms/releases)
