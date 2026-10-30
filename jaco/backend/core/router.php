@@ -140,7 +140,14 @@ function call_action(Closure $action, Request $request, Config $config, ?string 
 
     // request body params
     if ($requestJsonSchema !== null) {
-        $errors = validate_request($request->post->values, $requestJsonSchema);
+        $schemaError = null;
+        $errors = validate_request($request->post->values, $requestJsonSchema, $schemaError);
+
+        // an unusable schema is a broken installation, not a bad request
+        if ($schemaError !== null) {
+            return json_response($errors, Status::INTERNAL_SERVER_ERROR);
+        }
+
         if (count($errors) > 0) {
             return json_response($errors, Status::BAD_REQUEST);
         }

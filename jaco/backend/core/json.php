@@ -8,19 +8,34 @@ use Opis\JsonSchema\Validator;
 
 const JSON_SCHEMA_URL = 'https://jaco.tebe.ch';
 
-function validate_data(array|string|null $data, string $schema): array
+/**
+ * Validate data against a schema file below schema/.
+ *
+ * A missing schema is a broken installation, not an invalid request: it is logged
+ * and reported through `$schemaError` so the caller answers 500, never 400. Silently
+ * skipping the validation would let any request through unvalidated.
+ *
+ * @param string|null $schemaError receives the reason when the schema is unusable
+ */
+function validate_data(array|string|null $data, string $schema, ?string &$schemaError = null): array
 {
-    $schemaFile = dirname(__DIR__, 2) . '/schema/' . $schema;
+    $schemaDir = dirname(__DIR__, 2) . '/schema/';
+    $schemaFile = $schemaDir . $schema;
 
-    // if the schema file is missing (e.g. after an update replaced jaco/),
-    // skip validation instead of crashing with "Schema not found"
     if (!is_file($schemaFile)) {
-        return [];
+        $schemaError = 'schema not found: ' . $schema;
+        error_log('validate_data: ' . $schemaError);
+
+        return [[
+            'source' => ['pointer' => ''],
+            'title' => 'Internal Server Error',
+            'detail' => 'The request could not be validated on this installation.',
+        ]];
     }
 
     $validator = new Validator();
     $validator->setMaxErrors(20);
-    $validator->resolver()?->registerPrefix(JSON_SCHEMA_URL, dirname(__DIR__, 2) . '/schema/');
+    $validator->resolver()?->registerPrefix(JSON_SCHEMA_URL, $schemaDir);
 
     if (is_array($data)) {
         $encoded = json_encode($data);
