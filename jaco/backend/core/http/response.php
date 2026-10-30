@@ -73,7 +73,10 @@ function encode_json(mixed $data): string
     }
 }
 
-function validate_response(array|string|null $data, string $schema): array
+/**
+ * @param string|null $schemaError receives the reason when the schema is unusable
+ */
+function validate_response(array|string|null $data, string $schema, ?string &$schemaError = null): array
 {
-    return json\validate_data($data, $schema);
+    return json\validate_data($data, $schema, $schemaError);
 }

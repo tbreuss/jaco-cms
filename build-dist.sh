@@ -4,7 +4,10 @@
 #
 #   ./build-dist.sh [version]   (default: dev)
 #
-# Benötigt: git, composer, zip.
+# Daneben liegt jaco-dist-<version>.zip.sha256: der Self-Updater installiert
+# nur ein Archiv, dessen Prüfsumme zum veröffentlichten Release passt.
+#
+# Benötigt: git, composer, zip, php (mit ext-zip).
 set -eu
 
 VERSION="${1:-dev}"
@@ -15,6 +18,9 @@ trap 'rm -rf "$WORK"' EXIT INT TERM
 command -v git >/dev/null || { echo "git fehlt" >&2; exit 1; }
 command -v composer >/dev/null || { echo "composer fehlt" >&2; exit 1; }
 command -v zip >/dev/null || { echo "zip fehlt" >&2; exit 1; }
+# ext-zip is only suggested for the runtime (the updater needs it, the CMS does
+# not), but building and checking the archive is easier with it available.
+php -r 'exit(extension_loaded("zip") ? 0 : 1);' || { echo "php-ext zip fehlt" >&2; exit 1; }
 
 # nur getrackte Dateien aus jaco/: kein .git, keine Nutzerdaten (Backups,
 # Logs und settings.php sind ignoriert und kommen nicht mit). jaco-data/ wird
@@ -24,6 +30,8 @@ mkdir -p "$WORK/jaco-data/templates/page" "$WORK/jaco-data/templates/content" \
          "$WORK/jaco-data/templates/site" "$WORK/jaco-data/backups"
 cp "$ROOT/jaco-data/.htaccess" "$WORK/jaco-data/.htaccess"
 cp "$ROOT/jaco-data/backups/.gitignore" "$WORK/jaco-data/backups/.gitignore"
+mkdir -p "$WORK/jaco-data/app-backups"
+cp "$ROOT/jaco-data/app-backups/.gitignore" "$WORK/jaco-data/app-backups/.gitignore"
 for dir in page content site; do
     cp "$ROOT/jaco-data/templates/$dir/.gitignore" "$WORK/jaco-data/templates/$dir/.gitignore"
 done
@@ -64,4 +72,10 @@ OUT="$ROOT/jaco-dist-$VERSION.zip"
 rm -f "$OUT"
 (cd "$WORK" && zip -qr "$OUT" jaco jaco-data INSTALL.md LICENSE)
 
+# Gleiche Form wie sha256sum im Release-Workflow, damit der Updater beide liest.
+OUTSUM="$OUT.sha256"
+rm -f "$OUTSUM"
+(cd "$ROOT" && php -r 'printf("%s  %s\n", hash_file("sha256", $argv[1]), basename($argv[1]));' "jaco-dist-$VERSION.zip") > "$OUTSUM"
+
 echo "gebaut: $OUT ($(du -h "$OUT" | cut -f1))"
+echo "summe:  $OUTSUM"

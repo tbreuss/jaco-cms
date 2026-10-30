@@ -1,19 +1,11 @@
 # Jaco CMS
 
-<<<<<<< HEAD
-> Flat-file CMS that edits static HTML files directly in the web directory.
-=======
 > The CMS that turns static HTML into editable pages.
->>>>>>> 3a49011 (docs: make README more attractive and consistent)
 > No database, no build step — PHP 8.2+ on a typical shared host.
 
 ## What it is
 
-<<<<<<< HEAD
-Jaco CMS is a PHP 8.2+ flat-file CMS. Site content lives as `.html` files in
-=======
 Jaco CMS is a PHP 8.2+ CMS that turns static HTML into editable pages. Site content lives as `.html` files in
->>>>>>> 3a49011 (docs: make README more attractive and consistent)
 the web root; editable regions are marked with `data-jaco-*` attributes. An
 admin SPA (Mithril.js) runs in `/jaco/` and talks to a PHP API. All changes
 are backed up before writing.
@@ -70,12 +62,10 @@ are backed up before writing.
 - CLI: `php jaco/cli.php sys:check-update` / `sys:update [-t version] [-u url]`
 - Web: System page → "Check for updates" → "Install update"
 - Only `jaco/` is replaced; settings, backups, runtime, templates, media and public pages stay.
-<<<<<<< HEAD
-=======
 - Backup of previous `jaco/` is stored in `jaco-data/app-backups/` (directory copy, 5 retained).
-- Downgrades are rejected; only HTTPS URLs (or file:// for local testing) accepted.
-- Requires `zip` extension or `unzip` binary for extraction.
->>>>>>> 3a49011 (docs: make README more attractive and consistent)
+- Only the `tbreuss/jaco-cms` release asset is accepted, verified against its published `.sha256`; `file://` is CLI-only.
+- Downgrades are rejected; a branch or ref is not a release tag.
+- Requires the `zip` extension (suggested, not required): the rest of Jaco runs without it.
 
 ## License
 

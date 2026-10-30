@@ -96,7 +96,10 @@ function get_post_values(): array
     return $decoded;
 }
 
-function validate_request(array|string $data, string $schema): array
+/**
+ * @param string|null $schemaError receives the reason when the schema is unusable
+ */
+function validate_request(array|string $data, string $schema, ?string &$schemaError = null): array
 {
-    return json\validate_data($data, $schema);
+    return json\validate_data($data, $schema, $schemaError);
 }

@@ -182,6 +182,22 @@ router\get(
 );
 
 router\get(
+    route: 'system/check-update',
+    callback: jaco\api\system\check_update\action(...),
+    authenticated: true,
+    role: 'admin',
+    responseSchema: 'system/check-update/response.json',
+);
+
+router\post(
+    route: 'system/update',
+    callback: jaco\api\system\update\action(...),
+    authenticated: true,
+    role: 'admin',
+    responseSchema: 'system/update/response.json',
+);
+
+router\get(
     route: 'template/site/list',
     callback: jaco\api\template\site\list\action(...),
     authenticated: true,

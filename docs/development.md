@@ -121,7 +121,10 @@ CI runs these steps on every push; see `.github/workflows/jobs.yml`.
 
 ## Release archive (`jaco-dist-*.zip`)
 
-Build (needs git, composer, zip on the host):
+Build (needs git, composer, zip and PHP with `ext-zip` on the host; the runtime
+treats `zip` as suggested, only the updater needs it). Every build
+also writes `jaco-dist-<version>.zip.sha256`: the self-updater refuses an archive
+whose published checksum does not match.
 
     ./build-dist.sh [version]
 
@@ -134,7 +137,7 @@ Build and verify in one step (removes the test zip afterwards):
     ./test-dist.sh
 
 Release tags run `build-dist.sh` and `verify-dist-archive.sh` in `.github/workflows/release.yml`
-before the archive is attached to the GitHub release.
+and attach the archive together with its `.sha256` file to the GitHub release.
 
 ## JavaScript and QUnit
 

@@ -60,4 +60,33 @@ final class SchemaValidationTest extends TestCase
     {
         $this->assertNotEmpty(json\validate_data(null, 'login/request.json'));
     }
+
+    #[TestDox('A missing schema is reported as a server error, never skipped')]
+    public function testMissingSchemaIsReportedNotSkipped(): void
+    {
+        $schemaError = null;
+        $errors = json\validate_data(['anything' => 'goes'], 'does-not-exist/request.json', $schemaError);
+
+        // the error list is not empty: the caller must not treat this as valid data
+        $this->assertNotEmpty($errors);
+        $this->assertSame('Internal Server Error', $errors[0]['title']);
+        $this->assertSame('schema not found: does-not-exist/request.json', $schemaError);
+    }
+
+    #[TestDox('A present schema leaves the error out-param untouched')]
+    public function testPresentSchemaReportsNoError(): void
+    {
+        $schemaError = null;
+        $errors = json\validate_data(['username' => 'a', 'password' => 'b'], 'login/request.json', $schemaError);
+
+        $this->assertSame([], $errors);
+        $this->assertNull($schemaError);
+
+        // invalid data against an existing schema is reported, the schema itself is fine
+        $errors = json\validate_data(['username' => 'a', 'password' => 'b', 'extra' => 1], 'login/request.json', $schemaError);
+
+        $this->assertNotEmpty($errors);
+        $this->assertSame('Invalid data', $errors[0]['title']);
+        $this->assertNull($schemaError, 'a validation error must not be reported as a broken schema');
+    }
 }

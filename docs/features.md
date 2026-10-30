@@ -44,4 +44,5 @@ the admin navigation in [menu-structure.md](menu-structure.md), and installation
 | Languages | The admin UI is available in English, German, French and Italian, with a per-user language. | [Constraints](constraints.md) |
 | Theme | Light, dark and auto themes are explicit, persisted choices applied before first paint. | [Constraints](constraints.md) |
 | Diagnostics | About is available to every role, while environment, PHP error log and phpinfo are admin-only. | [Constraints](constraints.md) |
-| CLI and installer | A browser installer creates `settings.php`, while the CLI issues tokens, sets TOTP, generates password hashes and clears login blocks. | [Install](install.md) |
+| CLI and installer | A browser installer creates `settings.php`, while the CLI issues tokens, sets TOTP, generates password hashes, clears login blocks and updates Jaco from a published release. | [Install](install.md) |
+| Self-update | Jaco downloads a release, backs up and replaces only `jaco/`, leaving settings, backups, runtime, templates, media and public pages untouched. | [Install](install.md) |

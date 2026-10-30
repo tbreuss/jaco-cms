@@ -6,12 +6,11 @@ assessment: each item states the gap, who hurts, and the rough size.
 
 ## 1. Self-update mechanism
 
-An installed site (ZIP extracted, no git) has no path to security updates.
-The audience runs shared hosting without maintenance contracts, so
-installations rot. This is the largest structural risk in the project.
-
-Size: medium (version check against releases, copy new files, keep
-`settings.php` and user content untouched).
+**Implemented.** `php jaco/cli.php sys:check-update` and `sys:update` (plus a
+button on the System page) download a published release, back up the previous
+`jaco/` and replace only the application directory. `settings.php`, backups,
+runtime, templates, media and the public pages stay untouched. See
+[install.md](install.md#updating).
 
 ## 2. Account management UI
 

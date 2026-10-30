@@ -1,0 +1,792 @@
+<?php declare(strict_types=1);
+
+namespace jaco\tests;
+
+use PHPUnit\Framework\Attributes\TestDox;
+use PHPUnit\Framework\TestCase;
+use jaco\core\config\Config;
+use jaco\core\filesystem;
+
+use function jaco\domain\update\perform_update;
+use function jaco\domain\update\copy_dir_rec;
+use function jaco\domain\update\remove_dir_rec;
+use function jaco\domain\update\is_same_or_ancestor;
+use function jaco\domain\update\restore_app_dir;
+use function jaco\domain\update\find_jaco_dir;
+use function jaco\domain\update\missing_extractor_error;
+use function jaco\domain\update\checksum_url;
+use function jaco\domain\update\fetch_latest_release;
+use function jaco\domain\update\is_release_asset_url;
+use function jaco\domain\update\is_release_download_url;
+use function jaco\domain\update\is_release_tag;
+use function jaco\domain\update\response_final_url;
+use function jaco\domain\update\verify_release_checksum;
+
+#[TestDox('Self-update')]
+final class UpdateTest extends TestCase
+{
+    private string $root;
+    private string $appDir;
+    private string $webDir;
+    private string $customDataDir;
+
+    protected function setUp(): void
+    {
+        $this->root = sys_get_temp_dir() . '/jaco-update-test-' . uniqid('', true);
+        $this->appDir = $this->root . '/jaco';
+        $this->webDir = $this->root;
+        $this->customDataDir = $this->webDir . '/custom-data';
+
+        // build a minimal app dir
+        mkdir($this->appDir, 0755, true);
+        file_put_contents($this->appDir . '/api.php', "<?php\n");
+        file_put_contents($this->appDir . '/autoload.php', "<?php\n");
+
+        // custom data dir
+        mkdir($this->customDataDir . '/backups', 0755, true);
+        mkdir($this->customDataDir . '/app-backups', 0755, true);
+    }
+
+    protected function tearDown(): void
+    {
+        if (is_dir($this->root)) {
+            filesystem\remove_dir_rec(dirname($this->root), basename($this->root));
+        }
+    }
+
+    private function config(): Config
+    {
+        return new Config(
+            appVersion: '0.1.0',
+            appDir: $this->appDir,
+            appDirName: 'jaco',
+            webDir: $this->webDir,
+            dataDir: $this->customDataDir,
+            backupDir: $this->customDataDir . '/backups',
+            appBackupDir: $this->customDataDir . '/app-backups',
+            templatePageDir: $this->customDataDir . '/templates/page',
+            templateContentDir: $this->customDataDir . '/templates/content',
+            templateSiteDir: $this->customDataDir . '/templates/site',
+            mediaDir: $this->webDir . '/media',
+            uploadExtensions: ['png', 'gif', 'jpg', 'jpeg', 'svg', 'pdf'],
+            mediaUrl: 'media',
+            pageExtensions: ['htm', 'html'],
+            defaultLanguage: 'en',
+            directoryPermissions: 0755,
+            filePermissions: 0644,
+            secretKey: 'test_1234',
+            users: [],
+            phpErrorReporting: 0,
+            phpDisplayErrors: 0,
+            phpDisplayStartupErrors: 0,
+            phpLogErrors: 0,
+            phpErrorLog: $this->customDataDir . '/runtime/log/error.log',
+            loginHistoryFile: $this->customDataDir . '/runtime/log/loginhistory.json',
+            maintenanceMode: false,
+            backupRetentionDays: 90,
+        );
+    }
+
+    private function makeZip(string $name, array $entries): string
+    {
+        $path = sys_get_temp_dir() . '/' . $name;
+
+        // zip is a suggested extension: the tests that build an archive for the
+        // extractor need it, the ones that do not must still run without it
+        if (extension_loaded('zip')) {
+            $zip = new \ZipArchive();
+            $zip->open($path, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+
+            foreach ($entries as $internal => $content) {
+                $zip->addFromString($internal, $content);
+            }
+
+            $zip->close();
+
+            return $path;
+        }
+
+        $tmp = sys_get_temp_dir() . '/zipsrc-' . uniqid('', true);
+        mkdir($tmp, 0755, true);
+
+        foreach ($entries as $internal => $content) {
+            $dir = dirname($tmp . '/' . $internal);
+
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+
+            file_put_contents($tmp . '/' . $internal, $content);
+        }
+
+        // no shell_exec: zip is a build tool on the CI image, not a runtime dependency
+        $command = 'cd ' . escapeshellarg($tmp) . ' && zip -qr ' . escapeshellarg($path) . ' .';
+        exec($command, $output, $status);
+        filesystem\remove_dir_rec(dirname($tmp), basename($tmp));
+
+        if ($status !== 0) {
+            self::markTestSkipped('Neither ext-zip nor the zip binary is available.');
+        }
+
+        return $path;
+    }
+
+    #[TestDox('A host without zip can still check for updates, only installing is blocked')]
+    public function testMissingZipExtension(): void
+    {
+        // zip is suggested, not required: an installation without it keeps running
+        $this->assertNull(missing_extractor_error(fn(string $extension): bool => $extension === 'zip'));
+
+        $error = missing_extractor_error(fn(string $extension): bool => false);
+
+        $this->assertNotNull($error);
+        $this->assertStringContainsString('php-zip', $error);
+    }
+
+    public function testInvalidZipIsRejected(): void
+    {
+        $zipPath = sys_get_temp_dir() . '/invalid.zip';
+        file_put_contents($zipPath, 'not a zip');
+
+        $config = $this->config();
+        $payload = perform_update($config, 'file://' . $zipPath, null, allowLocalFile: true);
+
+        $this->assertFalse($payload->isSuccess);
+        @unlink($zipPath);
+    }
+
+    public function testArchiveWithoutJacoDirIsRejected(): void
+    {
+        $zipPath = $this->makeZip('nojaco.zip', [
+            'readme.txt' => 'hello',
+        ]);
+
+        $config = $this->config();
+        $payload = perform_update($config, 'file://' . $zipPath, null, allowLocalFile: true);
+
+        $this->assertFalse($payload->isSuccess);
+        @unlink($zipPath);
+    }
+
+    public function testValidUpdateWithCustomDataDir(): void
+    {
+        $zipPath = $this->makeZip('valid.zip', [
+            'jaco/api.php' => "<?php\n",
+            'jaco/autoload.php' => "<?php\n",
+        ]);
+
+        $config = $this->config();
+        $payload = perform_update($config, 'file://' . $zipPath, null, allowLocalFile: true);
+
+        $this->assertTrue($payload->isSuccess, 'Update should succeed');
+        $this->assertFileExists($this->appDir . '/api.php');
+        $this->assertDirectoryExists($this->customDataDir . '/app-backups');
+
+        $backups = glob($this->customDataDir . '/app-backups/jaco-*');
+        $this->assertNotEmpty($backups, 'Backup should be created in custom app-backups dir');
+
+        @unlink($zipPath);
+    }
+
+    #[TestDox('A conflicting target path fails without raising a warning')]
+    public function testCopyDirRecRejectsConflictingPaths(): void
+    {
+        $root = sys_get_temp_dir() . '/conflict-' . uniqid('', true);
+        mkdir($root . '/src/sub', 0755, true);
+        file_put_contents($root . '/src/a.php', 'x');
+        file_put_contents($root . '/src/sub/b.php', 'y');
+        file_put_contents($root . '/plainfile', 'i am a file');
+        mkdir($root . '/dir', 0755, true);
+        file_put_contents($root . '/dir/sub', 'a file where a directory belongs');
+        mkdir($root . '/dir2', 0755, true);
+        mkdir($root . '/dir2/a.php', 0755, true);
+
+        // mkdir()/copy() would only warn and fail: the call has to report false
+        // instead of leaking a warning into the response that runs the update
+        $warnings = [];
+        set_error_handler(static function (int $no, string $message) use (&$warnings): bool {
+            $warnings[] = $message;
+
+            return true;
+        });
+
+        try {
+            $this->assertFalse(copy_dir_rec($root . '/src', $root . '/plainfile/sub', 0755), 'destination below a file');
+            $this->assertFalse(copy_dir_rec($root . '/src', $root . '/dir', 0755), 'directory name taken by a file');
+            $this->assertFalse(copy_dir_rec($root . '/src', $root . '/dir2', 0755), 'file name taken by a directory');
+            $this->assertFalse(copy_dir_rec($root . '/src', $root . '/plainfile/a/b', 0755), 'deep path below a file');
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame([], $warnings);
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
+    #[TestDox('A copied tree keeps the permissions of its source')]
+    public function testCopyDirRecKeepsPermissions(): void
+    {
+        $source = sys_get_temp_dir() . '/permsrc-' . uniqid('', true);
+        $target = $source . '-copy';
+        mkdir($source . '/vendor', 0750, true);
+        file_put_contents($source . '/cli.php', '#!/bin/sh');
+        file_put_contents($source . '/vendor/lib.php', '<?php');
+        chmod($source . '/cli.php', 0755);
+        chmod($source . '/vendor', 0750);
+        chmod($source . '/vendor/lib.php', 0600);
+
+        $this->assertTrue(copy_dir_rec($source, $target, 0755));
+
+        // copy() would hand out 0666 & ~umask: the executable bit and the
+        // restricted mode are exactly what a backup must not lose
+        $this->assertSame('755', decoct(fileperms($target . '/cli.php') & 0777));
+        $this->assertSame('600', decoct(fileperms($target . '/vendor/lib.php') & 0777));
+        $this->assertSame('750', decoct(fileperms($target . '/vendor') & 0777));
+
+        filesystem\remove_dir_rec(dirname($source), basename($source));
+        filesystem\remove_dir_rec(dirname($target), basename($target));
+    }
+
+    #[TestDox('A restore brings back the permissions it backed up')]
+    public function testBackupAndRestoreKeepsPermissions(): void
+    {
+        $root = sys_get_temp_dir() . '/restore-' . uniqid('', true);
+        $app = $root . '/app';
+        $backup = $root . '/backup';
+
+        mkdir($app . '/vendor', 0755, true);
+        file_put_contents($app . '/api.php', '<?php');
+        file_put_contents($app . '/vendor/lib.php', '<?php');
+        chmod($app . '/vendor/lib.php', 0640);
+        chmod($app . '/vendor', 0750);
+
+        // the rollback path: back up, wipe, copy the backup back
+        $this->assertTrue(copy_dir_rec($app, $backup, 0755));
+        filesystem\remove_dir_rec(dirname($app), basename($app));
+        $this->assertTrue(copy_dir_rec($backup, $app, 0755));
+
+        $this->assertSame('640', decoct(fileperms($app . '/vendor/lib.php') & 0777));
+        $this->assertSame('750', decoct(fileperms($app . '/vendor') & 0777));
+
+        filesystem\remove_dir_rec($root, '');
+    }
+
+    #[TestDox('An application directory that contains the web root is refused')]
+    public function testRefusesToReplaceADirectoryContainingTheWebRoot(): void
+    {
+        // the normal layout: jaco/ sits inside the web root
+        $this->assertFalse(is_same_or_ancestor('/srv/www/site/jaco', '/srv/www/site'));
+        $this->assertFalse(is_same_or_ancestor('/srv/www/site/jaco', '/srv/www/site/sub'));
+
+        // appDir at or above the web root would take the pages with it
+        $this->assertTrue(is_same_or_ancestor('/srv/www/site', '/srv/www/site'));
+        $this->assertTrue(is_same_or_ancestor('/srv/www', '/srv/www/site'));
+        $this->assertTrue(is_same_or_ancestor('/', '/srv/www/site'));
+        $this->assertTrue(is_same_or_ancestor('/srv/www/site/jaco/../..', '/srv/www/site'));
+
+        // a shared prefix is not a parent
+        $this->assertFalse(is_same_or_ancestor('/srv/www2', '/srv/www/site'));
+    }
+
+    #[TestDox('A refused replacement leaves pages and media alone')]
+    public function testRefusedReplacementKeepsTheWebRoot(): void
+    {
+        $root = sys_get_temp_dir() . '/webroot-' . uniqid('', true);
+        mkdir($root . '/jaco', 0755, true);
+        file_put_contents($root . '/index.html', 'page');
+        file_put_contents($root . '/jaco/api.php', '<?php');
+
+        // appDir is the web root itself: the update must refuse, not delete it
+        $config = new Config(
+            appVersion: '0.1.0',
+            appDir: $root,
+            appDirName: 'site',
+            webDir: $root,
+            dataDir: $root . '/data',
+            backupDir: $root . '/data/backups',
+            appBackupDir: $root . '/data/app-backups',
+            templatePageDir: $root . '/t',
+            templateContentDir: $root . '/c',
+            templateSiteDir: $root . '/s',
+            mediaDir: $root . '/media',
+            uploadExtensions: ['png'],
+            mediaUrl: 'media',
+            pageExtensions: ['html'],
+            defaultLanguage: 'en',
+            directoryPermissions: 0755,
+            filePermissions: 0644,
+            secretKey: 'test_1234',
+            users: [],
+            phpErrorReporting: 0,
+            phpDisplayErrors: 0,
+            phpDisplayStartupErrors: 0,
+            phpLogErrors: 0,
+            phpErrorLog: $root . '/log',
+            loginHistoryFile: $root . '/lh.json',
+            maintenanceMode: false,
+            backupRetentionDays: 90,
+        );
+
+        $payload = perform_update($config, 'file:///nonexistent/release.zip', null, allowLocalFile: true);
+
+        $this->assertFalse($payload->isSuccess);
+        // the guard fires before the download, so the page and the app survive
+        $this->assertFileExists($root . '/index.html');
+        $this->assertFileExists($root . '/jaco/api.php');
+
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
+    #[TestDox('A restore cleans up a half-written install completely')]
+    public function testRestoreFromAPartialInstall(): void
+    {
+        $root = sys_get_temp_dir() . '/partial-' . uniqid('', true);
+        $app = $root . '/jaco';
+        $backup = $root . '/backup';
+
+        // the backup: a complete application with its modes
+        mkdir($backup . '/vendor', 0755, true);
+        file_put_contents($backup . '/api.php', '<?php // restored');
+        file_put_contents($backup . '/cli.php', '#!/bin/sh');
+        file_put_contents($backup . '/vendor/lib.php', 'x');
+        chmod($backup . '/cli.php', 0755);
+        chmod($backup . '/vendor/lib.php', 0640);
+
+        // what an interrupted install leaves behind: some new files, some old
+        // ones, dangling directories and content the backup does not know about
+        mkdir($app . '/vendor', 0755, true);
+        mkdir($app . '/leftover/deep', 0755, true);
+        file_put_contents($app . '/api.php', '<?php // new, half written');
+        file_put_contents($app . '/vendor/lib.php', 'new lib');
+        file_put_contents($app . '/leftover/deep/file.php', 'x');
+        file_put_contents($app . '/unknown.php', 'from the new release');
+
+        $this->assertTrue(restore_app_dir($app, $backup, $this->config()));
+
+        // everything of the new release is gone, the backup is in place
+        $this->assertStringContainsString('restored', (string) file_get_contents($app . '/api.php'));
+        $this->assertSame('x', file_get_contents($app . '/vendor/lib.php'));
+        $this->assertFileDoesNotExist($app . '/leftover');
+        $this->assertFileDoesNotExist($app . '/unknown.php');
+
+        // and it carries the modes it was backed up with
+        $this->assertSame('755', decoct(fileperms($app . '/cli.php') & 0777));
+        $this->assertSame('640', decoct(fileperms($app . '/vendor/lib.php') & 0777));
+
+        // nothing of the attempt stays next to the application
+        $this->assertSame([], glob($root . '/jaco.restore-*'));
+
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
+    #[TestDox('A restore puts the backup back without removing the directory')]
+    public function testRestoreKeepsTheApplicationDirectory(): void
+    {
+        $root = sys_get_temp_dir() . '/restore2-' . uniqid('', true);
+        $app = $root . '/jaco';
+        $backup = $root . '/backup';
+        mkdir($app . '/vendor', 0755, true);
+        mkdir($backup . '/vendor', 0755, true);
+        file_put_contents($backup . '/api.php', '<?php // restored');
+        file_put_contents($backup . '/vendor/lib.php', 'x');
+        // a half-written install
+        file_put_contents($app . '/api.php', 'broken');
+
+        $this->assertTrue(restore_app_dir($app, $backup, $this->config()));
+
+        $this->assertDirectoryExists($app);
+        $this->assertStringContainsString('restored', (string) file_get_contents($app . '/api.php'));
+        $this->assertFileExists($app . '/vendor/lib.php');
+        // no staging directory is left behind
+        $this->assertSame([], glob($root . '/jaco.restore-*'));
+
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
+    #[TestDox('Removing a tree reports whether anything is left')]
+    public function testRemoveDirRecReportsCompleteness(): void
+    {
+        $root = sys_get_temp_dir() . '/rmtree-' . uniqid('', true);
+        mkdir($root . '/tree/sub', 0755, true);
+        file_put_contents($root . '/tree/a.php', 'x');
+        file_put_contents($root . '/tree/sub/b.php', 'y');
+
+        // a read-only directory is made writable again, so it can be emptied
+        chmod($root . '/tree/sub', 0555);
+
+        $this->assertTrue(remove_dir_rec($root . '/tree'));
+        $this->assertDirectoryDoesNotExist($root . '/tree');
+
+        // a missing directory counts as removed, not as a failure
+        $this->assertTrue(remove_dir_rec($root . '/tree'));
+
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
+    #[TestDox('A restore reports success only when its staging copy is gone')]
+    public function testRestoreLeavesNoStagingCopy(): void
+    {
+        $root = sys_get_temp_dir() . '/restage-' . uniqid('', true);
+        $app = $root . '/jaco';
+        $backup = $root . '/backup';
+        mkdir($app, 0755, true);
+        mkdir($backup . '/locked', 0755, true);
+        file_put_contents($backup . '/api.php', '<?php // restored');
+        file_put_contents($backup . '/locked/x.php', 'y');
+        chmod($backup . '/locked', 0555);
+
+        $this->assertTrue(restore_app_dir($app, $backup, $this->config()));
+
+        // the staging copy is next to the app and therefore inside the web root:
+        // leaving it there would publish the whole application
+        $this->assertSame([], glob($root . '/jaco.restore-*'));
+        $this->assertFileExists($app . '/api.php');
+
+        // the tree contains 0555 directories the test created: make them deletable
+        chmod($backup . '/locked', 0755);
+        chmod($app . '/locked', 0755);
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
+    public function testFindJacoDirNested(): void
+    {
+        $root = sys_get_temp_dir() . '/findjaco-' . uniqid();
+        mkdir($root . '/release-name/jaco', 0755, true);
+        file_put_contents($root . '/release-name/jaco/api.php', '<?php');
+
+        $this->assertSame($root . '/release-name/jaco', find_jaco_dir($root));
+
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
+    public function testFindJacoDirFlat(): void
+    {
+        $root = sys_get_temp_dir() . '/findjaco-' . uniqid();
+        mkdir($root, 0755, true);
+        file_put_contents($root . '/api.php', '<?php');
+        file_put_contents($root . '/autoload.php', '<?php');
+
+        $this->assertSame($root, find_jaco_dir($root));
+
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
+    public function testDowngradeIsRejected(): void
+    {
+        $zipPath = $this->makeZip('downgrade.zip', [
+            'jaco/api.php' => "<?php\n",
+            'jaco/autoload.php' => "<?php\n",
+        ]);
+
+        $config = $this->config();
+        $payload = perform_update($config, 'file://' . $zipPath, 'v0.0.1', allowLocalFile: true);
+
+        $this->assertFalse($payload->isSuccess);
+        $this->assertStringContainsString('Downgrade not allowed', (string) ($payload->data[0][1] ?? ''));
+
+        @unlink($zipPath);
+    }
+
+    public function testUntrustedUrlIsRejected(): void
+    {
+        $config = $this->config();
+        $payload = perform_update($config, 'http://example.com/x.zip');
+
+        $this->assertFalse($payload->isSuccess);
+        $this->assertStringContainsString('HTTPS', (string) ($payload->data[0][1] ?? ''));
+
+        $payload2 = perform_update($config, 'https://evil.com/x.txt');
+
+        $this->assertFalse($payload2->isSuccess);
+        $this->assertStringContainsString('release', (string) ($payload2->data[0][1] ?? ''));
+    }
+
+    #[TestDox('A web request cannot install a local file')]
+    public function testFileUrlIsRejectedByDefault(): void
+    {
+        $zipPath = $this->makeZip('web-local.zip', [
+            'jaco/api.php' => "<?php\n",
+            'jaco/autoload.php' => "<?php\n",
+        ]);
+
+        // the api action never sets allowLocalFile, so this is the web default
+        $payload = perform_update($this->config(), 'file://' . $zipPath);
+
+        $this->assertFalse($payload->isSuccess);
+        $this->assertStringContainsString('HTTPS', (string) ($payload->data[0][1] ?? ''));
+        $this->assertCount(0, (array) glob($this->customDataDir . '/app-backups/jaco-*'));
+
+        @unlink($zipPath);
+    }
+
+    public function testDirectUrlDoesNotCheckUpToDate(): void
+    {
+        $zipPath = $this->makeZip('direct.zip', [
+            'jaco/api.php' => "<?php\n",
+            'jaco/autoload.php' => "<?php\n",
+        ]);
+
+        $config = $this->config();
+        $payload = perform_update($config, 'file://' . $zipPath, null, allowLocalFile: true);
+
+        // direct URL installs without checking up-to-date status
+        $this->assertTrue($payload->isSuccess);
+        $this->assertArrayNotHasKey('upToDate', $payload->data ?? []);
+
+        @unlink($zipPath);
+    }
+
+    #[TestDox('An HTTPS archive from anywhere but the release is refused')]
+    public function testForeignHttpsUrlIsRejectedBeforeDownload(): void
+    {
+        $config = $this->config();
+
+        foreach ([
+            'https://evil.com/jaco-dist-0.2.0.zip',
+            'https://github.com/attacker/jaco-dist-0.2.0.zip',
+            'https://raw.githubusercontent.com/tbreuss/jaco-cms/main/jaco-dist-0.2.0.zip',
+            'https://api.github.com/repos/tbreuss/jaco-cms/releases/download/v0.2.0/jaco-dist-0.2.0.zip',
+            'https://github.com/tbreuss/jaco-cms/archive/refs/heads/main.zip',
+            'https://github.com/tbreuss/jaco-cms/releases/download/v0.2.0/payload.zip',
+        ] as $url) {
+            $payload = perform_update($config, $url);
+
+            $this->assertFalse($payload->isSuccess, $url . ' must be refused');
+            $this->assertStringContainsString('release', (string) ($payload->data[0][1] ?? ''), $url);
+        }
+
+        // nothing was downloaded, so no backup was taken
+        $this->assertCount(0, (array) glob($this->customDataDir . '/app-backups/jaco-*'));
+    }
+
+    #[TestDox('The release download URLs are recognised')]
+    public function testReleaseDownloadUrl(): void
+    {
+        $this->assertTrue(is_release_download_url(
+            'https://github.com/tbreuss/jaco-cms/releases/download/v0.2.0/jaco-dist-v0.2.0.zip',
+        ));
+        // the signed CDN URL is a redirect target, never a configured download URL
+        $this->assertFalse(is_release_download_url(
+            'https://objects.githubusercontent.com/github-production-release-asset-2e65be/123/456/jaco-dist-v0.2.0.zip?X-Amz-Signature=abc',
+        ));
+
+        $this->assertFalse(is_release_download_url('https://evil.com/jaco-dist-v0.2.0.zip'));
+        $this->assertFalse(is_release_download_url('https://github.com/someone/else/releases/download/v0.2.0/jaco-dist-x.zip'));
+        $this->assertFalse(is_release_download_url('http://github.com/tbreuss/jaco-cms/releases/download/v0.2.0/jaco-dist.zip'));
+        $this->assertFalse(is_release_download_url('https://github.com/tbreuss/jaco-cms/releases/tags/v0.2.0'));
+        $this->assertFalse(is_release_download_url('https://github.com/tbreuss/jaco-cms/releases/download/v0.2.0/payload.zip'));
+        $this->assertFalse(is_release_download_url('file:///tmp/jaco-dist-v0.2.0.zip'));
+        // a redirect-shaped URL is not a release download URL either
+        $this->assertFalse(is_release_download_url(
+            'https://objects.githubusercontent.com/github-production-release-asset-2e65be/123/456?X-Amz-Signature=abc',
+        ));
+    }
+
+    #[TestDox('Only a version tag is a release, a branch or ref is not')]
+    public function testIsReleaseTag(): void
+    {
+        foreach (['v0.2.0', '0.2.0', 'v1.0', 'v0.2.0-rc.1'] as $tag) {
+            $this->assertTrue(is_release_tag($tag), $tag . ' is a release tag');
+        }
+
+        // version_compare() reads a word as older than any version, so these must
+        // never reach it: "main" would look like a downgrade
+        foreach (['main', 'banana', 'latest', 'refs/heads/main', 'refs/tags/v0.1.0', 'v', '', '.0.0', 'v0.1.0/../x'] as $tag) {
+            $this->assertFalse(is_release_tag($tag), $tag . ' is not a release tag');
+        }
+    }
+
+    #[TestDox('A target that is not a tag is rejected before any request')]
+    public function testNonTagTargetIsRejectedWithoutRequest(): void
+    {
+        [, , , $error] = fetch_latest_release('main');
+
+        $this->assertNotNull($error);
+        $this->assertStringContainsString('Not a release tag', $error);
+        $this->assertStringContainsString('main', $error);
+    }
+
+    #[TestDox('The redirect target of a verified asset is accepted, anything else is not')]
+    public function testReleaseAssetUrl(): void
+    {
+        $releaseUrl = 'https://github.com/tbreuss/jaco-cms/releases/download/v0.2.0/jaco-dist-v0.2.0.zip';
+
+        // GitHub redirects to a signed URL that carries the asset name
+        $this->assertTrue(is_release_asset_url(
+            'https://objects.githubusercontent.com/github-production-release-asset-2e65be/123/'
+            . 'jaco-dist-v0.2.0.zip?X-Amz-Signature=abc',
+            $releaseUrl,
+        ));
+
+        // a different asset, a different host or another release is not
+        $this->assertFalse(is_release_asset_url('https://objects.githubusercontent.com/x/jaco-dist-v9.9.9.zip', $releaseUrl));
+        $this->assertFalse(is_release_asset_url('https://evil.com/jaco-dist-v0.2.0.zip?x=1', $releaseUrl));
+        $this->assertFalse(is_release_asset_url('http://objects.githubusercontent.com/jaco-dist-v0.2.0.zip', $releaseUrl));
+        $this->assertFalse(is_release_asset_url('https://objects.githubusercontent.com/x.zip', 'https://evil.com/jaco-dist-v0.2.0.zip'));
+    }
+
+    #[TestDox('The final URL of a redirected download is read from its headers')]
+    public function testResponseFinalUrl(): void
+    {
+        $headers = [
+            'HTTP/1.1 302 Found',
+            'Location: https://objects.githubusercontent.com/asset/1/jaco-dist-v0.2.0.zip',
+            'HTTP/1.1 200 OK',
+            'Content-Type: application/zip',
+        ];
+
+        $this->assertSame(
+            'https://objects.githubusercontent.com/asset/1/jaco-dist-v0.2.0.zip',
+            response_final_url($headers),
+        );
+
+        // no redirect
+        $this->assertNull(response_final_url(['HTTP/1.1 200 OK', 'Content-Length: 42']));
+
+        // among several hops, the first Location is the one that names the asset
+        // the release published; later hops are the CDN's own opaque redirects
+        $this->assertSame(
+            'https://objects.githubusercontent.com/jaco-dist-v0.2.0.zip',
+            response_final_url([
+                'HTTP/1.1 302 Found',
+                'Location: https://objects.githubusercontent.com/jaco-dist-v0.2.0.zip',
+                'HTTP/1.1 302 Found',
+                'Location: https://cdn.example/opaque',
+                'HTTP/1.1 200 OK',
+            ]),
+        );
+    }
+
+    #[TestDox('The checksum URL names the asset beside the archive')]
+    public function testChecksumUrl(): void
+    {
+        // no redirect: a local archive, the checksum sits next to it
+        $zipPath = $this->makeZip('sumurl.zip', ['jaco/api.php' => "<?php\n"]);
+
+        $this->assertSame('file://' . $zipPath . '.sha256', checksum_url('file://' . $zipPath));
+
+        // already a checksum URL: returned as it is, no second suffix
+        $signed = 'https://objects.githubusercontent.com/a/jaco-dist-v0.2.0.zip.sha256?X-Amz-Signature=abc';
+        $this->assertSame($signed, checksum_url($signed));
+
+        @unlink($zipPath);
+    }
+
+    /**
+     * @param callable(): string $checksum what the published checksum file contains
+     */
+    private function checksumArchive(string $zipPath, callable $checksum): void
+    {
+        // verify_release_checksum reads <url>.sha256, a local path maps to file://
+        file_put_contents($zipPath . '.sha256', $checksum());
+    }
+
+    private function sha256Of(string $path): string
+    {
+        return (string) hash_file('sha256', $path);
+    }
+
+    /**
+     * Runs the check and reports the message it throws, '' when it verified.
+     *
+     * @param callable(): void $verify
+     */
+    private function checksumError(callable $verify): string
+    {
+        try {
+            $verify();
+        } catch (\RuntimeException $e) {
+            return $e->getMessage();
+        }
+
+        return '';
+    }
+
+    #[TestDox('A matching published checksum verifies the archive')]
+    public function testChecksumAcceptsMatchingDigest(): void
+    {
+        $zipPath = $this->makeZip('signed.zip', ['jaco/api.php' => "<?php\n"]);
+        $url = 'file://' . $zipPath;
+
+        // sha256sum style, as build-dist.sh and the release workflow write it
+        $this->checksumArchive($zipPath, fn(): string => $this->sha256Of($zipPath) . "  jaco-dist-v0.2.0.zip\n");
+        $this->assertSame('', $this->checksumError(fn() => verify_release_checksum($url, $zipPath)), 'sha256sum format');
+
+        // a bare digest and upper case hex are accepted as well
+        $this->checksumArchive($zipPath, fn(): string => strtoupper($this->sha256Of($zipPath)));
+        $this->assertSame('', $this->checksumError(fn() => verify_release_checksum($url, $zipPath)), 'bare upper case digest');
+
+        @unlink($zipPath);
+        @unlink($zipPath . '.sha256');
+    }
+
+    #[TestDox('A tampered archive or a missing checksum is refused')]
+    public function testChecksumRejectsTamperedArchive(): void
+    {
+        $zipPath = $this->makeZip('tampered.zip', ['jaco/api.php' => "<?php\n"]);
+        $url = 'file://' . $zipPath;
+        $digest = $this->sha256Of($zipPath);
+
+        // the archive changes after the checksum was published
+        $this->checksumArchive($zipPath, fn(): string => $digest . "  jaco-dist-v0.2.0.zip\n");
+        file_put_contents($zipPath, 'evil payload');
+
+        try {
+            verify_release_checksum($url, $zipPath);
+            $this->fail('A checksum mismatch must not verify.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('Checksum mismatch', $e->getMessage());
+        }
+
+        @unlink($zipPath);
+        @unlink($zipPath . '.sha256');
+    }
+
+    #[TestDox('A release without a published checksum is refused')]
+    public function testChecksumRejectsMissingFile(): void
+    {
+        $zipPath = $this->makeZip('nosum.zip', ['jaco/api.php' => "<?php\n"]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('No checksum published');
+
+        try {
+            verify_release_checksum('file://' . $zipPath, $zipPath);
+        } finally {
+            @unlink($zipPath);
+        }
+    }
+
+    #[TestDox('A malformed checksum file is refused')]
+    public function testChecksumRejectsMalformedFile(): void
+    {
+        $zipPath = $this->makeZip('badsum.zip', ['jaco/api.php' => "<?php\n"]);
+        $this->checksumArchive($zipPath, fn(): string => "not-a-digest  jaco-dist-v0.2.0.zip\n");
+
+        try {
+            verify_release_checksum('file://' . $zipPath, $zipPath);
+            $this->fail('A malformed checksum file must not verify.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('Malformed checksum', $e->getMessage());
+        } finally {
+            @unlink($zipPath);
+            @unlink($zipPath . '.sha256');
+        }
+    }
+
+    #[TestDox('A local archive installs without a release checksum')]
+    public function testFileUrlSkipsChecksum(): void
+    {
+        $zipPath = $this->makeZip('local.zip', [
+            'jaco/api.php' => "<?php\n",
+            'jaco/autoload.php' => "<?php\n",
+        ]);
+
+        // no .sha256 next to it: file:// is the operator's own archive
+        $payload = perform_update($this->config(), 'file://' . $zipPath, null, allowLocalFile: true);
+
+        $this->assertTrue($payload->isSuccess);
+
+        @unlink($zipPath);
+    }
+}

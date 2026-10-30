@@ -21,7 +21,16 @@ jobs:
               run: ./build-dist.sh "${GITHUB_REF_NAME}"
             - name: Verify archive contents
               run: ./verify-dist-archive.sh "jaco-dist-${GITHUB_REF_NAME}.zip"
+            - name: Publish checksum
+              # The self-updater installs an archive only when it matches this
+              # file, which is attached next to the archive in the release.
+              run: |
+                  ARCHIVE="jaco-dist-${GITHUB_REF_NAME}.zip"
+                  sha256sum "$ARCHIVE" > "$ARCHIVE.sha256"
+                  cat "$ARCHIVE.sha256"
             - name: Attach archive to release
               uses: softprops/action-gh-release@v2
               with:
-                  files: jaco-dist-*.zip
+                  files: |
+                      jaco-dist-*.zip
+                      jaco-dist-*.zip.sha256

@@ -15,7 +15,7 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php-versions }}
-                  extensions: json
+                  extensions: json, zip
                   coverage: ${{ matrix.php-versions == '8.4' && 'pcov' || 'none' }}
             - name: Check that a fresh clone has the test directories
               run: bash jaco/test/check-fixtures.sh

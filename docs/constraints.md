@@ -258,7 +258,8 @@ falling back to something, so a typo cannot hand out access.
   `template/site/preview`, `template/site/apply`, `backup/list`, `backup/view`,
   `backup/restore`, `css/list`, `css/view` and `system/change-password`
 - `admin`: everything, notably `backup/delete`, `css/update`, `template/site/update`,
-  `system`, `system/log`, `system/log/clear` and `system/php-info`
+  `system`, `system/log`, `system/log/clear`, `system/php-info`,
+  `system/check-update` and `system/update`
 
 An invalid or missing token answers **401**: the session is gone and the frontend returns
 to the login. A role that is too low answers **403**: the session stays, only that action
