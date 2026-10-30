@@ -9,6 +9,8 @@ use jaco\core\filesystem;
 
 use function jaco\domain\update\perform_update;
 use function jaco\domain\update\copy_dir_rec;
+use function jaco\domain\update\is_same_or_ancestor;
+use function jaco\domain\update\restore_app_dir;
 use function jaco\domain\update\find_jaco_dir;
 use function jaco\domain\update\missing_extractor_error;
 use function jaco\domain\update\checksum_url;
@@ -231,6 +233,96 @@ final class UpdateTest extends TestCase
         $this->assertSame('750', decoct(fileperms($app . '/vendor') & 0777));
 
         filesystem\remove_dir_rec($root, '');
+    }
+
+    #[TestDox('An application directory that contains the web root is refused')]
+    public function testRefusesToReplaceADirectoryContainingTheWebRoot(): void
+    {
+        // the normal layout: jaco/ sits inside the web root
+        $this->assertFalse(is_same_or_ancestor('/srv/www/site/jaco', '/srv/www/site'));
+        $this->assertFalse(is_same_or_ancestor('/srv/www/site/jaco', '/srv/www/site/sub'));
+
+        // appDir at or above the web root would take the pages with it
+        $this->assertTrue(is_same_or_ancestor('/srv/www/site', '/srv/www/site'));
+        $this->assertTrue(is_same_or_ancestor('/srv/www', '/srv/www/site'));
+        $this->assertTrue(is_same_or_ancestor('/', '/srv/www/site'));
+        $this->assertTrue(is_same_or_ancestor('/srv/www/site/jaco/../..', '/srv/www/site'));
+
+        // a shared prefix is not a parent
+        $this->assertFalse(is_same_or_ancestor('/srv/www2', '/srv/www/site'));
+    }
+
+    #[TestDox('A refused replacement leaves pages and media alone')]
+    public function testRefusedReplacementKeepsTheWebRoot(): void
+    {
+        $root = sys_get_temp_dir() . '/webroot-' . uniqid('', true);
+        mkdir($root . '/jaco', 0755, true);
+        file_put_contents($root . '/index.html', 'page');
+        file_put_contents($root . '/jaco/api.php', '<?php');
+
+        // appDir is the web root itself: the update must refuse, not delete it
+        $config = new Config(
+            appVersion: '0.1.0',
+            appDir: $root,
+            appDirName: 'site',
+            webDir: $root,
+            dataDir: $root . '/data',
+            backupDir: $root . '/data/backups',
+            appBackupDir: $root . '/data/app-backups',
+            templatePageDir: $root . '/t',
+            templateContentDir: $root . '/c',
+            templateSiteDir: $root . '/s',
+            mediaDir: $root . '/media',
+            uploadExtensions: ['png'],
+            mediaUrl: 'media',
+            pageExtensions: ['html'],
+            defaultLanguage: 'en',
+            directoryPermissions: 0755,
+            filePermissions: 0644,
+            secretKey: 'test_1234',
+            users: [],
+            phpErrorReporting: 0,
+            phpDisplayErrors: 0,
+            phpDisplayStartupErrors: 0,
+            phpLogErrors: 0,
+            phpErrorLog: $root . '/log',
+            loginHistoryFile: $root . '/lh.json',
+            maintenanceMode: false,
+            backupRetentionDays: 90,
+        );
+
+        $payload = perform_update($config, 'file:///nonexistent/release.zip', null, allowLocalFile: true);
+
+        $this->assertFalse($payload->isSuccess);
+        // the guard fires before the download, so the page and the app survive
+        $this->assertFileExists($root . '/index.html');
+        $this->assertFileExists($root . '/jaco/api.php');
+
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
+    #[TestDox('A restore puts the backup back without removing the directory')]
+    public function testRestoreKeepsTheApplicationDirectory(): void
+    {
+        $root = sys_get_temp_dir() . '/restore2-' . uniqid('', true);
+        $app = $root . '/jaco';
+        $backup = $root . '/backup';
+        mkdir($app . '/vendor', 0755, true);
+        mkdir($backup . '/vendor', 0755, true);
+        file_put_contents($backup . '/api.php', '<?php // restored');
+        file_put_contents($backup . '/vendor/lib.php', 'x');
+        // a half-written install
+        file_put_contents($app . '/api.php', 'broken');
+
+        $this->assertTrue(restore_app_dir($app, $backup, $this->config()));
+
+        $this->assertDirectoryExists($app);
+        $this->assertStringContainsString('restored', (string) file_get_contents($app . '/api.php'));
+        $this->assertFileExists($app . '/vendor/lib.php');
+        // no staging directory is left behind
+        $this->assertSame([], glob($root . '/jaco.restore-*'));
+
+        filesystem\remove_dir_rec(dirname($root), basename($root));
     }
 
     public function testFindJacoDirNested(): void

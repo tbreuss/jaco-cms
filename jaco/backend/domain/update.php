@@ -471,6 +471,15 @@ function perform_update(
 
         $backupPath = $backupDir . '/' . $backupName;
 
+        // the application directory is replaced, never removed together with its
+        // parent: a config with appDir at or above the web root would otherwise
+        // take the pages and media with it
+        if (is_same_or_ancestor($appDir, $config->webDir)) {
+            throw new \RuntimeException(
+                'Application directory contains the web root, refusing to replace it: ' . $appDir,
+            );
+        }
+
         if (!copy_dir_rec($appDir, $backupPath, $config->directoryPermissions)) {
             throw new \RuntimeException('Backup of jaco/ failed.');
         }
@@ -495,23 +504,24 @@ function perform_update(
 
         // copy new contents
         if (!copy_dir_rec($sourceJaco, $appDir, $config->directoryPermissions)) {
-            // attempt restore
-            remove_dir_rec($appDir);
-            if (!is_dir($appDir)) {
-                mkdir($appDir, $config->directoryPermissions, true);
-            }
-            copy_dir_rec($backupPath, $appDir, $config->directoryPermissions);
-            throw new \RuntimeException('Install failed, restored from backup.');
+            restore_app_dir($appDir, $backupPath, $config);
+
+            throw new \RuntimeException(
+                is_dir($appDir) && file_exists($appDir . '/api.php')
+                    ? 'Install failed, restored from backup.'
+                    : 'Install failed and the restore failed too, the backup is kept in ' . $backupPath,
+            );
         }
 
         // verify
         if (!file_exists($appDir . '/api.php')) {
-            remove_dir_rec($appDir);
-            if (!is_dir($appDir)) {
-                mkdir($appDir, $config->directoryPermissions, true);
-            }
-            copy_dir_rec($backupPath, $appDir, $config->directoryPermissions);
-            throw new \RuntimeException('Verification failed, restored from backup.');
+            restore_app_dir($appDir, $backupPath, $config);
+
+            throw new \RuntimeException(
+                is_dir($appDir) && file_exists($appDir . '/api.php')
+                    ? 'Verification failed, restored from backup.'
+                    : 'Verification failed and the restore failed too, the backup is kept in ' . $backupPath,
+            );
         }
 
         // prune old app backups: keep only the 5 newest
@@ -571,6 +581,102 @@ function find_jaco_dir(string $root, int $depth = 0): ?string
     }
 
     return null;
+}
+
+/**
+ * Whether $path is $ancestor itself or lies below it, after resolving "." and "..".
+ * Used to refuse replacing a directory that contains the web root.
+ */
+function is_same_or_ancestor(string $ancestor, string $path): bool
+{
+    $normalize = static function (string $path): string {
+        $parts = [];
+
+        foreach (explode('/', str_replace('\\', '/', $path)) as $part) {
+            if ($part === '' || $part === '.') {
+                continue;
+            }
+
+            if ($part === '..') {
+                array_pop($parts);
+                continue;
+            }
+
+            $parts[] = $part;
+        }
+
+        return '/' . implode('/', $parts);
+    };
+
+    $ancestor = $normalize($ancestor);
+    $path = $normalize($path);
+
+    // "/" is above everything; for every other ancestor compare the component
+    // lists, so "/srv/www" does not match "/srv/www2"
+    if ($ancestor === '/') {
+        return true;
+    }
+
+    return $path === $ancestor || str_starts_with($path, $ancestor . '/');
+}
+
+/**
+ * Put the backed-up application directory back in place.
+ *
+ * The backup is copied next to the target first and only then swapped in, so a
+ * failed copy still leaves a complete directory at $appDir. Deleting $appDir
+ * before copying would leave the installation gone when the copy is interrupted,
+ * which is exactly the situation this runs in.
+ */
+function restore_app_dir(string $appDir, string $backupPath, Config $config): bool
+{
+    if (!is_dir($backupPath)) {
+        return false;
+    }
+
+    $staging = $appDir . '.restore-' . uniqid('', true);
+
+    try {
+        if (!copy_dir_rec($backupPath, $staging, $config->directoryPermissions)) {
+            remove_dir_rec($staging);
+
+            return false;
+        }
+
+        // clear the target's contents, keep the directory itself: removing it
+        // would also remove anything the operator placed around it
+        if (is_dir($appDir)) {
+            foreach (scandir($appDir) ?: [] as $item) {
+                if ($item === '.' || $item === '..') {
+                    continue;
+                }
+
+                $path = $appDir . '/' . $item;
+
+                if (is_dir($path) && !is_link($path)) {
+                    remove_dir_rec($path);
+                } elseif (is_file($path) || is_link($path)) {
+                    unlink($path);
+                }
+            }
+        } elseif (!mkdir($appDir, $config->directoryPermissions, true)) {
+            remove_dir_rec($staging);
+
+            return false;
+        }
+
+        if (!copy_dir_rec($staging, $appDir, $config->directoryPermissions)) {
+            return false;
+        }
+
+        remove_dir_rec($staging);
+
+        return true;
+    } catch (\Throwable) {
+        remove_dir_rec($staging);
+
+        return false;
+    }
 }
 
 /**
