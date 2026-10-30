@@ -395,10 +395,13 @@ From the command line (latest release):
 
     php jaco/cli.php sys:update
 
-Or a specific version or direct URL:
+Or a specific release or direct URL:
 
     php jaco/cli.php sys:update -t v0.2.0
     php jaco/cli.php sys:update -u file:///srv/downloads/jaco-dist-v0.2.0.zip
+
+`-t` takes a release tag (`v0.2.0`), not a branch such as `main`: a branch has
+no published release or checksum and is refused before any request.
 
 Or from the admin: System → "Install update". The update runs with an extended
 time limit; keep the browser tab open until it finishes. A backup of the

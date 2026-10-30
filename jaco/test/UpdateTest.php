@@ -11,8 +11,10 @@ use function jaco\domain\update\perform_update;
 use function jaco\domain\update\find_jaco_dir;
 use function jaco\domain\update\missing_extractor_error;
 use function jaco\domain\update\checksum_url;
+use function jaco\domain\update\fetch_latest_release;
 use function jaco\domain\update\is_release_asset_url;
 use function jaco\domain\update\is_release_download_url;
+use function jaco\domain\update\is_release_tag;
 use function jaco\domain\update\response_final_url;
 use function jaco\domain\update\verify_release_checksum;
 
@@ -314,6 +316,30 @@ final class UpdateTest extends TestCase
         $this->assertFalse(is_release_download_url(
             'https://objects.githubusercontent.com/github-production-release-asset-2e65be/123/456?X-Amz-Signature=abc',
         ));
+    }
+
+    #[TestDox('Only a version tag is a release, a branch or ref is not')]
+    public function testIsReleaseTag(): void
+    {
+        foreach (['v0.2.0', '0.2.0', 'v1.0', 'v0.2.0-rc.1'] as $tag) {
+            $this->assertTrue(is_release_tag($tag), $tag . ' is a release tag');
+        }
+
+        // version_compare() reads a word as older than any version, so these must
+        // never reach it: "main" would look like a downgrade
+        foreach (['main', 'banana', 'latest', 'refs/heads/main', 'refs/tags/v0.1.0', 'v', '', '.0.0', 'v0.1.0/../x'] as $tag) {
+            $this->assertFalse(is_release_tag($tag), $tag . ' is not a release tag');
+        }
+    }
+
+    #[TestDox('A target that is not a tag is rejected before any request')]
+    public function testNonTagTargetIsRejectedWithoutRequest(): void
+    {
+        [, , , $error] = fetch_latest_release('main');
+
+        $this->assertNotNull($error);
+        $this->assertStringContainsString('Not a release tag', $error);
+        $this->assertStringContainsString('main', $error);
     }
 
     #[TestDox('The redirect target of a verified asset is accepted, anything else is not')]

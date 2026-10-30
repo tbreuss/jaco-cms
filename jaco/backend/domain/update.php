@@ -45,6 +45,9 @@ function check_update(Config $config): Payload
 /**
  * Fetch the latest release metadata from GitHub.
  *
+ * @param string|null $tag release tag such as "v0.2.0", never a branch or ref:
+ *   the GitHub releases API resolves tags only
+ *
  * @return array{0: string, 1: string, 2: string, 3: string|null} latest tag,
  *   download url, release url, error message
  */
@@ -53,7 +56,7 @@ function fetch_latest_release(?string $tag = null): array
     $context = stream_context_create([
         'http' => [
             'method' => 'GET',
-            'header' => "User-Agent: Jaco-CMS/" . "updater\r\nAccept: application/vnd.github+json\r\n",
+            'header' => "User-Agent: Jaco-CMS/updater\r\nAccept: application/vnd.github+json\r\n",
             'timeout' => 30,
         ],
     ]);
@@ -61,13 +64,25 @@ function fetch_latest_release(?string $tag = null): array
     if ($tag === null || $tag === '') {
         $url = 'https://api.github.com/repos/' . RELEASE_REPO . '/releases/latest';
     } else {
+        // a ref such as "main" or "refs/heads/main" is not a release: the API
+        // answers 404, which must not be reported as an unreachable host
+        if (!is_release_tag($tag)) {
+            return ['', '', '', 'Not a release tag: ' . $tag . ' (expected a version such as v0.2.0).'];
+        }
+
         $url = 'https://api.github.com/repos/' . RELEASE_REPO . '/releases/tags/' . rawurlencode($tag);
     }
 
+    /** @var array<int, string> $http_response_header */
+    $http_response_header = [];
     $json = @file_get_contents($url, false, $context);
 
     if ($json === false) {
-        return ['', '', '', 'Could not reach GitHub.'];
+        $notFound = preg_match('#^HTTP/\S+\s+404\s#', $http_response_header[0] ?? '') === 1;
+
+        return ['', '', '', $notFound
+            ? 'No release ' . $tag . ' published in ' . RELEASE_REPO . '.'
+            : 'Could not reach GitHub.'];
     }
 
     $data = json_decode($json, true);
@@ -93,6 +108,16 @@ function fetch_latest_release(?string $tag = null): array
     }
 
     return [$tag, $downloadUrl, $releaseUrl, null];
+}
+
+/**
+ * Whether a value is a release tag (optionally prefixed with "v"), not a branch,
+ * commit or nested ref. Without this check version_compare() treats a word as
+ * older than any version, so "main" reads as a downgrade.
+ */
+function is_release_tag(string $tag): bool
+{
+    return preg_match('/^v?\d+\.\d+(?:\.\d+)?(?:-[0-9A-Za-z.-]+)?$/', $tag) === 1;
 }
 
 /**

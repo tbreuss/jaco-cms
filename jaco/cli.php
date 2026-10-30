@@ -52,7 +52,7 @@ $app->command('sys:check-update', 'Check for a newer release.')
     });
 
 $app->command('sys:update', 'Download and install the latest release.')
-    ->option('-t --target', 'Target version tag (default: latest)', 'strval', '')
+    ->option('-t --target', 'Target release tag, e.g. v0.2.0 (default: latest)', 'strval', '')
     ->option('-u --url', 'Direct download URL (default: latest release)', 'strval', '')
     ->action(function (string $target, string $url) use ($config): void {
         [$output, $exitCode] = \jaco\cli\system\update\command(
