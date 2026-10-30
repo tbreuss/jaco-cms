@@ -12,6 +12,9 @@
         "adhocore/cli": "^1.6",
         "chillerlan/php-qrcode": "^6.0"
     },
+    "suggest": {
+        "ext-zip": "Required to install updates from a release archive (sys:update, System page)"
+    },
     "autoload": {
         "files": [
             "autoload.php"

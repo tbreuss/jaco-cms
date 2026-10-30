@@ -12,7 +12,8 @@ use function jaco\domain\update\perform_update;
  */
 function command(Config $config, ?string $version = null, ?string $url = null): array
 {
-    $payload = perform_update($config, $url, $version);
+    // the CLI runs as the operator: a file:// archive is trusted as it is
+    $payload = perform_update($config, $url, $version, allowLocalFile: true);
 
     return responder($payload);
 }

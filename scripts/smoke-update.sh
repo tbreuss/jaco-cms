@@ -17,14 +17,18 @@ trap 'rm -rf "$WORK"' EXIT INT TERM
 echo "=== Smoke test: self-update ==="
 echo "Working dir: $WORK"
 
-# 1. Build a local release from the current code
+# 1. Build a local release from the current code. The archive is installed over
+# file://, which trusts the operator's own file, so no checksum is needed here:
+# a real HTTPS update verifies jaco-dist-<version>.zip.sha256 next to the archive.
 echo "--- Building local release ---"
 cd "$ROOT"
-./build-dist.sh smoke-test 2>&1 | tail -2
+./build-dist.sh smoke-test 2>&1 | tail -3
 cp "$ROOT/jaco-dist-smoke-test.zip" "$WORK/release.zip"
-rm -f "$ROOT/jaco-dist-smoke-test.zip"
+cp "$ROOT/jaco-dist-smoke-test.zip.sha256" "$WORK/release.zip.sha256"
+rm -f "$ROOT/jaco-dist-smoke-test.zip" "$ROOT/jaco-dist-smoke-test.zip.sha256"
 cd - >/dev/null
 echo "Built: $(du -h "$WORK/release.zip" | cut -f1)"
+echo "Checksum: $(cut -d' ' -f1 "$WORK/release.zip.sha256")"
 
 # 2. Extract
 echo "--- Extracting ---"

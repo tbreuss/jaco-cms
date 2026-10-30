@@ -8,9 +8,12 @@ in the archive root; in the git repository it lives here as `docs/install.md`.
 
 ## Requirements
 
-- PHP `^8.2` with the `dom`, `libxml` and `openssl` extensions (plus `zip` for the self-updater, or the `unzip` binary on the server)
+- PHP `^8.2` with the `dom`, `libxml` and `openssl` extensions
 - A web server with PHP (Apache/nginx + php-fpm; `php -S` for development only)
 - Composer, only for the alternative install from git (option B)
+
+The `zip` extension is optional: Jaco runs without it, but self-updates need it
+to extract a release archive (see [Updating](#updating)).
 
 ## A. Recommended: install from the ZIP archive
 
@@ -395,7 +398,7 @@ From the command line (latest release):
 Or a specific version or direct URL:
 
     php jaco/cli.php sys:update -t v0.2.0
-    php jaco/cli.php sys:update -u https://example.com/jaco-dist-0.2.0.zip
+    php jaco/cli.php sys:update -u file:///srv/downloads/jaco-dist-v0.2.0.zip
 
 Or from the admin: System → "Install update". The update runs with an extended
 time limit; keep the browser tab open until it finishes. A backup of the
@@ -403,15 +406,36 @@ previous `jaco/` is written as a directory to
 `jaco-data/app-backups/jaco-<version>-<timestamp>/` (only the 5 newest
 backups are kept) and can be restored by copying it back over `jaco/`.
 
+Installing needs the `zip` PHP extension. On a host without it, checking for
+updates still works, `sys:update` answers with a hint to enable `php-zip`, and
+nothing is downloaded or changed.
+
+### Release integrity
+
+A release archive replaces the whole application directory, so it is executed
+as code. Jaco installs an archive only when both hold:
+
+- the URL is the `jaco-dist-*.zip` asset of a release in
+  `github.com/tbreuss/jaco-cms` (GitHub's redirect to its own download CDN is
+  followed),
+- the archive matches the `jaco-dist-*.zip.sha256` file published next to it in
+  the same release. Without that file, with a different digest, or on a
+  redirect anywhere else, the update is refused and `jaco/` is left alone.
+
+`file://` archives are accepted from the CLI only: there the operator vouches
+for the file on the server. A web request cannot install a local file, and no
+setting can override these rules.
+
 ### What happens during an update
 
 1. The latest release is fetched from GitHub and compared with the installed version.
 2. The dist archive (`jaco-dist-*.zip`) is downloaded into a temporary directory.
-3. The archive is validated and extracted.
-4. The current `jaco/` is backed up to `jaco-data/app-backups/`.
-5. The contents of `jaco/` are replaced with the new version.
-6. `jaco/api.php` is checked for existence; on failure the backup is restored.
-7. Temporary files are cleaned up.
+3. The download is checked for the release host and for its published SHA-256.
+4. The archive is extracted (needs the `zip` PHP extension).
+5. The current `jaco/` is backed up to `jaco-data/app-backups/`.
+6. The contents of `jaco/` are replaced with the new version.
+7. `jaco/api.php` is checked for existence; on failure the backup is restored.
+8. Temporary files are cleaned up.
 
 ## Log in
 
