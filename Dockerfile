@@ -16,11 +16,12 @@ RUN apt-get update; \
         libfreetype-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
+        libzip-dev \
     ; \
     rm -rf /var/lib/apt/lists/*;
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg; \
-    docker-php-ext-install -j$(nproc) gd intl;
+    docker-php-ext-install -j$(nproc) gd intl zip;
 
 RUN pecl channel-update pecl.php.net; \
     pecl install xdebug; \
@@ -36,6 +37,7 @@ RUN apt-get update; \
         libicu76 \
         libjpeg62-turbo \
         libpng16-16 \
+        libzip5 \
         unzip \
     ; \
     rm -rf /var/lib/apt/lists/*;
