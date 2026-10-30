@@ -9,6 +9,7 @@ use jaco\core\filesystem;
 
 use function jaco\domain\update\perform_update;
 use function jaco\domain\update\copy_dir_rec;
+use function jaco\domain\update\remove_dir_rec;
 use function jaco\domain\update\is_same_or_ancestor;
 use function jaco\domain\update\restore_app_dir;
 use function jaco\domain\update\find_jaco_dir;
@@ -357,6 +358,51 @@ final class UpdateTest extends TestCase
         // no staging directory is left behind
         $this->assertSame([], glob($root . '/jaco.restore-*'));
 
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
+    #[TestDox('Removing a tree reports whether anything is left')]
+    public function testRemoveDirRecReportsCompleteness(): void
+    {
+        $root = sys_get_temp_dir() . '/rmtree-' . uniqid('', true);
+        mkdir($root . '/tree/sub', 0755, true);
+        file_put_contents($root . '/tree/a.php', 'x');
+        file_put_contents($root . '/tree/sub/b.php', 'y');
+
+        // a read-only directory is made writable again, so it can be emptied
+        chmod($root . '/tree/sub', 0555);
+
+        $this->assertTrue(remove_dir_rec($root . '/tree'));
+        $this->assertDirectoryDoesNotExist($root . '/tree');
+
+        // a missing directory counts as removed, not as a failure
+        $this->assertTrue(remove_dir_rec($root . '/tree'));
+
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
+    #[TestDox('A restore reports success only when its staging copy is gone')]
+    public function testRestoreLeavesNoStagingCopy(): void
+    {
+        $root = sys_get_temp_dir() . '/restage-' . uniqid('', true);
+        $app = $root . '/jaco';
+        $backup = $root . '/backup';
+        mkdir($app, 0755, true);
+        mkdir($backup . '/locked', 0755, true);
+        file_put_contents($backup . '/api.php', '<?php // restored');
+        file_put_contents($backup . '/locked/x.php', 'y');
+        chmod($backup . '/locked', 0555);
+
+        $this->assertTrue(restore_app_dir($app, $backup, $this->config()));
+
+        // the staging copy is next to the app and therefore inside the web root:
+        // leaving it there would publish the whole application
+        $this->assertSame([], glob($root . '/jaco.restore-*'));
+        $this->assertFileExists($app . '/api.php');
+
+        // the tree contains 0555 directories the test created: make them deletable
+        chmod($backup . '/locked', 0755);
+        chmod($app . '/locked', 0755);
         filesystem\remove_dir_rec(dirname($root), basename($root));
     }
 

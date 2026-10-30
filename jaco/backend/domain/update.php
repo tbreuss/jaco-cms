@@ -485,25 +485,23 @@ function perform_update(
         }
 
         // replace jaco/ contents
-        // remove old contents (keep the dir itself)
-        foreach (scandir($appDir) as $item) {
+        // remove old contents (keep the dir itself). A target that cannot be
+        // emptied completely is not mixed with the new version: that would leave
+        // files of two releases side by side, so it counts as a failed install.
+        $cleared = true;
+
+        foreach (scandir($appDir) ?: [] as $item) {
             if ($item === '.' || $item === '..') {
                 continue;
             }
 
             $path = $appDir . '/' . $item;
 
-            if (is_dir($path) && !is_link($path)) {
-                remove_dir_rec($path);
-            } else {
-                if (is_file($path) || is_link($path)) {
-                    unlink($path);
-                }
-            }
+            $removed = is_dir($path) && !is_link($path) ? remove_dir_rec($path) : unlink($path);
+            $cleared = $removed && $cleared;
         }
 
-        // copy new contents
-        if (!copy_dir_rec($sourceJaco, $appDir, $config->directoryPermissions)) {
+        if (!$cleared) {
             restore_app_dir($appDir, $backupPath, $config);
 
             throw new \RuntimeException(
@@ -513,12 +511,23 @@ function perform_update(
             );
         }
 
-        // verify
-        if (!file_exists($appDir . '/api.php')) {
-            restore_app_dir($appDir, $backupPath, $config);
+        // copy new contents
+        if (!copy_dir_rec($sourceJaco, $appDir, $config->directoryPermissions)) {
+            $restored = restore_app_dir($appDir, $backupPath, $config);
 
             throw new \RuntimeException(
-                is_dir($appDir) && file_exists($appDir . '/api.php')
+                $restored && is_dir($appDir) && file_exists($appDir . '/api.php')
+                    ? 'Install failed, restored from backup.'
+                    : 'Install failed and the restore failed too, the backup is kept in ' . $backupPath,
+            );
+        }
+
+        // verify
+        if (!file_exists($appDir . '/api.php')) {
+            $restored = restore_app_dir($appDir, $backupPath, $config);
+
+            throw new \RuntimeException(
+                $restored && is_dir($appDir) && file_exists($appDir . '/api.php')
                     ? 'Verification failed, restored from backup.'
                     : 'Verification failed and the restore failed too, the backup is kept in ' . $backupPath,
             );
@@ -627,6 +636,11 @@ function is_same_or_ancestor(string $ancestor, string $path): bool
  * failed copy still leaves a complete directory at $appDir. Deleting $appDir
  * before copying would leave the installation gone when the copy is interrupted,
  * which is exactly the situation this runs in.
+ *
+ * The staging directory sits next to the application, so it is inside the web root
+ * whenever $appDir is. It is removed before reporting success, and a removal that
+ * does not finish is reported as a failed restore: a leftover copy of the
+ * application must not stay reachable over HTTP.
  */
 function restore_app_dir(string $appDir, string $backupPath, Config $config): bool
 {
@@ -645,33 +659,35 @@ function restore_app_dir(string $appDir, string $backupPath, Config $config): bo
 
         // clear the target's contents, keep the directory itself: removing it
         // would also remove anything the operator placed around it
-        if (is_dir($appDir)) {
-            foreach (scandir($appDir) ?: [] as $item) {
-                if ($item === '.' || $item === '..') {
-                    continue;
-                }
-
-                $path = $appDir . '/' . $item;
-
-                if (is_dir($path) && !is_link($path)) {
-                    remove_dir_rec($path);
-                } elseif (is_file($path) || is_link($path)) {
-                    unlink($path);
-                }
-            }
-        } elseif (!mkdir($appDir, $config->directoryPermissions, true)) {
+        if (!is_dir($appDir) && !mkdir($appDir, $config->directoryPermissions, true)) {
             remove_dir_rec($staging);
 
             return false;
         }
 
-        if (!copy_dir_rec($staging, $appDir, $config->directoryPermissions)) {
+        $cleared = true;
+
+        foreach (scandir($appDir) ?: [] as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $path = $appDir . '/' . $item;
+            $removed = is_dir($path) && !is_link($path) ? remove_dir_rec($path) : unlink($path);
+
+            // keep clearing: a leftover entry should not stop the rest
+            $cleared = $removed && $cleared;
+        }
+
+        // a partly cleared target would be mixed with the restored files
+        if (!$cleared || !copy_dir_rec($staging, $appDir, $config->directoryPermissions)) {
+            remove_dir_rec($staging);
+
             return false;
         }
 
-        remove_dir_rec($staging);
-
-        return true;
+        // success only when the staging copy is gone as well
+        return remove_dir_rec($staging);
     } catch (\Throwable) {
         remove_dir_rec($staging);
 
@@ -769,13 +785,31 @@ function copy_dir_rec(string $src, string $dst, int $permissions = 0755): bool
     return true;
 }
 
-function remove_dir_rec(string $dir): void
+/**
+ * Remove a directory tree.
+ *
+ * @return bool true when nothing of $dir is left. A missing directory counts as
+ *   removed, so the caller can tell an incomplete removal from a complete one:
+ *   the update relies on an empty application directory before copying the new
+ *   version in, and silently leaving content behind would corrupt the install.
+ */
+function remove_dir_rec(string $dir): bool
 {
     if (!is_dir($dir)) {
-        return;
+        return true;
     }
 
-    foreach (scandir($dir) as $item) {
+    $complete = true;
+
+    // a read-only directory cannot be emptied, and directories we own are not
+    // read-only by intent: the backup carries the modes, so make it writable
+    $mode = fileperms($dir);
+
+    if ($mode !== false && ($mode & 0700) !== 0700) {
+        chmod($dir, $mode | 0700);
+    }
+
+    foreach (scandir($dir) ?: [] as $item) {
         if ($item === '.' || $item === '..') {
             continue;
         }
@@ -783,17 +817,21 @@ function remove_dir_rec(string $dir): void
         $path = $dir . '/' . $item;
 
         if (is_dir($path) && !is_link($path)) {
-            remove_dir_rec($path);
-        } else {
-            if (is_file($path) || is_link($path)) {
-                unlink($path);
-            }
+            $complete = remove_dir_rec($path) && $complete;
+
+            continue;
+        }
+
+        if ((is_file($path) || is_link($path)) && !unlink($path)) {
+            $complete = false;
         }
     }
 
-    if (is_dir($dir)) {
-        rmdir($dir);
+    if (is_dir($dir) && !rmdir($dir)) {
+        $complete = false;
     }
+
+    return $complete && !file_exists($dir);
 }
 
 function prune_app_backups(string $dir, int $keep): void
