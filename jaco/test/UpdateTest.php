@@ -187,6 +187,41 @@ final class UpdateTest extends TestCase
         @unlink($zipPath);
     }
 
+    #[TestDox('A conflicting target path fails without raising a warning')]
+    public function testCopyDirRecRejectsConflictingPaths(): void
+    {
+        $root = sys_get_temp_dir() . '/conflict-' . uniqid('', true);
+        mkdir($root . '/src/sub', 0755, true);
+        file_put_contents($root . '/src/a.php', 'x');
+        file_put_contents($root . '/src/sub/b.php', 'y');
+        file_put_contents($root . '/plainfile', 'i am a file');
+        mkdir($root . '/dir', 0755, true);
+        file_put_contents($root . '/dir/sub', 'a file where a directory belongs');
+        mkdir($root . '/dir2', 0755, true);
+        mkdir($root . '/dir2/a.php', 0755, true);
+
+        // mkdir()/copy() would only warn and fail: the call has to report false
+        // instead of leaking a warning into the response that runs the update
+        $warnings = [];
+        set_error_handler(static function (int $no, string $message) use (&$warnings): bool {
+            $warnings[] = $message;
+
+            return true;
+        });
+
+        try {
+            $this->assertFalse(copy_dir_rec($root . '/src', $root . '/plainfile/sub', 0755), 'destination below a file');
+            $this->assertFalse(copy_dir_rec($root . '/src', $root . '/dir', 0755), 'directory name taken by a file');
+            $this->assertFalse(copy_dir_rec($root . '/src', $root . '/dir2', 0755), 'file name taken by a directory');
+            $this->assertFalse(copy_dir_rec($root . '/src', $root . '/plainfile/a/b', 0755), 'deep path below a file');
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame([], $warnings);
+        filesystem\remove_dir_rec(dirname($root), basename($root));
+    }
+
     #[TestDox('A copied tree keeps the permissions of its source')]
     public function testCopyDirRecKeepsPermissions(): void
     {

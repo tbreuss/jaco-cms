@@ -685,9 +685,35 @@ function restore_app_dir(string $appDir, string $backupPath, Config $config): bo
  * executable script into a plain file and silently widen a restricted one. The
  * backup has to restore what was there, so the mode travels with each entry.
  */
+/**
+ * Whether one of the existing directories above $path is a plain file, which makes
+ * creating $path impossible. Walks up only until the first directory that exists,
+ * so a deep missing path costs a handful of stat calls.
+ */
+function has_file_ancestor(string $path): bool
+{
+    $parent = dirname($path);
+
+    while ($parent !== '' && $parent !== '.' && $parent !== '/' && !is_dir($parent)) {
+        if (file_exists($parent)) {
+            return true;
+        }
+
+        $parent = dirname($parent);
+    }
+
+    return false;
+}
+
 function copy_dir_rec(string $src, string $dst, int $permissions = 0755): bool
 {
     if (!is_dir($src)) {
+        return false;
+    }
+
+    // a plain file anywhere on the path where a directory belongs is a
+    // deterministic conflict: report it instead of letting mkdir() warn and fail
+    if ((file_exists($dst) && !is_dir($dst)) || has_file_ancestor($dst)) {
         return false;
     }
 
@@ -695,16 +721,9 @@ function copy_dir_rec(string $src, string $dst, int $permissions = 0755): bool
         if (!mkdir($dst, $permissions, true)) {
             return false;
         }
-
-        // mkdir() applies the umask too, restore what the source directory had
-        $sourceMode = fileperms($src);
-
-        if ($sourceMode !== false) {
-            @chmod($dst, $sourceMode & 0777);
-        }
     }
 
-    foreach (scandir($src) as $item) {
+    foreach (scandir($src) ?: [] as $item) {
         if ($item === '.' || $item === '..') {
             continue;
         }
@@ -716,17 +735,35 @@ function copy_dir_rec(string $src, string $dst, int $permissions = 0755): bool
             if (!copy_dir_rec($srcPath, $dstPath, $permissions)) {
                 return false;
             }
-        } else {
-            if (!copy($srcPath, $dstPath)) {
-                return false;
-            }
 
-            $sourceMode = fileperms($srcPath);
-
-            if ($sourceMode !== false) {
-                @chmod($dstPath, $sourceMode & 0777);
-            }
+            continue;
         }
+
+        // same deterministic conflict for a file: the target path is taken by a
+        // directory, copy() could only warn and fail
+        if (is_dir($dstPath)) {
+            return false;
+        }
+
+        if (!copy($srcPath, $dstPath)) {
+            return false;
+        }
+
+        // the backup must carry the modes it saved: a silently ignored chmod
+        // would leave 0644 behind, the very thing this function exists to avoid
+        $sourceMode = fileperms($srcPath);
+
+        if ($sourceMode !== false && !chmod($dstPath, $sourceMode & 0777)) {
+            return false;
+        }
+    }
+
+    // set the directory mode after filling it: a read-only source directory would
+    // otherwise block the copies into it, and mkdir() applied the umask
+    $sourceMode = fileperms($src);
+
+    if ($sourceMode !== false && !chmod($dst, $sourceMode & 0777)) {
+        return false;
     }
 
     return true;
