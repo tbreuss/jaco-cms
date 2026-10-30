@@ -39,7 +39,9 @@ server {
     # jaco/ as a whitelist: the API entry point, the admin shell and the
     # frontend assets. The nested locations win over the parent block, so the
     # inner deny also covers files that nobody listed.
+    # Keep search engines out of the admin area.
     location ^~ /jaco/ {
+        add_header X-Robots-Tag "noindex, nofollow" always;
         location = /jaco/api.php    { }
         location = /jaco/index.html { }
         location ^~ /jaco/frontend/ {

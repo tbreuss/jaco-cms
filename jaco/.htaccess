@@ -5,6 +5,11 @@
 # override it.
 Options -Indexes
 
+# Keep search engines out of the admin area.
+<IfModule mod_headers.c>
+    Header always set X-Robots-Tag "noindex, nofollow"
+</IfModule>
+
 # Everything is internal. The public entry points are granted afterwards: while
 # this file is evaluated the requested name is not known yet, so the order of the
 # sections decides. A deny that comes last would win for them too.
