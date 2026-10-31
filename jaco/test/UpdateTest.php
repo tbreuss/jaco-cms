@@ -611,18 +611,37 @@ final class UpdateTest extends TestCase
     {
         $releaseUrl = 'https://github.com/tbreuss/jaco-cms/releases/download/v0.2.0/jaco-dist-v0.2.0.zip';
 
-        // GitHub redirects to a signed URL that carries the asset name
+        // the signed URL GitHub answers with today: the path is a numeric id and
+        // a UUID, the asset name only appears in the query
+        $this->assertTrue(is_release_asset_url(
+            'https://release-assets.githubusercontent.com/github-production-release-asset/481924271/'
+            . 'cb66957a-a2cb-4c52-87ff-7e26ad35ed89?sp=r&sig=abc'
+            . '&rscd=attachment%3B+filename%3Djaco-dist-v0.2.0.zip',
+            $releaseUrl,
+        ));
+
+        // the older CDN host still passes
         $this->assertTrue(is_release_asset_url(
             'https://objects.githubusercontent.com/github-production-release-asset-2e65be/123/'
             . 'jaco-dist-v0.2.0.zip?X-Amz-Signature=abc',
             $releaseUrl,
         ));
 
-        // a different asset, a different host or another release is not
-        $this->assertFalse(is_release_asset_url('https://objects.githubusercontent.com/x/jaco-dist-v9.9.9.zip', $releaseUrl));
+        // a host that is not GitHub's is refused, whatever the path says
         $this->assertFalse(is_release_asset_url('https://evil.com/jaco-dist-v0.2.0.zip?x=1', $releaseUrl));
-        $this->assertFalse(is_release_asset_url('http://objects.githubusercontent.com/jaco-dist-v0.2.0.zip', $releaseUrl));
-        $this->assertFalse(is_release_asset_url('https://objects.githubusercontent.com/x.zip', 'https://evil.com/jaco-dist-v0.2.0.zip'));
+        $this->assertFalse(is_release_asset_url('http://release-assets.githubusercontent.com/x/jaco-dist-v0.2.0.zip', $releaseUrl));
+
+        // the download may only be redirected away from a verified release URL
+        $this->assertFalse(is_release_asset_url(
+            'https://objects.githubusercontent.com/x.zip',
+            'https://evil.com/jaco-dist-v0.2.0.zip',
+        ));
+
+        // the suffix alone must not be enough: the dot before githubusercontent
+        // is what keeps "evilgithubusercontent.com" out
+        $this->assertFalse(is_release_asset_url('https://evilgithubusercontent.com/jaco-dist-v0.2.0.zip', $releaseUrl));
+        $this->assertFalse(is_release_asset_url('https://githubusercontent.com/jaco-dist-v0.2.0.zip', $releaseUrl));
+        $this->assertFalse(is_release_asset_url('https://evil.com.githubusercontent.com.attacker.net/jaco-dist-v0.2.0.zip', $releaseUrl));
     }
 
     #[TestDox('The final URL of a redirected download is read from its headers')]

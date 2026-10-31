@@ -13,7 +13,6 @@ const RELEASE_REPO = 'tbreuss/jaco-cms';
 
 const RELEASE_ASSET_PATTERN = '/^jaco-dist-.+\.zip$/';
 
-
 /**
  * Compare the installed version with the latest published release.
  *
@@ -135,9 +134,15 @@ function is_release_download_url(string $url): bool
 }
 
 /**
- * Last resort for a redirect: the CDN URL GitHub redirects a verified release asset
- * to. The path is opaque, so it is bound by the host and by the asset name it
- * carries; the checksum still has to match the bytes afterwards.
+ * Whether a redirect target is a GitHub download host.
+ *
+ * The path of that URL is opaque: today GitHub answers with a signed
+ * release-assets.githubusercontent.com URL whose path is a numeric id and a
+ * UUID, and the asset name only appears in the query. Binding on the file name
+ * there compared against a name that is not in the path at all, so every real
+ * download was refused. The binding that matters is that the download started
+ * at a verified release URL (checked here) and that the bytes then match the
+ * published checksum.
  */
 function is_release_asset_url(string $url, string $releaseUrl): bool
 {
@@ -146,20 +151,14 @@ function is_release_asset_url(string $url, string $releaseUrl): bool
     }
 
     $scheme = parse_url($url, PHP_URL_SCHEME);
-    $host = parse_url($url, PHP_URL_HOST);
-    $path = (string) parse_url($url, PHP_URL_PATH);
-
-    $host = strtolower((string) $host);
+    $host = strtolower((string) parse_url($url, PHP_URL_HOST));
 
     // GitHub rotates the CDN hostname (objects.githubusercontent.com,
     // release-assets.githubusercontent.com, ...). Accept github.com and any
-    // *.githubusercontent.com host so this check does not break on every
-    // CDN change; the checksum verification below still guards the bytes.
-    $hostAllowed = $host === 'github.com' || str_ends_with($host, '.githubusercontent.com');
-
+    // *.githubusercontent.com host so this check does not break on every CDN
+    // change. The leading dot keeps "evilgithubusercontent.com" out.
     return strtolower((string) $scheme) === 'https'
-        && $hostAllowed
-        && basename($path) === basename((string) parse_url($releaseUrl, PHP_URL_PATH));
+        && ($host === 'github.com' || str_ends_with($host, '.githubusercontent.com'));
 }
 
 /**
