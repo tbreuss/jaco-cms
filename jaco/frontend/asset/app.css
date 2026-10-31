@@ -1,7 +1,43 @@
 :root {
     color-scheme: light;
+
+    /* ---- Scale ------------------------------------------------------------
+       Every size in this file comes from one of these three scales. The values
+       are the ones the admin already used, named instead of repeated: changing
+       a step here changes it everywhere it belongs. Do not add a raw px or rem
+       size next to a rule; pick a step. */
+
+    /* Type. The admin runs at the browser default (16px) in the chrome and one
+       step below inside content, because tables and forms are dense. */
     --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --text-chrome: 16px;    /* navbar links, dropdown trigger */
+    --text-body: 1rem;      /* palette input, headings */
+    --text-ui: 0.95rem;     /* palette items */
+    --text-control: 0.85rem; /* buttons, palette trigger, field errors below */
+    --text-small: 0.8rem;   /* hint lines, palette context */
+    --text-note: 0.875rem;  /* field errors, form error list */
+    --text-small-chrome: 14px; /* theme switch and the banner lines: one step below the chrome */
+    --text-tiny: 0.72rem;   /* key caps */
+
+    /* Space. 4px grid; the steps cover every padding and gap in the file.
+       --space-0 is the half step for tight chrome (key caps, php-info cells). */
+    --space-0: 3px;
+    --space-1: 4px;
+    --space-2: 6px;
+    --space-3: 8px;
+    --space-4: 10px;
+    --space-5: 12px;
+    --space-6: 16px;
+    --space-7: 20px;
+    --space-8: 24px;
+    --space-nav: 14px;   /* navbar links: taller than --space-5, shorter than a card */
+    --space-card: 32px;  /* dialog and card padding */
+
+    /* Shape. */
     --radius: 6px;
+    --radius-sm: 5px;
+    --radius-pill: 999px;
+
     /* Height of the command palette trigger. It is the only control with a
        fixed height: the action buttons grow from their own padding, so they
        follow the font and the label instead of a number that has to be kept in
@@ -82,7 +118,7 @@ a {
     border: solid currentColor;
     border-width: 0 3px 3px 0;
     display: inline-block;
-    padding: 3px;
+    padding: var(--space-0);
 }
 
 a .arrow {
@@ -160,11 +196,11 @@ body {
     box-sizing: border-box;
     min-height: calc(100% - 2rem);
     max-width: 1040px;
-    margin: 1rem auto;
+    margin: var(--space-6) auto;
     background-color: var(--color-surface);
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
-    padding: 1.5rem;
+    padding: var(--space-8);
 }
 
 /* Dropdown */
@@ -184,10 +220,10 @@ body {
 
 /* Links inside the navbar */
 .navbar a {
-    font-size: 16px;
+    font-size: var(--text-chrome);
     color: var(--color-navbar-text);
     text-align: center;
-    padding: 14px 16px;
+    padding: var(--space-nav) var(--space-6);
     text-decoration: none;
 }
 
@@ -198,17 +234,17 @@ body {
 /* Menu entries the role may not use: visible like their active neighbours, but
    not clickable and visually muted. */
 .navbar .nav-disabled {
-    font-size: 16px;
+    font-size: var(--text-chrome);
     color: var(--color-navbar-text);
     text-align: center;
-    padding: 14px 16px;
+    padding: var(--space-nav) var(--space-6);
     opacity: .5;
     cursor: not-allowed;
 }
 
 .dropdown-content .nav-disabled {
     color: var(--color-text);
-    padding: 12px 16px;
+    padding: var(--space-5) var(--space-6);
     display: block;
     text-align: left;
     white-space: nowrap;
@@ -235,17 +271,17 @@ body {
 /* Theme switch: native select, navbar-styled. The dropdown popup itself is
    drawn by the browser; only its option hover is styled, in both themes. */
 .theme-switch {
-    margin: 0 0.5rem;
+    margin: 0 var(--space-3);
     align-self: center;
     width: auto;
     appearance: none;
     -webkit-appearance: none;
     background-color: transparent;
     border: 1px solid var(--color-border);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     color: var(--color-navbar-text);
-    font-size: 14px;
-    padding: 6px 1.75rem 6px 12px;
+    font-size: var(--text-small-chrome);
+    padding: var(--space-2) var(--space-8) var(--space-2) var(--space-5);
     cursor: pointer;
     background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23212529' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -284,11 +320,11 @@ body {
 }
 
 .dropdown .dropbtn {
-    font-size: 16px;
+    font-size: var(--text-chrome);
     border: none;
     outline: none;
     color: var(--color-navbar-text);
-    padding: 14px 16px;
+    padding: var(--space-nav) var(--space-6);
     background-color: inherit;
     font-family: inherit;
     /* Important for vertical align on mobile phones */
@@ -318,7 +354,7 @@ body {
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    padding: 0 16px;
+    padding: 0 var(--space-6);
 }
 
 /* Dropdown content (hidden by default) */
@@ -336,7 +372,7 @@ body {
 /* Logged-in user label at the top of the account menu (not a link) */
 .dropdown-content .nav-account-info {
     display: block;
-    padding: 12px 16px;
+    padding: var(--space-5) var(--space-6);
     font-weight: bold;
     /* A long name or translated role wraps inside the menu instead of widening
        it past the viewport. */
@@ -355,7 +391,7 @@ body {
 /* Links inside the dropdown */
 .dropdown-content a {
     color: var(--color-text);
-    padding: 12px 16px;
+    padding: var(--space-5) var(--space-6);
     text-decoration: none;
     display: block;
     text-align: left;
@@ -401,7 +437,7 @@ body {
 
 .modal-inner {
     text-align: left;
-    padding: 2rem;
+    padding: var(--space-card);
     width: 60%;
     min-height: 100px;
     max-height: 90%;
@@ -413,7 +449,7 @@ body {
 
 .modal-sm {
     text-align: left;
-    padding: 2rem;
+    padding: var(--space-card);
     width: 60%;
     max-width: 20rem;
     min-height: 100px;
@@ -470,11 +506,11 @@ body.page-edit .dialog {
     position: static;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-3);
     /* the navbar row height, so the panel keeps its size when editing */
     height: var(--chrome-height);
     box-sizing: border-box;
-    padding: 0 0.5rem;
+    padding: 0 var(--space-3);
     border-bottom: 1px solid var(--color-border);
 }
 
@@ -487,8 +523,8 @@ body.page-edit .dialog button.secondary,
 body.page-edit .dialog button.danger {
     height: var(--control-height);
     box-sizing: border-box;
-    padding: 0 0.75rem;
-    font-size: 0.85rem;
+    padding: 0 var(--space-5);
+    font-size: var(--text-control);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -511,8 +547,8 @@ body.page-edit .dialog button {
    takes no space. Warning colours rather than error ones: nothing is broken,
    writing is deliberately held back. */
 .maintenance-banner {
-    padding: 10px 16px;
-    font-size: 15px;
+    padding: var(--space-4) var(--space-6);
+    font-size: var(--text-small-chrome);
     color: var(--color-toast-warning-text);
     background-color: var(--color-toast-warning-bg);
     border-bottom: 1px solid var(--color-toast-warning-border);
@@ -521,8 +557,8 @@ body.page-edit .dialog button {
 /* A viewer sees the same site, just without the write controls. Info colours:
    this is the intended role, not a fault or a lock. */
 .readonly-banner {
-    padding: 10px 16px;
-    font-size: 15px;
+    padding: var(--space-4) var(--space-6);
+    font-size: var(--text-small-chrome);
     color: var(--color-toast-info-text);
     background-color: var(--color-toast-info-bg);
     border-bottom: 1px solid var(--color-toast-info-border);
@@ -540,7 +576,7 @@ body.page-edit .dialog button {
 }
 
 .dialog button {
-    padding: 10px 20px;
+    padding: var(--space-4) var(--space-7);
     margin-left: 0.5rem;
     margin-top: 0.35rem;
 }
@@ -548,7 +584,7 @@ body.page-edit .dialog button {
 /* Notifications */
 
 button {
-    margin: 0.25rem 0;
+    margin: var(--space-1) 0;
 }
 
 .m-notifications {
@@ -570,7 +606,7 @@ button {
     transition: box-shadow 0.15s ease;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-3);
 }
 
 .m-notification:hover {
@@ -601,7 +637,7 @@ button {
 .m-notification.info {
     color: var(--color-toast-info-text);
     background-color: var(--color-toast-info-bg);
-    padding: 0.75rem 1.25rem;
+    padding: var(--space-5) var(--space-7);
     border: 1px solid var(--color-toast-info-border);
     border-radius: var(--radius);
 }
@@ -609,7 +645,7 @@ button {
 .m-notification.warning {
     color: var(--color-toast-warning-text);
     background-color: var(--color-toast-warning-bg);
-    padding: 0.75rem 1.25rem;
+    padding: var(--space-5) var(--space-7);
     border: 1px solid var(--color-toast-warning-border);
     border-radius: var(--radius);
 }
@@ -617,7 +653,7 @@ button {
 .m-notification.danger {
     color: var(--color-toast-danger-text);
     background-color: var(--color-toast-danger-bg);
-    padding: 0.75rem 1.25rem;
+    padding: var(--space-5) var(--space-7);
     border: 1px solid var(--color-toast-danger-border);
     border-radius: var(--radius);
 }
@@ -625,7 +661,7 @@ button {
 .m-notification.success {
     color: var(--color-toast-success-text);
     background-color: var(--color-toast-success-bg);
-    padding: 0.75rem 1.25rem;
+    padding: var(--space-5) var(--space-7);
     border: 1px solid var(--color-toast-success-border);
     border-radius: var(--radius);
 }
@@ -692,7 +728,7 @@ input[type=password],
 select,
 textarea {
     width: 100%;
-    padding: 12px;
+    padding: var(--space-5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     box-sizing: border-box;
@@ -729,7 +765,7 @@ textarea[readonly] {
 
 /* Style the label to display next to the inputs */
 /*label {
-  padding: 12px 12px 12px 0;
+  padding: var(--space-5) var(--space-5) var(--space-5) 0;
   display: inline-block;
 }*/
 
@@ -737,7 +773,7 @@ textarea[readonly] {
 button.primary {
     background-color: var(--color-primary);
     color: var(--color-on-primary);
-    padding: 12px 20px;
+    padding: var(--space-5) var(--space-7);
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
@@ -758,7 +794,7 @@ button.primary:active {
 button.secondary {
     background-color: var(--color-secondary);
     color: var(--color-on-primary);
-    padding: 12px 20px;
+    padding: var(--space-5) var(--space-7);
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
@@ -782,7 +818,7 @@ button.secondary:active {
 button.danger {
     background-color: var(--color-danger);
     color: var(--color-on-primary);
-    padding: 12px 20px;
+    padding: var(--space-5) var(--space-7);
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
@@ -853,7 +889,7 @@ textarea:focus-visible,
 table button.primary,
 table button.secondary,
 table button.danger {
-    padding: 6px 9px;
+    padding: var(--space-2) var(--space-3);
 }
 
 .table thead th {
@@ -890,9 +926,9 @@ button:has(> span) > .icon {
 
 /* Style the container */
 /*.container {
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background-color: #f2f2f2;
-  padding: 20px;
+  padding: var(--space-7);
 }*/
 
 .row {
@@ -912,7 +948,7 @@ fieldset .row:first-of-type {
 
 .row:has(> label) > label {
     width: 25%;
-    padding: 12px 0;
+    padding: var(--space-5) 0;
 }
 
 .row:has(> label) > input[type=text],
@@ -997,7 +1033,7 @@ fieldset .row button {
 .table th,
 .table td {
     border-top: 1px solid var(--color-border);
-    padding: 0.4rem 0.4rem;
+    padding: var(--space-2) var(--space-2);
     overflow-wrap: anywhere;
 }
 
@@ -1025,7 +1061,7 @@ fieldset .row button {
 .table thead th a {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--space-1);
     line-height: inherit;
     padding: 0;
     color: inherit;
@@ -1071,7 +1107,7 @@ fieldset .row button {
 
 .field-error {
     color: var(--color-error);
-    font-size: 0.875rem;
+    font-size: var(--text-note);
     margin-top: 0.375rem;
     margin-left: 25%;
 }
@@ -1079,7 +1115,7 @@ fieldset .row button {
 .form-errors,
 ul.form-errors {
     color: var(--color-error);
-    font-size: 0.875rem;
+    font-size: var(--text-note);
     margin-top: 0.5rem;
 }
 
@@ -1110,7 +1146,7 @@ ul.form-errors {
     border-bottom: 1px solid var(--color-border);
     border-left: 1px solid var(--color-border);
     display: block;
-    padding: 0.4rem 0.4rem;
+    padding: var(--space-2) var(--space-2);
     overflow: hidden;
     background-color: var(--color-raised);
 }
@@ -1147,7 +1183,7 @@ ul.form-errors {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: var(--space-3);
 }
 
 .page-goto-link {
@@ -1200,12 +1236,12 @@ a.list-group-item {
 }
 
 .palette-filter {
-    padding: 12px 16px;
+    padding: var(--space-5) var(--space-6);
     border: none;
     border-bottom: 1px solid var(--color-border);
     background: transparent;
     color: var(--color-text);
-    font-size: 1rem;
+    font-size: var(--text-body);
     outline: none;
 }
 
@@ -1222,11 +1258,11 @@ a.list-group-item {
 .palette-item {
     display: block;
     width: 100%;
-    padding: 8px 16px;
+    padding: var(--space-3) var(--space-6);
     border: none;
     background: transparent;
     color: var(--color-text);
-    font-size: 0.95rem;
+    font-size: var(--text-ui);
     cursor: pointer;
     text-align: left;
 }
@@ -1245,16 +1281,16 @@ a.list-group-item {
 .palette-context {
     display: block;
     opacity: 0.6;
-    font-size: 0.8rem;
+    font-size: var(--text-small);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .palette-hint {
-    padding: 8px 16px;
+    padding: var(--space-3) var(--space-6);
     border-top: 1px solid var(--color-border);
-    font-size: 0.8rem;
+    font-size: var(--text-small);
     opacity: 0.6;
     text-align: center;
 }
@@ -1262,12 +1298,12 @@ a.list-group-item {
 .palette-trigger {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--space-1);
     height: var(--control-height);
     box-sizing: border-box;
-    padding: 6px 9px;
+    padding: var(--space-2) var(--space-3);
     margin: 0;
-    font-size: 0.85rem;
+    font-size: var(--text-control);
 }
 
 .palette-trigger kbd {
@@ -1276,7 +1312,7 @@ a.list-group-item {
     background: none;
     color: inherit;
     font-family: inherit;
-    font-size: 0.72rem;
+    font-size: var(--text-tiny);
     line-height: 1;
     opacity: 0.55;
 }
@@ -1299,7 +1335,7 @@ a.list-group-item {
     background: var(--color-nav-hover);
     border-radius: var(--radius);
     margin: 0;
-    padding: 0.25rem;
+    padding: var(--space-1);
     line-height: 1;
     cursor: pointer;
     opacity: 1;
@@ -1338,7 +1374,7 @@ a.list-group-item {
     border: 1px solid var(--color-php-info-border);
     font-size: 75%;
     vertical-align: baseline;
-    padding: 4px 5px;
+    padding: var(--space-0) var(--space-2);
 }
 
 .system-php-info th {
@@ -1556,7 +1592,7 @@ a.list-group-item {
     align-items: center;
     justify-content: flex-end;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--space-3);
 }
 
 .modal-inner .row.text-right button {
