@@ -30,6 +30,18 @@ User-visible strings in the admin UI belong in **all** language files under
 `jaco/language/` (`en.json`, `de.json`, `fr.json`, `it.json`). Use the existing
 `t('Key')` pattern; do not hard-code UI text in views.
 
+## Git
+
+**Assistants do not commit or push.** An assistant leaves its changes in the
+working tree and reports what it changed and why; the human reviews the diff,
+runs the checks and commits. This covers `git commit`, `git commit --amend`,
+`git push`, `git tag`, merges, rebases and conflict resolutions: anything that
+writes to the repository history or the remote is run by the human.
+
+The reason is reviewability. A diff can be read; a commit cannot show what was
+included in it without the reviewer going back to look. An assistant may
+propose a branch name and a commit message, but never create either.
+
 ## What not to commit
 
 - `jaco-data/settings.php`, tokens, passwords, or other secrets
