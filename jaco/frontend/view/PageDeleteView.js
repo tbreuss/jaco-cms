@@ -59,12 +59,12 @@ export const PageDeleteView = {
     m(Fieldset, {legend: t('Confirm')},
       m('p', t('Do you want to delete the page?', {
         name: state.fileName
-      })),
-      m(ButtonGroup, {wrap: 'div.row.text-right'},
-        m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('No'))),
-        m(ButtonPrimary, {onclick: save}, m(Icon, {name: 'check'}), m('span', t('Yes')))
-      )
+      }))
     ),
-    m(FormErrors, {errors: state.errors})
+    m(FormErrors, {errors: state.errors}),
+    m(ButtonGroup, {wrap: 'div.row.text-right'},
+      m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('No'))),
+      m(ButtonPrimary, {onclick: save}, m(Icon, {name: 'check'}), m('span', t('Yes')))
+    )
   )
 }

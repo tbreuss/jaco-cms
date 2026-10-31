@@ -80,14 +80,14 @@ export const BackupEditView = {
           : m('.row',
             m('label', {style: {width: '100%'}}, t('Upload')),
             m('div#upload', {style: {width: '100%'}})
-          ),
-        m(ButtonGroup, {wrap: 'div.row.text-right'},
-          m(ButtonSecondary, {
-            onclick: () => {
-              m.route.set('/backups')
-            }
-          }, m(Icon, {name: 'back'}), m('span', t('Back')))
-        )
+          )
+      ),
+      m(ButtonGroup, {wrap: 'div.row.text-right'},
+        m(ButtonSecondary, {
+          onclick: () => {
+            m.route.set('/backups')
+          }
+        }, m(Icon, {name: 'back'}), m('span', t('Back')))
       )
     )
   )

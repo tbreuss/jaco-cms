@@ -233,21 +233,6 @@ export const PageEditView = {
         m('.row',
           m('label', {style: {width: '100%'}}, t('HTML')),
           m('div#ace', {style: {width: '100%'}})
-        ),
-        m(ButtonGroup, {wrap: 'div.row.text-right'},
-          m(ButtonSecondary, {onclick: onCancelButtonClicked},
-            m(Icon, {name: auth.can('editor') ? 'clear' : 'back'}),
-            m('span', t(auth.can('editor') ? 'Cancel' : 'Back'))),
-          m(ButtonPrimary, {
-            onclick: onSaveButtonClicked,
-            disabled: !auth.can('editor'),
-            title: auth.can('editor') ? t('Save') + ' (' + saveShortcutLabel() + ')' : t('Save') + ' – ' + t('Your role does not allow this.'),
-          }, m(Icon, {name: 'save'}), m('span', t('Save'))),
-          m(ButtonPrimary, {
-            onclick: onSaveAndCloseButtonClicked,
-            disabled: !auth.can('editor'),
-            title: auth.can('editor') ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
-          }, m(Icon, {name: 'check'}), m('span', t('Save & Close')))
         )
       ),
       m(Fieldset, {legend: t('Search & social')},
@@ -278,6 +263,21 @@ export const PageEditView = {
         })
       ),
       m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),
+      m(ButtonGroup, {wrap: 'div.row.text-right'},
+        m(ButtonSecondary, {onclick: onCancelButtonClicked},
+          m(Icon, {name: auth.can('editor') ? 'clear' : 'back'}),
+          m('span', t(auth.can('editor') ? 'Cancel' : 'Back'))),
+        m(ButtonPrimary, {
+          onclick: onSaveButtonClicked,
+          disabled: !auth.can('editor'),
+          title: auth.can('editor') ? t('Save') + ' (' + saveShortcutLabel() + ')' : t('Save') + ' – ' + t('Your role does not allow this.'),
+        }, m(Icon, {name: 'save'}), m('span', t('Save'))),
+        m(ButtonPrimary, {
+          onclick: onSaveAndCloseButtonClicked,
+          disabled: !auth.can('editor'),
+          title: auth.can('editor') ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
+        }, m(Icon, {name: 'check'}), m('span', t('Save & Close')))
+      ),
     )
   )
 }

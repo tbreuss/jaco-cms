@@ -3,6 +3,7 @@ import {iframe} from '../lib/iframe.js'
 import {ModalMedium} from '../component/ModalMedium.js'
 import {FilterInput} from '../component/FilterInput.js'
 import {Icon} from '../component/Icon.js'
+import {ButtonSecondary} from '../component/ButtonSecondary.js'
 import {PageListModel} from '../model/PageListModel.js'
 import {app} from '../lib/app.js'
 
@@ -103,7 +104,7 @@ const pageList = (pages, selected) =>
       m('span.page-goto-file', page.file),
       page.title ? m('span.page-goto-title', ' · ' + page.title) : null),
       m('span.page-goto-actions', {style: {display: 'flex', gap: '0.25rem', flex: '0 0 auto'}},
-        m('button.secondary.page-goto-action', {
+        m(ButtonSecondary, {
           type: 'button',
           onclick: (e) => {
             e.preventDefault()
@@ -111,8 +112,9 @@ const pageList = (pages, selected) =>
             openPage(page)
           },
           title: t('View page'),
+          'aria-label': t('View page'),
         }, m(Icon, {name: 'view'})),
-        m('button.secondary.page-goto-action', {
+        m(ButtonSecondary, {
           type: 'button',
           onclick: (e) => {
             e.preventDefault()
@@ -120,8 +122,9 @@ const pageList = (pages, selected) =>
             openPage(page, true)
           },
           title: t('Edit content'),
+          'aria-label': t('Edit content'),
         }, m(Icon, {name: 'edit-content'})),
-        m('button.secondary.page-goto-action', {
+        m(ButtonSecondary, {
           type: 'button',
           onclick: (e) => {
             e.preventDefault()
@@ -129,6 +132,7 @@ const pageList = (pages, selected) =>
             m.route.set('/pages/edit/:file...', {file: page.file})
           },
           title: t('Edit page'),
+          'aria-label': t('Edit page'),
         }, m(Icon, {name: 'edit'}))))))
     : m('p', t('Sorry, no page found'))
 

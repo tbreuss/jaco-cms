@@ -2,6 +2,8 @@ import {SystemModel as SystemModel} from '../model/SystemModel.js'
 import {t} from '../model/i18n.js'
 import {formatBytes} from '../lib/format.js'
 import {app} from '../lib/app.js'
+import {ButtonPrimary} from '../component/ButtonPrimary.js'
+import {ButtonSecondary} from '../component/ButtonSecondary.js'
 
 const keyValueTable = (title, object) => object
   ? m('div',
@@ -53,13 +55,13 @@ const updatePanel = () => {
   const u = SystemModel.update || {}
   return m('div',
     m('h2', t('Updates')),
-    m('button.btn', {
+    m(ButtonSecondary, {
       onclick: () => SystemModel.checkUpdate().then(() => m.redraw()).catch(() => m.redraw())
     }, t('Check for updates')),
     u.available === true
       ? m('div',
           m('p', t('Update available') + ': ' + u.current + ' → ' + u.latest),
-          m('button.btn', {
+          m(ButtonPrimary, {
             onclick: () => {
               if (!confirm(t('Install update?'))) return
               SystemModel.performUpdate(u.downloadUrl, u.latest)

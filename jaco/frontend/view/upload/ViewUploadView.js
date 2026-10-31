@@ -69,14 +69,14 @@ export const ViewUploadView = {
               : (item.extension ?? '').toLowerCase() === 'pdf'
                 ? m('embed', {src: url, type: 'application/pdf', style: {width: '100%', height: '600px'}})
                 : m('a', {href: url, target: '_blank'}, url)
-          ),
-          m(ButtonGroup, {wrap: 'div.row.text-right'},
-            m(ButtonSecondary, {
-              onclick: () => {
-                m.route.set('/uploads')
-              }
-            }, m(Icon, {name: 'back'}), m('span', t('Back')))
           )
+        ),
+        m(ButtonGroup, {wrap: 'div.row.text-right'},
+          m(ButtonSecondary, {
+            onclick: () => {
+              m.route.set('/uploads')
+            }
+          }, m(Icon, {name: 'back'}), m('span', t('Back')))
         )
       )
     )

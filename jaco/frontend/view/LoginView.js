@@ -152,11 +152,11 @@ export const LoginView = {
             state.errors = []
           }
         }),
+        m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),
         m(ButtonGroup, {wrap: 'div.row.text-right'},
           m(ButtonSecondary, {onclick: backToLogin, type: 'button'}, m(Icon, {name: 'back'}), m('span', t('Back'))),
           m(ButtonPrimary, {type: 'submit'}, m(Icon, {name: 'check'}), m('span', t('Verify')))
-        ),
-        m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))})
+        )
       )
       : m('form', {key: state.step, onsubmit: onLoginSubmitted},
         m(InputText, {
@@ -184,10 +184,10 @@ export const LoginView = {
             state.errors = []
           }
         }),
+        m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),
         m(ButtonGroup, {wrap: 'div.row.text-right'},
           m(ButtonPrimary, {type: 'submit'}, m(Icon, {name: 'login'}), m('span', t('Login')))
-        ),
-        m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))})
+        )
       )
   )
 }

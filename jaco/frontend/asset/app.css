@@ -2,6 +2,15 @@
     color-scheme: light;
     --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --radius: 6px;
+    /* Height of the command palette trigger. It is the only control with a
+       fixed height: the action buttons grow from their own padding, so they
+       follow the font and the label instead of a number that has to be kept in
+       sync with them. */
+    --control-height: 31px;
+    /* Height of the navbar row incl. its bottom border. The page-edit action
+       bar reuses it, so switching between the site and the editor does not
+       resize the admin panel. */
+    --chrome-height: 47px;
     --color-chrome: #333;
     --color-chrome-translucent: rgba(51, 51, 51, 0.9);
     --color-navbar: #fff;
@@ -298,6 +307,20 @@ body {
     background-color: transparent;
 }
 
+/* The navbar row keeps one height whatever the font's line box is: the
+   page-edit action bar uses the same --chrome-height, so the admin panel must
+   not change size by a rounding pixel when editing starts. Only the items of
+   the bar itself, not the links inside its menus. */
+.navbar > a,
+.navbar > .nav-disabled,
+.navbar .dropdown > .dropbtn {
+    height: calc(var(--chrome-height) - 1px);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+}
+
 /* Dropdown content (hidden by default) */
 .dropdown-content {
     display: none;
@@ -448,8 +471,27 @@ body.page-edit .dialog {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.35rem 0.5rem;
+    /* the navbar row height, so the panel keeps its size when editing */
+    height: var(--chrome-height);
+    box-sizing: border-box;
+    padding: 0 0.5rem;
     border-bottom: 1px solid var(--color-border);
+}
+
+/* Buttons in the action bar are chrome, not form actions: they sit in the 47px
+   navbar row, so they take the compact control height like the command palette
+   trigger next to them. With the padding of a form action they filled the bar
+   and pressed against its edges. */
+body.page-edit .dialog button.primary,
+body.page-edit .dialog button.secondary,
+body.page-edit .dialog button.danger {
+    height: var(--control-height);
+    box-sizing: border-box;
+    padding: 0 0.75rem;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 body.page-edit .dialog button {
@@ -625,6 +667,8 @@ button {
 
 fieldset {
     border: 1px solid var(--color-border);
+    /* the same radius as the inputs, selects and buttons it contains */
+    border-radius: var(--radius);
 }
 
 /* A form on a wide page: inputs follow their container, so the container sets the
@@ -655,6 +699,19 @@ textarea {
     resize: vertical;
     background-color: var(--color-input);
     color: var(--color-text);
+}
+
+/* A select is rendered by the platform and comes out 2px taller than a text
+   field with the same padding, so a row mixing both is visibly off. The height
+   of a text field (12px padding + 1px border on each side + the line box) is
+   pinned here; the horizontal padding stays for the dropdown text.
+
+   Scoped to form rows and away from .theme-switch: that is a select in the
+   navbar with its own compact size and must not take the form height. */
+.row select {
+    height: 41px;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 /* Disabled/read-only fields must not look editable: muted background and a
@@ -1109,12 +1166,6 @@ ul.form-errors {
     white-space: nowrap;
 }
 
-button.page-goto-action {
-    flex: 0 0 auto;
-    padding: 6px 9px;
-    margin: 0 6px 0 0;
-}
-
 a.list-group-item {
     color: inherit;
     text-decoration: none;
@@ -1212,6 +1263,8 @@ a.list-group-item {
     display: flex;
     align-items: center;
     gap: 0.25rem;
+    height: var(--control-height);
+    box-sizing: border-box;
     padding: 6px 9px;
     margin: 0;
     font-size: 0.85rem;
@@ -1495,18 +1548,19 @@ a.list-group-item {
     border-color: var(--color-toast-success-border);
 }
 
-/* Modal action rows: align destructive and secondary buttons on one baseline
-   instead of letting inline-flex heights shift the row. */
+/* Modal action rows: align the buttons on one baseline and push them right.
+   Wrapping is the fallback for a narrow dialog or a long translation: without
+   it, buttons are pushed out of the dialog instead of moving to a second row. */
 .modal-inner .row.text-right {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    flex-wrap: wrap;
     gap: 0.5rem;
 }
 
 .modal-inner .row.text-right button {
     margin: 0;
-    min-height: 42px;
 }
 
 /* Ace draws its gutter at z-index 4; modals must stay above editor chrome. */

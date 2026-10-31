@@ -51,11 +51,11 @@ export const PageSettingsDialog = {
             onchange: (value) => onchange('robots', value)
           })
         ),
+        m(FormErrors, {errors: errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),
         m(ButtonGroup, {wrap: 'div.row.text-right'},
           m(ButtonSecondary, {onclick: onclose}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
           m(ButtonPrimary, {onclick: onsave, disabled: saving}, m(Icon, {name: 'save'}), m('span', t('Save')))
-        ),
-        m(FormErrors, {errors: errors.filter((error) => !fieldPointers.includes(error.source.pointer))})
+        )
       ]
       : m('p', t('Loading') + '...')
 
