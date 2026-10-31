@@ -669,6 +669,19 @@ final class UpdateTest extends TestCase
         $signed = 'https://objects.githubusercontent.com/a/jaco-dist-v0.2.0.zip.sha256?X-Amz-Signature=abc';
         $this->assertSame($signed, checksum_url($signed));
 
+        // the suffix goes on the public release URL, before any query. Following
+        // the redirect would append it to a signed CDN URL whose signature covers
+        // the path, and GitHub answers 403 for that
+        $release = 'https://github.com/tbreuss/jaco-cms/releases/download/v0.1.0/jaco-dist-v0.1.0.zip';
+        $this->assertSame(
+            'https://github.com/tbreuss/jaco-cms/releases/download/v0.1.0/jaco-dist-v0.1.0.zip.sha256',
+            checksum_url($release),
+        );
+        $this->assertSame(
+            'https://github.com/tbreuss/jaco-cms/releases/download/v0.1.0/jaco-dist-v0.1.0.zip.sha256?a=1',
+            checksum_url($release . '?a=1'),
+        );
+
         @unlink($zipPath);
     }
 

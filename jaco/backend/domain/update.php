@@ -192,18 +192,21 @@ function response_final_url(array $headers): ?string
 
 /**
  * The URL of the published checksum file: the asset URL with ".sha256" on the
- * path, before any query. Follows the redirect first, because a relative redirect
- * target cannot be requested again on its own.
+ * path, before any query.
+ *
+ * The redirect is deliberately NOT followed here. GitHub answers with a signed
+ * URL on its release-assets CDN whose signature covers the path, so appending
+ * ".sha256" to that URL yields a 403. The public github.com URL redirects to
+ * the checksum asset on its own when it is requested.
  */
 function checksum_url(string $downloadUrl): string
 {
-    if (str_ends_with((string) parse_url($downloadUrl, PHP_URL_PATH), '.sha256')) {
+    $query = parse_url($downloadUrl, PHP_URL_QUERY);
+    $base = is_string($query) ? substr($downloadUrl, 0, -strlen('?' . $query)) : $downloadUrl;
+
+    if (str_ends_with((string) parse_url($base, PHP_URL_PATH), '.sha256')) {
         return $downloadUrl;
     }
-
-    $resolved = resolve_redirect($downloadUrl);
-    $query = parse_url($resolved, PHP_URL_QUERY);
-    $base = is_string($query) ? substr($resolved, 0, -strlen('?' . $query)) : $resolved;
 
     return $base . '.sha256' . (is_string($query) ? '?' . $query : '');
 }
@@ -450,15 +453,14 @@ function perform_update(
         // HTTPS: the archive must match the checksum the release publishes next to
         // it. A local file:// archive is trusted as it is, it is the operator's own.
         if ($scheme === 'https') {
-            if ($finalUrl !== null && $finalUrl !== $downloadUrl) {
-                if (!is_release_asset_url($finalUrl, $downloadUrl)) {
-                    throw new \RuntimeException('Download was redirected away from the release.');
-                }
-
-                verify_release_checksum($finalUrl, $zipPath);
-            } else {
-                verify_release_checksum($downloadUrl, $zipPath);
+            // a redirect is fine only when it stays on the release's asset; the
+            // checksum is always read from the public URL, never from the signed
+            // CDN target, whose signature covers that exact path
+            if ($finalUrl !== null && $finalUrl !== $downloadUrl && !is_release_asset_url($finalUrl, $downloadUrl)) {
+                throw new \RuntimeException('Download was redirected away from the release.');
             }
+
+            verify_release_checksum($downloadUrl, $zipPath);
         }
 
         // verify and extract zip
