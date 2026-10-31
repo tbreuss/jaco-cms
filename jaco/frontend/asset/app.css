@@ -97,6 +97,16 @@
     --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
+/* Every element counts its padding and border inside its width, so a rule with
+   width and padding does not grow past that width. Set once here instead of on
+   the rules that happen to size themselves (.content, the navbar trigger, the
+   action bar, textarea, the palette trigger, the loader). */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 html {
     background-color: var(--color-chrome-translucent);
 }
@@ -193,7 +203,6 @@ body {
     /* The card fills the view but its own padding and the 1rem top/bottom
        margin have to fit inside that height; otherwise .main gets a scrollbar
        even for a short form. */
-    box-sizing: border-box;
     min-height: calc(100% - 2rem);
     max-width: 1040px;
     margin: var(--space-6) auto;
@@ -351,7 +360,6 @@ body {
 .navbar > .nav-disabled,
 .navbar .dropdown > .dropbtn {
     height: calc(var(--chrome-height) - 1px);
-    box-sizing: border-box;
     display: flex;
     align-items: center;
     padding: 0 var(--space-6);
@@ -509,7 +517,6 @@ body.page-edit .dialog {
     gap: var(--space-3);
     /* the navbar row height, so the panel keeps its size when editing */
     height: var(--chrome-height);
-    box-sizing: border-box;
     padding: 0 var(--space-3);
     border-bottom: 1px solid var(--color-border);
 }
@@ -522,7 +529,6 @@ body.page-edit .dialog button.primary,
 body.page-edit .dialog button.secondary,
 body.page-edit .dialog button.danger {
     height: var(--control-height);
-    box-sizing: border-box;
     padding: 0 var(--space-5);
     font-size: var(--text-control);
     display: inline-flex;
@@ -731,7 +737,6 @@ textarea {
     padding: var(--space-5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
-    box-sizing: border-box;
     resize: vertical;
     background-color: var(--color-input);
     color: var(--color-text);
@@ -1300,7 +1305,6 @@ a.list-group-item {
     align-items: center;
     gap: var(--space-1);
     height: var(--control-height);
-    box-sizing: border-box;
     padding: var(--space-2) var(--space-3);
     margin: 0;
     font-size: var(--text-control);
@@ -1477,7 +1481,6 @@ a.list-group-item {
     position: absolute;
     top: 0;
     left: 0;
-    box-sizing: border-box;
     /* idle: parked off screen, so a finished request leaves nothing behind */
     transform: translateX(-100%);
 }
