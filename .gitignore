@@ -12,6 +12,7 @@
 /jaco/test/e2e/playwright-report
 /jaco/test/e2e/test-results
 /jaco/vendor
+/jaco/frontend/vendor
 /jaco/test/runtime
 /inspiration
 /test
