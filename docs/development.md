@@ -16,7 +16,8 @@ Technical guide for contributors and automated tools. Process and PR expectation
 |------|---------|
 | `jaco/frontend/` | Admin SPA: `app.js` (routes), `view/`, `component/`, `model/`, `lib/` |
 | `jaco/frontend/lib/commands.js` | Command palette actions (single source of truth) |
-| `jaco/frontend/asset/` | Vendored CSS/JS (Mithril, Ace); do not edit casually |
+| `jaco/frontend/asset/` | Vendored CSS (app, editor, Quill theme); do not edit casually |
+| `jaco/frontend/vendor/` | Composer-installed JS deps (Mithril, Ace, Quill) |
 | `jaco/backend/` | PHP application code; see `deptrac.yaml` for layer rules |
 | `jaco/language/*.json` | Admin UI translations (en, de, fr, it) |
 | `jaco/test/` | PHPUnit; `jaco/test/js/` QUnit + `runner.mjs` |

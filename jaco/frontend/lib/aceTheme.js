@@ -1,5 +1,5 @@
 // Ace editor theme follows the admin theme: the github theme (light) is the
-// default, tomorrow_night (dark, vendored in asset/ace-min) matches the dark
+// default, tomorrow_night (dark, vendored in frontend/vendor/ace-builds) matches the dark
 // design tokens. Editors watch the data-theme attribute so switching the theme
 // while editing applies immediately; the returned function stops watching and
 // belongs into the view's remove handler next to the editor itself.

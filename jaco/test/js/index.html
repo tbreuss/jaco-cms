@@ -5,12 +5,21 @@
   <base href="/jaco/">
   <meta charset="utf-8">
   <title>Jaco – JS tests</title>
-  <link rel="stylesheet" href="/jaco/frontend/asset/qunit.css">
+  <link rel="stylesheet" href="/jaco/frontend/vendor/qunit/qunit.css">
   <link rel="stylesheet" href="/jaco/frontend/asset/editor.css">
   <link rel="stylesheet" href="/jaco/frontend/asset/app.css">
-  <script src="/jaco/frontend/asset/qunit.js"></script>
-  <script src="/jaco/frontend/asset/mithril.min.js"></script>
-  <script src="/jaco/frontend/asset/quill.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "mithril": "/jaco/frontend/vendor/mithril/mithril.min.js",
+        "ace": "/jaco/frontend/vendor/ace-builds/src-min/ace.js",
+        "quill": "/jaco/frontend/vendor/quill/quill.min.js"
+      }
+    }
+  </script>
+  <script src="/jaco/frontend/vendor/qunit/qunit.js"></script>
+  <script src="/jaco/frontend/vendor/mithril/mithril.min.js"></script>
+  <script src="/jaco/frontend/vendor/quill/quill.min.js"></script>
   <script src="/jaco/frontend/editor.js"></script>
   <script src="/jaco/frontend/contentlists.js"></script>
   <script>

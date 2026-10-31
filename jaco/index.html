@@ -33,8 +33,17 @@
     <div id="app"></div>
     <div id="toasts"></div>
     <!-- asset versions: mithril 2.3.8, ace 1.5.0 -->
-    <script src="frontend/asset/mithril.min.js"></script>
-    <script src="frontend/asset/ace-min/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "mithril": "/jaco/frontend/vendor/mithril/mithril.min.js",
+          "ace": "/jaco/frontend/vendor/ace-builds/src-min/ace.js",
+          "quill": "/jaco/frontend/vendor/quill/quill.min.js"
+        }
+      }
+    </script>
+    <script src="frontend/vendor/mithril/mithril.min.js"></script>
+    <script src="frontend/vendor/ace-builds/src-min/ace.js" type="text/javascript" charset="utf-8"></script>
     <script type="module" src="frontend/app.js"></script>
   </body>
 </html>
