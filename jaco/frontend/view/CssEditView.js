@@ -234,7 +234,9 @@ export const CssEditView = {
           m('.row',
             m('label', {style: {width: '100%'}}, t('CSS')),
             m('div#ace', {style: {width: '100%'}})
+          )
           ),
+          m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),
           m(ButtonGroup, {wrap: 'div.row.text-right'},
             m(ButtonSecondary, {onclick: onCancelButtonClicked},
               m(Icon, {name: auth.can('admin') ? 'clear' : 'back'}),
@@ -249,9 +251,7 @@ export const CssEditView = {
               disabled: !auth.can('admin'),
               title: auth.can('admin') ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
             }, m(Icon, {name: 'check'}), m('span', t('Save & Close')))
-          )
           ),
-          m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),
         ]
     )
   )

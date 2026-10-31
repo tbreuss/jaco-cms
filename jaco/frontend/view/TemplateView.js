@@ -321,27 +321,27 @@ export const TemplateView = {
               m('.row',
                 m('label', {style: {width: '100%'}}, t('HTML')),
                 m('div#ace', {style: {width: '100%'}})
-              ),
-              m(FormErrors, {errors: state.errors}),
-              m(ButtonGroup, {wrap: 'div.row.text-right'},
-                m(ButtonSecondary, {onclick: onCancelButtonClicked}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
-                m(ButtonPrimary, {
-                  onclick: onSaveButtonClicked,
-                  disabled: !canEdit,
-                  title: canEdit ? t('Save') + ' (' + saveShortcutLabel() + ')' : t('Save') + ' – ' + t('Your role does not allow this.'),
-                }, m(Icon, {name: 'save'}), m('span', t('Save'))),
-                m(ButtonPrimary, {
-                  onclick: onSaveAndCloseButtonClicked,
-                  disabled: !canEdit,
-                  title: canEdit ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
-                }, m(Icon, {name: 'check'}), m('span', t('Save & Close'))),
-                // applying is an editor's right: the markup above stays read-only
-                // for that role, the rollout does not need the admin
-                m(ButtonDanger, {
-                  onclick: onApplyClicked,
-                  title: t('Preview & apply') + ' – ' + t('Every page that is rewritten is backed up first.'),
-                }, m(Icon, {name: 'copy'}), m('span', t('Preview & apply')))
               )
+            ),
+            m(FormErrors, {errors: state.errors}),
+            m(ButtonGroup, {wrap: 'div.row.text-right'},
+              m(ButtonSecondary, {onclick: onCancelButtonClicked}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
+              m(ButtonPrimary, {
+                onclick: onSaveButtonClicked,
+                disabled: !canEdit,
+                title: canEdit ? t('Save') + ' (' + saveShortcutLabel() + ')' : t('Save') + ' – ' + t('Your role does not allow this.'),
+              }, m(Icon, {name: 'save'}), m('span', t('Save'))),
+              m(ButtonPrimary, {
+                onclick: onSaveAndCloseButtonClicked,
+                disabled: !canEdit,
+                title: canEdit ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
+              }, m(Icon, {name: 'check'}), m('span', t('Save & Close'))),
+              // applying is an editor's right: the markup above stays read-only
+              // for that role, the rollout does not need the admin
+              m(ButtonDanger, {
+                onclick: onApplyClicked,
+                title: t('Preview & apply') + ' – ' + t('Every page that is rewritten is backed up first.'),
+              }, m(Icon, {name: 'copy'}), m('span', t('Preview & apply')))
             )
       ),
       previewDialog()
