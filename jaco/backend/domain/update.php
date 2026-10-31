@@ -13,7 +13,6 @@ const RELEASE_REPO = 'tbreuss/jaco-cms';
 
 const RELEASE_ASSET_PATTERN = '/^jaco-dist-.+\.zip$/';
 
-const RELEASE_DOWNLOAD_HOSTS = ['github.com', 'objects.githubusercontent.com'];
 
 /**
  * Compare the installed version with the latest published release.
@@ -150,8 +149,16 @@ function is_release_asset_url(string $url, string $releaseUrl): bool
     $host = parse_url($url, PHP_URL_HOST);
     $path = (string) parse_url($url, PHP_URL_PATH);
 
+    $host = strtolower((string) $host);
+
+    // GitHub rotates the CDN hostname (objects.githubusercontent.com,
+    // release-assets.githubusercontent.com, ...). Accept github.com and any
+    // *.githubusercontent.com host so this check does not break on every
+    // CDN change; the checksum verification below still guards the bytes.
+    $hostAllowed = $host === 'github.com' || str_ends_with($host, '.githubusercontent.com');
+
     return strtolower((string) $scheme) === 'https'
-        && in_array(strtolower((string) $host), RELEASE_DOWNLOAD_HOSTS, true)
+        && $hostAllowed
         && basename($path) === basename((string) parse_url($releaseUrl, PHP_URL_PATH));
 }
 
