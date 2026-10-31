@@ -103,7 +103,6 @@ window.initRichTextEditor = () => {
     let newEditorJavascript = document.createElement('script')
     newEditorJavascript.id = 'editorJavascript'
     newEditorJavascript.type = 'text/javascript'
-    // asset version: quill 1.3.7
     newEditorJavascript.src = '/jaco/frontend/vendor/quill/quill.min.js'
     newEditorJavascript.async = false
     newEditorJavascript.onload = () => {
