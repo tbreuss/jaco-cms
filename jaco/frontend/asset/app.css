@@ -2,9 +2,10 @@
     color-scheme: light;
     --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --radius: 6px;
-    /* One height for the controls in the admin chrome: the command palette
-       trigger and the action buttons (primary/secondary/danger) must not
-       differ in size, wherever they are used. */
+    /* Height of the command palette trigger. It is the only control with a
+       fixed height: the action buttons grow from their own padding, so they
+       follow the font and the label instead of a number that has to be kept in
+       sync with them. */
     --control-height: 31px;
     /* Height of the navbar row incl. its bottom border. The page-edit action
        bar reuses it, so switching between the site and the editor does not
@@ -477,6 +478,22 @@ body.page-edit .dialog {
     border-bottom: 1px solid var(--color-border);
 }
 
+/* Buttons in the action bar are chrome, not form actions: they sit in the 47px
+   navbar row, so they take the compact control height like the command palette
+   trigger next to them. With the padding of a form action they filled the bar
+   and pressed against its edges. */
+body.page-edit .dialog button.primary,
+body.page-edit .dialog button.secondary,
+body.page-edit .dialog button.danger {
+    height: var(--control-height);
+    box-sizing: border-box;
+    padding: 0 0.75rem;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 body.page-edit .dialog button {
     margin: 0;
 }
@@ -720,18 +737,12 @@ textarea[readonly] {
 button.primary {
     background-color: var(--color-primary);
     color: var(--color-on-primary);
-    height: var(--control-height);
-    box-sizing: border-box;
-    padding: 0 0.5625rem;
+    padding: 12px 20px;
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
-    font-size: 0.85rem;
     font-weight: bold;
     margin: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     transition: background-color 0.15s ease;
 }
 
@@ -747,18 +758,12 @@ button.primary:active {
 button.secondary {
     background-color: var(--color-secondary);
     color: var(--color-on-primary);
-    height: var(--control-height);
-    box-sizing: border-box;
-    padding: 0 0.5625rem;
+    padding: 12px 20px;
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
-    font-size: 0.85rem;
     font-weight: bold;
     margin: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     transition: background-color 0.15s ease;
 }
 
@@ -777,18 +782,12 @@ button.secondary:active {
 button.danger {
     background-color: var(--color-danger);
     color: var(--color-on-primary);
-    height: var(--control-height);
-    box-sizing: border-box;
-    padding: 0 0.5625rem;
+    padding: 12px 20px;
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
-    font-size: 0.85rem;
     font-weight: bold;
     margin: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     transition: background-color 0.15s ease;
 }
 
@@ -1550,7 +1549,6 @@ a.list-group-item {
 }
 
 /* Modal action rows: align the buttons on one baseline and push them right.
-   Their height comes from --control-height like every other action button.
    Wrapping is the fallback for a narrow dialog or a long translation: without
    it, buttons are pushed out of the dialog instead of moving to a second row. */
 .modal-inner .row.text-right {
