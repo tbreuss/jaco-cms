@@ -611,7 +611,9 @@ button {
     animation: toast-in 0.25s ease-out;
     transition: box-shadow 0.15s ease;
     display: flex;
-    align-items: center;
+    /* the close button belongs in the top right corner, not halfway down a
+       wrapped message: a centred icon drifted to the middle of three lines */
+    align-items: flex-start;
     gap: var(--space-3);
 }
 
@@ -627,11 +629,13 @@ button {
     background: none;
     border: none;
     color: inherit;
-    font-size: 1.25rem;
+    /* the whole toast closes on a click, so this is a mark, not a target: it is
+       pulled into the corner with negative margins instead of being sized. */
+    margin: -4px -6px 0 0;
+    font-size: 1.6rem;
     line-height: 1;
     cursor: pointer;
     padding: 0;
-    margin: 0;
     opacity: 0.7;
     transition: opacity 0.15s ease;
 }
