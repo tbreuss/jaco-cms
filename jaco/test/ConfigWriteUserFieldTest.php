@@ -66,7 +66,7 @@ final class ConfigWriteUserFieldTest extends TestCase
             ];
             PHP);
 
-        $this->assertTrue(write_user_field($this->dir . '/jaco-data', 'admin', 'language', 'de'));
+        $this->assertTrue(write_user_field($this->settingsPath(), 'admin', 'language', 'de'));
 
         $settings = $this->settings();
         $this->assertSame('de', $settings['users']['admin']['language']);
@@ -90,8 +90,8 @@ final class ConfigWriteUserFieldTest extends TestCase
             ];
             PHP);
 
-        $this->assertTrue(write_user_field($this->dir . '/jaco-data', 'admin', 'language', 'de'));
-        $this->assertTrue(write_user_field($this->dir . '/jaco-data', 'admin', 'language', 'fr'));
+        $this->assertTrue(write_user_field($this->settingsPath(), 'admin', 'language', 'de'));
+        $this->assertTrue(write_user_field($this->settingsPath(), 'admin', 'language', 'fr'));
 
         $this->assertSame('fr', $this->settings()['users']['admin']['language']);
     }
@@ -108,7 +108,7 @@ final class ConfigWriteUserFieldTest extends TestCase
             ];
             PHP);
 
-        $this->assertTrue(write_user_field($this->dir . '/jaco-data', 'admin', 'totpSecret', null));
+        $this->assertTrue(write_user_field($this->settingsPath(), 'admin', 'totpSecret', null));
 
         $this->assertArrayNotHasKey('totpSecret', $this->settings()['users']['admin']);
     }
@@ -126,7 +126,7 @@ final class ConfigWriteUserFieldTest extends TestCase
             PHP;
         $this->writeSource($source);
 
-        $this->assertFalse(write_user_field($this->dir . '/jaco-data', 'ghost', 'language', 'de'));
+        $this->assertFalse(write_user_field($this->settingsPath(), 'ghost', 'language', 'de'));
         $this->assertSame($source, $this->readSource());
     }
 }

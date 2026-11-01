@@ -5,6 +5,7 @@ namespace jaco\cli\auth\totp;
 use jaco\core\auth;
 use jaco\core\config\Config;
 
+use function jaco\core\config\settings_file;
 use function jaco\core\config\write_user_field;
 use function jaco\core\totp\generate_secret;
 use function jaco\core\totp\provisioning_uri;
@@ -23,7 +24,7 @@ function setup_command(Config $config, string $username = ''): array
 
     $secret = generate_secret();
 
-    if (!write_user_field($config->dataDir, $account, 'totpSecret', $secret)) {
+    if (!write_user_field(settings_file($config), $account, 'totpSecret', $secret)) {
         return ["Could not write settings.\n", 1];
     }
 
@@ -50,7 +51,7 @@ function disable_command(Config $config, string $username = ''): array
 
     // null removes the field entirely, so the record does not keep a secret that is
     // switched off; an empty string would still be a value in the file
-    if (!write_user_field($config->dataDir, $account, 'totpSecret', null)) {
+    if (!write_user_field(settings_file($config), $account, 'totpSecret', null)) {
         return ["Could not write settings.\n", 1];
     }
 

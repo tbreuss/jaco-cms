@@ -11,6 +11,7 @@ use jaco\core\totp;
 use jaco\domain\Payload;
 use jaco\domain\page;
 
+use function jaco\core\config\settings_file;
 use function jaco\core\config\write_user_field;
 use function jaco\domain\translation\find_language_codes;
 
@@ -151,7 +152,7 @@ function change_password(
     $digest = password_hash($withNewPassword, PASSWORD_DEFAULT);
 
     // a new digest in place, keeping the rest of the file and the other users untouched
-    if (!write_user_field($config->dataDir, $username, 'password', $digest)) {
+    if (!write_user_field(settings_file($config), $username, 'password', $digest)) {
         return Payload::error([['', 'Could not write settings.']]);
     }
 
@@ -213,7 +214,7 @@ function change_language(Config $config, string $username, string $language): Pa
     }
 
     // one field of one user, keeping the rest of the file and the other users
-    if (!write_user_field($config->dataDir, $username, 'language', $language)) {
+    if (!write_user_field(settings_file($config), $username, 'language', $language)) {
         return Payload::error([['', 'Could not write settings.']]);
     }
 

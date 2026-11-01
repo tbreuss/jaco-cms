@@ -104,6 +104,20 @@ final class ConfigDefaultsTest extends TestCase
         }
     }
 
+    public function testSettingsFileDefaultsToTheDataDirectory(): void
+    {
+        $config = config\create_default_config('/var/www/site/jaco');
+
+        $this->assertSame('/var/www/site/jaco-data/settings.php', config\settings_file($config));
+    }
+
+    public function testSettingsFileCanPointAtADisposableFile(): void
+    {
+        $config = config\create_default_config('/var/www/site/jaco', [], '/tmp/e2e/settings.php');
+
+        $this->assertSame('/tmp/e2e/settings.php', config\settings_file($config));
+    }
+
     public function testEmptyStoredCredentialsNeverAuthenticate(): void
     {
         $config = test_config_with(['users' => []]);
