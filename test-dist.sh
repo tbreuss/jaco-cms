@@ -1,5 +1,5 @@
 #!/bin/sh
-# Baut das Release-Archiv und prüft es (lokal oder in CI).
+# Builds the release archive and checks it (locally or in CI).
 #   ./test-dist.sh [version-label]
 set -eu
 

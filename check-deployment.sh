@@ -24,7 +24,7 @@ BASE="${BASE%/}"
 FAILED=0
 PASSED=0
 
-# check <erwarteter-code> <pfad> <beschreibung>
+# check <expected-code> <path> <description>
 check() {
   expected="$1"
   path="$2"
@@ -39,9 +39,9 @@ check() {
   fi
 }
 
-# check_gone <pfad> <beschreibung>: erwartet 403 oder 404 - der Pfad darf nicht
-# erreichbar sein. Aeltere Deploys haben Anwendung, Daten und Einstellungen
-# ineinander verschachtelt; diese Pruefung findet solche Reste.
+# check_gone <path> <description>: expects 403 or 404 - the path must not be
+# reachable. Older deploys nested application, data and settings
+# inside each other; this check finds such leftovers.
 check_gone() {
   path="$1"
   label="$2"
@@ -58,7 +58,7 @@ check_gone() {
   esac
 }
 
-# check_json <pfad> <beschreibung>: erwartet 200 und eine JSON-Antwort
+# check_json <path> <description>: expects 200 and a JSON response
 check_json() {
   path="$1"
   label="$2"

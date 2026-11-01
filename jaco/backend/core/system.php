@@ -121,10 +121,10 @@ function security_checks(Config $config): array
 {
     $logDir = \dirname($config->loginHistoryFile);
 
-    // Apache .htaccess wirkt rekursiv: Ein .htaccess in einem Elternverzeichnis
-    // schützt auch alle Unterverzeichnisse. Für den Log-Schutz genügt daher ein
-    // .htaccess irgendwo zwischen dem Log-Verzeichnis und der App (exkl. App).
-    // Darüber hinaus liegt bereits die eigene App-Prüfung.
+    // Apache .htaccess applies recursively: an .htaccess in a parent directory
+    // also protects all subdirectories. For log protection it is therefore enough
+    // to have an .htaccess somewhere between the log directory and the app
+    // (excluding the app). Beyond that, the app's own check is already in place.
     $htaccessProtects = function (string $dir, string $stopAt): bool {
         while ($dir !== $stopAt && $dir !== \dirname($dir)) {
             if (\is_file($dir . '/.htaccess')) {

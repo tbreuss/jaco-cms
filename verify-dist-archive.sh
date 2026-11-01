@@ -1,16 +1,16 @@
 #!/bin/sh
-# Prüft ein jaco-dist-*.zip auf erwartete Release-Inhalte.
+# Checks a jaco-dist-*.zip for expected release contents.
 #   ./verify-dist-archive.sh [path/to/archive.zip]
-# Default: jaco-dist-dev.zip im Repository-Root.
+# Default: jaco-dist-dev.zip in the repository root.
 set -eu
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 ZIP="${1:-$ROOT/jaco-dist-dev.zip}"
 
-command -v unzip >/dev/null || { echo "unzip fehlt" >&2; exit 1; }
+command -v unzip >/dev/null || { echo "unzip missing" >&2; exit 1; }
 
 if [ ! -f "$ZIP" ]; then
-  echo "Archiv nicht gefunden: $ZIP" >&2
+  echo "archive not found: $ZIP" >&2
   exit 1
 fi
 
