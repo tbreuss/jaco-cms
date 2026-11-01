@@ -201,9 +201,10 @@ fixture for the detail pages and removes the fixtures after the run.
 
 These are **smoke tests**: they verify that each route renders or redirects for
 the current role. They do not replace functional tests for page CRUD, saving,
-uploads, restores or CSS changes. The media-picker flow is covered by a separate
-functional test (`media-picker.spec.mjs`) that runs with the full suite. Every
-smoke test carries the `@smoke` tag:
+uploads, restores or CSS changes. The media-picker flow and the account
+language switch are covered by separate functional tests
+(`media-picker.spec.mjs`, `change-language.spec.mjs`) that run with the full
+suite. Every smoke test carries the `@smoke` tag:
 
     npm --prefix jaco/test/e2e run test:e2e:smoke
     npm --prefix jaco/test/e2e run test:e2e -- --grep @smoke

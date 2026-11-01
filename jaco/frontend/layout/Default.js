@@ -388,6 +388,7 @@ export const DefaultLayout = {
                 // a read-only account reaches the form as well and learns on save that
                 // nothing is stored; hiding the entry would look like a missing feature
                 menuLink('/password', t('Change password')),
+                menuLink('/language', t('Change language')),
                 menuLink('/logout', t('Logout')),
               ], '.account-menu'),
               themeSwitch(),

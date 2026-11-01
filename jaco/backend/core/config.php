@@ -36,6 +36,8 @@ final readonly class Config
         /** @var array<string, array{password?: mixed, role?: mixed, language?: mixed, totpSecret?: mixed, readOnly?: mixed}> name → digest, role and per user preferences */
         public array $users = [],
         public bool $secretKeyIsConfigured = false,
+        /** The file the settings were loaded from; null means dataDir/settings.php. */
+        public ?string $settingsFile = null,
     ) {}
 }
 
@@ -133,6 +135,16 @@ function write_setting(string $dataDir, string $key, mixed $value): bool
 }
 
 /**
+ * The settings file this config belongs to. It is the one in the data directory,
+ * unless the caller pointed the application at another file (the E2E server uses
+ * a disposable one); writes must land in the file that was read.
+ */
+function settings_file(Config $config): string
+{
+    return $config->settingsFile ?? $config->dataDir . '/settings.php';
+}
+
+/**
  * Replaces one field of one user in the users list of settings.php. A nested array
  * cannot be patched line by line, so the block is located with a balanced bracket scan,
  * rewritten as a whole and written through the same guard as write_setting().
@@ -140,19 +152,17 @@ function write_setting(string $dataDir, string $key, mixed $value): bool
  * A null value removes the field again, which is how the second factor is turned off
  * without leaving a misleading "totpSecret => null" in the file.
  */
-function write_user_field(string $dataDir, string $username, string $field, ?string $value): bool
+function write_user_field(string $settingsFile, string $username, string $field, ?string $value): bool
 {
     if ($field === '') {
         return false;
     }
 
-    $file = $dataDir . '/settings.php';
-
-    if (!is_file($file)) {
+    if (!is_file($settingsFile)) {
         return false;
     }
 
-    $source = file_get_contents($file);
+    $source = file_get_contents($settingsFile);
 
     if (!is_string($source)) {
         return false;
@@ -164,14 +174,29 @@ function write_user_field(string $dataDir, string $username, string $field, ?str
         return false;
     }
 
-    $open = strpos($source, '[', $key);
-    $close = $open === false ? null : matching_bracket($source, $open);
+    $arrow = strpos($source, '=>', $key);
 
-    if ($open === false || $close === null) {
+    if ($arrow === false) {
         return false;
     }
 
-    $settings = include $file;
+    // the value is [...] as in settings.dist.php, or array (...) as var_export()
+    // writes it after the first edit; both forms have to be found
+    $open = $arrow + 2 + strspn($source, " \t\r\n", $arrow + 2);
+
+    if (($source[$open] ?? '') === '[') {
+        $close = matching_pair($source, $open, '[', ']');
+    } elseif (substr($source, $open, 5) === 'array') {
+        $close = matching_pair($source, $open, '(', ')');
+    } else {
+        return false;
+    }
+
+    if ($close === null) {
+        return false;
+    }
+
+    $settings = include $settingsFile;
     $users = is_array($settings) && is_array($settings['users'] ?? null) ? $settings['users'] : [];
 
     if (!isset($users[$username]) || !is_array($users[$username])) {
@@ -184,21 +209,23 @@ function write_user_field(string $dataDir, string $username, string $field, ?str
         $users[$username][$field] = $value;
     }
 
-    return write_source($file, substr($source, 0, $open) . var_export($users, true) . substr($source, $close + 1));
+    return write_source($settingsFile, substr($source, 0, $open) . var_export($users, true) . substr($source, $close + 1));
 }
 
 /**
- * Position of the bracket closing the one at $open, or null when the source is unbalanced.
+ * Position of the character closing the one at $open, or null when the source is
+ * unbalanced. The caller names the pair, so the short [...] and the long array (...)
+ * syntax both work.
  */
-function matching_bracket(string $source, int $open): ?int
+function matching_pair(string $source, int $open, string $openChar, string $closeChar): ?int
 {
     $depth = 0;
     $length = strlen($source);
 
     for ($index = $open; $index < $length; $index++) {
-        if ($source[$index] === '[') {
+        if ($source[$index] === $openChar) {
             $depth++;
-        } elseif ($source[$index] === ']') {
+        } elseif ($source[$index] === $closeChar) {
             $depth--;
             if ($depth === 0) {
                 return $index;
@@ -252,7 +279,7 @@ function write_source(string $file, string $content): bool
 /**
  * @param array<string, mixed> $settings
  */
-function create_default_config(string $appDir, array $settings = []): Config
+function create_default_config(string $appDir, array $settings = [], ?string $settingsFile = null): Config
 {
     // fail closed: empty values are treated like missing ones, so a verbatim
     // copy of settings.dist.php can never log in with empty credentials or
@@ -308,5 +335,8 @@ function create_default_config(string $appDir, array $settings = []): Config
         backupRetentionDays: (int) ($settings['backupRetentionDays'] ?? 90),
         // users in settings.php; empty means nobody can log in
         users: is_array($settings['users'] ?? null) ? $settings['users'] : [],
+        // writes must go to the file that was actually read, not necessarily to
+        // dataDir (the E2E server points at a disposable settings file)
+        settingsFile: $settingsFile,
     );
 }

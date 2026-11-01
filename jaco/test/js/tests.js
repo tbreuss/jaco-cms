@@ -656,7 +656,7 @@ QUnit.test('the layout greys out what the role may not do', (assert) => {
     )
     assert.deepEqual(
       [...dropdowns[3].querySelectorAll('a')].map((link) => link.textContent),
-      [t('About'), t('Change password'), t('Logout')],
+      [t('About'), t('Change password'), t('Change language'), t('Logout')],
       'the account menu is available',
     )
     assert.strictEqual(fixture().querySelector('.jump-to-page'), null, 'the page jump is no longer a direct control')
@@ -679,7 +679,7 @@ QUnit.test('a read-only account keeps the password entry active', (assert) => {
     const account = dropdowns[3]
     assert.deepEqual(
       [...account.querySelectorAll('a')].map((link) => link.textContent),
-      [t('About'), t('Change password'), t('Logout')],
+      [t('About'), t('Change password'), t('Change language'), t('Logout')],
       'the entry stays active: the form explains on save',
     )
     assert.deepEqual(
@@ -714,7 +714,7 @@ QUnit.test('an editor writes content but sees admin menus disabled', (assert) =>
     assert.strictEqual(dropdowns[2].querySelectorAll('.nav-disabled').length, 3, 'admin entries are disabled')
     assert.deepEqual(
       [...dropdowns[3].querySelectorAll('a')].map((link) => link.textContent),
-      [t('About'), t('Change password'), t('Logout')],
+      [t('About'), t('Change password'), t('Change language'), t('Logout')],
       'the account menu is available',
     )
   } finally {

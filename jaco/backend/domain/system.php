@@ -11,7 +11,18 @@ use jaco\core\totp;
 use jaco\domain\Payload;
 use jaco\domain\page;
 
+use function jaco\core\config\settings_file;
 use function jaco\core\config\write_user_field;
+use function jaco\domain\translation\find_language_codes;
+
+// native names for the language chooser: an option stays readable before the
+// interface has switched to that language
+const LANGUAGE_NAMES = [
+    'de' => 'Deutsch',
+    'en' => 'English',
+    'fr' => 'Français',
+    'it' => 'Italiano',
+];
 
 function authenticate_user(
     Config $config,
@@ -141,13 +152,75 @@ function change_password(
     $digest = password_hash($withNewPassword, PASSWORD_DEFAULT);
 
     // a new digest in place, keeping the rest of the file and the other users untouched
-    if (!write_user_field($config->dataDir, $username, 'password', $digest)) {
+    if (!write_user_field(settings_file($config), $username, 'password', $digest)) {
         return Payload::error([['', 'Could not write settings.']]);
     }
 
     auth\record_login_success($config, $address);
 
     return Payload::success();
+}
+
+/**
+ * Available interface languages with their native names, plus the installation's
+ * default for the account that never chose one.
+ */
+function list_languages(Config $config): Payload
+{
+    $languages = [];
+
+    foreach (find_language_codes() as $code) {
+        $languages[] = [
+            'code' => $code,
+            'name' => LANGUAGE_NAMES[$code] ?? strtoupper($code),
+        ];
+    }
+
+    return Payload::success([
+        'languages' => $languages,
+        'defaultLanguage' => $config->defaultLanguage,
+    ]);
+}
+
+/**
+ * Stores the interface language for one account and returns a token that already
+ * carries it, so the current session switches without a new login.
+ *
+ * The value has to name an existing translation file: a language without one
+ * would leave the account on the fallback without explaining why.
+ */
+function change_language(Config $config, string $username, string $language): Payload
+{
+    $errors = data\validate(
+        ['language' => $language],
+        [
+            ['language', 'is_required'],
+            ['language', 'is_string'],
+        ],
+    );
+
+    if (count($errors) > 0) {
+        return Payload::invalid($errors);
+    }
+
+    if (!\in_array($language, find_language_codes(), true)) {
+        return Payload::invalid([['language', 'Unknown language.']]);
+    }
+
+    $user = auth\find_user($config, $username);
+
+    if ($user === null) {
+        return Payload::invalid([['', 'Language changes are disabled for this account.']]);
+    }
+
+    // one field of one user, keeping the rest of the file and the other users
+    if (!write_user_field(settings_file($config), $username, 'language', $language)) {
+        return Payload::error([['', 'Could not write settings.']]);
+    }
+
+    return Payload::success([
+        'token' => auth\create_token($config, $username, $user['role'], $language, $user['readOnly']),
+    ]);
 }
 
 function get_environment(Config $config): Payload

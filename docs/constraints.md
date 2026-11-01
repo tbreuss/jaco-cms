@@ -228,6 +228,7 @@ end.
 | --- | --- | --- |
 | Read pages, uploads, backups, stylesheets and page/blocks templates | ✓ | ✓ |
 | Change the own password | ✓ | ✓ |
+| Change the own interface language | ✓ | ✓ |
 | Create, update, copy and delete pages | ✓ | ✓ |
 | Change page title, meta description and robots | ✓ | ✓ |
 | Add and delete uploads | ✓ | ✓ |
@@ -256,7 +257,8 @@ falling back to something, so a typo cannot hand out access.
   `upload/create`, `upload/delete`, `template/pages`, `template/content`,
   `template/content/view`, `template/site/list`, `template/site/view`,
   `template/site/preview`, `template/site/apply`, `backup/list`, `backup/view`,
-  `backup/restore`, `css/list`, `css/view` and `system/change-password`
+  `backup/restore`, `css/list`, `css/view`, `system/change-password`,
+  `system/change-language` and `system/languages`
 - `admin`: everything, notably `backup/delete`, `css/update`, `template/site/update`,
   `system`, `system/log`, `system/log/clear`, `system/php-info`,
   `system/check-update` and `system/update`
@@ -267,7 +269,8 @@ is refused – nobody is logged out for clicking a button they may not use.
 
 The admin UI groups its navigation into four areas: Content (Pages, Media, Backups,
 Design), This page (Edit, Copy and Delete for the page currently in the preview), Admin
-(Environment, PHP error log, PHP info) and Account (About, Change password, Logout).
+(Environment, PHP error log, PHP info) and Account (About, Change password, Change
+language, Logout).
 Theme stays a direct control; Jump to page is available from the command palette.
 The old Quick Action is gone. Add page is a
 button in the Pages toolbar, Copy and Delete are row actions there. On a fine pointer
@@ -291,8 +294,10 @@ guidance, not access control: the router still checks the signed token on every 
 and the write endpoints answer **403** regardless of what the editor shows.
 
 The token also carries the user's language. The frontend asks the translations endpoint
-for it and falls back to the configured default language when the claim is empty. That way
-each account gets its own UI language without a separate setting endpoint.
+for it and falls back to the configured default language when the claim is empty. The
+`/language` form changes that preference for the own account: saving stores it in
+`settings.php` and answers with a fresh token, so the session switches without a new
+login.
 
 ## Where the rules live
 

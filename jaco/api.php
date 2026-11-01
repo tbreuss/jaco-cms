@@ -13,23 +13,25 @@ set_exception_handler('jaco\core\error\exception_handler');
 register_shutdown_function('jaco\core\error\fatal_handler');
 
 $settings = [];
+$settingsFile = null;
 
 // Tests can point the API at a disposable settings file without touching the
 // real jaco-data/settings.php. An explicitly set but unreadable path fails closed
 // instead of silently falling back to the live configuration.
-$settingsFile = getenv('JACO_SETTINGS_FILE');
-if (is_string($settingsFile) && $settingsFile !== '') {
-    $settingsFile = preg_match('#^(/|[A-Za-z]:[\\\\/])#', $settingsFile)
-        ? $settingsFile
-        : __DIR__ . '/' . $settingsFile;
+$settingsPath = getenv('JACO_SETTINGS_FILE');
+if (is_string($settingsPath) && $settingsPath !== '') {
+    $settingsFile = preg_match('#^(/|[A-Za-z]:[\\\\/])#', $settingsPath)
+        ? $settingsPath
+        : __DIR__ . '/' . $settingsPath;
     if (is_readable($settingsFile)) {
         $settings = require $settingsFile;
     }
 } elseif (is_readable(__DIR__ . '/../jaco-data/settings.php')) {
-    $settings = require __DIR__ . '/../jaco-data/settings.php';
+    $settingsFile = __DIR__ . '/../jaco-data/settings.php';
+    $settings = require $settingsFile;
 }
 
-$config = create_default_config(__DIR__, is_array($settings) ? $settings : []);
+$config = create_default_config(__DIR__, is_array($settings) ? $settings : [], $settingsFile);
 
 ini_set('error_reporting', (string) $config->phpErrorReporting);
 ini_set('display_errors', (string) $config->phpDisplayErrors);

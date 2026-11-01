@@ -174,6 +174,23 @@ router\post(
 );
 
 router\get(
+    route: 'system/languages',
+    callback: jaco\api\system\languages\action(...),
+    authenticated: true,
+    role: 'editor',
+    responseSchema: 'system/languages/response.json',
+);
+
+router\post(
+    route: 'system/change-language',
+    callback: jaco\api\system\change_language\action(...),
+    authenticated: true,
+    role: 'editor',
+    requestSchema: 'system/change-language/request.json',
+    responseSchema: 'system/change-language/response.json',
+);
+
+router\get(
     route: 'system/php-info',
     callback: jaco\api\system\phpinfo\action(...),
     authenticated: true,

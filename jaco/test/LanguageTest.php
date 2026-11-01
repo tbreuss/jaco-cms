@@ -166,6 +166,7 @@ final class LanguageTest extends TestCase
             '{value} is an invalid sort parameter.',
             'Authentication failed.',
             'Password needs at least 8 characters.',
+            'Unknown language.',
             'Too many attempts. Try again in {minutes} minute(s).',
             'Could not read file.',
             'Could not write settings.',
