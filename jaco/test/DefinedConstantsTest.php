@@ -17,7 +17,13 @@ final class DefinedConstantsTest extends TestCase
         $configValues = $environment->data['config'];
 
         $this->assertSame('********', $configValues['secretKey']);
-        $this->assertSame('********', $configValues['users']);
+
+        // users are listed by name, role, read-only and the second factor; the
+        // digest and the TOTP secret must not appear anywhere in the values
+        $this->assertSame(
+            [['name' => TEST_USERNAME, 'role' => 'admin', 'readOnly' => false, 'totpEnabled' => false]],
+            $configValues['users'],
+        );
         $this->assertSame(str_replace('\\', '/', $config->backupDir), $configValues['backupDir']);
 
         foreach ($configValues as $value) {
