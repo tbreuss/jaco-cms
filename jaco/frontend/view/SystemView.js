@@ -32,6 +32,43 @@ const configValue = (key, value) => {
   return Array.isArray(value) ? value.join(', ') : value
 }
 
+// users have their own table above; the configuration list would only show the
+// word "array"
+const configWithoutUsers = () => {
+  const config = {...SystemModel.info.config}
+  delete config.users
+  return config
+}
+
+// The accounts of this installation: name, role and whether the second factor is
+// enrolled. The server sends those four fields only, never the digest or the
+// secret itself.
+const usersTable = (users) => users && users.length
+  ? m('div',
+    m('h2', t('Users')),
+    m('table.table.table-system-view',
+      m('colgroup',
+        m('col.col-30'),
+        m('col'),
+        m('col.col-shrink'),
+        m('col.col-shrink')
+      ),
+      m('thead', m('tr',
+        m('th', t('User')),
+        m('th', t('Role')),
+        m('th.text-center', t('Read-only')),
+        m('th.text-center', t('Two-factor')),
+      )),
+      m('tbody', users.map((user) => m('tr',
+          m('td.text-nowrap', user.name),
+          m('td', t(user.role === 'admin' ? 'Admin' : 'Editor')),
+          m('td.text-center', user.readOnly ? t('Yes') : t('No')),
+          m('td.text-center', user.totpEnabled ? t('Enabled') : t('No')),
+        ))
+      )
+    ))
+  : ''
+
 const checksTable = (title, checks) => checks
   ? m('div',
     m('h2', title),
@@ -98,7 +135,8 @@ export const SystemView = {
       m('h1', t('System environment')),
       checksTable(t('Requirements'), SystemModel.info.checks),
       overviewTable(SystemModel.info.overview),
-      keyValueTable(t('Configuration'), SystemModel.info.config),
+      usersTable(SystemModel.info.config?.users),
+      keyValueTable(t('Configuration'), configWithoutUsers()),
       updatePanel(),
     )
   )

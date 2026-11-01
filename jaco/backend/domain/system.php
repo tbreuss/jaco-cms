@@ -239,7 +239,19 @@ function display_config(Config $config): array
 {
     $values = get_object_vars($config);
     $values['secretKey'] = '********';
-    $values['users'] = '********';
+    // name, role and the two flags only: the digest and the second factor stay on
+    // the server. A read-only demo keeps its role, so the flag has to be visible.
+    $values['users'] = [];
+
+    foreach ($config->users as $name => $user) {
+        $values['users'][] = [
+            'name' => (string) $name,
+            'role' => is_string($user['role'] ?? null) ? $user['role'] : '',
+            'readOnly' => ($user['readOnly'] ?? false) === true,
+            'totpEnabled' => is_string($user['totpSecret'] ?? null) && $user['totpSecret'] !== '',
+        ];
+    }
+
     $values['directoryPermissions'] = sprintf('0%o', $config->directoryPermissions);
     $values['filePermissions'] = sprintf('0%o', $config->filePermissions);
     $values['maintenanceMode'] = $config->maintenanceMode ? 'true' : 'false';
