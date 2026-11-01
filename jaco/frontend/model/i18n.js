@@ -3,13 +3,15 @@
 import {api} from '../service/api.js'
 import {auth} from '../lib/auth.js'
 
-const loadAndSetLocale = () => {
-  i18n.status = 'loading'
+const loadAndSetLocale = (showLoading = true) => {
+  if (showLoading) {
+    i18n.status = 'loading'
+  }
 
   // the token carries the user's language; without one the api serves the
   // configured defaultLanguage, which is also the fallback for an empty claim
   const language = auth.language()
-  api.get('translations', language === '' ? {} : {language}).then(
+  return api.get('translations', language === '' ? {} : {language}).then(
     (data) => {
       i18n.messages = data
       i18n.currentLocale = language

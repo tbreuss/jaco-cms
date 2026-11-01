@@ -173,6 +173,14 @@ m.route(document.getElementById('app'), '/', {
       return m(DefaultLayout, m(vnode.tag))
     }
   },
+  '/language': {
+    onmatch:  () => {
+      return loadComponent('LanguageView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
+    }
+  },
   '/system/env': {
     onmatch:  () => {
       return loadComponent('SystemView.js')

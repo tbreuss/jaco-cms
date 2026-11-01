@@ -164,10 +164,25 @@ function write_user_field(string $dataDir, string $username, string $field, ?str
         return false;
     }
 
-    $open = strpos($source, '[', $key);
-    $close = $open === false ? null : matching_bracket($source, $open);
+    $arrow = strpos($source, '=>', $key);
 
-    if ($open === false || $close === null) {
+    if ($arrow === false) {
+        return false;
+    }
+
+    // the value is [...] as in settings.dist.php, or array (...) as var_export()
+    // writes it after the first edit; both forms have to be found
+    $open = $arrow + 2 + strspn($source, " \t\r\n", $arrow + 2);
+
+    if (($source[$open] ?? '') === '[') {
+        $close = matching_pair($source, $open, '[', ']');
+    } elseif (substr($source, $open, 5) === 'array') {
+        $close = matching_pair($source, $open, '(', ')');
+    } else {
+        return false;
+    }
+
+    if ($close === null) {
         return false;
     }
 
@@ -188,17 +203,19 @@ function write_user_field(string $dataDir, string $username, string $field, ?str
 }
 
 /**
- * Position of the bracket closing the one at $open, or null when the source is unbalanced.
+ * Position of the character closing the one at $open, or null when the source is
+ * unbalanced. The caller names the pair, so the short [...] and the long array (...)
+ * syntax both work.
  */
-function matching_bracket(string $source, int $open): ?int
+function matching_pair(string $source, int $open, string $openChar, string $closeChar): ?int
 {
     $depth = 0;
     $length = strlen($source);
 
     for ($index = $open; $index < $length; $index++) {
-        if ($source[$index] === '[') {
+        if ($source[$index] === $openChar) {
             $depth++;
-        } elseif ($source[$index] === ']') {
+        } elseif ($source[$index] === $closeChar) {
             $depth--;
             if ($depth === 0) {
                 return $index;

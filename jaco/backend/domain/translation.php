@@ -19,6 +19,34 @@ function load_translation(Config $config, string $forLanguage, string $withKey):
     return Payload::success($translations[$withKey] ?? $withKey);
 }
 
+/**
+ * Codes of the translation files that actually exist, sorted. Only plain two
+ * letter file names count, so a stray file in the folder cannot become a choice.
+ *
+ * @return list<string>
+ */
+function find_language_codes(): array
+{
+    $codes = [];
+
+    foreach (\glob(language_dir() . '/*.json') ?: [] as $file) {
+        $code = \basename($file, '.json');
+
+        if (\preg_match('/^[a-z]{2}$/', $code) === 1) {
+            $codes[] = $code;
+        }
+    }
+
+    \sort($codes);
+
+    return $codes;
+}
+
+function language_dir(): string
+{
+    return \dirname(__DIR__, 2) . '/language';
+}
+
 function load(Config $config, string $language): array
 {
     static $translations = [];
