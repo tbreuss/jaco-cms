@@ -52,16 +52,9 @@ final readonly class Config
  */
 function write_settings(string $dataDir, array $settings): bool
 {
-    $content = '<?php declare(strict_types=1);' . PHP_EOL . PHP_EOL . 'return [' . PHP_EOL;
-
-    foreach ($settings as $key => $value) {
-        // var_export keeps strings quoted and also writes nested arrays (the users list)
-        $content .= '    ' . var_export($key, true) . ' => ' . var_export($value, true) . ',' . PHP_EOL;
-    }
-
-    $content .= '];' . PHP_EOL;
-
-    $written = file_put_contents($dataDir . '/settings.php', $content) !== false;
+    // the same generator the later edits use, so a file written by the installer
+    // and one written by a settings change look the same
+    $written = file_put_contents($dataDir . '/settings.php', settings_source($settings)) !== false;
 
     // keep credentials unreadable for other users on shared hosts
     if ($written) {
@@ -72,14 +65,12 @@ function write_settings(string $dataDir, array $settings): bool
 }
 
 /**
- * Writes one value into an existing settings.php and leaves the rest of the file alone:
- * comments survive, every other key keeps its value, a missing key is appended before
- * the closing bracket. Only scalar values are supported, which is all settings.php holds.
+ * Sets one top-level key in settings.php.
  *
- * The patched source is parsed before it replaces the file, so a broken edit never
- * reaches the disk. The write goes through a temporary file in the same directory and a
- * rename; the temporary file carries a .php suffix, so a request to it executes it
- * instead of serving the settings as text.
+ * The file is read and written as a whole, like every other edit: the same
+ * approach for all of them, and a value that is not a scalar (an array such as
+ * uploadExtensions) is written instead of being refused because it does not fit
+ * on one line. A key that does not exist yet is added.
  */
 function write_setting(string $dataDir, string $key, mixed $value): bool
 {
@@ -89,49 +80,15 @@ function write_setting(string $dataDir, string $key, mixed $value): bool
         return false;
     }
 
-    $source = file_get_contents($file);
+    $settings = read_settings($file);
 
-    if (!is_string($source)) {
+    if ($settings === null) {
         return false;
     }
 
-    $keySource = var_export($key, true);
-    $valueSource = var_export($value, true);
-    $quotedKey = preg_quote($key, '/');
+    $settings[$key] = $value;
 
-    $patched = preg_replace_callback(
-        '/^([ \t]*[\'"]' . $quotedKey . '[\'"][ \t]*=>[ \t]*).+?(,?[ \t]*)$/m',
-        static fn(array $match): string => $match[1] . $valueSource . $match[2],
-        $source,
-        1,
-        $count,
-    );
-
-    if ($patched === null) {
-        return false;
-    }
-
-    if ($count === 0) {
-        // present but not on one line (an array, for example): appending would create a
-        // second entry that shadows the first, so fail instead
-        if (preg_match('/[\'"]' . $quotedKey . '[\'"]\s*=>/', $source) === 1) {
-            return false;
-        }
-
-        $patched = preg_replace_callback(
-            '/^(\];)[ \t]*$/m',
-            static fn(array $match): string => '    ' . $keySource . ' => ' . $valueSource . ',' . PHP_EOL . $match[1],
-            $source,
-            1,
-            $count,
-        );
-
-        if ($patched === null || $count === 0) {
-            return false;
-        }
-    }
-
-    return write_source($file, $patched);
+    return write_source($file, settings_source($settings));
 }
 
 /**
@@ -145,12 +102,16 @@ function settings_file(Config $config): string
 }
 
 /**
- * Replaces one field of one user in the users list of settings.php. A nested array
- * cannot be patched line by line, so the block is located with a balanced bracket scan,
- * rewritten as a whole and written through the same guard as write_setting().
+ * Replaces one field of one user in the users list of settings.php.
  *
- * A null value removes the field again, which is how the second factor is turned off
- * without leaving a misleading "totpSecret => null" in the file.
+ * settings.php is a managed file: it is read with require, changed in memory and
+ * written back in one piece. Comments placed there by hand do not survive that,
+ * which is the price for not parsing PHP source by hand - the previous version
+ * scanned for "'users'" and a bracket pair, and a comment mentioning the word
+ * was enough to refuse the write.
+ *
+ * A null value removes the field again, which is how the second factor is turned
+ * off without leaving a misleading "totpSecret => null" in the file.
  */
 function write_user_field(string $settingsFile, string $username, string $field, ?string $value): bool
 {
@@ -162,44 +123,15 @@ function write_user_field(string $settingsFile, string $username, string $field,
         return false;
     }
 
-    $source = file_get_contents($settingsFile);
+    $settings = read_settings($settingsFile);
 
-    if (!is_string($source)) {
+    if ($settings === null) {
         return false;
     }
 
-    $key = strpos($source, "'users'");
+    $users = $settings['users'] ?? null;
 
-    if ($key === false) {
-        return false;
-    }
-
-    $arrow = strpos($source, '=>', $key);
-
-    if ($arrow === false) {
-        return false;
-    }
-
-    // the value is [...] as in settings.dist.php, or array (...) as var_export()
-    // writes it after the first edit; both forms have to be found
-    $open = $arrow + 2 + strspn($source, " \t\r\n", $arrow + 2);
-
-    if (($source[$open] ?? '') === '[') {
-        $close = matching_pair($source, $open, '[', ']');
-    } elseif (substr($source, $open, 5) === 'array') {
-        $close = matching_pair($source, $open, '(', ')');
-    } else {
-        return false;
-    }
-
-    if ($close === null) {
-        return false;
-    }
-
-    $settings = include $settingsFile;
-    $users = is_array($settings) && is_array($settings['users'] ?? null) ? $settings['users'] : [];
-
-    if (!isset($users[$username]) || !is_array($users[$username])) {
+    if (!is_array($users) || !isset($users[$username]) || !is_array($users[$username])) {
         return false;
     }
 
@@ -209,31 +141,83 @@ function write_user_field(string $settingsFile, string $username, string $field,
         $users[$username][$field] = $value;
     }
 
-    return write_source($settingsFile, substr($source, 0, $open) . var_export($users, true) . substr($source, $close + 1));
+    $settings['users'] = $users;
+
+    return write_source($settingsFile, settings_source($settings));
 }
 
 /**
- * Position of the character closing the one at $open, or null when the source is
- * unbalanced. The caller names the pair, so the short [...] and the long array (...)
- * syntax both work.
+ * The settings array of a file, or null when it does not return one. A broken file
+ * must never be written back, which would turn a readable failure into data loss.
+ *
+ * @return array<string, mixed>|null
  */
-function matching_pair(string $source, int $open, string $openChar, string $closeChar): ?int
+function read_settings(string $file): ?array
 {
-    $depth = 0;
-    $length = strlen($source);
+    $settings = include $file;
 
-    for ($index = $open; $index < $length; $index++) {
-        if ($source[$index] === $openChar) {
-            $depth++;
-        } elseif ($source[$index] === $closeChar) {
-            $depth--;
-            if ($depth === 0) {
-                return $index;
-            }
-        }
+    return is_array($settings) ? $settings : null;
+}
+
+/**
+ * The settings file as PHP source in the project's own style: short arrays,
+ * four-space indentation, strict types. The output of this function replaces the
+ * file as a whole, so it has to parse (write_source() checks that) and read like
+ * the template it replaces.
+ *
+ * @param array<string, mixed> $settings
+ */
+function settings_source(array $settings): string
+{
+    return '<?php declare(strict_types=1);' . PHP_EOL . PHP_EOL
+        . settings_header() . PHP_EOL . PHP_EOL
+        . 'return ' . export_value($settings, 0) . ';' . PHP_EOL;
+}
+
+/**
+ * The note at the top of a written settings file. It answers the two questions a
+ * reader has after a setting changed behind their back: why their comments are gone,
+ * and where the documentation of the keys lives.
+ *
+ * The template is named as an operator sees it, in the installation: jaco/ next to
+ * the data directory. An absolute path would put the server layout into a file that
+ * is often shared for support.
+ */
+function settings_header(): string
+{
+    return '// Managed by Jaco: this file is rewritten as a whole when a setting changes,'
+        . PHP_EOL . '// so comments written here do not survive. Keys, roles, TOTP and the data'
+        . PHP_EOL . '// directory are documented in jaco/settings.dist.php.';
+}
+
+/**
+ * var_export() for arrays, but with the short syntax and real indentation: the
+ * built-in writes "array (\n  'admin' => \n  array (" and loses the style of the
+ * file it replaces. Scalars are handed to var_export(), which quotes and escapes
+ * them correctly.
+ */
+function export_value(mixed $value, int $level): string
+{
+    if (!is_array($value)) {
+        return var_export($value, true);
     }
 
-    return null;
+    if ($value === []) {
+        return '[]';
+    }
+
+    $pad = str_repeat('    ', $level + 1);
+    $close = str_repeat('    ', $level);
+    $isList = array_is_list($value);
+    $lines = [];
+
+    foreach ($value as $key => $item) {
+        $lines[] = $isList
+            ? $pad . export_value($item, $level + 1)
+            : $pad . var_export($key, true) . ' => ' . export_value($item, $level + 1);
+    }
+
+    return '[' . PHP_EOL . implode(',' . PHP_EOL, $lines) . ',' . PHP_EOL . $close . ']';
 }
 
 /**

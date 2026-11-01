@@ -93,7 +93,8 @@ final class CliTotpTest extends TestCase
         $this->assertStringContainsString('Two-factor authentication is now required for "anna".', $output);
 
         $source = (string) file_get_contents($this->dir . '/jaco-data/settings.php');
-        $this->assertStringContainsString('// keep me, I explain the file', $source, 'comments survive');
+        $this->assertStringNotContainsString('// keep me, I explain the file', $source, 'hand-written comments go');
+        $this->assertStringContainsString('Managed by Jaco', $source, 'the managed-file note replaces them');
         $this->assertStringContainsString("'secretKey' => 'do-not-touch'", $source);
 
         $settings = $this->settings();

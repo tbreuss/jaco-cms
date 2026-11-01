@@ -72,14 +72,20 @@ final class ConfigWriteUserFieldTest extends TestCase
         $this->assertSame('de', $settings['users']['admin']['language']);
         $this->assertSame('admin-hash', $settings['users']['admin']['password']);
         $this->assertSame('en', $settings['users']['editor']['language'], 'the other account is untouched');
-        $this->assertStringContainsString('// keep me, other accounts live here too', $this->readSource());
+        // the file is managed: a note at the top replaces the comments it had,
+        // and points at the template that explains the keys
+        $source = $this->readSource();
+        $this->assertStringNotContainsString('// keep me, other accounts live here too', $source);
+        $this->assertStringContainsString('Managed by Jaco', $source);
+        $this->assertStringContainsString('settings.dist.php', $source);
     }
 
-    public function testKeepsWorkingAfterItRewroteTheArrayWithVarExport(): void
+    public function testKeepsWorkingAfterItRewroteTheFile(): void
     {
-        // regression: the first edit replaces the short [...] syntax with the long
-        // array (...) syntax var_export() writes; the second edit used to find no
-        // opening bracket and failed, so changing a language twice broke
+        // regression: the file used to be patched in place, so the first edit left
+        // var_export()'s long array (...) syntax behind and the second one failed to
+        // find the block again. The file is read and written as a whole now, and
+        // the second write has to work just as well as the first
         $this->writeSource(<<<'PHP'
             <?php declare(strict_types=1);
 

@@ -97,7 +97,8 @@ final class ApiChangeLanguageTest extends ApiTestCase
         $this->assertSame('de', $claims['language']);
 
         $source = (string) file_get_contents($this->settingsPath());
-        $this->assertStringContainsString('// keep me, I explain the file', $source, 'comments survive');
+        $this->assertStringNotContainsString('// keep me, I explain the file', $source, 'hand-written comments go');
+        $this->assertStringContainsString('Managed by Jaco', $source, 'the managed-file note replaces them');
 
         $settings = $this->settings();
         $this->assertSame('de', $settings['users'][TEST_USERNAME]['language']);

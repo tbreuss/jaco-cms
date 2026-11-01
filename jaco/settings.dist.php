@@ -6,6 +6,11 @@
 // tokens, it needs at least 32 random characters - never deploy an example
 // key, generate one (the browser installer does this for you).
 //
+// settings.php is managed by the app: it is rewritten as a whole whenever a
+// setting changes (a password, the second factor or the account language).
+// Comments written into settings.php do not survive that; this file is the
+// place where they belong.
+//
 // Roles: editor (write pages and uploads), admin (everything, including
 // settings, CSS and backups). A read-only account keeps its role (usually
 // admin) and sets 'readOnly' => true; the router refuses every write for it.

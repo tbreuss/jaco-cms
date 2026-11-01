@@ -46,7 +46,7 @@ final class ConfigWriteSettingTest extends TestCase
         return (array) include $this->dir . '/jaco-data/settings.php';
     }
 
-    public function testReplacesAStringAndKeepsTheComments(): void
+    public function testReplacesAStringAndKeepsTheOtherKeys(): void
     {
         $this->writeSource(<<<'PHP'
             <?php declare(strict_types=1);
@@ -63,8 +63,10 @@ final class ConfigWriteSettingTest extends TestCase
         $this->assertTrue(write_setting($this->dir . '/jaco-data', 'password', 'new-digest'));
 
         $source = $this->readSource();
-        $this->assertStringContainsString('// keep me, I explain the secret below', $source);
-        $this->assertStringContainsString('// the digest lives here', $source);
+        // every write replaces the file as a whole, like write_user_field()
+        $this->assertStringNotContainsString('// keep me, I explain the secret below', $source);
+        $this->assertStringNotContainsString('// the digest lives here', $source);
+        $this->assertStringContainsString('Managed by Jaco', $source);
         $this->assertSame('new-digest', $this->settings()['password']);
         $this->assertSame('demo', $this->settings()['username']);
         $this->assertSame('abc', $this->settings()['secretKey']);
@@ -116,8 +118,10 @@ final class ConfigWriteSettingTest extends TestCase
         $settings = $this->settings();
         $this->assertTrue($settings['maintenanceMode']);
         $this->assertSame('demo', $settings['username']);
-        // the new entry sits before the closing bracket, whose line ending is kept
-        $this->assertStringEndsWith(PHP_EOL . '];', $this->readSource());
+        // a missing key is added, the file keeps the style of settings.dist.php
+        $source = $this->readSource();
+        $this->assertStringContainsString("'maintenanceMode' => true,", $source);
+        $this->assertStringEndsWith('];' . PHP_EOL, $source);
     }
 
     public function testEscapesStringsWithQuotesAndBackslashes(): void
@@ -143,7 +147,7 @@ final class ConfigWriteSettingTest extends TestCase
         $this->assertFileDoesNotExist($this->dir . '/jaco-data/settings.php');
     }
 
-    public function testFailsForAValueItCannotReplaceLineWise(): void
+    public function testWritesAValueThatSpansSeveralLines(): void
     {
         $source = <<<'PHP'
             <?php declare(strict_types=1);
@@ -157,7 +161,9 @@ final class ConfigWriteSettingTest extends TestCase
             PHP;
         $this->writeSource($source);
 
-        $this->assertFalse(write_setting($this->dir . '/jaco-data', 'uploadExtensions', 'png'));
-        $this->assertSame($source, $this->readSource(), 'the file is left untouched');
+        // the file is read and written as a whole, so an array value no longer has
+        // to fit on one line: it replaces the list and keeps its shape
+        $this->assertTrue(write_setting($this->dir . '/jaco-data', 'uploadExtensions', ['png', 'webp']));
+        $this->assertSame(['png', 'webp'], $this->settings()['uploadExtensions']);
     }
 }
