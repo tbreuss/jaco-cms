@@ -26,8 +26,8 @@ if (is_string($settingsPath) && $settingsPath !== '') {
     if (is_readable($settingsFile)) {
         $settings = require $settingsFile;
     }
-} elseif (is_readable(__DIR__ . '/../jaco-data/settings.php')) {
-    $settingsFile = __DIR__ . '/../jaco-data/settings.php';
+} elseif (is_readable(dirname(__DIR__) . '/jaco-data/settings.php')) {
+    $settingsFile = dirname(__DIR__) . '/jaco-data/settings.php';
     $settings = require $settingsFile;
 }
 

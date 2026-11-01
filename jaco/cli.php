@@ -21,8 +21,8 @@ use function jaco\core\config\create_default_config;
 
 $settings = [];
 
-if (is_readable(__DIR__ . '/../jaco-data/settings.php')) {
-    $settings = require(__DIR__ . '/../jaco-data/settings.php');
+if (is_readable(dirname(__DIR__) . '/jaco-data/settings.php')) {
+    $settings = require dirname(__DIR__) . '/jaco-data/settings.php';
 }
 
 $config = create_default_config(__DIR__, is_array($settings) ? $settings : []);
