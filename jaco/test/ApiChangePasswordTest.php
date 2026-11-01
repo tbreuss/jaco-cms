@@ -100,7 +100,8 @@ final class ApiChangePasswordTest extends ApiTestCase
         $this->assertSame(Status::OK, $response->status);
 
         $source = (string) file_get_contents($this->settingsPath());
-        $this->assertStringContainsString('// keep me, I explain the file', $source, 'comments survive');
+        $this->assertStringNotContainsString('// keep me, I explain the file', $source, 'hand-written comments go');
+        $this->assertStringContainsString('Managed by Jaco', $source, 'the managed-file note replaces them');
 
         $stored = (string) $this->settings()['users'][TEST_USERNAME]['password'];
         $this->assertTrue(password_verify('ein-neues-passwort', $stored), 'the new password verifies');

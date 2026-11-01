@@ -1,6 +1,10 @@
 .DS_Store
 /.idea
 /.vscode
+/.deptrac.cache
+/.php-cs-fixer.cache
+/.phpunit.cache
+/.phpunit.result.cache
 /jaco/.deptrac.cache
 /jaco/.php-cs-fixer.cache
 /jaco/.phpunit.cache
