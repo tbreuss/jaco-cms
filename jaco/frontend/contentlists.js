@@ -131,6 +131,12 @@ window.JacoContentLists = (() => {
   const createAddButton = (list, onAdd) => {
     const button = document.createElement('div')
     button.className = ADD_BUTTON_CLASS
+    button.classList.add(
+      configOf(list).listAttr === 'data-jaco-slot'
+        ? 'jaco-content-add-button--slot'
+        : 'jaco-content-add-button--repeater',
+    )
+    button._jacoList = list
     const title = list.getAttribute(configOf(list).labelAttr) || ''
     const setLabel = () => {
       button.textContent = '+ ' + (window.jacoEditorT
@@ -194,6 +200,10 @@ window.JacoContentLists = (() => {
   }
 
   const attachItemOverlay = (item, sortable) => {
+    // make the helper idempotent: a block that is initialised twice (for
+    // example when a content list is mounted on an already decorated block)
+    // must not end up with stacked delete bars
+    item.querySelectorAll(':scope > .' + OVERLAY_CLASS).forEach((existing) => existing.remove())
     const overlay = document.createElement('div')
     overlay.className = OVERLAY_CLASS
     if (sortable) {
@@ -333,6 +343,22 @@ window.JacoContentLists = (() => {
     button.textContent = '✓'
     button.addEventListener('click', (event) => {
       event.stopPropagation()
+      // tear down any content-list controls that belong to the block
+      if (window.JacoContentLists && typeof window.JacoContentLists.removeContentListChrome === 'function') {
+        window.JacoContentLists.removeContentListChrome(item)
+      }
+      // tear down any content-list controls that belong to the block
+      if (window.JacoContentLists && typeof window.JacoContentLists.removeContentListChrome === 'function') {
+        window.JacoContentLists.removeContentListChrome(item)
+      }
+      // remove add buttons that belong to lists inside the deleted block
+      const scope = item.parentElement || document
+      scope.querySelectorAll('.' + ADD_BUTTON_CLASS).forEach((button) => {
+        const list = button._jacoList
+        if (list && (list === item || item.contains(list))) {
+          button.remove()
+        }
+      })
       item.remove()
     })
     return button
@@ -388,12 +414,16 @@ window.JacoContentLists = (() => {
         showFragmentChooser(list, button, fragments, insert)
       }
     }
+    const blocks = [...list.children].filter((child) =>
+      !child.classList.contains(ADD_BUTTON_CLASS) &&
+      !child.classList.contains(OVERLAY_CLASS),
+    )
     if (pos === 'top') {
       list.before(createAddButton(list, onAdd))
     } else if (pos === 'bottom') {
       list.after(createAddButton(list, onAdd))
     } else {
-      ;[...list.children].forEach((item) => {
+      blocks.forEach((item) => {
         // the button goes inside the container, before its block: a button outside
         // would not move with the block when blocks are sorted
         list.insertBefore(createAddButton(list, onAdd), item)
@@ -402,7 +432,7 @@ window.JacoContentLists = (() => {
       list.append(createAddButton(list, onAdd))
     }
     if (pos !== 'any') {
-      ;[...list.children].forEach((item) => attachItemOverlay(item, sortable))
+      blocks.forEach((item) => attachItemOverlay(item, sortable))
     }
     if (sortable) {
       makeSortable(list)

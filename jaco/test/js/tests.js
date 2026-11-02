@@ -4100,3 +4100,18 @@ QUnit.test('app.css parses without syntax errors', (assert) => {
 })
 
 
+
+QUnit.test('deleting a block keeps the list add button', (assert) => {
+  m.render(fixture(), m.trust(contentListHtml('top')))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+  const list = fixture().querySelector('[data-jaco-repeater]')
+  const item = list.querySelector('[data-jaco-repeater] > *')
+  const buttonsBefore = fixture().querySelectorAll('.jaco-content-add-button').length
+
+  const overlay = item.querySelector('.jaco-content-item-bar')
+  overlay.querySelector('button').click()
+  overlay.querySelectorAll('button')[0].click()
+
+  assert.notOk(item.isConnected, 'block removed')
+  assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, buttonsBefore, 'add button remains')
+})
