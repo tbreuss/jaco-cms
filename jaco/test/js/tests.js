@@ -4110,7 +4110,6 @@ QUnit.test('deleting a block keeps the list add button', (assert) => {
 
   const overlay = item.querySelector('.jaco-content-item-bar')
   overlay.querySelector('button').click()
-  overlay.querySelectorAll('button')[0].click()
 
   assert.notOk(item.isConnected, 'block removed')
   assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, buttonsBefore, 'add button remains')

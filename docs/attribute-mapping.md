@@ -331,7 +331,7 @@ Two different questions, two different answers:
   written in the present tense: the target reads better than a wish list, and
   the backlog carries the work list.
 
-The plan names twelve names and no editor state:
+The whitelist names these attributes and no editor state:
 
 ```php
 'data-jaco-block', 'data-jaco-line', 'data-jaco-link', 'data-jaco-image',
