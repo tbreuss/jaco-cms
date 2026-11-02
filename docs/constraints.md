@@ -132,7 +132,9 @@ These are the invariants and edge cases that tests cannot express on their own.
   (`jaco/backend/core/filesystem.php`, `jaco/test/FileSystemNamingTest.php`).
 - **The editable markers are allowlisted.** Every `data-jaco-*` name in
   `ALLOWED_ATTRIBUTES` must stay there: dropping one silently makes the page uneditable
-  in place, because the editor finds its blocks through these attributes.
+  in place, because the editor finds its blocks through these attributes. The whitelist
+  covers the repeater (`data-jaco-repeater` and `--label`, `--position`, `--sortable`)
+  and the slot (`data-jaco-slot` and `--label`, `--position`, `--sortable`).
   `DataAttributeContractTest` compares the whitelist with the document, the selectors,
   the stylesheets and every page.
   `<script>` is removed from the body, so a script include belongs in the `<head>`, which
