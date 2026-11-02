@@ -18,25 +18,86 @@
 // changes, but editor chrome has to be stripped (removeContentListChrome)
 // before the body is sent, see iframe.getHTML().
 window.JacoContentLists = (() => {
-  const LIST_ATTR = 'data-jaco-repeater'
+  const LIST_ATTRS = ['data-jaco-repeater', 'data-jaco-slot']
   const ADD_BUTTON_CLASS = 'jaco-content-add-button'
   const OVERLAY_CLASS = 'jaco-content-item-bar'
   const GRIP_CLASS = 'jaco-content-grip'
   const DRAGGING_CLASS = 'is-dragging'
 
-  const POSITION_ATTR = 'data-jaco-repeater--position'
-  const SORTABLE_ATTR = 'data-jaco-repeater--sortable'
+  const configOf = (list) => {
+    if (list.hasAttribute('data-jaco-slot')) {
+      return {
+        listAttr: 'data-jaco-slot',
+        positionAttr: 'data-jaco-slot--position',
+        sortableAttr: 'data-jaco-slot--sortable',
+        labelAttr: 'data-jaco-slot--label',
+      }
+    }
+    return {
+      listAttr: 'data-jaco-repeater',
+      positionAttr: 'data-jaco-repeater--position',
+      sortableAttr: 'data-jaco-repeater--sortable',
+      labelAttr: 'data-jaco-repeater--label',
+    }
+  }
+
+  const isContainer = (element) => LIST_ATTRS.some((attr) => element.hasAttribute(attr))
+
+  const listAttrOf = (list) => configOf(list).listAttr
 
   // Where the add button goes. Anything but top and bottom means "any".
   const posOf = (list) => {
-    const pos = (list.getAttribute(POSITION_ATTR) || '').toLowerCase()
+    const cfg = configOf(list)
+    const pos = (list.getAttribute(cfg.positionAttr) || '').toLowerCase()
     return pos === 'top' || pos === 'bottom' ? pos : 'any'
   }
 
   // Whether the blocks can be reordered. A separate question, answered by a
   // separate attribute: the position says where a button goes, this says whether
   // blocks move.
-  const isSortable = (list) => list.hasAttribute(SORTABLE_ATTR)
+  const isSortable = (list) => list.hasAttribute(configOf(list).sortableAttr)
+
+  const resolveFragments = async (list) => {
+    const cfg = configOf(list)
+    const value = (list.getAttribute(cfg.listAttr) || '').trim()
+
+    // an empty slot offers every content fragment
+    if (value === '') {
+      if (cfg.listAttr !== 'data-jaco-slot') {
+        return []
+      }
+      const all = await fetchAllFragments()
+      return all.map((item) => item.file)
+    }
+
+    // several explicit fragments
+    if (/[\s,]/.test(value)) {
+      return value.split(/[\s,]+/).map((item) => item.trim()).filter(Boolean)
+    }
+
+    // a repeater has exactly one fragment
+    if (cfg.listAttr !== 'data-jaco-slot') {
+      return [value]
+    }
+
+    // an explicit fragment file
+    if (value.endsWith('.html')) {
+      return [value]
+    }
+
+    // otherwise the value is a prefix or directory filter
+    const all = await fetchAllFragments()
+    return all
+      .map((item) => item.file)
+      .filter((file) => {
+        if (file === value) return true
+        if (!file.startsWith(value)) return false
+        const next = file.charAt(value.length)
+        // a prefix only matches a complete path segment or name part, not
+        // an unrelated file that merely starts with the same letters
+        return next === '' || next === '/' || next === '-' || next === '_' || next === '.'
+      })
+  }
 
   const fetchFragment = (file) => {
     const token = window.sessionStorage.getItem('AUTHORIZATION_TOKEN')
@@ -51,10 +112,26 @@ window.JacoContentLists = (() => {
       .then((data) => data.content)
   }
 
+  let allFragmentsPromise = null
+  const fetchAllFragments = () => {
+    if (allFragmentsPromise) return allFragmentsPromise
+    const token = window.sessionStorage.getItem('AUTHORIZATION_TOKEN')
+    const headers = token ? {Authorization: 'Bearer ' + token} : {}
+    allFragmentsPromise = fetch('/jaco/api.php?action=template/content', {headers})
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Could not load fragments')
+        }
+        return response.json()
+      })
+      .then((data) => Array.isArray(data) ? data : [])
+    return allFragmentsPromise
+  }
+
   const createAddButton = (list, onAdd) => {
     const button = document.createElement('div')
     button.className = ADD_BUTTON_CLASS
-    const title = list.getAttribute('data-jaco-repeater--label') || ''
+    const title = list.getAttribute(configOf(list).labelAttr) || ''
     const setLabel = () => {
       button.textContent = '+ ' + (window.jacoEditorT
         ? window.jacoEditorT(title, title)
@@ -71,7 +148,7 @@ window.JacoContentLists = (() => {
     return button
   }
 
-  const insertItem = (list, pos, html, refNode) => {
+  const insertItem = (list, pos, html, refNode, fetcher) => {
     // the fragment has exactly one root element, and that root becomes the block
     const holder = document.createElement('div')
     holder.innerHTML = html.trim()
@@ -94,12 +171,21 @@ window.JacoContentLists = (() => {
     if (typeof window.initImages === 'function') {
       window.initImages(item)
     }
+    // fragments may contain content lists of their own; mount their controls
+    // without waiting for a page reload
+    if (window.JacoContentLists && typeof window.JacoContentLists.initContentLists === 'function') {
+      window.JacoContentLists.initContentLists(item, fetcher)
+    }
     return item
   }
 
-  const loadAndInsert = (list, pos, refNode, fetcher) => {
-    const file = list.getAttribute(LIST_ATTR) || ''
-    return (fetcher || fetchFragment)(file).then((html) => insertItem(list, pos, html, refNode))
+  const loadAndInsert = (list, pos, refNode, fetcher, file) => {
+    const resolveFile = file
+      ? Promise.resolve(file)
+      : resolveFragments(list).then((fragments) => fragments[0] || '')
+    return resolveFile.then((targetFile) =>
+      (fetcher || fetchFragment)(targetFile).then((html) => insertItem(list, pos, html, refNode, fetcher)),
+    )
   }
 
   const markButtonFailed = (button) => {
@@ -263,6 +349,28 @@ window.JacoContentLists = (() => {
     return button
   }
 
+  const showFragmentChooser = (list, button, fragments, onChoose) => {
+    const existing = list.querySelector('.jaco-slot-chooser')
+    if (existing) {
+      existing.remove()
+      return
+    }
+    const chooser = document.createElement('div')
+    chooser.className = 'jaco-slot-chooser'
+    fragments.forEach((file) => {
+      const option = document.createElement('button')
+      option.type = 'button'
+      option.textContent = file
+      option.addEventListener('click', (event) => {
+        event.stopPropagation()
+        chooser.remove()
+        onChoose(file)
+      })
+      chooser.append(option)
+    })
+    button.after(chooser)
+  }
+
   const addButtonsForList = (list, fetcher) => {
     if (list._jacoContentListsInit) {
       return
@@ -270,8 +378,16 @@ window.JacoContentLists = (() => {
     list._jacoContentListsInit = true
     const pos = posOf(list)
     const sortable = isSortable(list)
-    const onAdd = (button) => loadAndInsert(list, pos, pos === 'any' ? button : null, fetcher)
-      .catch(() => markButtonFailed(button))
+    const onAdd = async (button) => {
+      const fragments = await resolveFragments(list)
+      const insert = (file) => loadAndInsert(list, pos, pos === 'any' ? button : null, fetcher, file)
+        .catch(() => markButtonFailed(button))
+      if (fragments.length <= 1) {
+        insert(fragments[0])
+      } else {
+        showFragmentChooser(list, button, fragments, insert)
+      }
+    }
     if (pos === 'top') {
       list.before(createAddButton(list, onAdd))
     } else if (pos === 'bottom') {
@@ -295,7 +411,12 @@ window.JacoContentLists = (() => {
 
   return {
     initContentLists: (root, fetcher) => {
-      (root || document).querySelectorAll('[' + LIST_ATTR + ']').forEach((list) => {
+      const selector = LIST_ATTRS.map((attr) => '[' + attr + ']').join(', ')
+      const scope = root || document
+      if (root && typeof root.hasAttribute === 'function' && LIST_ATTRS.some((attr) => root.hasAttribute(attr))) {
+        addButtonsForList(root, fetcher)
+      }
+      scope.querySelectorAll(selector).forEach((list) => {
         addButtonsForList(list, fetcher)
       })
     },
@@ -303,7 +424,7 @@ window.JacoContentLists = (() => {
       (root || document).querySelectorAll('.' + ADD_BUTTON_CLASS + ', .' + OVERLAY_CLASS).forEach((element) => {
         element.remove()
       });
-      (root || document).querySelectorAll('[' + LIST_ATTR + ']').forEach((list) => {
+      (root || document).querySelectorAll(LIST_ATTRS.map((attr) => '[' + attr + ']').join(', ')).forEach((list) => {
         delete list._jacoContentListsInit
       });
       (root || document).querySelectorAll('.' + DRAGGING_CLASS).forEach((element) => {

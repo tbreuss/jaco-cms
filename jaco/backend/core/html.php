@@ -265,6 +265,7 @@ const ALLOWED_ATTRIBUTES = [
         'data-jaco-link',
         'data-jaco-image',
         'data-jaco-repeater',
+        'data-jaco-slot',
         'data-jaco-template',
         'data-jaco-block--tools',
         'data-jaco-line--tools',
@@ -272,6 +273,9 @@ const ALLOWED_ATTRIBUTES = [
         'data-jaco-repeater--label',
         'data-jaco-repeater--position',
         'data-jaco-repeater--sortable',
+        'data-jaco-slot--label',
+        'data-jaco-slot--position',
+        'data-jaco-slot--sortable',
     ],
     'a' => ['href', 'rel', 'target', 'title'],
     'button' => ['aria-expanded', 'aria-label', 'title', 'type'],
@@ -408,6 +412,45 @@ function repeater_fragments(string $html): array
         $value = \trim($el->getAttribute('data-jaco-repeater'));
         if ($value !== '') {
             $fragments[] = $value;
+        }
+    }
+
+    return \array_values(\array_unique($fragments));
+}
+
+/**
+ * The slot fragments a body refers to, as the values written in the markup.
+ *
+ * A slot may name one or more fragments, separated by whitespace or commas, so
+ * each token is returned on its own.
+ *
+ * @return list<string>
+ */
+function slot_fragments(string $html): array
+{
+    \libxml_use_internal_errors(true);
+    $dom = new \DOMDocument();
+    $loaded = $dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><body>' . $html . '</body>');
+    \libxml_clear_errors();
+
+    if (!$loaded) {
+        return [];
+    }
+
+    $fragments = [];
+    foreach ($dom->getElementsByTagName('*') as $el) {
+        if (!$el->hasAttribute('data-jaco-slot')) {
+            continue;
+        }
+        $value = \trim($el->getAttribute('data-jaco-slot'));
+        if ($value === '') {
+            continue;
+        }
+        foreach (preg_split('/[\\s,]+/', $value) ?: [] as $token) {
+            $token = \trim($token);
+            if ($token !== '') {
+                $fragments[] = $token;
+            }
         }
     }
 
@@ -684,6 +727,9 @@ function data_attribute_values(): array
         'data-jaco-repeater--position' => ['top', 'bottom', 'any'],
         'data-jaco-repeater--label' => null,
         'data-jaco-repeater--sortable' => false,
+        'data-jaco-slot--position' => ['top', 'bottom', 'any'],
+        'data-jaco-slot--label' => null,
+        'data-jaco-slot--sortable' => false,
     ];
 }
 
@@ -751,7 +797,10 @@ function data_attribute_structure_problems(\DOMElement $el): array
  */
 function data_attribute_body_problems(\DOMElement $el): array
 {
-    if (!$el->hasAttribute('data-jaco-repeater')) {
+    $isRepeater = $el->hasAttribute('data-jaco-repeater');
+    $isSlot = $el->hasAttribute('data-jaco-slot');
+
+    if (!$isRepeater && !$isSlot) {
         return [];
     }
 
@@ -759,7 +808,11 @@ function data_attribute_body_problems(\DOMElement $el): array
 
     foreach ($el->childNodes as $child) {
         if ($child instanceof \DOMText && \trim($child->textContent) !== '') {
-            $problems[] = 'text directly in a repeater container';
+            if ($isSlot) {
+                $problems[] = 'text directly in a slot container';
+            } else {
+                $problems[] = 'text directly in a repeater container';
+            }
         }
     }
 

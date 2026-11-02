@@ -299,7 +299,7 @@ function update_page(
         $body = html\sanitize_html($htmlOrErrors);
         $contractErrors = \array_merge(
             html\data_attribute_errors($body),
-            html\fragment_file_problems($config, html\repeater_fragments($body)),
+            html\fragment_file_problems($config, array_merge(html\repeater_fragments($body), html\slot_fragments($body))),
         );
 
         if (\count($contractErrors) > 0) {
@@ -504,7 +504,7 @@ function update_page_body(Config $config, string $file, string $withBody): Paylo
     $body = html\sanitize_html($htmlOrErrors);
     $contractErrors = \array_merge(
         html\data_attribute_errors($body),
-        html\fragment_file_problems($config, html\repeater_fragments($body)),
+        html\fragment_file_problems($config, array_merge(html\repeater_fragments($body), html\slot_fragments($body))),
     );
 
     if (\count($contractErrors) > 0) {
