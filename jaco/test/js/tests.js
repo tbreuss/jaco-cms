@@ -4115,3 +4115,75 @@ QUnit.test('deleting a block keeps the list add button', (assert) => {
   assert.notOk(item.isConnected, 'block removed')
   assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, buttonsBefore, 'add button remains')
 })
+
+QUnit.module('content lists (slots)', {
+  beforeEach: () => { m.render(fixture(), null) }
+})
+
+
+QUnit.test('a slot with comma-separated fragments shows a chooser', (assert) => {
+  const done = assert.async()
+  m.render(fixture(), m.trust('<div data-jaco-slot="a.html, b.html" data-jaco-slot--position="top"></div>'))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+
+  fixture().querySelector('.jaco-content-add-button').click()
+
+  setTimeout(() => {
+    assert.strictEqual(fixture().querySelectorAll('.jaco-slot-chooser button').length, 2, 'one button per fragment')
+    done()
+  }, 0)
+})
+
+QUnit.test('a slot with whitespace-separated fragments shows a chooser', (assert) => {
+  const done = assert.async()
+  m.render(fixture(), m.trust('<div data-jaco-slot="a.html b.html" data-jaco-slot--position="top"></div>'))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+
+  fixture().querySelector('.jaco-content-add-button').click()
+
+  setTimeout(() => {
+    assert.strictEqual(fixture().querySelectorAll('.jaco-slot-chooser button').length, 2, 'whitespace splits the value')
+    done()
+  }, 0)
+})
+
+QUnit.test('a slot chooser inserts the chosen fragment', (assert) => {
+  const done = assert.async()
+  m.render(fixture(), m.trust('<div data-jaco-slot="a.html, b.html" data-jaco-slot--position="top"></div>'))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<p>chosen</p>'))
+
+  fixture().querySelector('.jaco-content-add-button').click()
+  setTimeout(() => {
+    fixture().querySelector('.jaco-slot-chooser button').click()
+    setTimeout(() => {
+      assert.ok(fixture().querySelector('[data-jaco-slot] > *'), 'a block is inserted')
+      done()
+    }, 0)
+  }, 0)
+})
+
+QUnit.test('an empty slot offers every fragment from the content api', (assert) => {
+  const done = assert.async()
+  const originalFetch = window.fetch
+  window.fetch = (url) => {
+    if (String(url).includes('action=template/content')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([{file: 'x.html'}, {file: 'y.html'}]),
+      })
+    }
+    return originalFetch(url)
+  }
+
+  m.render(fixture(), m.trust('<div data-jaco-slot data-jaco-slot--position="top"></div>'))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<p>x</p>'))
+
+  fixture().querySelector('.jaco-content-add-button').click()
+
+  setTimeout(() => {
+    assert.strictEqual(fixture().querySelectorAll('.jaco-slot-chooser button').length, 2, 'all fragments are offered')
+    window.fetch = originalFetch
+    done()
+  }, 0)
+})
+

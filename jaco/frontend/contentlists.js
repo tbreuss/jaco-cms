@@ -347,10 +347,6 @@ window.JacoContentLists = (() => {
       if (window.JacoContentLists && typeof window.JacoContentLists.removeContentListChrome === 'function') {
         window.JacoContentLists.removeContentListChrome(item)
       }
-      // tear down any content-list controls that belong to the block
-      if (window.JacoContentLists && typeof window.JacoContentLists.removeContentListChrome === 'function') {
-        window.JacoContentLists.removeContentListChrome(item)
-      }
       // remove add buttons that belong to lists inside the deleted block
       const scope = item.parentElement || document
       scope.querySelectorAll('.' + ADD_BUTTON_CLASS).forEach((button) => {
