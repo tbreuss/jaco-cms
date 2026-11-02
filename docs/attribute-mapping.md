@@ -343,7 +343,7 @@ The whitelist names these attributes and no editor state:
 'data-jaco-slot--sortable',
 ```
 
-The whitelist now holds exactly those twelve names, so the code and this plan
+The whitelist now holds these names, so the code and this plan
 agree on the names. What remains is the rollout: the pages and templates still
 have to be moved to the new semantics (for example, a bare `data-jaco-image`
 means "replace only"), and the backlog closes that gap in one hard break.
