@@ -340,6 +340,34 @@ the `<div class="news-section">` above. The editor does not wrap it.
   editor (two-step: ×, then ✓). Anything else - a heading, text - belongs inside
   a block, not beside one.
 
+## Flexible insertion points (slots)
+
+A slot lets editors choose which block to insert from a set of fragments, instead
+of being tied to a single fragment file. Mark the container:
+
+```html
+<div data-jaco-slot="news-section.html, promo-box.html"
+     data-jaco-slot--label="Add block"
+     data-jaco-slot--position="top"
+     data-jaco-slot--sortable>
+</div>
+```
+
+The value of `data-jaco-slot` names one or more fragment files from
+`jaco-data/templates/content/`, separated by commas or whitespace. When the
+editor clicks the add button, a chooser shows each fragment to pick from. An
+empty `data-jaco-slot` (no value) offers every fragment from the content API.
+
+The same properties work as on the repeater:
+
+- `data-jaco-slot--label` labels the add button shown in the editor
+- `data-jaco-slot--position` is `top` (new blocks first), `bottom` (new blocks
+  last) or `any` (a button before every block plus one at the end)
+- `data-jaco-slot--sortable` adds the ⠿ grip, so blocks can be reordered
+
+Every direct child of a slot is one block; the inserted fragment must have
+**exactly one root element**.
+
 ## Embedded videos
 
 In a text block (`data-jaco-block`), the toolbar video button embeds a
