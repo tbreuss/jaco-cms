@@ -45,6 +45,7 @@
       <li><a href="#elements-link">Links</a> – gleiches Tab, neues Tab, um ein Bild</li>
       <li><a href="#elements-image">Bilder</a> – unverändert, füllen, einpassen, Auswahl</li>
       <li><a href="#elements-repeater">Wiederholbarer Inhalt</a> – oben, unten, überall, verschiebbar, ohne Label</li>
+      <li><a href="#elements-slot">Flexible Einfügestellen (Slots)</a> – explizite Fragmente, leerer Slot</li>
       <li><a href="#elements-template">Website-Vorlagen</a> – oberste Ebene und im Ordner</li>
     </ul>
   </nav>
@@ -251,6 +252,43 @@
       </div>
     </div>
     <p class="elements-note">Ohne <code>--label</code> übersetzt der Editor den Knopf, die Seite entscheidet nicht über die Sprache.</p>
+  </div>
+
+  <div class="elements-section" id="elements-slot">
+    <h2 data-jaco-line data-jaco-line--tools="basic">Flexible Einfügestellen (Slots)</h2>
+    <div data-jaco-block data-jaco-block--tools="full">
+      <p>Ein Slot lässt die Redaktion wählen, welcher Block aus einer Reihe von Fragmenten eingefügt wird, statt an eine einzelne Fragment-Datei gebunden zu sein. Klickt man auf den Hinzufügen-Knopf, erscheint ein Auswahldialog mit jedem Fragment.</p>
+    </div>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Explizite Fragmente</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-slot="element-block-de.html, feature-de.html"
+     data-jaco-slot--label="Block hinzufügen"
+     data-jaco-slot--position="top"&gt;
+  &lt;div&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    <div class="elements-list" data-jaco-slot="element-block-de.html, feature-de.html" data-jaco-slot--label="Block hinzufügen" data-jaco-slot--position="top">
+      <div>
+        <h3 data-jaco-line data-jaco-line--tools="basic">Erster Slot-Block</h3>
+        <div data-jaco-block data-jaco-block--tools="full">
+          <p>Der Dialog bietet element-block-de.html und feature-de.html zum Einfügen an.</p>
+        </div>
+      </div>
+    </div>
+    <p class="elements-note">Der Wert nennt eine oder mehrere Fragment-Dateien aus <code>jaco-data/templates/content/</code>, getrennt durch Kommas oder Leerzeichen.</p>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Leerer Slot</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-slot data-jaco-slot--position="top"&gt;
+  &lt;div&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    <div class="elements-list" data-jaco-slot data-jaco-slot--position="top">
+      <div>
+        <h3 data-jaco-line data-jaco-line--tools="basic">Beliebiges Fragment</h3>
+        <div data-jaco-block data-jaco-block--tools="full">
+          <p>Ein leerer <code>data-jaco-slot</code> bietet alle Fragmente der Content-API an.</p>
+        </div>
+      </div>
+    </div>
+    <p class="elements-note">Ohne Wert listet der Editor alle verfügbaren Fragmente im Dialog auf.</p>
   </div>
 
   <div class="elements-section" id="elements-template">
