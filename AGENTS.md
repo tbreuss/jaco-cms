@@ -61,8 +61,8 @@ Full list: [docs/constraints.md](docs/constraints.md), terms: [docs/glossary.md]
 
 ```bash
 composer cs-check -d jaco      # PHP CS Fixer
-composer phpstan -d jaco
-composer deptrac -d jaco
+composer phpstan -d jaco       # PHPStan
+composer deptrac -d jaco       # Deptrac
 composer test -d jaco          # PHPUnit
 composer check -d jaco         # the above in one go
 
@@ -84,3 +84,14 @@ See [docs/development.md](docs/development.md) for Docker commands and details.
 - Commit `jaco-data/settings.php`, tokens, passwords or other secrets.
 - Edit `jaco/frontend/asset/` or `jaco/frontend/vendor/` casually; they are vendored.
 - Add a build step, a framework or a database.
+
+## Gotchas that cost a round trip
+
+- **QUnit fixture**: `m.render(el, null)` does not remove nodes the virtual DOM
+  never created. Add buttons that stand *next to* a list (position `top`/`bottom`)
+  survive a reset — use `clearFixture()` in `jaco/test/js/tests.js`.
+- **Login throttle**: the QUnit suite and the E2E suite log in with a wrong
+  password; three failures block the address for 10 minutes. Clear it with
+  `php jaco/cli.php auth:unblock`.
+- **Playwright** needs `channel: 'chrome'`; without Google Chrome, copy the config
+  and set `launchOptions.executablePath` instead of installing a browser.

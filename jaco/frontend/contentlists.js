@@ -22,6 +22,7 @@ window.JacoContentLists = (() => {
   const ADD_BUTTON_CLASS = 'jaco-content-add-button'
   const OVERLAY_CLASS = 'jaco-content-item-bar'
   const GRIP_CLASS = 'jaco-content-grip'
+  const CHOOSER_CLASS = 'jaco-slot-chooser'
   const DRAGGING_CLASS = 'is-dragging'
 
   const configOf = (list) => {
@@ -43,7 +44,31 @@ window.JacoContentLists = (() => {
 
   const isContainer = (element) => LIST_ATTRS.some((attr) => element.hasAttribute(attr))
 
+  // Whether editor chrome belongs to `root` (descendant of it, or the root
+  // itself) and may go with it. Chrome of a list nested inside `root` does not:
+  // it either belongs to a block that stays, or the block it sits in is removed
+  // anyway and takes it along.
+  const isChromeOf = (element, root) => {
+    if (root === element || root.contains(element)) {
+      return true
+    }
+    // a button stands next to its list, not inside it: the list decides its
+    // fate, not the button's own position. A button whose list leaves with the
+    // block has to leave too, or it is left pointing at a list that is gone.
+    const list = element.classList.contains(ADD_BUTTON_CLASS) ? element._jacoList : null
+    return Boolean(list && (root === list || root.contains(list)))
+  }
+
   const listAttrOf = (list) => configOf(list).listAttr
+
+  // The one definition of "a block of this list": every direct child except the
+  // editor's own chrome. It is the same question in reconcile and in the mount,
+  // so it is asked in one place - and it has to know the chooser, which stands
+  // in the list too: counting it as a block would hang an overlay inside it and
+  // that overlay would end up in the saved page.
+  const CHROME_CLASSES = [ADD_BUTTON_CLASS, OVERLAY_CLASS, CHOOSER_CLASS]
+  const isChrome = (child) => CHROME_CLASSES.some((name) => child.classList.contains(name))
+  const blocksOfList = (list) => [...list.children].filter((child) => !isChrome(child))
 
   // Where the add button goes. Anything but top and bottom means "any".
   const posOf = (list) => {
@@ -155,16 +180,21 @@ window.JacoContentLists = (() => {
   }
 
   const insertItem = (list, pos, html, refNode, fetcher) => {
-    // the fragment has exactly one root element, and that root becomes the block
+    // the fragment has exactly one root element, and that root becomes the block.
+    // Anything else is a broken fragment: an empty holder would otherwise be
+    // appended as a blank block that only disappears when the page is saved
     const holder = document.createElement('div')
-    holder.innerHTML = html.trim()
-    const item = holder.firstElementChild || document.createElement('div')
+    holder.innerHTML = (html || '').trim()
+    const item = holder.firstElementChild
+    if (!item || holder.children.length !== 1) {
+      throw new Error('A content fragment needs exactly one root element')
+    }
     attachItemOverlay(item, isSortable(list))
     if (pos === 'top') {
       list.prepend(item)
-    } else if (pos === 'bottom' || !refNode) {
+    } else if (pos === 'bottom') {
       list.append(item)
-    } else {
+    } else if (refNode) {
       // the button stands before its block: the new block goes before that one,
       // whether the button sits inside the list or just in front of it
       const next = refNode.nextElementSibling
@@ -173,6 +203,23 @@ window.JacoContentLists = (() => {
       } else {
         list.append(item)
       }
+    } else {
+      // "any" without a button to anchor at: the trailing button of an empty
+      // list has none behind it, so the block must not go after it -
+      // reconcileAddButtons() replays the buttons around it
+      const trailing = [...list.children].reverse().find((child) =>
+        child.classList.contains(ADD_BUTTON_CLASS),
+      )
+      if (trailing) {
+        trailing.before(item)
+      } else {
+        list.append(item)
+      }
+    }
+    // the buttons follow the blocks in an "any" list: without this the new block
+    // stood behind the trailing button (B K instead of B K B)
+    if (pos === 'any') {
+      reconcileAddButtons(list, list._jacoOnAdd)
     }
     if (typeof window.initImages === 'function') {
       window.initImages(item)
@@ -250,9 +297,17 @@ window.JacoContentLists = (() => {
         scrollRaf = 0
       }
       list.querySelectorAll('.' + DRAGGING_CLASS).forEach((node) => node.classList.remove(DRAGGING_CLASS))
+      // moving the block carries its button (see buttonOf), but a drop is the
+      // moment the order has to be right: restack once instead of trusting
+      // that every move kept the pairing intact
+      if (posOf(list) === 'any') {
+        reconcileAddButtons(list, list._jacoOnAdd)
+      }
     }
 
     const elementAfter = (clientY) => {
+      // add buttons are drop targets too: skipping them would drop the block on
+      // the other side of its neighbour's button (and the trailing one)
       const items = [...list.children].filter((item) => item !== dragged)
       return items.find((item) => {
         const rect = item.getBoundingClientRect()
@@ -260,12 +315,41 @@ window.JacoContentLists = (() => {
       }) || null
     }
 
+    // In an "any" list a block and its add button are one unit: the button
+    // stands right in front of the block, so moving only the block leaves the
+    // buttons shuffled (B K B K became B K K B) until the next page load.
+    // Carry the button along whenever the block moves.
+    const buttonOf = (block) => {
+      const previous = block.previousElementSibling
+      return previous &&
+        previous.classList.contains(ADD_BUTTON_CLASS) &&
+        previous._jacoList === list
+        ? previous
+        : null
+    }
+
+    const placeBefore = (block, reference) => {
+      const button = buttonOf(block)
+      if (button) {
+        reference.before(button)
+      }
+      reference.before(block)
+    }
+
     const moveTo = (clientY) => {
       const after = elementAfter(clientY)
       if (after) {
-        after.before(dragged)
+        placeBefore(dragged, after)
       } else {
-        list.append(dragged)
+        // "any" lists keep their last add button at the end
+        const trailing = [...list.children].reverse().find((child) =>
+          child.classList.contains(ADD_BUTTON_CLASS),
+        )
+        if (trailing) {
+          placeBefore(dragged, trailing)
+        } else {
+          list.append(dragged)
+        }
       }
     }
 
@@ -343,19 +427,35 @@ window.JacoContentLists = (() => {
     button.textContent = '✓'
     button.addEventListener('click', (event) => {
       event.stopPropagation()
-      // tear down any content-list controls that belong to the block
+      // the block may sit in a repeater or a slot; remember the list before the
+      // block leaves the DOM
+      const parentList = item.parentElement
+      const owningList = parentList && isContainer(parentList) ? parentList : null
+      // tear down the controls the block carries with it (its own overlay, the
+      // buttons of lists nested inside it, an open chooser)
       if (window.JacoContentLists && typeof window.JacoContentLists.removeContentListChrome === 'function') {
         window.JacoContentLists.removeContentListChrome(item)
       }
-      // remove add buttons that belong to lists inside the deleted block
-      const scope = item.parentElement || document
-      scope.querySelectorAll('.' + ADD_BUTTON_CLASS).forEach((button) => {
-        const list = button._jacoList
-        if (list && (list === item || item.contains(list))) {
-          button.remove()
+      if (owningList) {
+        // In an "any" list a block owns exactly one button, standing right in
+        // front of it. That button is not inside the block, so
+        // removeContentListChrome() above leaves it behind - name it here.
+        // A "top"/"bottom" button belongs to the list, not to this block, and
+        // stays.
+        if (posOf(owningList) === 'any') {
+          const previous = item.previousElementSibling
+          if (previous && previous.classList.contains(ADD_BUTTON_CLASS) && previous._jacoList === owningList) {
+            previous.remove()
+          }
         }
-      })
+      }
       item.remove()
+      // restack the surrounding list: dropping the block also dropped its button,
+      // and in an "any" list the block after it would keep standing without one
+      if (owningList) {
+        delete owningList._jacoContentListsInit
+        addButtonsForList(owningList)
+      }
     })
     return button
   }
@@ -372,13 +472,13 @@ window.JacoContentLists = (() => {
   }
 
   const showFragmentChooser = (list, button, fragments, onChoose) => {
-    const existing = list.querySelector('.jaco-slot-chooser')
+    const existing = list.querySelector('.' + CHOOSER_CLASS)
     if (existing) {
       existing.remove()
       return
     }
     const chooser = document.createElement('div')
-    chooser.className = 'jaco-slot-chooser'
+    chooser.className = CHOOSER_CLASS
     fragments.forEach((file) => {
       const option = document.createElement('button')
       option.type = 'button'
@@ -393,44 +493,86 @@ window.JacoContentLists = (() => {
     button.after(chooser)
   }
 
-  const addButtonsForList = (list, fetcher) => {
-    if (list._jacoContentListsInit) {
-      return
-    }
-    list._jacoContentListsInit = true
-    const pos = posOf(list)
+  // Position "any" puts a button before every block plus one at the end, so it
+  // holds as long as every block has its button in front of it. After a deletion
+  // the order is rewritten here instead of only touching the neighbours: a
+  // deleted block takes its own button with it, and the block after it would
+  // then stand without one until the next page load.
+  const reconcileAddButtons = (list, onAdd) => {
+    const blocks = blocksOfList(list)
+    // only the buttons that stand in the list: this restacks the inside, and a
+    // "top"/"bottom" neighbour list in the same parent is none of its business
+    const buttons = [...list.children].filter((child) =>
+      child.classList.contains(ADD_BUTTON_CLASS) && child._jacoList === list,
+    )
+    // one button in front of every block, the rest is spare
     const sortable = isSortable(list)
-    const onAdd = async (button) => {
-      const fragments = await resolveFragments(list)
-      const insert = (file) => loadAndInsert(list, pos, pos === 'any' ? button : null, fetcher, file)
-        .catch(() => markButtonFailed(button))
-      if (fragments.length <= 1) {
-        insert(fragments[0])
-      } else {
-        showFragmentChooser(list, button, fragments, insert)
+    blocks.forEach((block, index) => {
+      list.insertBefore(buttons[index] || createAddButton(list, onAdd), block)
+      attachItemOverlay(block, sortable)
+    })
+    // plus exactly one at the end
+    const trailing = buttons[blocks.length] || createAddButton(list, onAdd)
+    buttons.slice(blocks.length + 1).forEach((button) => button.remove())
+    list.append(trailing)
+  }
+
+  const addButtonsForList = (list, fetcher) => {
+    // The handler is bound once and reads the current state of the list, so
+    // re-mounting the buttons never stacks a second listener on the same list:
+    // the init flag may be cleared any number of times without a click ending
+    // up inserting the fragment once per binding.
+    if (!list._jacoOnAdd) {
+      list._jacoOnAdd = async (button) => {
+        let fragments
+        try {
+          fragments = await resolveFragments(list)
+        } catch {
+          markButtonFailed(button)
+          return
+        }
+        const insert = (file) => loadAndInsert(list, posOf(list), posOf(list) === 'any' ? button : null, fetcher, file)
+          .catch(() => markButtonFailed(button))
+        if (fragments.length <= 1) {
+          insert(fragments[0])
+        } else {
+          showFragmentChooser(list, button, fragments, insert)
+        }
       }
     }
-    const blocks = [...list.children].filter((child) =>
-      !child.classList.contains(ADD_BUTTON_CLASS) &&
-      !child.classList.contains(OVERLAY_CLASS),
-    )
-    if (pos === 'top') {
-      list.before(createAddButton(list, onAdd))
-    } else if (pos === 'bottom') {
-      list.after(createAddButton(list, onAdd))
+    const onAdd = list._jacoOnAdd
+    const pos = posOf(list)
+    const blocks = blocksOfList(list)
+    if (pos === 'any') {
+      // the stacked order is the state: it is read from the DOM, so a missing
+      // button is repaired by any mount, whether or not the flag is set
+      reconcileAddButtons(list, onAdd)
     } else {
-      blocks.forEach((item) => {
-        // the button goes inside the container, before its block: a button outside
-        // would not move with the block when blocks are sorted
-        list.insertBefore(createAddButton(list, onAdd), item)
-        attachItemOverlay(item, sortable)
-      })
-      list.append(createAddButton(list, onAdd))
+      if (list._jacoContentListsInit) {
+        return
+      }
+      // top and bottom keep their button outside the list, so a stale button
+      // from an earlier mount must not be left behind next to the new one
+      list._jacoAddButton?.remove()
+      blocks.forEach((item) => attachItemOverlay(item, isSortable(list)))
+      const button = createAddButton(list, onAdd)
+      list._jacoAddButton = button
+      // `list.before(button)` cannot be used here: without a parent it falls
+      // back to the document, and a repeater nested in a wrapper would push its
+      // button out of that wrapper - into the surrounding repeater or slot,
+      // which then mistakes it for one of its own. Stay next to the list inside
+      // the list's own parent.
+      if (list.parentNode) {
+        if (pos === 'top') {
+          list.parentNode.insertBefore(button, list)
+        } else {
+          list.parentNode.insertBefore(button, list.nextSibling)
+        }
+      }
     }
-    if (pos !== 'any') {
-      blocks.forEach((item) => attachItemOverlay(item, sortable))
-    }
-    if (sortable) {
+    list._jacoContentListsInit = true
+    if (isSortable(list) && !list._jacoSortableInit) {
+      list._jacoSortableInit = true
       makeSortable(list)
     }
   }
@@ -447,9 +589,18 @@ window.JacoContentLists = (() => {
       })
     },
     removeContentListChrome: (root) => {
-      (root || document).querySelectorAll('.' + ADD_BUTTON_CLASS + ', .' + OVERLAY_CLASS).forEach((element) => {
-        element.remove()
-      });
+      // An open fragment chooser is editor chrome too: left behind, it survives
+      // the save and would end up in the page.
+      // Buttons stand next to their list, so this walks the document and keeps
+      // the chrome of lists nested inside `root`: deleting an outer block must
+      // not strip the controls of a repeater inside a block that stays.
+      document
+        .querySelectorAll('.' + ADD_BUTTON_CLASS + ', .' + OVERLAY_CLASS + ', .' + CHOOSER_CLASS)
+        .forEach((element) => {
+          if (!root || isChromeOf(element, root)) {
+            element.remove()
+          }
+        });
       (root || document).querySelectorAll(LIST_ATTRS.map((attr) => '[' + attr + ']').join(', ')).forEach((list) => {
         delete list._jacoContentListsInit
       });

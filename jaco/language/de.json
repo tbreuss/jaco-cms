@@ -269,5 +269,7 @@
     "This page shows details of the server. Open it with a regular account.": "Diese Seite zeigt Details des Servers. Mit einem regulären Konto öffnen.",
     "Every page that is rewritten is backed up first.": "Jede umgeschriebene Seite wird vorher gesichert.",
     "The template is applied as it is stored.": "Die Vorlage wird so angewendet, wie sie gespeichert ist.",
-    "List templates": "Vorlagen auflisten"
+    "List templates": "Vorlagen auflisten",
+    "Add block": "Block hinzufügen",
+    "Block hinzufügen": "Block hinzufügen"
 }

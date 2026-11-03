@@ -1986,6 +1986,14 @@ const stubFetcher = (html = '<p>Fresh</p>') => () => Promise.resolve(html)
 const blocksOf = (list) => [...list.children]
   .filter((child) => !child.classList.contains('jaco-content-add-button'))
 
+// m.render(null) empties the fixture but keeps nodes mithril never rendered -
+// add buttons that sit next to a list belong to the editor, not to the virtual
+// dom. A test that renders the same area again in one test clears them itself.
+const clearFixture = () => {
+  m.render(fixture(), null)
+  fixture().replaceChildren()
+}
+
 QUnit.test('posOf reads top, bottom and defaults anything else to any', (assert) => {
   const lists = window.JacoContentLists
   const list = (pos) => {
@@ -2217,6 +2225,7 @@ QUnit.test('dragging near the bottom edge scrolls down', (assert) => {
 
 QUnit.test('only sortable lists show a grip', (assert) => {
   for (const pos of ['top', 'bottom', 'any']) {
+    clearFixture()
     m.render(fixture(), m.trust(contentListHtml(pos)))
     window.JacoContentLists.initContentLists(fixture(), stubFetcher())
     assert.strictEqual(
@@ -4108,11 +4117,381 @@ QUnit.test('deleting a block keeps the list add button', (assert) => {
   const item = list.querySelector('[data-jaco-repeater] > *')
   const buttonsBefore = fixture().querySelectorAll('.jaco-content-add-button').length
 
-  const overlay = item.querySelector('.jaco-content-item-bar')
-  overlay.querySelector('button').click()
+  confirmDelete(item)
 
   assert.notOk(item.isConnected, 'block removed')
   assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, buttonsBefore, 'add button remains')
+})
+
+// the delete bar asks twice: "×" reveals the confirm and cancel buttons
+const confirmDelete = (item) => {
+  const overlay = item.querySelector('.jaco-content-item-bar')
+  overlay.querySelector('button').click()
+  overlay.querySelectorAll('button')[0].click()
+}
+
+// position "any" keeps one add button before every block plus one at the end, so
+// the button count follows the block count - after deleting as well
+QUnit.test('deleting a block in an any-position list keeps one button per block and one at the end', (assert) => {
+  for (const [attr, name] of [['data-jaco-repeater', 'news.html'], ['data-jaco-slot', 'a.html, b.html']]) {
+    m.render(fixture(), m.trust(
+      `<div ${attr}="${name}" ${attr}--position="any">` +
+      '<div><h2>One</h2></div><div><h2>Two</h2></div><div><h2>Three</h2></div>' +
+      '</div>'
+    ))
+    window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+    const list = fixture().querySelector(`[${attr}]`)
+
+    assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, 4,
+      `${attr}: three blocks give three buttons plus one at the end`)
+
+    confirmDelete(list.querySelectorAll(':scope > div:not(.jaco-content-add-button)')[1])
+
+    assert.strictEqual(blocksOf(list).length, 2, `${attr}: the block is gone`)
+    assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, 3,
+      `${attr}: one button per remaining block plus one at the end`)
+    // every block still has its own button right in front of it
+    const children = [...list.children].filter((child) => !child.classList.contains('jaco-content-add-button'))
+    children.forEach((block) => {
+      assert.ok(block.previousElementSibling?.classList.contains('jaco-content-add-button'),
+        `${attr}: "${block.textContent}" keeps the button before it`)
+    })
+  }
+})
+
+QUnit.test('top and bottom lists keep a single button after deleting', (assert) => {
+  for (const pos of ['top', 'bottom']) {
+    // a fresh fixture per position: the button of the previous one stands next
+    // to the list and is not part of the virtual dom
+    clearFixture()
+    m.render(fixture(), m.trust(contentListHtml(pos)))
+    const list = fixture().querySelector('[data-jaco-repeater]')
+    window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+
+    confirmDelete(blocksOf(list)[0])
+
+    assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, 1,
+      `pos=${pos}: exactly one add button survives`)
+    const button = fixture().querySelector('.jaco-content-add-button')
+    assert.strictEqual(pos === 'top' ? button.nextElementSibling : button.previousElementSibling, list,
+      `pos=${pos}: the button stays outside the list`)
+  }
+})
+
+QUnit.test('adding a block after a deletion inserts once, not once per initialisation', (assert) => {
+  // the listener used to be bound again whenever a deletion reset the init flag,
+  // so one click appended the same fragment twice
+  const done = assert.async()
+  // two blocks: removing the only one would drop the list itself, and the
+  // button bound to it has nothing left to mount on
+  m.render(fixture(), m.trust(
+    '<div data-jaco-repeater="news.html" data-jaco-repeater--position="bottom">' +
+    '<div><h2>One</h2></div><div><h2>Two</h2></div>' +
+    '</div>'
+  ))
+  const list = fixture().querySelector('[data-jaco-repeater]')
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+
+  confirmDelete(blocksOf(list)[1])
+  confirmDelete(blocksOf(list)[0])
+
+  assert.strictEqual(blocksOf(list).length, 0, 'the list is empty')
+
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+  fixture().querySelector('.jaco-content-add-button').click()
+
+  setTimeout(() => {
+    assert.strictEqual(blocksOf(list).length, 1, 'one click adds one block')
+    assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, 1, 'still one button')
+    done()
+  }, 50)
+})
+
+QUnit.test('a block whose fragment has no single root does not leave an empty block behind', (assert) => {
+  // the contract says exactly one root element; plain text used to become an
+  // empty div that looked like a block until the page was saved
+  const done = assert.async()
+  m.render(fixture(), m.trust(contentListHtml('top')))
+  const list = fixture().querySelector('[data-jaco-repeater]')
+
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher('   '))
+
+  const button = fixture().querySelector('.jaco-content-add-button')
+  button.click()
+
+  setTimeout(() => {
+    assert.strictEqual(blocksOf(list).length, 1, 'no block was added')
+    assert.ok(button.classList.contains('is-error'), 'the button reports the unusable fragment')
+    done()
+  }, 50)
+})
+
+
+
+// a content list inside a block of another one: a repeater in a slot block, or a
+// slot in a repeater block. The outer list counts the wrapper as one block.
+const nestedListHtml = (outerPos, innerPos) =>
+  `<div data-jaco-slot="repeater-test.html" data-jaco-slot--position="${outerPos}">` +
+  '<div class="wrapper">' +
+  `<div data-jaco-repeater="feature-en.html" data-jaco-repeater--position="${innerPos}">` +
+  '<div><h3>Inner one</h3></div><div><h3>Inner two</h3></div>' +
+  '</div></div>' +
+  '<div class="plain"><p>Plain block</p></div>' +
+  '</div>'
+
+const mountNested = (outerPos, innerPos) => {
+  clearFixture()
+  m.render(fixture(), m.trust(nestedListHtml(outerPos, innerPos)))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+  const outer = fixture().querySelector('[data-jaco-slot]')
+  return { outer, inner: outer.querySelector('[data-jaco-repeater]'), wrapper: outer.querySelector('.wrapper') }
+}
+
+
+
+QUnit.test('dragging a block in an any-position list keeps its button in front', (assert) => {
+  // the add buttons stand as children here, so moving only the block used to
+  // leave them shuffled: B K B K became B K K B after one drag
+  clearFixture()
+  m.render(fixture(), m.trust(
+    '<div data-jaco-repeater="news.html" data-jaco-repeater--position="any" data-jaco-repeater--sortable>' +
+    '<div><h2>One</h2></div><div><h2>Two</h2></div><div><h2>Three</h2></div>' +
+    '</div>'
+  ))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+  const list = fixture().querySelector('[data-jaco-repeater]')
+
+  const layoutOk = (label) => {
+    const children = [...list.children]
+    assert.strictEqual(children.length % 2, 1, `${label}: blocks + trailing button`)
+    blocksOf(list).forEach((block) => {
+      assert.ok(block.previousElementSibling?.classList.contains('jaco-content-add-button'),
+        `${label}: "${block.textContent}" keeps a button in front`)
+    })
+    assert.ok(children[children.length - 1].classList.contains('jaco-content-add-button'),
+      `${label}: a button stays last`)
+  }
+  layoutOk('before the drag')
+
+  const blocks = blocksOf(list)
+  const three = blocks[2]
+  const one = blocks[0]
+  const grip = three.querySelector('.jaco-content-grip')
+  const threeRect = three.getBoundingClientRect()
+  const oneRect = one.getBoundingClientRect()
+
+  grip.dispatchEvent(pointerEvent('pointerdown', 0, threeRect.top + 2))
+  // clear the 6 px threshold first, then move above the first block
+  grip.dispatchEvent(pointerEvent('pointermove', 0, threeRect.top - 10))
+  grip.dispatchEvent(pointerEvent('pointermove', 0, oneRect.top + 1))
+  grip.dispatchEvent(pointerEvent('pointerup', 0, oneRect.top + 1))
+
+  assert.ok(three.classList.contains('is-dragging') === false, 'the drag ended')
+  layoutOk('after the drag')
+  // the overlay's own buttons are part of textContent, so read the heading
+  const headingOf = (block) => block.querySelector('h2').textContent.trim()
+  assert.strictEqual(headingOf(blocksOf(list)[0]), 'Three',
+    `the dragged block really moved: got "${blocksOf(list).map(headingOf).join(',')}"`)
+})
+
+
+
+
+
+QUnit.test('an open chooser is not counted as a block and never gets an overlay', (assert) => {
+  // the chooser stands in the list next to the button. Counting it as a block
+  // hung an item bar inside it, and that chrome ended up in the saved page.
+  const done = assert.async()
+  clearFixture()
+  m.render(fixture(), m.trust(
+    '<div data-jaco-slot="a.html, b.html" data-jaco-slot--position="any">' +
+    '<div><p>one</p></div><div><p>two</p></div></div>'
+  ))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+  const list = fixture().querySelector('[data-jaco-slot]')
+  const button = [...list.children].find((child) => child.classList.contains('jaco-content-add-button'))
+  button.click()
+
+  setTimeout(() => {
+    assert.strictEqual(list.querySelectorAll('.jaco-slot-chooser').length, 1, 'the chooser is open')
+
+    // a second mount happens on every dirty check and on every deletion
+    window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+
+    assert.strictEqual(list.querySelectorAll('.jaco-slot-chooser .jaco-content-item-bar').length, 0,
+      'no overlay is mounted inside the chooser')
+    assert.strictEqual(list.querySelectorAll('.jaco-slot-chooser .jaco-content-add-button').length, 0,
+      'no add button is mounted inside the chooser')
+    assert.strictEqual(list.querySelectorAll('.jaco-slot-chooser').length, 1, 'the chooser survives')
+    done()
+  }, 30)
+})
+
+
+
+
+
+// The one rule every row below checks: a list always shows the chrome its
+// position promises. "any" = one button in front of each block plus a trailing
+// one (children, alternating); top/bottom = one button outside the list.
+const layoutIsSound = (list) => {
+  const pos = window.JacoContentLists.posOf(list)
+  const blocks = [...list.children].filter((child) =>
+    !child.classList.contains('jaco-content-add-button') &&
+    !child.classList.contains('jaco-content-item-bar') &&
+    !child.classList.contains('jaco-slot-chooser'))
+  if (pos === 'any') {
+    const children = [...list.children]
+    if (children.length !== blocks.length * 2 + 1) return false
+    if (!children[children.length - 1].classList.contains('jaco-content-add-button')) return false
+    return blocks.every((block) => block.previousElementSibling?.classList.contains('jaco-content-add-button'))
+  }
+  const buttons = [...list.parentElement.children].filter((sibling) =>
+    sibling.classList.contains('jaco-content-add-button') && sibling._jacoList === list)
+  return buttons.length === 1
+}
+
+QUnit.test('the layout stays sound for every position while blocks are added and deleted', (assert) => {
+  for (const [attr, name] of [
+    ['data-jaco-repeater', 'news.html'],
+    ['data-jaco-slot', 'a.html, b.html'],
+  ]) {
+    for (const pos of ['top', 'bottom', 'any', null]) {
+      const label = `${attr}/${pos || 'no position'}`
+      clearFixture()
+      m.render(fixture(), m.trust(
+        `<div ${attr}="${name}"` + (pos ? ` ${attr}--position="${pos}"` : '') + '>' +
+        '<div><h2>One</h2></div><div><h2>Two</h2></div><div><h2>Three</h2></div></div>'
+      ))
+      window.JacoContentLists.initContentLists(fixture(), stubFetcher('<p>fresh</p>'))
+      const list = () => fixture().querySelector(`[${attr}]`)
+      assert.ok(layoutIsSound(list()), `${label}: sound after mount`)
+
+      confirmDelete(blocksOf(list())[1])
+      assert.ok(layoutIsSound(list()), `${label}: sound after deleting the middle block`)
+
+      confirmDelete(blocksOf(list())[0])
+      assert.ok(layoutIsSound(list()), `${label}: sound after deleting the first block`)
+
+      const rest = blocksOf(list())
+      confirmDelete(rest[rest.length - 1])
+      assert.ok(layoutIsSound(list()), `${label}: sound after deleting the last block (list empty)`)
+      assert.strictEqual(blocksOf(list()).length, 0, `${label}: the list is empty`)
+      assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, 1,
+        `${label}: an empty list keeps exactly one add button`)
+    }
+  }
+})
+
+QUnit.test('an emptied list can be filled again', (assert) => {
+  const done = assert.async()
+  clearFixture()
+  m.render(fixture(), m.trust(
+    '<div data-jaco-repeater="news.html" data-jaco-repeater--position="any">' +
+    '<div><h2>One</h2></div></div>'
+  ))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<div><h2>Back</h2></div>'))
+  const list = fixture().querySelector('[data-jaco-repeater]')
+
+  confirmDelete(blocksOf(list)[0])
+  assert.strictEqual(blocksOf(list).length, 0, 'the list is empty')
+
+  fixture().querySelector('.jaco-content-add-button').click()
+  setTimeout(() => {
+    assert.strictEqual(blocksOf(list).length, 1, 'one click brings one block back')
+    assert.strictEqual(blocksOf(list)[0].querySelector('h2').textContent, 'Back', 'the fragment was inserted')
+    assert.ok(layoutIsSound(list), 'the layout is sound again')
+    assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, 2,
+      'button in front of the block plus the trailing one')
+    done()
+  }, 50)
+})
+
+
+
+QUnit.test('saving and re-mounting keeps the layout sound for every position', (assert) => {
+  // what iframe.getHTML() does: strip the chrome, read the page; the next open
+  // mounts again. Nothing of the editor may survive into the saved html.
+  for (const [attr, name] of [
+    ['data-jaco-repeater', 'news.html'],
+    ['data-jaco-slot', 'a.html, b.html'],
+  ]) {
+    for (const pos of ['top', 'bottom', 'any', null]) {
+      const label = `${attr}/${pos || 'no position'}`
+      clearFixture()
+      m.render(fixture(), m.trust(
+        `<div ${attr}="${name}"` + (pos ? ` ${attr}--position="${pos}"` : '') + '>' +
+        '<div><h2>One</h2></div><div><h2>Two</h2></div></div>'
+      ))
+      window.JacoContentLists.initContentLists(fixture(), stubFetcher('<p>fresh</p>'))
+
+      window.JacoContentLists.removeContentListChrome()
+      const saved = fixture().innerHTML
+      assert.notOk(/jaco-content-add-button|jaco-content-item-bar|jaco-slot-chooser/.test(saved),
+        `${label}: no editor chrome reaches the saved page: ${saved}`)
+      assert.ok(/data-jaco-(repeater|slot)/.test(saved), `${label}: the markers survive`)
+      assert.ok(saved.includes('One') && saved.includes('Two'), `${label}: the content survives`)
+
+      // reopening the page: the markers are still there, nothing else is
+      window.JacoContentLists.initContentLists(fixture(), stubFetcher('<p>fresh</p>'))
+      const list = fixture().querySelector(`[${attr}]`)
+      assert.ok(layoutIsSound(list), `${label}: sound again after the re-mount`)
+      assert.strictEqual(blocksOf(list).length, 2, `${label}: both blocks are back`)
+    }
+  }
+})
+
+QUnit.test('a save between edits does not leave a stale button behind', (assert) => {
+  // the save path clears every init flag; the next mount must rebuild exactly
+  // one set of buttons, not add a second one next to the old
+  for (const pos of ['top', 'bottom', 'any']) {
+    clearFixture()
+    m.render(fixture(), m.trust(contentListHtml(pos)))
+    window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+    const before = fixture().querySelectorAll('.jaco-content-add-button').length
+
+    window.JacoContentLists.removeContentListChrome()
+    assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, 0,
+      `pos=${pos}: chrome is gone after the save`)
+
+    window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+    assert.strictEqual(fixture().querySelectorAll('.jaco-content-add-button').length, before,
+      `pos=${pos}: the same number of buttons comes back, not more`)
+  }
+})
+
+
+QUnit.test('dragging keeps the layout sound for every position', (assert) => {
+  const headings = (list) => blocksOf(list).map((block) => block.querySelector('h2')?.textContent ?? '?')
+  for (const pos of ['top', 'bottom', 'any']) {
+    for (const attr of ['data-jaco-repeater', 'data-jaco-slot']) {
+      const label = `${attr}/${pos}`
+      clearFixture()
+      m.render(fixture(), m.trust(
+        `<div ${attr}="news.html" ${attr}--position="${pos}" ${attr}--sortable>` +
+        '<div><h2>One</h2></div><div><h2>Two</h2></div><div><h2>Three</h2></div></div>'
+      ))
+      window.JacoContentLists.initContentLists(fixture(), stubFetcher('<p>fresh</p>'))
+      const list = fixture().querySelector(`[${attr}]`)
+
+      // drag the last block above the first one
+      const blocks = blocksOf(list)
+      const last = blocks[blocks.length - 1]
+      const first = blocks[0]
+      const grip = last.querySelector('.jaco-content-grip')
+      const lastRect = last.getBoundingClientRect()
+      const firstRect = first.getBoundingClientRect()
+
+      grip.dispatchEvent(pointerEvent('pointerdown', 0, lastRect.top + 2))
+      grip.dispatchEvent(pointerEvent('pointermove', 0, lastRect.top - 10))
+      grip.dispatchEvent(pointerEvent('pointermove', 0, firstRect.top + 1))
+      grip.dispatchEvent(pointerEvent('pointerup', 0, firstRect.top + 1))
+
+      assert.ok(layoutIsSound(list), `${label}: layout is sound after the drag`)
+      assert.deepEqual(headings(list), ['Three', 'One', 'Two'],
+        `${label}: the block moved to the top, order is ${headings(list).join(',')}`)
+    }
+  }
 })
 
 QUnit.module('content lists (slots)', {
