@@ -1,0 +1,86 @@
+# Jaco CMS
+
+PHP 8.2+ CMS that turns static HTML into editable pages. No database, no build step.
+Site content lives as `.html` files in the web root; editable regions carry `data-jaco-*`
+attributes. Admin SPA (Mithril.js) under `jaco/`, PHP API at `jaco/api.php`, CLI at
+`jaco/cli.php`. Operator data (settings, templates, backups, runtime) lives in
+`jaco-data/` and is never served over the web. Uploads live in `media/`.
+
+Details: [README.md](README.md), [llms.txt](llms.txt). Maintainer docs index:
+[docs/readme.md](docs/readme.md).
+
+## Ground rules
+
+- Answer in the user's language. Commit messages and code comments are English.
+- Ask before implementing when the requirement is ambiguous. Prefer a small, verified
+  change over a large guess ([docs/contributing.md](docs/contributing.md)).
+- Keep changes focused: every line traces to the task. No drive-by refactors, no
+  formatting sweeps, no speculative features.
+- Match the existing style of the file you touch before introducing anything new.
+- Never commit or push. Leave changes in the working tree and report what changed and
+  why; the human reviews, runs the checks and commits.
+
+## Layout
+
+| Path | Purpose |
+|------|---------|
+| `jaco/frontend/` | Admin SPA: `app.js` (routes), `view/`, `component/`, `model/`, `lib/`, `editor.js` |
+| `jaco/backend/` | PHP, layered `core/` → `domain/` → `api/` / `cli/`; rules in `jaco/deptrac.yaml` |
+| `jaco/schema/` | JSON schemas — the API contract, validated by `backend/core/router.php` |
+| `jaco/language/{en,de,fr,it}.json` | Admin UI translations |
+| `jaco/test/` | PHPUnit; `jaco/test/js/` QUnit; `jaco/test/e2e/` Playwright |
+| `jaco-data/` | Operator data; never served, never deployed from git |
+| `docs/` | Maintainer documentation, lowercase hyphenated file names |
+
+## Conventions
+
+- **i18n**: UI text only through `t('Key')` in `jaco/language/` — add every new key to
+  all four files. Never hard-code UI text in views.
+- **PHP naming**: commands `verb_object`; queries `get_`/`find_`/`read_`/`load_` or a bare
+  verb; predicates always `is_`/`has_`/`can_` ([docs/backend-naming.md](docs/backend-naming.md)).
+- **Editorconfig**: 4 spaces, LF, final newline, no trailing whitespace — 2 spaces in
+  JS, NEON and YAML.
+- **Routes**: register in `jaco/routes.php`; every route needs an explicit role, an
+  omitted role means `admin`.
+- **Commit messages**: `fix:`, `feat:`, `style:`, `docs:`, `refactor:`, `test:`, `chore:`
+  — short English subject.
+
+## Invariants
+
+- Nothing is modified without a backup in `jaco-data/backups` first.
+- `jaco/` is out of reach for page, CSS and upload operations (path guard).
+- Only YouTube embed URLs survive sanitizing; event handlers never do.
+- Uploads are never overwritten — a collision gets `-1` appended.
+- `readOnly` accounts and maintenance mode are enforced in the router, not the UI; the
+  API is the authority, a disabled button is not a security boundary.
+- Credentials fail closed: no users entry means no login.
+
+Full list: [docs/constraints.md](docs/constraints.md), terms: [docs/glossary.md](docs/glossary.md).
+
+## Checks (CI runs these)
+
+```bash
+composer cs-check -d jaco      # PHP CS Fixer
+composer phpstan -d jaco
+composer deptrac -d jaco
+composer test -d jaco          # PHPUnit
+composer check -d jaco         # the above in one go
+
+find jaco/frontend jaco/test/js \( -name '*.js' -o -name '*.mjs' \) -not -path '*/asset/*' -exec node --check {} \;
+php -S 127.0.0.1:8899 -t . &   # QUnit needs a server
+node jaco/test/js/runner.mjs
+
+npm ci --prefix jaco/test/e2e && php jaco/test/e2e/create-settings.php
+npm --prefix jaco/test/e2e run test:e2e
+```
+
+Without Docker: `composer install -d jaco` first. Behaviour changes need a test —
+PHPUnit for backend, QUnit in `jaco/test/js/tests.js` for frontend (keep new
+Mithril modules on the import-audit list there), Playwright for route smoke coverage.
+See [docs/development.md](docs/development.md) for Docker commands and details.
+
+## Do not
+
+- Commit `jaco-data/settings.php`, tokens, passwords or other secrets.
+- Edit `jaco/frontend/asset/` or `jaco/frontend/vendor/` casually; they are vendored.
+- Add a build step, a framework or a database.
