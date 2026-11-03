@@ -139,6 +139,24 @@ These are the invariants and edge cases that tests cannot express on their own.
   the stylesheets and every page.
   `<script>` is removed from the body, so a script include belongs in the `<head>`, which
   the page manager owns.
+- **Editor chrome follows the position, and only the editor owns it.** A content
+  list shows its add buttons the way its position promises: `any` is one button in
+  front of every block plus one at the end, both direct children of the list;
+  `top` and `bottom` are exactly one button, standing in the list's parent right
+  before or after it. This holds after every operation that changes the blocks —
+  mount, insert, delete, drop and re-mount — not only after the first one. The
+  rule is written in `jaco/frontend/contentlists.js` alone (`blocksOfList`,
+  `reconcileAddButtons`), because the same questions asked in two places drift
+  apart: a block is a direct child that is not chrome, a list's button is one
+  whose `_jacoList` names that list.
+  Nothing of the chrome may reach the saved page: `removeContentListChrome()`
+  strips buttons, item bars and an open fragment chooser before
+  `iframe.getHTML()` reads the body, and QUnit checks that a saved page carries
+  no `jaco-content-add-button`, `jaco-content-item-bar` or `jaco-slot-chooser`.
+  Two consequences worth knowing before touching the file: a nested list keeps
+  its own chrome when its block stays, and a block and its `any` button move as
+  a pair. Both were bugs that no test caught until the matrix in
+  `jaco/test/js/tests.js` covered every position for repeater and slot.
 - **Lists do not ship content.** `page/list` and `upload/list` return `content: null`,
   `css/list` does not even carry a content field (`additionalProperties: false` in its
   schema), and `backup/list` returns an empty string. Only `page/view`, `css/view` and

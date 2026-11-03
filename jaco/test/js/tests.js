@@ -1983,8 +1983,12 @@ const sortableListHtml = (pos = 'top') => contentListHtml(pos, true)
 const stubFetcher = (html = '<p>Fresh</p>') => () => Promise.resolve(html)
 
 // every direct child is a block, except the chrome the editor brings along
+// the same definition the editor uses: every direct child that is not chrome.
+// The chooser counts too - it stands in the list next to its button.
 const blocksOf = (list) => [...list.children]
   .filter((child) => !child.classList.contains('jaco-content-add-button'))
+  .filter((child) => !child.classList.contains('jaco-content-item-bar'))
+  .filter((child) => !child.classList.contains('jaco-slot-chooser'))
 
 // m.render(null) empties the fixture but keeps nodes mithril never rendered -
 // add buttons that sit next to a list belong to the editor, not to the virtual
@@ -4493,6 +4497,91 @@ QUnit.test('dragging keeps the layout sound for every position', (assert) => {
     }
   }
 })
+
+
+
+
+QUnit.test('changing the position under a mounted list rebuilds its buttons', (assert) => {
+  // a site template rewrites the markup without a reload: the list keeps its
+  // element, its position attribute changes underneath it
+  const cases = [
+    ['top', 'any'], ['bottom', 'any'], ['any', 'top'], ['any', 'bottom'], ['top', 'bottom'],
+  ]
+  for (const [from, to] of cases) {
+    clearFixture()
+    m.render(fixture(), m.trust(contentListHtml(from)))
+    const list = fixture().querySelector('[data-jaco-repeater]')
+    window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+    assert.ok(layoutIsSound(list), `${from}: sound when mounted`)
+
+    list.setAttribute('data-jaco-repeater--position', to)
+    if (window.__guard === undefined) { window.__guard = 0 }
+    window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+
+    assert.ok(layoutIsSound(list), `${from} -> ${to}: the layout follows the new position`)
+    const stray = [...fixture().querySelectorAll('.jaco-content-add-button')]
+      .filter((button) => button._jacoList !== list)
+    assert.strictEqual(stray.length, 0, `${from} -> ${to}: no button of another layout survives`)
+  }
+})
+
+
+QUnit.test('a chooser whose button is gone does not stay in the list', (assert) => {
+  // The chooser stands next to its button. Deleting a block takes that button
+  // away; a leftover chooser would reach the saved page. The chooser is built
+  // on a microtask, so build one by hand here: the cleanup is what is under
+  // test, not the async open.
+  clearFixture()
+  m.render(fixture(), m.trust(
+    '<div data-jaco-slot="a.html, b.html" data-jaco-slot--position="any">' +
+    '<div><p>one</p></div><div><p>two</p></div></div>'
+  ))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<p>fresh</p>'))
+  const list = fixture().querySelector('[data-jaco-slot]')
+
+  // an open chooser anchored at the button of the FIRST block: deleting that
+  // block takes the anchor away
+  const firstButton = [...list.children].find((child) => child.classList.contains('jaco-content-add-button'))
+  const chooser = document.createElement('div')
+  chooser.className = 'jaco-slot-chooser'
+  chooser._jacoButton = firstButton
+  firstButton.after(chooser)
+  assert.strictEqual(list.querySelectorAll('.jaco-slot-chooser').length, 1, 'the chooser is open')
+  // blocksOf() must not see the chooser as a block, otherwise the wrong block
+  // would be deleted
+  assert.strictEqual(blocksOf(list).length, 2, 'the chooser is not a block')
+
+  confirmDelete(blocksOf(list)[0])
+
+  assert.strictEqual(list.querySelectorAll('.jaco-slot-chooser').length, 0,
+    'the chooser left with its button')
+  window.JacoContentLists.removeContentListChrome()
+  assert.notOk(/jaco-slot-chooser|jaco-content-item-bar|jaco-content-add-button/.test(fixture().innerHTML),
+    'the saved html carries no editor chrome')
+})
+
+QUnit.test('a chooser keeps its anchor button when another block is deleted', (assert) => {
+  // the counterpart: dropping every chooser would break the open one
+  clearFixture()
+  m.render(fixture(), m.trust(
+    '<div data-jaco-slot="a.html, b.html" data-jaco-slot--position="any">' +
+    '<div><p>one</p></div><div><p>two</p></div></div>'
+  ))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<p>fresh</p>'))
+  const list = fixture().querySelector('[data-jaco-slot]')
+
+  const buttons = [...list.children].filter((child) => child.classList.contains('jaco-content-add-button'))
+  // every button still knows its list; deleting the second block keeps the first
+  // button, so a chooser anchored there has to survive
+  confirmDelete(blocksOf(list)[1])
+
+  assert.ok(layoutIsSound(list), 'the layout survives the deletion')
+  buttons.filter((button) => button.isConnected).forEach((button) => {
+    assert.strictEqual(button._jacoList, list, 'a surviving button still knows its list')
+  })
+})
+
+
 
 QUnit.module('content lists (slots)', {
   beforeEach: () => { m.render(fixture(), null) }

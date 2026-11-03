@@ -443,7 +443,12 @@ window.JacoContentLists = (() => {
         // A "top"/"bottom" button belongs to the list, not to this block, and
         // stays.
         if (posOf(owningList) === 'any') {
-          const previous = item.previousElementSibling
+          // walk back over the editor's chrome: an open chooser can stand
+          // between the block and its button, and it must not hide the button
+          let previous = item.previousElementSibling
+          while (previous && isChrome(previous) && !previous.classList.contains(ADD_BUTTON_CLASS)) {
+            previous = previous.previousElementSibling
+          }
           if (previous && previous.classList.contains(ADD_BUTTON_CLASS) && previous._jacoList === owningList) {
             previous.remove()
           }
@@ -479,6 +484,10 @@ window.JacoContentLists = (() => {
     }
     const chooser = document.createElement('div')
     chooser.className = CHOOSER_CLASS
+    // the chooser belongs to this button: if the button goes (a deleted block
+    // takes its own), the chooser has no anchor any more and must go too -
+    // otherwise it stays in the list and reaches the saved page
+    chooser._jacoButton = button
     fragments.forEach((file) => {
       const option = document.createElement('button')
       option.type = 'button'
@@ -499,6 +508,14 @@ window.JacoContentLists = (() => {
   // deleted block takes its own button with it, and the block after it would
   // then stand without one until the next page load.
   const reconcileAddButtons = (list, onAdd) => {
+    // a chooser whose button is gone is a leftover: it is chrome, it must not
+    // stay in the page
+    list.querySelectorAll('.' + CHOOSER_CLASS).forEach((chooser) => {
+      const button = chooser._jacoButton
+      if (!button || !button.isConnected) {
+        chooser.remove()
+      }
+    })
     const blocks = blocksOfList(list)
     // only the buttons that stand in the list: this restacks the inside, and a
     // "top"/"bottom" neighbour list in the same parent is none of its business
@@ -515,6 +532,20 @@ window.JacoContentLists = (() => {
     const trailing = buttons[blocks.length] || createAddButton(list, onAdd)
     buttons.slice(blocks.length + 1).forEach((button) => button.remove())
     list.append(trailing)
+  }
+
+  // Tears down the buttons of the layout the list was mounted with, so a
+  // changed position can build its own without leaving the old ones behind.
+  const removeOwnLayout = (list, pos) => {
+    list._jacoAddButton?.remove()
+    list._jacoAddButton = null
+    if (pos === 'any') {
+      [...list.children].forEach((child) => {
+        if (child.classList.contains(ADD_BUTTON_CLASS) && child._jacoList === list) {
+          child.remove()
+        }
+      })
+    }
   }
 
   const addButtonsForList = (list, fetcher) => {
@@ -544,12 +575,25 @@ window.JacoContentLists = (() => {
     const pos = posOf(list)
     const blocks = blocksOfList(list)
     if (pos === 'any') {
+      // coming from top/bottom, a button still stands outside the list where no
+      // block can reach it: removeOwnLayout() takes it away first
+      if (list._jacoMountedPosition && list._jacoMountedPosition !== 'any') {
+        removeOwnLayout(list, pos)
+      }
       // the stacked order is the state: it is read from the DOM, so a missing
       // button is repaired by any mount, whether or not the flag is set
       reconcileAddButtons(list, onAdd)
     } else {
-      if (list._jacoContentListsInit) {
+      // The position can change under a mounted list (a site template rewrites
+      // the markup without a reload). Mounting once per list is the rule, so the
+      // remembered position is what the buttons were built for - a different one
+      // tears the old layout down before the new one is built.
+      if (list._jacoContentListsInit && list._jacoMountedPosition === pos) {
         return
+      }
+      removeOwnLayout(list, pos)
+      if (list._jacoContentListsInit) {
+        list._jacoContentListsInit = false
       }
       // top and bottom keep their button outside the list, so a stale button
       // from an earlier mount must not be left behind next to the new one
@@ -571,6 +615,7 @@ window.JacoContentLists = (() => {
       }
     }
     list._jacoContentListsInit = true
+    list._jacoMountedPosition = pos
     if (isSortable(list) && !list._jacoSortableInit) {
       list._jacoSortableInit = true
       makeSortable(list)
