@@ -39,13 +39,14 @@
   <nav class="elements-overview" aria-label="Contents">
     <h2 data-jaco-line data-jaco-line--tools="basic">Contents</h2>
     <ul>
-      <li><a href="#elements-line">Single-line text</a> – plain, basic</li>
-      <li><a href="#elements-block">Rich text</a> – plain, basic, full</li>
-      <li><a href="#elements-video">Videos</a> – a tool of the full block</li>
-      <li><a href="#elements-link">Links</a> – same tab, new tab, around an image</li>
-      <li><a href="#elements-image">Images</a> – replaced as it is, fill, fit, choice</li>
-      <li><a href="#elements-repeater">Repeatable content</a> – top, bottom, any, sortable, no label</li>
-      <li><a href="#elements-template">Site templates</a> – top level and in a folder</li>
+      <li><a href="elements.html#elements-line">Single-line text</a> – plain, basic</li>
+      <li><a href="elements.html#elements-block">Rich text</a> – plain, basic, full</li>
+      <li><a href="elements.html#elements-video">Videos</a> – a tool of the full block</li>
+      <li><a href="elements.html#elements-link">Links</a> – same tab, new tab, around an image</li>
+      <li><a href="elements.html#elements-image">Images</a> – replaced as it is, fill, fit, choice</li>
+      <li><a href="elements.html#elements-repeater">Repeatable content</a> – top, bottom, any, sortable, no label</li>
+      <li><a href="elements.html#elements-slot">Flexible insertion points (slots)</a> – explicit fragments, empty slot</li>
+      <li><a href="elements.html#elements-template">Site templates</a> – top level and in a folder</li>
     </ul>
   </nav>
 
@@ -249,6 +250,43 @@
       </div>
     </div>
     <p class="elements-note">Without <code>--label</code> the button is translated by the editor, so the page does not decide the language.</p>
+  </div>
+
+  <div class="elements-section" id="elements-slot">
+    <h2 data-jaco-line data-jaco-line--tools="basic">Flexible insertion points (slots)</h2>
+    <div data-jaco-block data-jaco-block--tools="full">
+      <p>A slot lets editors choose which block to insert from a set of fragments, instead of being tied to a single fragment file. Clicking the add button shows a chooser with each fragment to pick from.</p>
+    </div>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Explicit fragments</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-slot="element-block-en.html, feature-en.html"
+     data-jaco-slot--label="Add block"
+     data-jaco-slot--position="top"&gt;
+  &lt;div&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    <div class="elements-list" data-jaco-slot="element-block-en.html, feature-en.html" data-jaco-slot--label="Add block" data-jaco-slot--position="top">
+      <div>
+        <h3 data-jaco-line data-jaco-line--tools="basic">First slot block</h3>
+        <div data-jaco-block data-jaco-block--tools="full">
+          <p>The chooser offers element-block-en.html and feature-en.html to insert.</p>
+        </div>
+      </div>
+    </div>
+    <p class="elements-note">The value names one or more fragment files from <code>jaco-data/templates/content/</code>, separated by commas or whitespace.</p>
+
+    <h3 data-jaco-line data-jaco-line--tools="basic">Empty slot</h3>
+    <pre class="code-ref"><code>&lt;div data-jaco-slot data-jaco-slot--position="top"&gt;
+  &lt;div&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    <div class="elements-list" data-jaco-slot data-jaco-slot--position="top">
+      <div>
+        <h3 data-jaco-line data-jaco-line--tools="basic">Any fragment</h3>
+        <div data-jaco-block data-jaco-block--tools="full">
+          <p>An empty <code>data-jaco-slot</code> offers every fragment from the content API.</p>
+        </div>
+      </div>
+    </div>
+    <p class="elements-note">With no value, the editor lists all available fragments in the chooser.</p>
   </div>
 
   <div class="elements-section" id="elements-template">

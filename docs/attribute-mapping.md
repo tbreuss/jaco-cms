@@ -66,6 +66,7 @@ an element without a role carries no property.
 | `data-jaco-link` | none | link, edited in a dialog |
 | `data-jaco-image` | none | image; the editor replaces the file and scales nothing |
 | `data-jaco-repeater` | **required** | container of repeatable blocks; the value is the fragment file |
+| `data-jaco-slot` | **required** | flexible insertion point; the value is one or more fragment files to choose from |
 | `data-jaco-template` | **required** | site template instance; the value is the template file |
 
 ### Properties
@@ -93,6 +94,9 @@ name:
 | `data-jaco-repeater--label` | `data-jaco-repeater` | text | label of the add button; without it "Add block" in the editor language |
 | `data-jaco-repeater--position` | `data-jaco-repeater` | `top`, `bottom`, `any` | where the add button stands; without it `top` |
 | `data-jaco-repeater--sortable` | `data-jaco-repeater` | none | blocks can be reordered by the grip |
+| `data-jaco-slot--label` | `data-jaco-slot` | text | label of the add button; without it "Add block" in the editor language |
+| `data-jaco-slot--position` | `data-jaco-slot` | `top`, `bottom`, `any` | where the add button stands; without it `top` |
+| `data-jaco-slot--sortable` | `data-jaco-slot` | none | blocks can be reordered by the grip |
 
 Properties describe what the editor offers or does. What the page looks like is
 the page's own CSS.
@@ -327,17 +331,19 @@ Two different questions, two different answers:
   written in the present tense: the target reads better than a wish list, and
   the backlog carries the work list.
 
-The plan names twelve names and no editor state:
+The whitelist names these attributes and no editor state:
 
 ```php
 'data-jaco-block', 'data-jaco-line', 'data-jaco-link', 'data-jaco-image',
-'data-jaco-repeater', 'data-jaco-template',
+'data-jaco-repeater', 'data-jaco-slot', 'data-jaco-template',
 'data-jaco-block--tools', 'data-jaco-line--tools', 'data-jaco-image--mode',
 'data-jaco-repeater--label', 'data-jaco-repeater--position',
 'data-jaco-repeater--sortable',
+'data-jaco-slot--label', 'data-jaco-slot--position',
+'data-jaco-slot--sortable',
 ```
 
-The whitelist now holds exactly those twelve names, so the code and this plan
+The whitelist now holds these names, so the code and this plan
 agree on the names. What remains is the rollout: the pages and templates still
 have to be moved to the new semantics (for example, a bare `data-jaco-image`
 means "replace only"), and the backlog closes that gap in one hard break.

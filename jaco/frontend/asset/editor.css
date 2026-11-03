@@ -194,7 +194,8 @@
     font-size: 0.9rem;
 }
 
-[data-jaco-repeater] {
+[data-jaco-repeater],
+[data-jaco-slot] {
     outline: 1px dashed var(--border, #bbb);
     padding: 0.5rem;
     margin-bottom: 1rem;
@@ -220,7 +221,8 @@
    the offset parent of the absolutely positioned Quill toolbar and dialogs,
    whose coordinates handlePosition computes document-relative. Every direct
    child of a repeater is one block. */
-[data-jaco-repeater] > * {
+[data-jaco-repeater] > *,
+[data-jaco-slot] > * {
     position: static;
 }
 
@@ -263,7 +265,8 @@
     cursor: grabbing;
 }
 
-[data-jaco-repeater] > .is-dragging {
+[data-jaco-repeater] > .is-dragging,
+[data-jaco-slot] > .is-dragging {
     opacity: 0.4;
 }
 
