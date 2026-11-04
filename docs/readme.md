@@ -19,5 +19,4 @@ All project markdown except the repository [README.md](../README.md) and
 | [features.md](features.md) | One-sentence feature catalogue |
 | [constraints.md](constraints.md) | Invariants, roles, edge cases and test map |
 | [glossary.md](glossary.md) | Shared terms with exactly one meaning |
-| [backlog.md](backlog.md) | Open product and technical items |
-| [missing-features.md](missing-features.md) | Known gaps and recurring requests |
+| [backlog.md](backlog.md) | Open product and technical items (concrete gaps and strategic gaps) |

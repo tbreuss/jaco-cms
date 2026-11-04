@@ -29,8 +29,7 @@ are backed up before writing.
 - [docs/menu-structure.md](docs/menu-structure.md) — admin navigation, roles, command palette
 - [docs/backend-naming.md](docs/backend-naming.md) — PHP function/file naming
 - [docs/site-pages.md](docs/site-pages.md) — public page file names (en/de)
-- [docs/missing-features.md](docs/missing-features.md) — known gaps
-- [docs/backlog.md](docs/backlog.md) — open product/technical items
+- [docs/backlog.md](docs/backlog.md) — open product/technical items and known gaps
 
 ## Architecture
 
