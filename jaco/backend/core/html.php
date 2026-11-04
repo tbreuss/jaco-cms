@@ -258,7 +258,7 @@ const ALLOWED_ATTRIBUTES = [
         'class',
         'id',
         // The contract: the only place that decides which data-jaco-* names exist.
-        // Every other mention - the selectors, the pages, docs/attribute-mapping.md -
+        // Every other mention - the selectors, the pages, docs/attribute-contract.md -
         // is a copy that DataAttributeContractTest compares against this list.
         'data-jaco-block',
         'data-jaco-line',

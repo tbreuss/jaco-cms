@@ -22,16 +22,19 @@ to extract a release archive (see [Updating](#updating)).
    It already contains the dependencies, so nothing has to be installed.
 2. Extract the archive into the root of the existing site (next to `index.html`):
 
-    /var/www/my-site/
-    ├── index.html
-    ├── foo.html
-    ├── media/         <-- created by the installer
-    ├── jaco-data/     <-- settings, templates, backups and runtime, created by the installer
-    └── jaco/          <-- here
-        ├── api.php
-        ├── backend/
-        ├── frontend/
-        └── ...
+```
+/var/www/my-site/
+├── index.html
+├── foo.html
+├── media/         <-- created by the installer
+├── jaco-data/     <-- settings, templates, backups and runtime, created by the installer
+└── jaco/          <-- here
+    ├── api.php
+    ├── backend/
+    ├── frontend/
+    └── ...
+```
+
 
    The three directories next to your pages have fixed roles:
 
@@ -167,10 +170,35 @@ replace it with a password hash as shown above.
 
 The PHP process must be allowed to write:
 
-- every `.html` file that should be editable
-- `jaco-data/backups/` (created with the first backup, create it beforehand if needed)
-- the media directory in the root directory (images from the editor), `media/` by default
+- every editable `.html` file
+- `jaco-data/` (templates, backups, runtime log)
+- the media directory (`media/` by default)
 - `jaco-data/runtime/log/` (error and login log)
+
+## Deploy to a remote server
+
+The steps above assume you can run commands on the server. If you deploy over
+the network (FTP, SFTP, SCP, rsync), a few points matter:
+
+- **Extract locally, upload the tree.** Unpack the archive on your machine and
+  upload the whole site (pages, `jaco/`, and the empty `jaco-data/` and
+  `media/` directories) with your client. Uploading the ZIP and extracting on
+  the server is faster but needs shell access.
+- **Keep hidden files.** `.htaccess` files start with a dot; many FTP/SFTP
+  clients hide them by default. Enable "show hidden files" before uploading,
+  or the protection rules and the `Authorization` header forwarding are
+  silently skipped. Check afterwards with `curl` (see below).
+- **Preserve directory structure.** `jaco/`, `jaco-data/` and `media/` must sit
+  next to `index.html` in the web root, not inside a subdirectory.
+- **Set write permissions.** The web server user (often `www-data`, `apache`
+  or the FTP account) needs write access to every editable `.html` file,
+  `jaco-data/` (templates, backups, runtime log) and `media/`. With SFTP/SCP
+  this is usually `chmod 644` for files and `755` for directories, owned by
+  the web server user; with shared hosting, the FTP account often is the
+  web server user.
+- **Do not upload `jaco-data/settings.php`, backups or runtime logs** from a
+  local installation to a production server. The installer creates them on the
+  server; overwriting them can lose credentials or backups.
 
 ## Protect the internals
 
@@ -201,17 +229,11 @@ that Apache honours them: `AllowOverride` must at least allow `AuthConfig` and
 `.htaccess` is ignored and `jaco-data/` becomes readable over the web.
 
 On Nginx `.htaccess` files are ignored: copy the location blocks from
-`nginx-jaco.conf.example` in this directory
-(<https://github.com/tbreuss/jaco-cms/blob/main/docs/nginx-jaco.conf.example>)
-into the server context, and add
-`fastcgi_param HTTP_AUTHORIZATION $http_authorization;`
-to the PHP location, otherwise every authenticated API call answers 403.
+`nginx-jaco.conf.example` into the server context, and add
+`fastcgi_param HTTP_AUTHORIZATION $http_authorization;` to the PHP location.
 
-On Apache with a dist archive (`jaco/` extracted into an existing site) one
-rule must live in the *site root* `.htaccess`, because the shipped
-`jaco/.htaccess` deliberately enables no rewrite engine (it would override
-this): without it PHP never sees the `Authorization` header and every
-authenticated API call answers 403.
+On Apache with a dist archive, one rule must live in the *site root*
+`.htaccess` (the shipped `jaco/.htaccess` enables no rewrite engine):
 
 ```apache
 <IfModule mod_rewrite.c>
@@ -272,17 +294,18 @@ post_max_size = 24M
 ## Mark editable regions
 
 Without markers there is nothing to edit inline (only source via Ace).
-These attributes designate editable spots in the existing HTML:
+Editable regions are marked with `data-jaco-*` attributes. Every attribute,
+property and value is defined in [jaco-data/templates/content/](jaco-data/templates/content/)
+and documented in [docs/attribute-contract.md](attribute-contract.md). The most
+important ones:
 
-- `data-jaco-block` — text block
-- `data-jaco-line` — single line, e.g. headings
+- `data-jaco-block` — multi-line text block
+- `data-jaco-line` — single line (e.g. headings)
 - `data-jaco-link` — link (URL and target via dialog)
 - `data-jaco-image` — image (replacement via dialog)
 - `data-jaco-template="<file>.html"` — instance of a site template
-
-A block or a line takes `data-jaco-block--tools="basic"` or `"full"` to offer
-more than plain paragraphs; an image takes `data-jaco-image--mode="fill"`, `"fit"`
-or `"choice"` to scale the file to its `width` and `height`.
+- `data-jaco-repeater` — repeatable block list
+- `data-jaco-slot` — flexible insertion point with chooser
 
 Example:
 
@@ -297,76 +320,16 @@ A live example of every marker is on `elements.html` (English and German).
 
 ## Recurring content blocks
 
-A content list lets editors add prebuilt blocks (e.g. news items) themselves.
-Put a fragment file in `jaco-data/templates/content/`, then mark where blocks may
-appear:
-
-```html
-<div data-jaco-repeater="news-section.html"
-     data-jaco-repeater--label="Add news" data-jaco-repeater--position="top">
-    <div>
-        <h2 data-jaco-line>Existing headline</h2>
-    </div>
-</div>
-```
-
-The fragment is one copy of such a block. It may use the site's own classes; this
-one places a text block and an image next to each other:
-
-```html
-<!-- jaco-data/templates/content/news-section.html -->
-<div class="news-section">
-    <div class="news-text">
-        <h2 data-jaco-line>Headline</h2>
-        <p data-jaco-line>Text</p>
-    </div>
-    <div class="news-img">
-        <img data-jaco-image height="600" width="800" src="…">
-    </div>
-    <div class="clearer"></div>
-</div>
-```
-
-The fragment becomes one block, so it must have **exactly one root element** -
-the `<div class="news-section">` above. The editor does not wrap it.
-
-- the value of `data-jaco-repeater` names the fragment file from
-  `jaco-data/templates/content/`
-- `data-jaco-repeater--label` labels the add button shown in the editor
-- `data-jaco-repeater--position` is `top` (new blocks first), `bottom` (new
-  blocks last) or `any` (a button before every block plus one at the end)
-- `data-jaco-repeater--sortable` adds the ⠿ grip, so blocks can be reordered
-- every direct child of the repeater is one block; it can be deleted in the
-  editor (two-step: ×, then ✓). Anything else - a heading, text - belongs inside
-  a block, not beside one.
+Put a fragment file in `jaco-data/templates/content/` and mark where blocks may
+appear with `data-jaco-repeater="<file>.html"` (see
+[Repeater](attribute-contract.md#repeater)). The fragment must have exactly one
+root element; every direct child of the container becomes one block.
 
 ## Flexible insertion points (slots)
 
-A slot lets editors choose which block to insert from a set of fragments, instead
-of being tied to a single fragment file. Mark the container:
-
-```html
-<div data-jaco-slot="news-section.html, promo-box.html"
-     data-jaco-slot--label="Add block"
-     data-jaco-slot--position="top"
-     data-jaco-slot--sortable>
-</div>
-```
-
-The value of `data-jaco-slot` names one or more fragment files from
-`jaco-data/templates/content/`, separated by commas or whitespace. When the
-editor clicks the add button, a chooser shows each fragment to pick from. An
-empty `data-jaco-slot` (no value) offers every fragment from the content API.
-
-The same properties work as on the repeater:
-
-- `data-jaco-slot--label` labels the add button shown in the editor
-- `data-jaco-slot--position` is `top` (new blocks first), `bottom` (new blocks
-  last) or `any` (a button before every block plus one at the end)
-- `data-jaco-slot--sortable` adds the ⠿ grip, so blocks can be reordered
-
-Every direct child of a slot is one block; the inserted fragment must have
-**exactly one root element**.
+A slot lets editors choose which block to insert from a set of fragments.
+Mark the container with `data-jaco-slot="<file>.html"` (see
+[Slot](attribute-contract.md#slot)). Every direct child of the slot is one block.
 
 ## Embedded videos
 
@@ -459,14 +422,13 @@ setting can override these rules.
 
 ### What happens during an update
 
-1. The latest release is fetched from GitHub and compared with the installed version.
-2. The dist archive (`jaco-dist-*.zip`) is downloaded into a temporary directory.
-3. The download is checked for the release host and for its published SHA-256.
-4. The archive is extracted (needs the `zip` PHP extension).
-5. The current `jaco/` is backed up to `jaco-data/app-backups/`.
-6. The contents of `jaco/` are replaced with the new version.
-7. `jaco/api.php` is checked for existence; on failure the backup is restored.
-8. Temporary files are cleaned up.
+1. Fetch the latest release from GitHub and compare versions.
+2. Download and verify the dist archive (host + SHA-256).
+3. Extract the archive (needs `zip` extension).
+4. Back up the current `jaco/` to `jaco-data/app-backups/`.
+5. Replace `jaco/` contents with the new version.
+6. Verify `jaco/api.php` exists; restore backup on failure.
+7. Clean up temporary files.
 
 ## Log in
 

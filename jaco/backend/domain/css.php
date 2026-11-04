@@ -21,8 +21,8 @@ function find_css_files(Config $config): Payload
         return Payload::error([['', 'Dir does not exist.']]);
     }
 
-    // backups and the inspiration snapshots are no site stylesheets
-    $files = filesystem\find_files_rec($config->webDir, ['css'], [$config->appDir, $config->backupDir, 'inspiration']);
+    // backups are no site stylesheets
+    $files = filesystem\find_files_rec($config->webDir, ['css'], [$config->appDir, $config->backupDir]);
 
     return Payload::success(
         array_map(fn(filesystem\File $file): Stylesheet => new Stylesheet(

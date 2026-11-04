@@ -65,6 +65,8 @@ Mark editable regions in your HTML and log in at `/jaco/`:
 <div data-jaco-block><p>My paragraph.</p></div>
 ```
 
+**Deploying to a server:** unpack the ZIP next to your HTML files, upload everything via FTP/SFTP/rsync (don’t skip hidden files like `.htaccess`), and make sure the web server can write to `jaco-data/` and `media/`. See [installation](docs/install.md) for permissions and server setup.
+
 For server setup, markers and recurring content blocks, see the [full guide](docs/install.md).
 
 ## Development
@@ -79,4 +81,4 @@ See [LICENSE](LICENSE).
 
 ## Links
 
-[Documentation](docs/readme.md) · [Installation guide](docs/install.md) · [Development](docs/development.md) · [Releases](https://github.com/tbreuss/jaco-cms/releases)
+[Documentation](docs/readme.md) · [Installation guide](docs/install.md) · [Development](docs/development.md) · [Releases](https://github.com/tbreuss/jaco-cms/releases) · [Live demo](https://jaco.tebe.ch/)

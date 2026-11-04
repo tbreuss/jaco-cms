@@ -13,9 +13,9 @@ All project markdown except the repository [README.md](../README.md) and
 | [install.md](install.md) | Installation and server setup for site operators |
 | [contributing.md](contributing.md) | How to contribute (humans and automated assistants) |
 | [development.md](development.md) | Clone, Docker, tests, frontend/backend conventions |
-| [backend-naming.md](backend-naming.md) | PHP function and file naming in the backend |
+| [naming.md](naming.md) | Naming conventions for backend (PHP) and frontend (JS) |
 | [menu-structure.md](menu-structure.md) | Admin navbar, roles, command palette, jump to page |
-| [site-pages.md](site-pages.md) | Public page file names, English/German mapping, rename checklist |
+
 | [features.md](features.md) | One-sentence feature catalogue |
 | [constraints.md](constraints.md) | Invariants, roles, edge cases and test map |
 | [glossary.md](glossary.md) | Shared terms with exactly one meaning |

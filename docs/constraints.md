@@ -15,26 +15,23 @@ These are the invariants and edge cases that tests cannot express on their own.
   first segment is `jaco/` (the `file_in_dir` guard), and the page, stylesheet, upload and
   backup lists never show files from `jaco/`.
 - **Operator data lives outside the app directory.** Templates and backups are stored in
-  `Config::$dataDir` (default `<webDir>/jaco-data`, overridable through the `dataDir`
-  setting), split into `templates/{page,content,site}` and `backups`.
-  `jaco-data/.htaccess` denies every request and disables directory listings, so replacing
-  the `jaco/` directory never touches site data. Uploads live in `Config::$mediaDir`
-  (default `<webDir>/media`).
+  `Config::$dataDir` (default `<webDir>/jaco-data`, overridable via `dataDir`),
+  split into `templates/{page,content,site}` and `backups`. `jaco-data/.htaccess`
+  denies every request, so replacing `jaco/` never touches site data. Uploads live
+  in `Config::$mediaDir` (default `<webDir>/media`).
 - **The JSON schemas are the API contract.** `jaco/schema/**` defines what a request must
   contain and what a response may contain; `jaco/backend/core/router.php` validates both.
 - **Embedded images are extracted, not stored.** `page/update` and `page/update-body`
-  write an image file only
-  when the `<img>` carries a marker attribute, a `src` and `data-jaco-editable-image-file`
-  (`jaco/backend/core/html.php`). Afterwards that attribute is gone and `src` points to
-  `media/<file>`. The parser clears the global libxml error buffer first, because the
-  check at the end reads all of it – a leftover error from earlier parsing would turn a
-  valid save into a failure.
-- **Two save paths with different owners.** `page/update` is the page manager: the whole
-  document is stored as sent – doctype, `<head>`, `<meta>`, `<base>`, `<link>` and
-  `<script>` included – and only the body is sanitized. `page/update-body` is the inline
-  editor: it sends content, never a document, so the stored document keeps its doctype and
-  head. A page that is stored as a fragment stays a fragment. Trust boundary: whoever holds
-  a valid token has the page manager, which is file access.
+  write an image file only when the `<img>` carries a marker attribute, a `src` and
+  `data-jaco-editable-image-file` (`jaco/backend/core/html.php`). Afterwards that
+  attribute is gone and `src` points to `media/<file>`. The parser clears the
+  global libxml error buffer first (a leftover error would turn a valid save
+  into a failure).
+- **Two save paths with different owners.** `page/update` stores the whole document
+  as sent (doctype, head, meta, base, link, script) and sanitizes only the body.
+  `page/update-body` sends content, never a document, so the stored document keeps
+  its doctype and head. A page stored as a fragment stays a fragment. Trust boundary:
+  whoever holds a valid token has the page manager (file access).
 - **Only YouTube embeds survive sanitizing.** `iframe` elements stay only with a `src` below `https://www.youtube.com/embed/` or `https://www.youtube-nocookie.com/embed/`; anything else (including a stripped `src`) is removed with the node. Event handlers never survive, on any tag.
 - **Stylesheets are content, but not HTML.** `css/update` stores the file as sent:
   `html\sanitize_html()` would destroy a stylesheet, and a `.css` file served as
@@ -45,118 +42,89 @@ These are the invariants and edge cases that tests cannot express on their own.
   record carries `readOnly => true`; `read_token()` reads it from the current
   record, so flipping the flag takes effect without waiting for the token to
   expire. `router\dispatch()` answers every POST of such an account with 403
-  except the routes in `router\READ_ONLY_EXCEPTIONS` (`template/site/preview`,
-  which only counts matches). The two reading routes in `router\READ_ONLY_DENIED`
-  (`system/log`, `system/php-info`) are refused as well, whatever the method:
-  they would print paths, versions and possibly environment variables to every
-  visitor of a public demo. The rest of the admin therefore stays available - the
-  point of the account is to show the interface - while nothing can change -
-  the own password change included. The form still opens: the save
-  answers with the read-only message instead of the menu hiding the entry.
-  The banner calls it a demo, because that is what the account is used for.
-- **Maintenance mode blocks writes, not reads, and it is enforced centrally.**
-  Every route that changes data is a POST, so `router\dispatch()` blocks POST
-  requests with 503 while `maintenanceMode` is on; actions carry no check of
-  their own. Only the two routes in `router\MAINTENANCE_EXCEPTIONS` stay
-  available: `login` and `system/change-password`, the way back in.
-  `ApiMaintenanceTest` walks the route table and fails for any non-exempt POST
-  route that is not blocked. With
-  `maintenanceMode` in `settings.php` every mutating route (page create, update, update body, delete, copy,
-  `css/update`, `upload/create`, `upload/delete`, `backup/restore`, `backup/delete`)
-  answers with the maintenance response, while lists and views keep working. Every api
-  response also carries the flag as an `X-Maintenance-Mode` header (`jaco/api.php`);
-  the admin reads it off the response instead of polling, so the banner follows the
-  setting without a reload (`jaco/frontend/lib/maintenance.js`).
-- **Login attempts are throttled per address, never globally.** Three failures from one
-  address within ten minutes block that address for ten minutes; a blocked attempt counts
-  again, so hammering keeps its own block alive. Rotating usernames does not help (the
-  bucket is the address, not the name) and the response never reveals whether a name
-  exists. There is no permanent block, so nobody can lock the owner out, and a successful
-  login clears that address; `cli.php auth:unblock` clears all of them. Command line
-  callers have no address and are not throttled. The history keeps at most
-  `LOGIN_MAX_ADDRESSES` addresses and drops everything outside the window
+  except `template/site/preview` (counts matches only). `system/log` and
+  `system/php-info` are refused regardless of method (they would print paths
+  and versions). The rest of the admin stays available — the account shows the
+  interface but stores nothing, password change included. The form still opens;
+  the save answers with the read-only message instead of hiding the entry.
+  The banner calls it a demo.
+- **Maintenance mode blocks writes, not reads, and is enforced centrally.**
+  `router\dispatch()` blocks every POST with 503 while `maintenanceMode` is on;
+  only `login` and `system/change-password` are exempt. `ApiMaintenanceTest`
+  walks the route table and fails for any non-exempt POST that is not blocked.
+  Every api response carries the flag as an `X-Maintenance-Mode` header
+  (`jaco/api.php`); the admin reads it off the response, so the banner follows
+  the setting without a reload (`jaco/frontend/lib/maintenance.js`).
+- **Login attempts are throttled per address, never globally.** Three failures from
+  one address within ten minutes block that address for ten minutes; a blocked
+  attempt counts again. Rotating usernames does not help (bucket is the address)
+  and the response never reveals whether a name exists. No permanent block, so
+  nobody can lock the owner out; a successful login clears that address;
+  `cli.php auth:unblock` clears all. CLI callers have no address and are not
+  throttled. History keeps at most `LOGIN_MAX_ADDRESSES` addresses
   (`jaco/backend/core/auth.php`).
 - **Roles decide what a route may do.** A token carries `role`: `editor` writes pages,
-  uploads and page/block templates, `admin` also changes the CSS, the site templates,
-  the backups and the system pages. The router compares the ranks (`role_allows`); a
-  route without an explicit role needs `admin`, and a missing or unknown role rejects
-  the account at login instead of granting the weakest one. There is no legacy single
-  login any more: `settings.php` lists users,
-  and without one nobody can log in. A token whose user no longer exists is rejected,
-  which ends their sessions when a user is removed. Each record carries `password` and
-  `role`, plus the optional `language` (UI language, empty falls back to
-  `defaultLanguage`), `totpSecret` (that user's second factor) and `readOnly`
-  (true refuses every write for that account)
-  (`jaco/backend/core/auth.php`, `jaco/backend/core/router.php`, `jaco/routes.php`).
+  uploads and templates; `admin` also changes CSS, site templates, backups and system
+  pages. The router compares ranks (`role_allows`); a route without an explicit role
+  needs `admin`. A missing or unknown role rejects the account at login. Without a
+  `users` entry nobody can log in; a token whose user no longer exists is rejected.
+  Each record carries `password` and `role`, plus optional `language`, `totpSecret`
+  and `readOnly` (`jaco/backend/core/auth.php`, `jaco/backend/core/router.php`,
+  `jaco/routes.php`).
 - **The password changes through the api, not by editing the file.**
-  `system/change-password` takes the current password as proof – a wrong one counts
-  against the login throttle – and writes a new password hash through
-  `write_user_field()`, which keeps the comments and the other keys of `settings.php`
-  and leaves the other users untouched. The result is parsed before it replaces the
-  file. The route is deliberately exempt from
-  the maintenance block: it is the way back in when something went wrong
-  (`jaco/backend/domain/system.php`, `jaco/backend/core/config.php`).
+  `system/change-password` takes the current password as proof (a wrong one
+  counts against the login throttle) and writes a new hash through
+  `write_user_field()`, which keeps comments and other keys of `settings.php`.
+  The result is parsed before replacing the file. The route is exempt from the
+  maintenance block (`jaco/backend/domain/system.php`,
+  `jaco/backend/core/config.php`).
 - **Two-factor codes count as attempts, and belong to one user.** A wrong TOTP code
-  records a failure like a wrong password, and a correct password without a code only
-  reveals that a second step is required (`totpRequired`), never a token. Each account
-  uses its own `users.<name>.totpSecret`: a code generated for one account is rejected
-  for another, and an account without a secret logs in with its password alone. There
-  are no backup codes: a lost secret is replaced through `auth:totp-setup -u <name>`,
-  which needs server access.
+  records a failure like a wrong password; a correct password without a code only
+  reveals that a second step is required (`totpRequired`), never a token. Each
+  account uses its own `users.<name>.totpSecret`: a code for one account is
+  rejected for another, and an account without a secret logs in with password alone.
+  No backup codes: a lost secret is replaced via `auth:totp-setup -u <name>`.
 - **Uploads are never overwritten.** A name collision gets `-1` appended
   (`filesystem\file_name_to_write()`), and `upload/create` validates the extension before
   the uploaded file is moved into place.
 - **Credentials fail closed, never open.** `create_default_config()` treats an empty
   `secretKey` like a missing one (random fallback) and replaces a key below 32
   characters; without a `users` entry nobody can log in. `auth\authenticate()`
-  additionally refuses empty stored values. A verbatim copy of `settings.dist.php` can
-  therefore never log in and never signs tokens with the example key
-  (`jaco/backend/core/config.php`, `jaco/backend/core/auth.php`,
+  refuses empty stored values. A verbatim copy of `settings.dist.php` can never
+  log in (`jaco/backend/core/config.php`, `jaco/backend/core/auth.php`,
   `jaco/test/ConfigDefaultsTest.php`).
 - **The admin password is stored hashed, never in clear.** `settings.php` holds a
-  password hash, verified in constant time.
-  A plaintext value no longer matches, because it is not a valid hash. There is no
-  migration path: an installation with a plaintext password has to have a new hash
-  written into `settings.php` (`php jaco/cli.php auth:password`) or be reinstalled.
-  The installer and `auth:token` are unaffected — both take the plaintext and verify
-  it against the stored digest (`jaco/install.php`, `jaco/backend/core/auth.php`).
+  password hash, verified in constant time. A plaintext value no longer matches.
+  No migration path: an installation with a plaintext password needs a new hash
+  (`php jaco/cli.php auth:password`) or reinstall. The installer and `auth:token`
+  are unaffected — both take plaintext and verify against the stored digest
+  (`jaco/install.php`, `jaco/backend/core/auth.php`).
 - **Uploads are scrubbed when they are SVG.** `svg` stays an allowed extension,
   but `html\sanitize_svg()` strips script elements, foreign objects, event
-  handler attributes and script urls on every write path (direct upload,
-  editor data urls, gallery full versions) before the file reaches `media/`.
-  Malformed markup is rejected instead of guessed
-  (`jaco/backend/core/html.php`).
+  handlers and script urls on every write path before the file reaches `media/`.
+  Malformed markup is rejected (`jaco/backend/core/html.php`).
 - **The app directory guard ignores case.** `filesystem\is_file_in_dir()`
   compares the first path segment case-insensitively, because `Jaco/...`
   resolves to the app directory on macOS and Windows
   (`jaco/backend/core/filesystem.php`, `jaco/test/FileSystemNamingTest.php`).
 - **The editable markers are allowlisted.** Every `data-jaco-*` name in
-  `ALLOWED_ATTRIBUTES` must stay there: dropping one silently makes the page uneditable
-  in place, because the editor finds its blocks through these attributes. The whitelist
-  covers the repeater (`data-jaco-repeater` and `--label`, `--position`, `--sortable`)
-  and the slot (`data-jaco-slot` and `--label`, `--position`, `--sortable`).
-  `DataAttributeContractTest` compares the whitelist with the document, the selectors,
-  the stylesheets and every page.
-  `<script>` is removed from the body, so a script include belongs in the `<head>`, which
-  the page manager owns.
+  `ALLOWED_ATTRIBUTES` must stay: dropping one silently makes the page uneditable.
+  The whitelist covers the repeater and the slot (role + `--label`, `--position`,
+  `--sortable`). `DataAttributeContractTest` compares the whitelist with the
+  document, selectors, stylesheets and every page.
+  `<script>` is removed from the body, so script includes belong in `<head>`.
 - **Editor chrome follows the position, and only the editor owns it.** A content
-  list shows its add buttons the way its position promises: `any` is one button in
-  front of every block plus one at the end, both direct children of the list;
-  `top` and `bottom` are exactly one button, standing in the list's parent right
-  before or after it. This holds after every operation that changes the blocks —
-  mount, insert, delete, drop and re-mount — not only after the first one. The
-  rule is written in `jaco/frontend/contentlists.js` alone (`blocksOfList`,
-  `reconcileAddButtons`), because the same questions asked in two places drift
-  apart: a block is a direct child that is not chrome, a list's button is one
-  whose `_jacoList` names that list.
+  list shows its add buttons per position: `any` is one before every block plus
+  one at the end (both direct children of the list); `top`/`bottom` are exactly
+  one button in the list's parent. This holds after mount, insert, delete, drop
+  and re-mount. The rule lives solely in `jaco/frontend/contentlists.js`
+  (`blocksOfList`, `reconcileAddButtons`).
   Nothing of the chrome may reach the saved page: `removeContentListChrome()`
-  strips buttons, item bars and an open fragment chooser before
-  `iframe.getHTML()` reads the body, and QUnit checks that a saved page carries
-  no `jaco-content-add-button`, `jaco-content-item-bar` or `jaco-slot-chooser`.
-  Two consequences worth knowing before touching the file: a nested list keeps
-  its own chrome when its block stays, and a block and its `any` button move as
-  a pair. Both were bugs that no test caught until the matrix in
-  `jaco/test/js/tests.js` covered every position for repeater and slot.
+  strips buttons, item bars and an open chooser before `iframe.getHTML()` reads
+  the body; QUnit checks that a saved page carries no `jaco-content-add-button`,
+  `jaco-content-item-bar` or `jaco-slot-chooser`.
+  Two consequences: a nested list keeps its own chrome when its block stays,
+  and a block and its `any` button move as a pair.
 - **Lists do not ship content.** `page/list` and `upload/list` return `content: null`,
   `css/list` does not even carry a content field (`additionalProperties: false` in its
   schema), and `backup/list` returns an empty string. Only `page/view`, `css/view` and
@@ -176,35 +144,28 @@ These are the invariants and edge cases that tests cannot express on their own.
 - **The login form submits natively.** `jaco/frontend/view/LoginView.js` wraps the fields
   in a `<form>` and cancels the submit event, so RETURN and the submit button each send
   exactly one request and the page never reloads.
-- **Save shortcuts listen in two places.** `bindSaveShortcut` in `jaco/frontend/lib/shortcuts.js`
-  covers Cmd/Ctrl+S (save) and Cmd/Ctrl+Shift+S (save and close). Ace swallows keydown
-  inside its textarea, so the Ace editors need native commands too
-  (`editor.commands.addCommand` in `PageEditView.js`, `CssEditView.js`); the inline
-  editor needs listeners in both the parent and the iframe document, unbound in
-  `onremove`, or shortcuts leak across routes.
+- **Save shortcuts listen in two places.** `bindSaveShortcut` in
+  `jaco/frontend/lib/shortcuts.js` covers Cmd/Ctrl+S (save) and Cmd/Ctrl+Shift+S
+  (save and close). Ace swallows keydown inside its textarea, so Ace editors need
+  native commands too (`PageEditView.js`, `CssEditView.js`); the inline editor needs
+  listeners in both the parent and the iframe document, unbound in `onremove`.
 - **The theme is an explicit choice, not just the OS setting.** `jaco/frontend/lib/theme.js`
   persists light/dark/auto in localStorage and applies it as `data-theme` on `<html>`
-  (`:root[data-theme="dark"]` carries the dark tokens, so no media query is needed).
-  An inline script in `jaco/index.html` sets the attribute before CSS paints to avoid
-  a flash; new theme-dependent colors belong in the `:root` tokens, never in rules.
-  The project site shares that key: `assets/theme.js` in the head of every site page
-  writes the same `jaco-theme`, and `assets/site.css` keeps its palette in `:root` tokens
-  with `light-dark()`, so the automatic case follows the OS without a media query. The
-  explicit `data-theme="dark"` block repeats the dark tokens on purpose: browsers without
-  `light-dark()` (iOS < 17.5, Chrome < 123) would otherwise ignore a chosen dark theme.
-  The switch button sits in the page markup; the script only wires it up, while the
-  theme itself is still applied synchronously before the first paint. The mobile menu in
-  `assets/nav.js` works the same way: its button sits in the markup and the open state
-  is a class on `<html>`, which no save touches. It takes over below 40rem;
-  the plain row needs 500px of content plus the page padding in german, so a smaller
-  breakpoint makes the row wrap on tablets.
+  (`:root[data-theme="dark"]` carries the dark tokens). An inline script in
+  `jaco/index.html` sets the attribute before CSS paints to avoid a flash; new
+  theme-dependent colors belong in the `:root` tokens, never in rules.
+  The project site shares that key (`assets/theme.js` writes the same `jaco-theme`);
+  `assets/site.css` keeps its palette in `:root` tokens with `light-dark()`.
+  The explicit `data-theme="dark"` block repeats the dark tokens for browsers without
+  `light-dark()` (iOS < 17.5, Chrome < 123). The mobile menu in `assets/nav.js` works
+  the same way: button in markup, open state a class on `<html>`. It takes over below
+  40rem (the plain row needs 500 px plus page padding in German).
 - **Server errors stay English on the wire and are translated in the frontend.**
   The backend has no per-request locale, so `detail` strings arrive in English and
-  `tError()` in `jaco/frontend/model/i18n.js` translates them for display
-  (`FormErrors.js`). A new static message needs a key in all four
-  `jaco/language/*.json` files (guarded by `jaco/test/LanguageTest.php`); a new
-  dynamic message additionally needs its English template in `errorTemplates`,
-  otherwise it falls back to English.
+  `tError()` in `jaco/frontend/model/i18n.js` translates them (`FormErrors.js`).
+  A new static message needs a key in all four `jaco/language/*.json` files
+  (`LanguageTest.php`); a new dynamic message additionally needs its English
+  template in `errorTemplates`, otherwise it falls back to English.
 
 - **The cli entry point is command line only.** `jaco/cli.php` answers a web request with
   403 before it loads anything (a `PHP_SAPI` guard): it prints version and log output and
@@ -259,7 +220,6 @@ end.
 | Delete a backup | – | ✓ |
 | List and view stylesheets | ✓ | ✓ |
 | Change a stylesheet | – | ✓ |
-| Change a stylesheet | – | ✓ |
 | Environment, error log and php-info | – | ✓ |
 
 `readOnly` is the one flag next to the role, because it is not a permission tier: the
@@ -308,8 +268,8 @@ disabled, the save shortcuts are not bound, and the dirty guard is off, so chang
 never persisted and do not trap the user in a discard dialog. A `readOnly` account sees
 a **demo banner** saying that nothing is stored. About is available to every signed-in
 account; the public index exposes only name and version. The own password has its own
-`/password` route for every account, because it used to live inside the admin-only system
-view; a `readOnly` account reaches the form and the save answers **403**. This is
+`/password` route for every account. A `readOnly` account reaches the form and the save
+answers **403**. This is
 guidance, not access control: the router still checks the signed token on every request,
 and the write endpoints answer **403** regardless of what the editor shows.
 

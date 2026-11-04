@@ -18,7 +18,6 @@
 /jaco/vendor
 /jaco/frontend/vendor
 /jaco/test/runtime
-/inspiration
 /test
 /jaco-dist-*.zip
 /jaco-dist-*.zip.sha256

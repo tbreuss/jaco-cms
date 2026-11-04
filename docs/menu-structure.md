@@ -17,6 +17,7 @@ macOS and `Ctrl+K` elsewhere.
 Content ▾
 ├─ Pages
 ├─ Media
+├─ Templates
 ├─ Backups
 └─ Design
 
@@ -31,8 +32,10 @@ Admin ▾
 └─ PHP info
 
 Account ▾
+├─ [user (role)]
 ├─ About
 ├─ Change password
+├─ Change language
 └─ Logout
 ```
 
@@ -45,14 +48,14 @@ Account ▾
 
 ## Interaction
 
-- On a fine pointer with hover: entering the trigger opens the menu, leaving closes it.
+- Fine pointer with hover: entering the trigger opens the menu, leaving closes it.
 - Touch and keyboard: click, `Enter` or `Space` toggles the menu.
 - Only one menu is open at a time.
 - `Escape` and a click outside close the menu.
 - `ArrowDown`/`ArrowUp` on the trigger open it and focus the first/last entry.
 - Triggers expose `aria-haspopup="menu"`, `aria-expanded` and `aria-controls`.
 - Entries use `role="menuitem"`; disabled entries stay focusable with `aria-disabled`.
-- Hover still highlights the trigger; the open state is driven by pointer type and media query.
+- Hover highlights the trigger; the open state is driven by pointer type and media query.
 
 ## Pages view
 
@@ -76,7 +79,7 @@ system. Admins and editors open them under **Content → Templates**. An admin e
 the markup and saves with **Save** or **Save & Close**; an editor sees the same
 editor read-only, so the markup is the admin's and the rollout is not.
 
-**Preview & apply** is available to both. It opens a preview with the affected
+**Preview & apply** is available to both: it opens a preview with the affected
 pages and elements, and the confirm button applies. An admin saves the editor
 content first, so the rollout uses the new text; an editor applies the template
 as it is stored. Applying uses atomic file writes, replaces every element with
@@ -128,6 +131,7 @@ The inline editor toolbar offers **Page settings**, **Cancel** and **Save**.
 | Admin entries | active | visible-disabled |
 | Account: About, Logout | active | active |
 | Account: Change password | active | active |
+| Account: Change language | active | active |
 | Theme | active | active |
 | Jump to page (Commands) | active | active |
 | Commands | active | active |

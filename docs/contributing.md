@@ -6,7 +6,7 @@ automated assistants (any AI or bot): follow it together with
 
 ## Documentation
 
-- **Repository root** — only `README.md` and `LICENSE` use uppercase file names.
+- **Repository root** — only `README.md`, `LICENSE`, `AGENTS.md` and `Dockerfile` use uppercase file names.
 - **`docs/`** — all other markdown: lowercase; multi-word files use hyphens
   (`menu-structure.md`), single words are allowed (`features.md`). Index:
   [readme.md](readme.md).

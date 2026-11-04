@@ -11,6 +11,7 @@ the admin navigation in [menu-structure.md](menu-structure.md), and installation
 | --- | --- | --- |
 | File-based pages | Pages are `.htm`/`.html` files below the web root; the file itself is the data store. | [Glossary](glossary.md) |
 | Content blocks | Editors add, remove and, where the list uses `draggable`, reorder reusable blocks from templates. | [Glossary](glossary.md) |
+| Content slots | Editors choose which block to insert from a set of fragments via a chooser, or from all available fragments when the slot is empty. | [Glossary](glossary.md) |
 | Media library | Editors upload, view and delete images and PDFs with extension checks and size limits, and name collisions never overwrite existing files. | [Constraints](constraints.md) |
 | Templates | Page and block templates are files under `jaco-data/templates` and are selected by the admin when creating pages and blocks. | [Glossary](glossary.md) |
 

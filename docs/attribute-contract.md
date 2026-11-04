@@ -2,17 +2,11 @@
 
 The `data-jaco-*` attributes are the contract between a page and the editor.
 They are written by hand into HTML that a customer already owns, so every name
-here is public API, not an internal detail.
+here is public API.
 
-**This file is the plan, not the current state.** It describes what the contract
-is going to be; the code implements part of it. Which names exist *today* is
-decided by `ALLOWED_ATTRIBUTES` in `backend/core/html.php`, and which of them
-the pages use is what the contract test compares. Where the two differ, this
-document wins as the target and the code is behind - never the other way round.
-
-The gap between plan and code is tracked in `docs/backlog.md` ("Move the pages,
-templates and docs to the new contract" and its neighbours). The document does
-not repeat the list: a second copy of a work list goes stale the first day.
+**This file is the current contract.** Which names exist is decided by
+`ALLOWED_ATTRIBUTES` in `backend/core/html.php`; this document describes them
+and where they come from.
 
 ## The grammar
 
@@ -40,19 +34,18 @@ images, links - never that description.
 | Written by author | Changed by editor | Changed by server |
 | --- | --- | --- |
 | every `data-jaco-*` | never | never |
-| `src`, `alt` | yes, the file and its alternative text | `src`, when an upload is stored |
-| `href`, `target` | yes, in the link dialog | never |
-| text inside `block`, `line` | yes | no, formatting outside the tools is removed |
+| `src`, `alt` | yes | `src`, when an upload is stored |
+| `href`, `target` | yes | never |
+| text inside `block`, `line` | yes | no, formatting outside tools is removed |
 | `width`, `height` | never | never |
 
 A value the editor would have to rewrite is a value the editor is not allowed to
-change: that is why `--mode="choice"` remembers nothing (see [Image](#image)). A
-page that does not fit the contract is **refused on save, not repaired** - a
-marker that disappears silently is worse than a save that stops and says why.
+change. A page that does not fit the contract is **refused on save, not repaired** -
+a marker that disappears silently is worse than a save that stops and says why.
 
-The one exception is content: an upload replaces the `src` of the image it
-belongs to, and the server writes that path. Everything else in the markup stays
-as the author wrote it.
+The one exception: an upload replaces the `src` of the image it belongs to, and
+the server writes that path. Everything else in the markup stays as the author
+wrote it.
 
 ### Roles
 
@@ -64,25 +57,22 @@ an element without a role carries no property.
 | `data-jaco-block` | none | multi-line text |
 | `data-jaco-line` | none | one line of text |
 | `data-jaco-link` | none | link, edited in a dialog |
-| `data-jaco-image` | none | image; the editor replaces the file and scales nothing |
-| `data-jaco-repeater` | **required** | container of repeatable blocks; the value is the fragment file |
-| `data-jaco-slot` | **required** | flexible insertion point; the value is one or more fragment files to choose from |
-| `data-jaco-template` | **required** | site template instance; the value is the template file |
+| `data-jaco-image` | none | image; editor replaces file, scales nothing |
+| `data-jaco-repeater` | **required** | container of repeatable blocks; value is the fragment file |
+| `data-jaco-slot` | **required** | flexible insertion point; value is one or more fragment files |
+| `data-jaco-template` | **required** | site template instance; value is the template file |
 
 ### Properties
 
-**A property is optional, and a role without it does the least it can.** More
+A property is optional, and a role without it does the least it can. More
 function is asked for explicitly. A forgotten property gives a smaller editor,
-which shows at once and does no harm; the opposite default would grant more than
-the author meant, unnoticed. A value is required only where without it something
+which shows at once and does no harm. A value is required only where something
 is missing (the fragment, the template file). The kind of property decides its
 name:
 
 - **mode** (`--mode`): values that exclude each other and make the same element
   work differently. At most one per role.
-- **switch** (`--sortable`): present or absent, never with a value. `="true"`
-  and `="false"` do not exist: in HTML the presence of an attribute is the
-  answer.
+- **switch** (`--sortable`): present or absent, never with a value.
 - **named value** (`--position`, `--label`, `--tools`): the value means
   something of its own.
 
@@ -90,11 +80,11 @@ name:
 | --- | --- | --- | --- |
 | `data-jaco-block--tools` | `data-jaco-block` | `basic`, `full` | what the editor offers; without it `plain` |
 | `data-jaco-line--tools` | `data-jaco-line` | `basic` | what the editor offers; without it `plain` |
-| `data-jaco-image--mode` | `data-jaco-image` | `fill`, `fit`, `choice` | how the file is scaled to `width` x `height`; without it the file is only replaced |
-| `data-jaco-repeater--label` | `data-jaco-repeater` | text | label of the add button; without it "Add block" in the editor language |
+| `data-jaco-image--mode` | `data-jaco-image` | `fill`, `fit`, `choice` | how the file is scaled to `width` x `height`; without it replaced only |
+| `data-jaco-repeater--label` | `data-jaco-repeater` | text | label of the add button; without it "Add block" |
 | `data-jaco-repeater--position` | `data-jaco-repeater` | `top`, `bottom`, `any` | where the add button stands; without it `top` |
 | `data-jaco-repeater--sortable` | `data-jaco-repeater` | none | blocks can be reordered by the grip |
-| `data-jaco-slot--label` | `data-jaco-slot` | text | label of the add button; without it "Add block" in the editor language |
+| `data-jaco-slot--label` | `data-jaco-slot` | text | label of the add button; without it "Add block" |
 | `data-jaco-slot--position` | `data-jaco-slot` | `top`, `bottom`, `any` | where the add button stands; without it `top` |
 | `data-jaco-slot--sortable` | `data-jaco-slot` | none | blocks can be reordered by the grip |
 
@@ -109,10 +99,10 @@ or one. `--tools` says what each offers; without it the element is `plain`.
 | Role | `--tools` | Offers |
 | --- | --- | --- |
 | `data-jaco-block` | none = `plain` | no formatting, paragraphs only |
-| | `basic` | bold, italic, underline, strike, link (a dialog sets the URL) |
-| | `full` | headings, bold, italic, underline, strike, quote, code, lists, indent, link (a dialog sets the URL), video (an `<iframe>` in the text) |
+| | `basic` | bold, italic, underline, strike, link |
+| | `full` | headings, bold, italic, underline, strike, quote, code, lists, link |
 | `data-jaco-line` | none = `plain` | no formatting |
-| | `basic` | bold, italic, underline, strike, link (a dialog sets the URL) |
+| | `basic` | bold, italic, underline, strike, link |
 
 `basic` is the same in both roles; `full` adds structure and exists for `block`
 only. In a `plain` block Enter starts a new paragraph.
@@ -120,11 +110,8 @@ only. In a `plain` block Enter starts a new paragraph.
 **The tools are not roles.** `link` and `video` in this table are buttons in the
 toolbar, not `data-jaco-link` and not a marker of their own. They produce
 ordinary markup inside the text - an `<a href>` or an `<iframe>` - and that
-markup belongs to the text, not to the contract. The size the video dialog gives
-the `<iframe>` is part of the content it produces; the contract has no rule
-about it, and nothing in it is a `data-jaco-*` name.
-
-Only `link` shares its word with a role, so only that one needs separating:
+markup belongs to the text, not to the contract. Only `link` shares its word
+with a role, so only that one needs separating:
 
 - the **button** wraps selected text in an `<a href>`. It lives in the toolbar,
   exists only while the block is edited, and produces markup a page does not
@@ -147,31 +134,26 @@ page is written, not later.
 
 ## Image
 
-| Form | What happens to the file | The editor chooses |
+| Form | What happens | Editor chooses |
 | --- | --- | --- |
-| `data-jaco-image` | replaced as it is, nothing is scaled; `width` and `height` are layout only | - |
-| `+ data-jaco-image--mode="fill"` | the file is `width` x `height`; the image covers that box and what does not fit is cut | nothing |
-| `+ data-jaco-image--mode="fit"` | the file is `width` x `height`; the whole image sits in that box and the rest stays transparent | nothing |
-| `+ data-jaco-image--mode="choice"` | like `fill` or `fit`, as chosen in the dialog, for that upload | `fit` or `fill` |
+| `data-jaco-image` | file replaced as-is, nothing scaled; `width`/`height` are layout only | - |
+| `+ data-jaco-image--mode="fill"` | file scaled to `width` x `height`; covers the box, cuts what doesn't fit | nothing |
+| `+ data-jaco-image--mode="fit"` | file scaled to `width` x `height`; whole image fits, rest stays transparent | nothing |
+| `+ data-jaco-image--mode="choice"` | like `fill` or `fit`, chosen in dialog for that upload | `fit` or `fill` |
 
 **The file always has the size of the markup.** A scaled upload is a
-`width` x `height` image, whatever its source was: `fill` covers the box, `fit`
-puts the whole picture into it and leaves the rest transparent. The box is the
-layout, so what the editor shows is what the page shows.
+`width` x `height` image, whatever its source. `fill` covers the box, `fit`
+shows the whole image with empty space. The box is the layout, so what the
+editor shows is what the page shows.
 
-**`width` and `height` belong to the page.** The editor reads them and never
-writes them; there is no field for them in the dialog, and what the author
-wrote stays written. They say two things at once - how much room the layout
-reserves and which format the file is cut to - which is acceptable because
-only one side ever reads them.
+**`width` and `height` belong to the page.** The editor reads them but never
+writes them; there is no dialog field. What the author wrote stays written.
+They say two things at once - how much room the layout reserves and which
+format the file is cut to - which is fine because only one side ever reads
+them.
 
-They are not duplicated into `data-jaco-image--width`: two numbers that have
-to agree would eventually disagree, and without the plain HTML attributes the
-browser reserves no space before the image loads.
-
-A mode needs at least one of them, otherwise there is nothing to scale to; with
-only one, `fill` and `fit` are the same and scale in proportion; both are
-accepted.
+A mode needs at least one dimension to scale to; with only one dimension,
+`fill` and `fit` are the same and scale in proportion; both are accepted.
 
 **The bare role is the only spelling of "replace".** There is no
 `--mode="none"`: a mode is a mode, and leaving it out is how a page says "do not
@@ -249,10 +231,8 @@ from it. It is independent of `--sortable`.
 | `bottom` | one, after the last block | at the end |
 | `any` | one before **every** block, and one after the last | where the button was pressed |
 
-`any` gives **n + 1 buttons for n blocks**, never two in the same gap: the
-button belongs to the block it stands in front of, and sits *before* it, not
-after. With three blocks the column reads button, block, button, block, button,
-block, button.
+`any` gives **n + 1 buttons for n blocks**: one before every block plus one
+at the end. The button belongs to the block it stands in front of.
 
 Without `--label` the button says "Add block", translated by the editor, so the
 page does not decide the language of the button.
@@ -314,22 +294,18 @@ typo cannot be saved until the typo is gone - which is the point.
 
 `backend/core/html.php` (the whitelist `ALLOWED_ATTRIBUTES`), the selectors in
 `frontend/editor.js` and `frontend/contentlists.js`, the pages and templates,
-and this file as the plan. A test compares the whitelist with the selectors, the
-stylesheets, the guides and the pages - not with this file, which is ahead of
-the code by design. It follows the pattern of `IgnoreRulesTest` and
-`MenuRoleTest`.
+and this file as the contract. A test compares the whitelist with the selectors,
+stylesheets, guides and pages - not with this file, which documents what exists
+by design.
 
-### The plan and the code
-
-Two different questions, two different answers:
+Two questions, two answers:
 
 - **Which names exist today?** `ALLOWED_ATTRIBUTES` answers it, and only it.
   Every other mention is a copy that can drift; no test parses this document,
-  because a test that reads the plan would fail as long as the plan is ahead of
-  the code.
-- **Which names should exist?** This document answers it, and it is deliberately
-  written in the present tense: the target reads better than a wish list, and
-  the backlog carries the work list.
+  because a test that reads the document would fail if it diverges from the code.
+- **Which names should exist?** This document answers it, deliberately written
+  in the present tense: the contract reads better than a wish list, and the
+  backlog carries the work list.
 
 The whitelist names these attributes and no editor state:
 
@@ -343,26 +319,27 @@ The whitelist names these attributes and no editor state:
 'data-jaco-slot--sortable',
 ```
 
-The whitelist now holds these names, so the code and this plan
-agree on the names. What remains is the rollout: the pages and templates still
-have to be moved to the new semantics (for example, a bare `data-jaco-image`
-means "replace only"), and the backlog closes that gap in one hard break.
+The whitelist now holds these names, so code and contract agree on the names.
+What remains is the rollout: pages and templates still have to be moved to the
+new semantics (e.g. a bare `data-jaco-image` means "replace only"), and the
+backlog closes that gap in one hard break.
 
 ### Serialisation
 
-The browser writes every empty attribute as `=""` (`<div data-jaco-block="">`).
-`getHTML()` in `frontend/lib/iframe.js` undoes that with **one generic rule**:
-an empty `data-jaco-*` attribute loses its `=""`, whatever it is called, so a
-new role needs no line there. Other attributes keep their empty value: `<a
-href="">` is a link to the current page, not an absent one.
+The browser writes every empty attribute as `=""`
+(`<div data-jaco-block="">`). `getHTML()` in `frontend/lib/iframe.js` undoes
+that with **one generic rule**: an empty `data-jaco-*` attribute loses its
+`=""`, whatever it is called, so a new role needs no line there. Other
+attributes keep their empty value: `<a href="">` is a link to the current page,
+not an absent one.
 
 ### Editor state
 
 The editor keeps its state **out of the DOM** and sets no `data-jaco-*`
 attribute while it runs, so the page it saves is the page the author wrote. What
-it needs - the open block, the file name of an upload, the size badge - lives in
-the editor (a class, a `WeakSet`, a `WeakMap`). An editor-state name that turns
-up in a page is an unknown name and is rejected on save.
+it needs - the open block, the file name of an upload, the size badge - lives
+in the editor (a class, a `WeakSet`, a `WeakMap`). An editor-state name that
+turns up in a page is an unknown name and is rejected on save.
 
 ## Gallery
 
@@ -381,28 +358,15 @@ replaces, and whether a save may ever build structure on its own. Until then
 
 ## Appendix: every form
 
-Valid forms first, then what the server rejects with a message on save instead
-of ignoring it.
+Valid forms first; what the server rejects with a message on save instead of ignoring it.
 
 ### Block
 
 ```html
 <div data-jaco-block><p>A paragraph.</p></div>
-<div data-jaco-block data-jaco-block--tools="basic"><p>With <strong>formatting</strong> and a <a href="contact.html">link</a>.</p></div>
-<div data-jaco-block data-jaco-block--tools="full"><h2>A heading</h2><ul><li>A list</li></ul></div>
+<div data-jaco-block data-jaco-block--tools="basic"><p>With <strong>formatting</strong>.</p></div>
+<div data-jaco-block data-jaco-block--tools="full"><h2>Heading</h2></div>
 ```
-
-The `<a>` above is ordinary content: written into the text by hand or with the
-toolbar button, without a marker, because it is not edited as a whole. An `<a
-data-jaco-link>` inside the block would be the other thing, and it is rejected
-(see the last row).
-
-| Rejected | Why |
-| --- | --- |
-| `<div data-jaco-block data-jaco-block--tools="plain">` | `plain` is the absence of the property |
-| `<div data-jaco-block data-jaco-block--align="center">` | unknown name |
-| `<div data-jaco-block="x">` | value on a role that takes none |
-| `<div data-jaco-block><a data-jaco-link href="a.html">x</a></div>` | role inside a text element |
 
 ### Line
 
@@ -411,77 +375,58 @@ data-jaco-link>` inside the block would be the other thing, and it is rejected
 <h1 data-jaco-line data-jaco-line--tools="basic">Why <em>Jaco CMS</em>?</h1>
 ```
 
-| Rejected | Why |
-| --- | --- |
-| `<h1 data-jaco-line data-jaco-line--tools="full">` | a line has no `full` |
-
 ### Link
 
-The dialog edits `href` and `target`.
+The dialog edits `href` and `target`:
 
 ```html
 <a href="contact.html" data-jaco-link>Contact</a>
 <a href="https://example.com" target="_blank" data-jaco-link>External</a>
 
-<!-- a link around an image: two roles on two elements -->
 <a href="shop.html" data-jaco-link>
   <img data-jaco-image src="media/cake.jpg" width="400" alt="">
 </a>
 ```
 
-| Rejected | Why |
-| --- | --- |
-| `<a data-jaco-link="x" href="a.html">` | value on a role that takes none |
-
 ### Image
 
 ```html
 <img data-jaco-image src="media/photo.jpg" width="640" height="360" alt="Photo">
-<img data-jaco-image data-jaco-image--mode="fill" src="media/team.jpg" alt="Team" width="640" height="360">
-<img data-jaco-image data-jaco-image--mode="fit" src="media/logo.jpg" alt="Logo" width="640" height="360">
-<img data-jaco-image data-jaco-image--mode="choice" src="media/blog.jpg" alt="Post" width="1200" height="600">
+<img data-jaco-image data-jaco-image--mode="fill" src="media/team.jpg" width="640" height="360" alt="Team">
+<img data-jaco-image data-jaco-image--mode="fit" src="media/logo.jpg" width="640" height="360" alt="Logo">
+<img data-jaco-image data-jaco-image--mode="choice" src="media/blog.jpg" width="1200" height="600" alt="Post">
 ```
 
 | Rejected | Why |
 | --- | --- |
-| `<img data-jaco-image--mode="fill" width="640">` | property without its role |
-| `<img data-jaco-image data-jaco-image--mode="fill">` | a mode without `width` or `height` |
-| `<img data-jaco-image data-jaco-image--mode="basic" width="640">` | unknown mode: the bare role is the only spelling of "replace" |
+| `data-jaco-block="x"` or `data-jaco-link="x"` | value on a role that takes none |
+| `data-jaco-image--mode="basic"` | unknown mode |
+| `data-jaco-block data-jaco-line` | two roles on one element |
+| `data-jaco-image--mode="fill"` without `width`/`height` | mode needs a dimension |
+| `<section data-jaco-repeater>` | repeater without a fragment |
+| `<section data-jaco-repeater="nosuch.html">` | fragment file does not exist |
+| `<section data-jaco-repeater="../x.html">` | invalid fragment value |
+| `<section data-jaco-repeater="x.html">text…` | text outside a block |
+| `<footer data-jaco-template>` | template without a name |
 
 ### Repeater
 
-```html
-<section data-jaco-repeater="card-en.html">…</section>
-<section data-jaco-repeater="card-en.html" data-jaco-repeater--position="bottom">…</section>
-<section data-jaco-repeater="card-en.html" data-jaco-repeater--position="any">…</section>
-```
-
-A complete repeater. Every direct child is a block; a heading goes outside:
+The value is the fragment file. Every direct child is one block; nothing else stands in the container:
 
 ```html
-<h2 data-jaco-line>Why Jaco CMS?</h2>
-<section data-jaco-repeater="card-en.html"
-         data-jaco-repeater--label="Add feature"
-         data-jaco-repeater--sortable>
+<section data-jaco-repeater="card-en.html" data-jaco-repeater--label="Add feature" data-jaco-repeater--sortable>
   <div>
     <h3 data-jaco-line>Edit in place</h3>
-    <div data-jaco-block><p>Change text directly on the page.</p></div>
-  </div>
-  <div>
-    <h3 data-jaco-line>No database</h3>
-    <div data-jaco-block><p>Plain HTML files, nothing else.</p></div>
+    <div data-jaco-block><p>Change text directly.</p></div>
   </div>
 </section>
 ```
 
-| Rejected | Why |
-| --- | --- |
-| `<section data-jaco-repeater>` | repeater without a fragment |
-| `<section data-jaco-repeater="nosuch.html">` | fragment file does not exist |
-| `<section data-jaco-repeater="../x.html">` | invalid fragment value |
-| `<section data-jaco-repeater="x.html">text<div>…</div></section>` | text outside a block |
-| `<section data-jaco-repeater="x.html" data-jaco-repeater--position="middle">` | unknown button position |
-| `<section data-jaco-repeater="x.html" data-jaco-repeater--sortable="true">` | a switch carries no value |
+| `--position` | Button | New block lands |
+| --- | --- | --- |
+| `top` (default) | one before first block | at the front |
+| `bottom` | one after last block | at the end |
+| `any` | one before every block + one at end | where pressed |
 
 ### Template
 
@@ -490,14 +435,12 @@ A complete repeater. Every direct child is a block; a heading goes outside:
 <footer data-jaco-template="footers/footer-en.html">…</footer>
 ```
 
-| Rejected | Why |
-| --- | --- |
-| `<footer data-jaco-template>` | role without its required value |
-| `<footer data-jaco-template="footer">` | value without the extension |
+Apply-to-all replaces every instance across the project. The value is required.
 
-### Any role
+### Editor state
 
-| Rejected | Why |
-| --- | --- |
-| `<div data-jaco-block data-jaco-line>` | two roles on one element |
-| `<div data-jaco-is-editing>` | an editor-state name in a page is unknown |
+The editor keeps its state **out of the DOM**; no `data-jaco-*` attribute appears while editing. A name that turns up in a saved page is unknown and rejected.
+
+### Serialisation
+
+The browser writes every empty attribute as `=""`. `getHTML()` strips empty `data-jaco-*` attributes back to nothing, so a new role needs no line there. Other attributes keep their empty value (`<a href="">` links to the current page).

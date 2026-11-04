@@ -6,61 +6,60 @@ Effort is a rough t-shirt size.
 
 | Status | Item | Notes | Effort |
 | --- | --- | --- | --- |
-| open | Settings.php lookup uses hardcoded `jaco-data` instead of configurable `dataDir` | `api.php` and `cli.php` build the settings path as `__DIR__ . '/../jaco-data/settings.php'` before `create_default_config()` runs. If an operator sets a custom `dataDir` in `settings.php`, the entry points fail to find it. Fix: create a temporary config with default `dataDir` first, read settings from that path, then rebuild the real config with the loaded settings (which may override `dataDir`). | S |
-| open | Point the E2E suite at Apache | `playwright.config.mjs` hardcodes `php -S … router.php`, and `router.php` only imitates the 404 handling. Make the server switchable (`JACO_E2E_APACHE=1` skips the internal webServer, `JACO_E2E_BASEURL` sets the origin) so the suite can run against the Apache container. Open questions before implementing: the `JACO_SETTINGS_FILE` fixture has to reach the container, and `global-setup.mjs` writes into `media/`, `jaco-data/backups/` and `jaco-data/templates/site/` - those paths must be writable by `www-data` (volume permissions or a matching UID), otherwise exactly the writing tests fail. Depends on the Apache image. | S |
-| open | The gallery model is open | `data-jaco-image--lightbox` was removed from the contract (`docs/attribute-mapping.md`, "Gallery"): one `<img>` promised a second file, the server built a wrapper link, and the structure differed before and after a save. `write_gallery_full()` and `is_own_gallery_full()` stay in the backend for the model that replaces it, which is written down but not built: the author supplies both files, a container marks the group, and uploading scales the full version to 1920 px while the thumbnail follows `width`/`height`. Open questions: the container attribute's name, what a click on an image inside it replaces, and whether a save may ever build structure on its own. | L |
-| open | Rename pages in the page manager | Promised in `features.html` ("copy, rename and delete") but missing: no `rename_page`, no route, no view. Workaround is copy plus delete, which breaks internal links. A real rename should rewrite links. | S |
-| open | Generate the social cards from a source file | `media/social-card-{en,de}.png` exist only as finished bitmaps; there is no template and no script, so every text change is painted over the PNG. The host name already had to be patched that way when the site moved to `jaco.tebe.ch`. Add a generator (a script next to `build-dist.sh` that writes both cards, or an SVG template plus a renderer) that holds the colours, sizes, positions and both languages, so a domain change or a new language is one line instead of an image edit. Open question: the original build used a font that is not recorded - the current cards are reproduced with Arial Bold, so a regeneration pins the look as it is now, not necessarily as it was designed. | S |
-| open | Generate `sitemap.xml` from the pages | The sitemap is hand maintained today: every new page must be added by hand, and `lastmod` goes stale. Jaco already enumerates pages for the page manager, so it could emit `sitemap.xml` with `lastmod` from the file timestamp and `hreflang` alternates derived from the language trees. Decide whether it is generated at save time, on request (a route like `sitemap`) or by a CLI command, and whether `robots.txt` gets the matching `Sitemap:` line automatically. Pages with a `noindex` robots value must be skipped. | M |
-| open | Create and delete site templates in the admin | Templates are currently created and removed on the file system under `jaco-data/templates/site/`. Add an input for new names, validation and a delete action with the same no-backup warning as apply-to-all. | S |
-| open | Demo playground: a reset installation with an admin account | A second installation (e.g. `demo.jaco.tebe.ch`) that shows every admin feature and cannot be broken: one publicly known **admin** account, so pages, uploads, CSS, backups and site templates all work, and a cron job that restores the whole tree from a tarball once per hour. A read-only account is not a demo - it hides most of the admin and disables saving, so the point of the playground is lost. Keep the reset tarball next to the deployment, not inside the installation. Accept that visitors share the instance and can disturb each other between resets; per-session isolation is a different feature. | M |
-| open | Maintenance toggle in the admin panel | `maintenanceMode` works but is `settings.php`-only. The system page shows the state, every api response carries it as `X-Maintenance-Mode` (the banner follows it), and `write_setting()` can persist a value without losing the file's comments. A first version of the switch was built and reverted again: with a single login it is a self-imposed brake, not access control — whoever holds the credentials turns the mode off again. With the roles in place, a read-only handover no longer depends on it; what is left is the switch for the owner's own brake. | M |
-| open | The name "maintenance mode" promises more than the flag does | It blocks writes in the admin, not visitors, and it grants nothing: a read-only handover or an "under construction" page for visitors are different features. Rename setting, header and banner to what it does ("editing locked") and say so in the docs. | S |
-| open | Prune old backups on write, not only on list | `prune_old_backups()` runs in the backup listing only. Also prune when a backup is written (or via CLI), so the retention rule holds without opening the page. | S |
-| open | Warn on deleting referenced files | `upload/delete` and `page/delete` do not check references from other pages. List referencing pages and ask for confirmation. | M |
-| open | Upload progress and size feedback | `UploadListView` posts all files via one `Promise.all` with a single catch. Show per-file progress and pre-check sizes. | M |
-| open | Login throttle only covers one address at a time | The per-address bucket removed the denial of service (no attacker can lock the owner out any more), but a distributed attack with many addresses can still guess passwords, limited only by the number of hosts it has. A capped global bucket as a second layer plus a recovery key in `settings.php` would close it without reintroducing the lockout. | M |
-| open | Login history read-modify-write can lose a failure | Two simultaneous failed logins both read the history file, both append and the last write wins, so the throttle counts one instead of two. Harmless in practice, but counting should hold a lock across read and write. | S |
-| open | Loading and not-found states in detail views | Page, upload and backup detail views render empty forms on slow networks and cannot be told apart from deleted entries. | S |
-| open | Make `iframe.getHTML()` non-destructive for observers | `getHTML()` reads by rebuilding the preview: it calls `removeRichTextEditorElements()`, `removeExtendedImages()`, `removeLinks()` and `removeTempImageElements()`. So every read tears down live editor chrome — an open block loses its `.ql-editor`, its toolbar and the caret (pre-existing, measured on HEAD). `keepEditorScripts` stops only the worst case (script removal, fixed together with the first-edit detection); the teardown still runs. Serialize from a cloned `body` so observers leave the live preview alone; `save()` keeps the destructive path, which is what it wants. | M |
-| open | Consolidate component CSS under a `.j-` prefix | Component classes (`.modal`, `.field-error`, `.form-errors`, `.list-filter`, `.m-notification`) have no namespace while Quill (`.ql-*`), Ace (`.ace_*`) and QUnit (`.qunit-*`) all do. Rename component-owned classes to `.j-*` to avoid collisions if a third-party library ever ships the same class. Note: `.m-*` was likely meant as "message", not a namespace — do not extend it. | M |
-| open | Paginate lists, collapse admin navigation on mobile | Filter/sort only, no limit/offset; full navbar without a mobile menu. Lists slow down and the admin is barely usable on phones. | M |
-| open | Skeleton tables for list loading states | Lists pop in after loading instead of rendering in a stable frame. Build one `SkeletonTable` component (rows × columns matching each view) shown during `isLoading`, used by every list. Deliberately no route-level blocking on data (would trade shift for silence on slow connections). | M |
-| open | Tables in the rich-text editor | The sanitizer allows `table`/`tr`/`td`, but the Quill toolbar has no table tool. Menus and price lists cannot be built without hand-written HTML. | M |
-| open | Duplicate content blocks | Blocks can only be added empty (from fragment) or deleted. Duplicating a filled block as a template for the next entry is the most common click for recurring content. | S |
-| open | Reorder blocks without draggable | Only `draggable` lists reorder; `top`/`bottom`/`any` have no grip and no up/down buttons. Changing order means delete plus recreate. | S |
-| open | Alt text is only asked for in one image mode, and survives a replaced file | Only the resizable dialog edits `alt` (`editor.js`); the plain image offers no field, and the media library and the upload set `src` only, so the old alt text stays and describes another picture. With `data-jaco-image--mode` (`docs/attribute-mapping.md`) every mode edits `alt`; replacing the file clears it or asks again. Supersedes "Alt text on plain images". | S |
-| open | Text editors with a smaller set of tools | `data-jaco-block--tools="basic"` or `"full"` and `data-jaco-line--tools="basic"` (`docs/attribute-mapping.md`, "Text"). The rule: a property is optional, and a role without it does the least it can, so a bare `block` or `line` is `plain` and today's behaviour is `full` and `basic`. Needs the toolbar per value in `editor.js` and a tag whitelist per value in the sanitizer, so a hand-written `<strong>` does not survive in `plain`. Formatting a set does not offer is removed on save. `list` waits for a case. | M |
-| open | Most `--tools` on the pages change nothing | 246 markers carry a `--tools` value; measured against the real sanitizer, 30 of them need it and 216 do not - their content loses nothing without it. The 30 are the ones holding structure or formatting: `h2`, `ul`, `a`, `strong`, `code`, `iframe` (404, docs, download, features, imprint, privacy, index, both elements pages, the page templates). The other 216 say `full` or `basic` on blocks that hold plain paragraphs. Removing them makes the pages read like the plan intends - a marker and nothing else - at the cost of the redactor losing the toolbar on those blocks, which is the documented meaning of a marker without `--tools`. Warning from the attempt that failed: a replacement that works line by line removes the wrong ones, because a line cannot know which block a `--tools` belongs to. Audit per element, change one element at a time, and re-run the profile after each - the check is `tagProfile(with) === tagProfile(without)`, not a text comparison, because a dissolved `<h2>` keeps its text. | M |
-| open | Fragments in subdirectories | The fragment value follows the file syntax of `docs/attribute-mapping.md` ("File values"): `template/content` and `template/content/view` have to list and accept relative paths with the same validator as the site templates, and the repeater's fragment check uses it. Wrap `text-en.html` and `text-de.html` in one root element: a fragment has exactly one. | M |
-| open | Links get no `rel` and no `title` from the dialog | The link dialog edits `href` and `target`. `target="_blank"` leaves `rel` empty: browsers imply `noopener`, not `noreferrer`. Set `rel="noopener noreferrer"` when the target is `_blank` and remove it again otherwise; offer `title` as a field (it is already whitelisted). | S |
-| open | Video iframes have no title | The video dialog edits `src` only. An iframe without `title` has no name for a screen reader. Add a title field (whitelisted already) and a default such as "Video". | S |
-| open | The sanitizer drops attributes a page needs | `loading` and `decoding` on `img`, `allow`, `loading` and `referrerpolicy` on `iframe`, and `lang` everywhere are not whitelisted, so every save removes them, including ones a developer wrote by hand (`elements.html` carries `allow` on its video). Add them with closed value sets: `loading="lazy"`, `decoding="async"`, an `allow` list without `camera`, `microphone` and `geolocation`, a language tag pattern for `lang`. A test per attribute keeps them out of the contract: they are standard HTML, not `data-jaco-*`. | S |
-| open | Unlink in the link dialog | The `editable-link` dialog changes URL and target but cannot turn a link back into text. | S |
-| open | Restore recently deleted blocks | A deleted block is gone (page-level restore only via backup). A per-list trash buffer would defuse misclicks. | S |
-| open | Semantic heading inside the line editor | The line editor wraps text in a `<p>` (Quill default block); a CSS override in `editor.css` keeps the heading look while editing. Alternative: a clipboard matcher (`P` → `header` level from the host tag) for real `<h1>`–`<h6>` during edit. Only worth it if DevTools-semantics while editing ever matter. | S |
-| open | Share one Ace editor helper across views | `PageEditView`, `CssEditView` and `BackupEditView` copy the same `ace.edit` setup with slightly different lifecycles (single instance twice, recreate-per-update once). Every lifecycle fix has to be thought through three times. Bundle creation, theme watching and destroy in one `lib/` helper; views keep only their save and content logic. | S |
-| open | Light theme flash on hard refresh | Briefly shows the light theme on hard refresh in dark mode. Not reproducible headless (admin boot, editors and preview are dark from the first frame); needs the exact spot (admin chrome, preview iframe, editor toolbar, window) plus theme setting and browser to narrow down. Deferred: explicitly not a release blocker. | S |
-| done | Triage the unmerged feature branches | All feature branches were deleted: `feat/content-templates`, `feat/js-editor`, `feat/draggable-content-blocks` and `feat/configurable-upload-dir` were never merged, `feat/password-hashing` and `feat/role-aware-ui` had already been merged as pull requests, `json-schema` is three and a half years old, and `feat/process-runner` was closed without merging (the process runner was not needed). `git branch` is a signal again. | S |
-| open | Shortcuts in the command palette | The palette lists the commands but binds no keys: every command is reached by typing or by clicking. The registry has no `shortcut` field and the palette shows no shortcut column. Alt+letter is out (browsers reserve several combinations), so the candidates are Ctrl/Cmd+letter or a modifier-free key. | S |
-| open | Recently used commands on top of the palette | The palette always shows the registry order. Commands that are used often should float to the top, so the two or three that matter are one keypress away. Needs a place to keep the history (session or local storage) and a cap. | S |
-| open | Multi-step processes for commands | A command may need more than one step ("New page" is a template, a filename and a title). The current dialog asks for all three at once, which is fine for one form but does not scale to a real process with a review step. A runner would carry the context, validate per step and commit at the end. Deferred: no command needs it today, and the one form is faster than a wizard. | M |
-| open | Remove the remaining error suppression in `install.php` | Five `@` calls survive there: `make_dir_rec`, `mkdir`, `file_put_contents` and `unlink(__FILE__)` at the end. The backend is free of them; the installer is the last place where a failed self-deletion (a security-relevant outcome) is silent. Check explicitly and let real failures surface. | S |
-| open | Restructure QUnit test suite | Single monolithic `tests.js` (~2700 lines): split into per-topic files, add `expect()` declarations, introduce a `mountView` setup helper, and tighten global-state cleanup (sessionStorage, ace, confirm, route) to avoid order-dependent leaks. | M |
-| open | Style form selects instead of leaving the bezel to the browser | A `<select>` keeps its native appearance, so Chromium paints its own bezel inside a box that is taller than the one `app.css` styles (`padding: 12px`, `border`, `border-radius`, `background-color`). The field and the focus ring therefore do not line up, and an open select shows a rim around its popup. Two attempts fixed one symptom each and were reverted: moving the focus ring inside (`outline-offset: -3px`) and resetting the appearance with a themed SVG chevron, the way Bootstrap 5 does. Neither was verifiably right on the reported machine, so the next attempt starts with a screenshot of the states in both themes instead of a patch. Decide up front whether the popup should stay native (then only the closed field may be styled, and the ring must not be drawn around an open list) or be replaced by a custom listbox (then keyboard handling, `aria-expanded` and the mobile behaviour come with it). Affected: every `Select` in the admin - CSS file, template, robots, theme switch. | S |
-| open | Content lists keep their state on DOM nodes | `jaco/frontend/contentlists.js` hangs five flags on list elements (`_jacoContentListsInit`, `_jacoOnAdd`, `_jacoAddButton`, `_jacoSortableInit`, `_jacoMountedPosition`) and one (`_jacoList`) on every button. Only `_jacoContentListsInit` is ever cleared; `_jacoOnAdd` keeps the first `fetcher` and the list in a closure forever, `_jacoSortableInit` cannot be reset while its listeners stay bound, and none of them survive a re-render that replaces the element. Every bug found in this file so far (session of 2026-11-03: deletion, drag, nesting, position change) was a stale flag, not a wrong computation. Move the state into a `Map` keyed by the list element, or a single `WeakMap` per module, and derive the buttons from it on every mutation. The existing `layoutIsSound()` helper in `jaco/test/js/tests.js` states the rule independently of the code and should stay the referee. | M |
-| open | The editor's chrome lives in the content DOM | Add buttons, item bars and the fragment chooser are children of the list, i.e. part of the tree `iframe.getHTML()` saves. Correctness therefore depends on `removeContentListChrome()` finding every one of them before a save - a forgotten element ends up in the published page. It also forces the double definition of "a block" (chrome or not) and makes nested lists push buttons into the surrounding list. Moving the chrome into a parallel layer (absolutely positioned overlay over the iframe body, content untouched) removes the whole class of bug. Risks: layout and scroll inside the editor iframe, and pointer-based drag reorder across two layers. Worth doing only if a second editor surface ever needs the same blocks. | L |
-| open | Drag reorder does not restack mid-drag | `makeSortable().moveTo()` carries the block and its button as a pair and `cleanup()` restacks once on drop, so the result is correct - but a list still being dragged shows the order of buttons only after the drop. A `reconcileAddButtons()` call inside `moveTo()` would fix it; it is not done because the function runs on every pointermove and the visual cost of the current behaviour is small. | S |
-| open | Position attributes changing under a mounted list | Handled now (a changed `--position` tears the old layout down and builds the new one, `_jacoMountedPosition`), but nothing tests the other properties: `--sortable` removed after a mount keeps its grip and listeners, and a changed `--label` keeps the old button text until the next reload. Likely only reachable through "apply site template", which rewrites markup without reloading. | S |
-| open | Content-list buttons carry their language in the page | The label of an add button comes from `data-jaco-title` in the page itself and is looked up with the literal as the translation key, so the page decides which language it speaks: `index.html` says `"Add feature"`, while three German pages say `"Funktion hinzufügen"` - an English or French editor sees a German label there. Decide whether pages carry a neutral key (`data-jaco-title="addFeature"`) that all four language files translate, which needs a migration of every page and content template, or whether the literal stays the documented behaviour and each page is expected to be written in its own language. Count as of the cleanup: 13x `Add news`, 4x `Add feature`, 3x `Funktion hinzufügen`, plus one each of `Add top/bottom/draggable block` and `Add block here`. A statically built frontend cannot find these labels - they only exist in the pages at runtime. | M |
+| open | Settings.php lookup uses hardcoded `jaco-data` instead of configurable `dataDir` | `api.php`/`cli.php` build `settings.php` path before `create_default_config()` runs. A custom `dataDir` cannot be found. | S |
+| open | Point the E2E suite at Apache | `playwright.config.mjs` hardcodes `php -S … router.php`; make server switchable via `JACO_E2E_APACHE=1`. Depends on Apache image. | S |
+| open | The gallery model is open | `data-jaco-image--lightbox` was removed from the contract. Author supplies both files, a container marks the group. Open: container attribute name, what a click replaces, whether a save builds structure. | L |
+| open | Rename pages in the page manager | Promised in `features.html` but missing: no `rename_page`, route or view. Copy+delete breaks internal links. | S |
+| open | Generate the social cards from a source file | `media/social-card-{en,de}.png` are finished bitmaps with no template/script. Add a generator (script or SVG+renderer) so a domain change or new language is one line instead of an image edit. | S |
+| open | Generate `sitemap.xml` from the pages | Sitemap is hand maintained. Jaco could emit `sitemap.xml` with `lastmod` from file mtime and `hreflang` alternates from language trees. | M |
+| open | Create and delete site templates in the admin | Templates are created/removed on the file system only. Add input for new names, validation and delete action. | S |
+| open | Demo playground: a reset installation with an admin account | A second installation showing every admin feature with a public admin account, restored from a tarball hourly. | M |
+| open | Maintenance toggle in the admin panel | `maintenanceMode` works but is `settings.php`-only; add UI toggle on the system page. | M |
+| open | Rename "maintenance mode" | Blocks writes in the admin, not visitors. Rename to what it does ("editing locked"). | S |
+| open | Prune old backups on write | `prune_old_backups()` runs only on backup listing; also prune when a backup is written. | S |
+| open | Warn on deleting referenced files | `upload/delete` and `page/delete` do not check references from other pages. | M |
+| open | Upload progress and size feedback | `UploadListView` posts all files via one `Promise.all` with a single catch. | M |
+| open | Login throttle only covers one address at a time | Add a capped global bucket plus recovery key in `settings.php`. | M |
+| open | Login history read-modify-write can lose a failure | Two simultaneous failed logins both read, append and write; last write wins. Hold a lock across read/write. | S |
+| open | Loading and not-found states in detail views | Detail views render empty forms on slow networks; cannot be told apart from deleted entries. | S |
+| open | Make `iframe.getHTML()` non-destructive for observers | `getHTML()` tears down editor chrome on every read. Serialize from a cloned `body` so observers leave the live preview alone. | M |
+| open | Consolidate component CSS under a `.j-` prefix | Component classes (`.modal`, `.field-error`, …) have no namespace; rename to `.j-*`. | M |
+| open | Paginate lists, collapse admin navigation on mobile | No limit/offset; full navbar without a mobile menu. | M |
+| open | Skeleton tables for list loading states | Lists pop in instead of rendering in a stable frame. | M |
+| open | Tables in the rich-text editor | Sanitizer allows `table`/`tr`/`td`, but Quill toolbar has no table tool. | M |
+| open | Duplicate content blocks | Blocks can only be added empty (from fragment) or deleted. | S |
+| open | Reorder blocks without draggable | Only `draggable` lists reorder; `top`/`bottom`/`any` have no grip/buttons. | S |
+| open | Alt text is only asked for in one image mode | Only `choice` edits `alt`; plain image offers no field. Offer in every mode. | S |
+| open | Text editors with a smaller set of tools | Need `--tools="basic"`/`"full"` per block in `editor.js` and tag whitelist per value in the sanitizer. | M |
+| open | Most `--tools` on the pages change nothing | 246 markers carry `--tools`; 30 need it, 216 do not. Remove the unnecessary ones. | M |
+| open | Fragments in subdirectories | Fragment value must follow file syntax; wrap `text-en.html`/`text-de.html` in one root element. | M |
+| open | Links get no `rel` and no `title` from the dialog | Link dialog edits `href`/`target`; add `rel="noopener noreferrer"` for `_blank` and a `title` field. | S |
+| open | Video iframes have no title | Video dialog edits `src` only; add a `title` field. | S |
+| open | The sanitizer drops attributes a page needs | `loading`, `decoding` on `img`; `allow`, `loading`, `referrerpolicy` on `iframe`; `lang` everywhere are not whitelisted. Add with closed value sets. | S |
+| open | Unlink in the link dialog | Dialog changes URL/target but cannot turn a link back into text. | S |
+| open | Restore recently deleted blocks | A deleted block is gone (page-level restore only via backup). | S |
+| open | Semantic heading inside the line editor | Line editor wraps text in `<p>`; CSS keeps heading look, but real `<h1>`–`<h6>` would need a clipboard matcher. | S |
+| open | Share one Ace editor helper across views | `PageEditView`, `CssEditView`, `BackupEditView` copy the same `ace.edit` setup. Bundle into one `lib/` helper. | S |
+| open | Light theme flash on hard refresh | Briefly shows light theme on hard refresh in dark mode. | S |
+| open | Shortcuts in the command palette | Palette lists commands but binds no keys. | S |
+| open | Recently used commands on top of the palette | Palette always shows registry order; used commands should float to the top. | S |
+| open | Multi-step processes for commands | A command may need more than one step (template, filename, title). Current dialog asks all at once. | M |
+| open | Remove the remaining error suppression in `install.php` | Five `@` calls survive; replace with explicit checks. | S |
+| open | Restructure QUnit test suite | Monolithic `tests.js` (~2700 lines): split into per-topic files, add `expect()` declarations. | M |
+| open | Style form selects instead of leaving the bezel to the browser | `<select>` keeps native appearance; Chromium paints its own bezel. | S |
+| open | Content lists keep their state on DOM nodes | Flags live on DOM nodes; move state into a `Map` keyed by the list element. | M |
+| open | The editor's chrome lives in the content DOM | Editor chrome (buttons, bars, chooser) is part of the saved content DOM. Move chrome into a parallel layer. | L |
+| open | Drag reorder does not restack mid-drag | Button order only corrects on drop, not during drag. | S |
+| open | Position attributes changing under a mounted list | Only `--position` is handled when it changes; `--sortable`/`--label` are not. | S |
+| open | Content-list buttons carry their language in the page | Button label comes from `data-jaco-title` literal, not a translated key. | M |
 
 ## Done
 
 | Item | Commit |
 | --- | --- |
 | Site templates with apply-to-all | `feat: add site templates with apply-to-all` |
-| Saving a page keeps its site template marker | `refactor: the data attributes are one contract of thirteen names` - `data-jaco-template` was missing from `ALLOWED_ATTRIBUTES` and was stripped on every save. The rename added it, and `DataAttributeContractTest` now compares the whitelist with the pages, so a missing entry fails a test instead of a save. |
-| The demo link nests the admin into itself | `fix: the demo link no longer nests the admin into itself` - the start page is the admin's preview and its demo link pointed back into `/jaco/`: followed inside the frame the whole shell loaded into the preview, with a second navbar and a second demo banner. The link carries `target="_top"` now and `jaco/index.html` refuses to render inside a frame. |
+| Saving a page keeps its site template marker | `refactor: the data attributes are one contract of thirteen names` |
+| The demo link nests the admin into itself | `fix: the demo link no longer nests the admin into itself` |
 | Page title, meta description and robots UI | `feat: add page settings for title, description and robots` |
 | Translate Quill's internal labels | `feat: translate Quill toolbar labels` |
 | Dark mode for the Quill editor chrome | `feat: theme the Quill editor chrome` |
@@ -70,7 +69,7 @@ Effort is a rough t-shirt size.
 | Save & Close must not close on validation error | `fix: do not close editor on validation error` |
 | Redirect to login on expired token | `fix: redirect to login on expired session` |
 | Warn on unsaved changes | `fix: warn on unsaved changes` |
-| Readonly / disabled fields are not distinguishable from normal fields | `style: distinguish disabled/read-only inputs` |
+| Readonly / disabled fields distinguishable from normal fields | `style: distinguish disabled/read-only inputs` |
 | Toasts have a weird mouseover/click effect | `feat: accessible, dismissible toasts with modern palette` |
 | Sticky, accessible error toasts | `feat: accessible, dismissible toasts with modern palette` |
 | About page missing | `feat: add About page with version and project link` |
@@ -86,13 +85,13 @@ Effort is a rough t-shirt size.
 | Change password in the admin panel | `feat: change the admin password in the system view` |
 | Group the admin navigation into content, admin and account | `feat: regroup the admin navigation and fix page copy` |
 | Roles (`admin` / `editor` / `viewer`) for every route | `feat: introduce roles for admin, editor and viewer` |
-| Split 401 from 403, so a denied action no longer logs out | `feat: introduce roles for admin, editor and viewer` |
+| Split 401 from 403 | `feat: introduce roles for admin, editor and viewer` |
 | Error suppression (`@`) around file calls in the backend | `feat: change the admin password in the system view` |
 | The upload delete confirmation was not translated | `fix: translate the upload delete confirmation` |
 | List views showed only "Validation Error" instead of the cause | `fix: show validation details in list views` |
-| Adding a page ended in the pages list, so the content had to be edited in a second step | `feat: continue the add-page flow directly in the inline editor` |
-| The pages list had no icon for "view the page", and the icon tooltips were named inconsistently | `feat: streamline page navigation with view/edit actions and consistent icon tooltips` |
-| No icon for "edit the content inline" (only "edit the document") | `feat: add edit-content icon and use icon actions in jump-to-page` |
+| Adding a page ended in the pages list | `feat: continue the add-page flow directly in the inline editor` |
+| The pages list had no "view page" icon | `feat: streamline page navigation with view/edit actions and consistent icon tooltips` |
+| No icon for "edit the content inline" | `feat: add edit-content icon and use icon actions in jump-to-page` |
 | The signed-in user and role were nowhere visible | `feat: show the signed-in user and role in the account menu` |
 | No way to reach the actions by keyboard | `feat: add the keyboard command palette` |
 | Flexible content slots | `feat: flexible content slots (#26)` |
@@ -105,76 +104,45 @@ Effort is a rough t-shirt size.
 ## Strategic gaps
 
 Larger gaps ranked by value for Jaco's target audiences (restaurants, clubs,
-small companies, private sites). Deliberately not a roadmap, an assessment:
-each item states the gap, who hurts, and the rough size. Concrete,
-implementation-ready items live in the table above.
+small companies, private sites). Deliberately not a roadmap; each item states
+the gap, who hurts, and the rough size. Concrete, implementation-ready items
+live in the table above.
 
-## 1. Self-update mechanism
+### 1. Self-update mechanism
 
-**Implemented.** `php jaco/cli.php sys:check-update` and `sys:update` (plus a
-button on the System page) download a published release, back up the previous
-`jaco/` and replace only the application directory. `settings.php`, backups,
-runtime, templates, media and the public pages stay untouched. See
-[install.md](install.md#updating).
+**Implemented.** `sys:check-update` and `sys:update` download a published
+release, back up the previous `jaco/` and replace only the application
+directory. Settings, backups, runtime, templates, media and public pages stay
+untouched. See [install.md](install.md#updating).
 
-## 2. Account management UI
+### 2. Account management UI
 
-Roles and multiple users now exist: `settings.php` lists users with `admin` and
-`editor` roles, and a `readOnly` flag gives a read-only account for clients and
-public demos. What is still missing is an interface to create, edit and remove
-accounts from the admin instead of editing `settings.php` by hand.
+Roles and multiple users now exist. Missing: an interface to create, edit and
+remove accounts from the admin instead of editing `settings.php` by hand.
 
-Size: medium — user records, password resets and TOTP enrolment already have
-CLI counterparts; the UI work is the form and the route. Protection against
-concurrent editing (last write wins, backups are the only net) is a separate
-item.
-
-## 3. SEO basics
+### 3. SEO basics
 
 Page title, meta description and robots are managed through page settings.
 Still missing: sitemap export, Open Graph management and a redirect on rename
-(a renamed page leaves its old URL as a 404, internal links keep pointing at
-it). For restaurants, search visibility is revenue.
+(a renamed page leaves its old URL as a 404).
 
-Size: small to medium — sitemap from the page listing, a redirect table as
-a text file and Open Graph fields on top of the existing metadata endpoint.
-
-## 4. Contact form
+### 4. Contact form
 
 Restaurants (reservations), hairdressers (appointments), small companies
-(quotes) — nearly every target group needs exactly this, and a file-based
-CMS can only offer a `mailto:` hack or an external service. Scoping decision
-required: a simple form mailer (one action, spam protection, destination
-address in settings) is small and would complete the product for these
-industries.
+(quotes) need a form. A file-based CMS can only offer a `mailto:` hack or an
+external service.
 
-## 5. Drafts and preview before publish
+### 5. Drafts and preview before publish
 
 Every save goes live immediately. No draft, no preview without saving, no
-scheduling. Risky for inexperienced editors.
+scheduling.
 
-Size: medium — the backup machinery exists; a draft is a backup that only
-goes live on publish.
-
-## 6. Media housekeeping
+### 6. Media housekeeping
 
 Upload list without folders, without unused-file detection, without alt text
-care. It grows with every menu season.
+care.
 
-Size: small (group the listing, count references from page contents).
+### Explicitly not recommended
 
-## Explicitly not recommended
-
-Content multilingualism (language folders as a convention are enough for
-this audience), site search (static sites of this size rarely need it),
-frontend analytics.
-
-
-## Won't do
-
-Proposals that look like a gap but are not: closing them would cost more than
-they gain. Recorded so they are not brought up again.
-
-| Item | Why not |
-| --- | --- |
-| Fill the start page (`/`) with a quick-action dashboard | Measured as a regression: the admin panel is `position: fixed` over the site preview, so any content fills `#app` and hides the site (panel 97 px → 829 px, preview 747 px → ~0 px). `/` renders nothing on purpose — the JACO logo links to it from every view and is the way back to browsing the site. See the comment in `frontend/view/StartView.js`. |
+Content multilingualism (language folders are enough), site search
+(static sites of this size rarely need it), frontend analytics.

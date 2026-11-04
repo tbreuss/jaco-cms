@@ -36,8 +36,10 @@ Details: [README.md](README.md), [llms.txt](llms.txt). Maintainer docs index:
 
 - **i18n**: UI text only through `t('Key')` in `jaco/language/` — add every new key to
   all four files. Never hard-code UI text in views.
-- **PHP naming**: commands `verb_object`; queries `get_`/`find_`/`read_`/`load_` or a bare
-  verb; predicates always `is_`/`has_`/`can_` ([docs/backend-naming.md](docs/backend-naming.md)).
+- **PHP Backend naming**: commands are `verb_object`; queries are `get_`/`find_`/`read_`/`load_`; predicates are `is_`/`has_`/`can_`. File names are `snake_case`.
+- **JavaScript Frontend naming**: modules/files are `PascalCase` or `camelCase` by role (views, components, models vs. lib, state); functions are `camelCase`; constants are `UPPER_SNAKE_CASE`.
+
+See [docs/naming.md](docs/naming.md) for both.
 - **Editorconfig**: 4 spaces, LF, final newline, no trailing whitespace — 2 spaces in
   JS, NEON and YAML.
 - **Routes**: register in `jaco/routes.php`; every route needs an explicit role, an

@@ -23,12 +23,11 @@ are backed up before writing.
 - [docs/install.md](docs/install.md) — installation, server setup, markers, recurring blocks
 - [docs/development.md](docs/development.md) — clone, Docker, tests, conventions
 - [docs/constraints.md](docs/constraints.md) — invariants, roles, edge cases, test map
-- [docs/attribute-mapping.md](docs/attribute-mapping.md) — data attribute contract (plan + code)
+- [docs/attribute-contract.md](docs/attribute-contract.md) — data attribute contract (plan + code)
 - [docs/features.md](docs/features.md) — one-sentence feature catalogue
 - [docs/glossary.md](docs/glossary.md) — shared terms
 - [docs/menu-structure.md](docs/menu-structure.md) — admin navigation, roles, command palette
-- [docs/backend-naming.md](docs/backend-naming.md) — PHP function/file naming
-- [docs/site-pages.md](docs/site-pages.md) — public page file names (en/de)
+- [docs/naming.md](docs/naming.md) — Naming conventions for backend (PHP) and frontend (JS)
 - [docs/backlog.md](docs/backlog.md) — open product/technical items and known gaps
 
 ## Architecture
@@ -45,7 +44,7 @@ are backed up before writing.
 - User-visible strings in all four language files: `jaco/language/{en,de,fr,it}.json`.
 - Tests: PHPUnit (`composer test`), QUnit (`node jaco/test/js/runner.mjs`), Playwright E2E.
 - Static analysis: PHPStan, PHP CS Fixer, Deptrac.
-- PHP naming: `verb_object`, `get_`/`find_`/`read_`/`load_`, `is_`/`has_`/`can_` predicates. See `docs/backend-naming.md`.
+- PHP naming: `verb_object`, `get_`/`find_`/`read_`/`load_`, `is_`/`has_`/`can_` predicates. See `docs/naming.md`.
 
 ## Key invariants
 
