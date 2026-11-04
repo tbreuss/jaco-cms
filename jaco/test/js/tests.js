@@ -4235,9 +4235,9 @@ QUnit.test('a block whose fragment has no single root does not leave an empty bl
 // a content list inside a block of another one: a repeater in a slot block, or a
 // slot in a repeater block. The outer list counts the wrapper as one block.
 const nestedListHtml = (outerPos, innerPos) =>
-  `<div data-jaco-slot="repeater-test.html" data-jaco-slot--position="${outerPos}">` +
+  `<div data-jaco-slot="test-repeater.html" data-jaco-slot--position="${outerPos}">` +
   '<div class="wrapper">' +
-  `<div data-jaco-repeater="feature-en.html" data-jaco-repeater--position="${innerPos}">` +
+  `<div data-jaco-repeater="card-en.html" data-jaco-repeater--position="${innerPos}">` +
   '<div><h3>Inner one</h3></div><div><h3>Inner two</h3></div>' +
   '</div></div>' +
   '<div class="plain"><p>Plain block</p></div>' +
