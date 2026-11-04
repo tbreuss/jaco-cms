@@ -21,4 +21,3 @@ All project markdown except the repository [README.md](../README.md) and
 | [glossary.md](glossary.md) | Shared terms with exactly one meaning |
 | [backlog.md](backlog.md) | Open product and technical items |
 | [missing-features.md](missing-features.md) | Known gaps and recurring requests |
-| [rte-example.md](rte-example.md) | Rich-text editor markup examples |
