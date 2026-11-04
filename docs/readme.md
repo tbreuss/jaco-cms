@@ -14,6 +14,7 @@ All project markdown except the repository [README.md](../README.md) and
 | [contributing.md](contributing.md) | How to contribute (humans and automated assistants) |
 | [development.md](development.md) | Clone, Docker, tests, frontend/backend conventions |
 | [backend-naming.md](backend-naming.md) | PHP function and file naming in the backend |
+| [architecture.md](ARCHITECTURE.md) | High-level system overview with the Mermaid diagram |
 | [menu-structure.md](menu-structure.md) | Admin navbar, roles, command palette, jump to page |
 | [site-pages.md](site-pages.md) | Public page file names, English/German mapping, rename checklist |
 | [features.md](features.md) | One-sentence feature catalogue |
