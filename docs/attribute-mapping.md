@@ -451,16 +451,16 @@ The dialog edits `href` and `target`.
 ### Repeater
 
 ```html
-<section data-jaco-repeater="feature-en.html">…</section>
-<section data-jaco-repeater="feature-en.html" data-jaco-repeater--position="bottom">…</section>
-<section data-jaco-repeater="feature-en.html" data-jaco-repeater--position="any">…</section>
+<section data-jaco-repeater="card-en.html">…</section>
+<section data-jaco-repeater="card-en.html" data-jaco-repeater--position="bottom">…</section>
+<section data-jaco-repeater="card-en.html" data-jaco-repeater--position="any">…</section>
 ```
 
 A complete repeater. Every direct child is a block; a heading goes outside:
 
 ```html
 <h2 data-jaco-line>Why Jaco CMS?</h2>
-<section data-jaco-repeater="feature-en.html"
+<section data-jaco-repeater="card-en.html"
          data-jaco-repeater--label="Add feature"
          data-jaco-repeater--sortable>
   <div>
