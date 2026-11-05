@@ -33,6 +33,7 @@ Details: [README.md](README.md), [llms.txt](llms.txt). Maintainer docs index:
 | `jaco/test/` | PHPUnit; `jaco/test/js/` QUnit; `jaco/test/e2e/` Playwright |
 | `website/` | The project site and web root: pages, `assets/`, `.htaccess`, `media/` (uploads), `jaco-data/` (operator data); `jaco/` is mounted into it (`docker-compose.yml`) |
 | `docs/` | Maintainer documentation, lowercase hyphenated file names |
+| `scripts/` | Build, verify and test helpers (`build-dist.sh`, `test-dist.sh`, `assemble-docroot.sh`, ...) |
 
 ## Conventions
 
