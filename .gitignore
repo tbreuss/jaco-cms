@@ -9,7 +9,7 @@
 /jaco/.php-cs-fixer.cache
 /jaco/.phpunit.cache
 /jaco/.phpunit.result.cache
-/jaco-data/settings.php
+/website/jaco-data/settings.php
 /jaco/test/e2e/settings.php
 /jaco/test/e2e/settings.test.php
 /jaco/test/e2e/node_modules
@@ -22,3 +22,9 @@
 /jaco-dist-*.zip
 /jaco-dist-*.zip.sha256
 /jaco-dist-dev/
+
+# Empty mount point that Docker creates inside website/ (see docker-compose.yml)
+/website/jaco/
+
+# Test docroot assembled by scripts/assemble-docroot.sh
+/.docroot/

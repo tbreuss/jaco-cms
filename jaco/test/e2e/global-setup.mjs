@@ -2,7 +2,7 @@ import {copyFileSync, mkdirSync, rmSync, writeFileSync} from 'node:fs'
 import {dirname, join, resolve} from 'node:path'
 import {fileURLToPath} from 'node:url'
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../.docroot')
 const uploadFile = join(root, 'media', 'e2e-smoke.png')
 const backupFile = join(root, 'jaco-data', 'backups', '20260101_000000_e2e1_index.html')
 const loginHistoryFile = join(root, 'jaco-data', 'runtime', 'log', 'loginhistory.json')
