@@ -1,0 +1,17 @@
+# Local development server. The site lives in website/ (with jaco-data/ and media/);
+# jaco/ is mounted into it, because Jaco derives its web root from the location of
+# jaco/ (the web root is the directory that contains jaco/).
+#
+#   docker build -t jaco .
+#   docker compose up
+#
+# Reachable at http://localhost:8888
+services:
+  web:
+    image: jaco
+    build: .
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./website:/app
+      - ./jaco:/app/jaco

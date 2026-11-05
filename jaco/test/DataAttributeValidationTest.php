@@ -138,7 +138,7 @@ final class DataAttributeValidationTest extends TestCase
     {
         // the repository's own fragments, not the test sandbox: they are what the
         // demo pages insert
-        $root = \dirname(__DIR__, 2) . '/jaco-data/templates/content';
+        $root = \dirname(__DIR__, 2) . '/website/jaco-data/templates/content';
         $files = \glob($root . '/*.html') ?: [];
 
         $this->assertNotSame([], $files, 'the repository ships fragments');

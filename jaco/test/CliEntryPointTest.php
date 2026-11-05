@@ -22,7 +22,7 @@ final class CliEntryPointTest extends HttpServerTestCase
     public function testTheServerItselfAnswers(): void
     {
         // proves the 403 above comes from the guard, not from a server that never started
-        [$status] = self::request('GET', '/index.html');
+        [$status] = self::request('GET', '/jaco/index.html');
 
         $this->assertSame(200, $status);
     }

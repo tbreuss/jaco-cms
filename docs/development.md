@@ -21,7 +21,8 @@ Technical guide for contributors and automated tools. Process and PR expectation
 | `jaco/language/*.json` | Admin UI translations (en, de, fr, it) |
 | `jaco/test/` | PHPUnit; `jaco/test/js/` QUnit |
 | `docs/` | Maintainer documentation; index in [readme.md](readme.md) |
-| Site root | Public HTML pages, `assets/`, `media/` (uploads), `jaco-data/` (templates and backups) |
+| `website/` | The project site and its web root: public HTML pages, `assets/`, `.htaccess`, `robots.txt`, `sitemap.xml`, `media/` (uploads), `jaco-data/` (templates, backups) |
+| `scripts/` | Helper scripts, e.g. `assemble-docroot.sh` |
 
 Naming rules: [naming.md](naming.md).
 
@@ -32,14 +33,23 @@ Naming rules: [naming.md](naming.md).
 
 Install dependencies and run the site:
 
+    docker build -t jaco .
     docker run --rm -it -v .:/app jaco composer install -d /app/jaco/
-    docker run --rm -v .:/app -p 8888:8888 jaco php -S 0.0.0.0:8888 -t /app
+    docker compose up
+
+The site is served from `website/` at <http://localhost:8888>. Jaco derives its web
+root from the location of `jaco/`, so `docker-compose.yml` mounts `jaco/` into `website/`
+(Docker creates the empty mount point there; it is git-ignored). A plain
+`php -S -t website` on the host does not work for that reason.
 
 For installation details (permissions, `.htaccess`, Nginx), see [install.md](install.md).
 
-For QUnit only, a bare PHP server on the host is enough:
+Without Docker, `scripts/assemble-docroot.sh` copies `website/` and `jaco/` into the
+git-ignored `.docroot/`, which a plain PHP server can serve. It is a snapshot: run the
+script again after changing files.
 
-    php -S 127.0.0.1:8899 -t .
+    sh scripts/assemble-docroot.sh
+    php -S 127.0.0.1:8899 -t .docroot
 
 ## CLI
 
@@ -79,7 +89,8 @@ JavaScript syntax check (Node ≥ 22, vendored assets excluded):
 
 QUnit (Node ≥ 22; QUnit files are vendored by `composer install`):
 
-    php -S 127.0.0.1:8899 -t . &
+    sh scripts/assemble-docroot.sh
+    php -S 127.0.0.1:8899 -t .docroot &
     node jaco/test/js/runner.mjs
 
 Open `jaco/test/js/index.html` in a browser while developing. Runner options:
@@ -109,7 +120,10 @@ Needs Node ≥ 22, Google Chrome and a test-only `settings.php`:
     npm --prefix jaco/test/e2e run test:e2e
 
 `create-settings.php` writes a gitignored `jaco/test/e2e/settings.php`; the real
-`jaco-data/settings.php` is never touched. Test users all use `test-password`;
+`website/jaco-data/settings.php` is never touched. The suite starts its own server on a copy
+of the site: `scripts/assemble-docroot.sh` builds the git-ignored `.docroot/` from
+`website/` and `jaco/`, so the run never edits your working tree. Test users all use
+`test-password`;
 the file must never be deployed. CI runs this only on PHP 8.4.
 
 The suite clears the login throttle, creates temporary upload/backup fixtures

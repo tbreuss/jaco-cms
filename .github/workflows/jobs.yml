@@ -48,7 +48,8 @@ jobs:
             - name: Run QUnit tests
               run: |
                   set -euo pipefail
-                  php -S 127.0.0.1:8899 -t . > /tmp/jaco-server.log 2>&1 &
+                  sh scripts/assemble-docroot.sh
+                  php -S 127.0.0.1:8899 -t .docroot > /tmp/jaco-server.log 2>&1 &
                   server_pid=$!
                   if ! node jaco/test/js/runner.mjs --devtools-timeout=60000 --timeout=60000; then
                       echo '--- PHP server log ---'
@@ -122,15 +123,11 @@ jobs:
                   SETTINGS_PHP_FILE_CONTENT: ${{ secrets.SETTINGS_PHP_FILE_CONTENT }}
               run: |
                   # Everything that belongs on the server is in the repository:
-                  # pages, assets, media/ and jaco-data/. git archive takes exactly
-                  # what the commit contains, so nothing left over from local work
-                  # can travel.
+                  # website/ (pages, assets, .htaccess, robots.txt, sitemap.xml, media/
+                  # and jaco-data/). git archive takes exactly what the commit
+                  # contains, so nothing left over from local work can travel.
                   mkdir -p deploy/site
-                  git archive HEAD \
-                      .htaccess 404.html docs.html download.html elements.html \
-                      features.html imprint.html index.html privacy.html \
-                      robots.txt sitemap.xml assets de media jaco-data \
-                      | tar -x -C deploy/site/
+                  git archive HEAD:website | tar -x -C deploy/site/
                   # The credentials belong in the payload: both uploads replace their
                   # directory completely, so a settings.php left on the server would
                   # be deleted with everything else. Never interpolate the secret into
