@@ -439,7 +439,8 @@ window.addClickHandler = () => {
           : []
       let editorOptions = {
         modules: {
-          toolbar: toolbarOptions
+          // plain offers no toolbar: false keeps Quill from rendering an empty bar
+          toolbar: toolbarOptions.length ? toolbarOptions : false
         },
         theme: 'snow'
       }
@@ -459,13 +460,13 @@ window.addClickHandler = () => {
         : []
       let editorLineOptions = {
         modules: {
-          toolbar: toolbarLineOptions,
+          toolbar: toolbarLineOptions.length ? toolbarLineOptions : false,
         },
         theme: 'snow'
       }
       new Quill(editableLine, {
         modules: {
-          toolbar: toolbarLineOptions,
+          toolbar: toolbarLineOptions.length ? toolbarLineOptions : false,
           keyboard: {
             bindings: {
               shift_enter: {
@@ -737,6 +738,10 @@ window.detectImageSize = (image) => {
 
 window.handlePosition = (element) => {
   const toolbar = element.parentElement.querySelectorAll('.ql-toolbar')[0]
+  // plain offers no toolbar: there is nothing to position
+  if (!toolbar) {
+    return
+  }
   // Take the toolbar out of flow before measuring the editor. If the Quill
   // stylesheet is still loading, the toolbar would otherwise occupy space above
   // the block and the content would jump when the stylesheet lands.

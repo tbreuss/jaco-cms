@@ -2461,9 +2461,30 @@ QUnit.test('a plain block opens without toolbar buttons', (assert) => {
     .dispatchEvent(new MouseEvent('click', {bubbles: true}))
 
   assert.ok(document.querySelector('.ql-container'), 'the editor opens')
+  assert.strictEqual(document.querySelector('.ql-toolbar'), null,
+    'plain renders no toolbar bar')
+})
+
+QUnit.test('a plain line opens without a toolbar bar', (assert) => {
+  m.render(fixture(), m.trust('<h1 data-jaco-line>no tools</h1>'))
+
+  fixture().querySelector('[data-jaco-line]')
+    .dispatchEvent(new MouseEvent('click', {bubbles: true}))
+
+  assert.ok(document.querySelector('.ql-container'), 'the editor opens')
+  assert.strictEqual(document.querySelector('.ql-toolbar'), null,
+    'plain line renders no toolbar bar')
+})
+
+QUnit.test('a basic line offers formatting', (assert) => {
+  m.render(fixture(), m.trust('<h1 data-jaco-line data-jaco-line--tools="basic">basic</h1>'))
+
+  fixture().querySelector('[data-jaco-line]')
+    .dispatchEvent(new MouseEvent('click', {bubbles: true}))
+
   const toolbar = document.querySelector('.ql-toolbar')
-  assert.strictEqual(toolbar ? toolbar.querySelectorAll('button, .ql-picker').length : 0, 0,
-    'plain offers no buttons')
+  assert.ok(toolbar, 'a toolbar is there')
+  assert.ok(toolbar.querySelector('.ql-bold'), 'bold is offered')
 })
 
 QUnit.test('a basic block offers formatting but no video', (assert) => {
