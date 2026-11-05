@@ -22,7 +22,7 @@ Technical guide for contributors and automated tools. Process and PR expectation
 | `jaco/test/` | PHPUnit; `jaco/test/js/` QUnit |
 | `docs/` | Maintainer documentation; index in [readme.md](readme.md) |
 | `website/` | The project site and its web root: public HTML pages, `assets/`, `.htaccess`, `robots.txt`, `sitemap.xml`, `media/` (uploads), `jaco-data/` (templates, backups) |
-| `scripts/` | Helper scripts, e.g. `assemble-docroot.sh` |
+| `scripts/` | Build, verify and test helper scripts (`build-dist.sh`, `assemble-docroot.sh`, ...) |
 
 Naming rules: [naming.md](naming.md).
 
@@ -73,9 +73,9 @@ CI runs these steps on every push; see `.github/workflows/jobs.yml`.
 
 ## Release archive (`jaco-dist-*.zip`)
 
-    ./build-dist.sh [version]             # build (needs git, composer, zip, PHP with ext-zip)
-    ./verify-dist-archive.sh jaco-dist-dev.zip   # check an existing zip
-    ./test-dist.sh                          # build and verify in one step
+    scripts/build-dist.sh [version]             # build (needs git, composer, zip, PHP with ext-zip)
+    scripts/verify-dist-archive.sh jaco-dist-dev.zip   # check an existing zip
+    scripts/test-dist.sh                        # build and verify in one step
 
 CI runs `build-dist.sh` and `verify-dist-archive.sh` on release tags and attaches
 the archive together with its `.sha256` file to the GitHub release.

@@ -3,8 +3,8 @@
 # the API, operator data, the public pages and - after the go-live - that
 # indexing is no longer blocked.
 #
-#   ./check-deployment.sh https://example.com
-#   ./check-deployment.sh https://example.com --expect-indexed
+#   scripts/check-deployment.sh https://example.com
+#   scripts/check-deployment.sh https://example.com --expect-indexed
 #
 # Exit code 0 = every check passed, 1 = at least one failed.
 #

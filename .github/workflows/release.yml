@@ -18,9 +18,9 @@ jobs:
                   php-version: 8.4
                   tools: composer:v2
             - name: Build archive
-              run: ./build-dist.sh "${GITHUB_REF_NAME}"
+              run: scripts/build-dist.sh "${GITHUB_REF_NAME}"
             - name: Verify archive contents
-              run: ./verify-dist-archive.sh "jaco-dist-${GITHUB_REF_NAME}.zip"
+              run: scripts/verify-dist-archive.sh "jaco-dist-${GITHUB_REF_NAME}.zip"
             - name: Publish checksum
               # The self-updater installs an archive only when it matches this
               # file, which is attached next to the archive in the release.
