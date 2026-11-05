@@ -51,7 +51,7 @@ export const PhpLogView = {
   view: () => m('div.main',
     m('.content',
       m('div', {style: {display: 'flex', justifyContent: 'space-between', alignItems: 'center'}},
-        m('h1', t('PHP error log')),
+        m('h1', t('Application log')),
         m('div',
           m(ButtonDanger, {
             onclick: (e) => {

@@ -94,9 +94,9 @@ const routes = [
     roles: {admin: view('h1', 'System environment'), editor: view('h1', 'Access denied')},
   },
   {
-    name: 'PHP error log',
+    name: 'Application log',
     path: '/system/log',
-    roles: {admin: view('h1', 'PHP error log'), editor: view('h1', 'Access denied')},
+    roles: {admin: view('h1', 'Application log'), editor: view('h1', 'Access denied')},
   },
   {
     name: 'PHP info',

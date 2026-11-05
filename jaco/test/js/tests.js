@@ -651,7 +651,7 @@ QUnit.test('the layout greys out what the role may not do', (assert) => {
     assert.strictEqual(dropdowns[2].querySelectorAll('a').length, 0, 'no admin entry is active')
     assert.deepEqual(
       [...dropdowns[2].querySelectorAll('.nav-disabled')].map((item) => item.textContent),
-      [t('Environment'), t('PHP error log'), t('PHP info')],
+      [t('Environment'), t('Application log'), t('PHP info')],
       'admin entries stay visible but disabled',
     )
     assert.deepEqual(
@@ -738,7 +738,7 @@ QUnit.test('an admin sees every menu entry active', (assert) => {
     assert.strictEqual(dropdowns[2].querySelectorAll('a').length, 3, 'all admin entries are active')
     assert.deepEqual(
       [...dropdowns[2].querySelectorAll('a')].map((link) => link.textContent),
-      [t('Environment'), t('PHP error log'), t('PHP info')],
+      [t('Environment'), t('Application log'), t('PHP info')],
     )
   } finally {
     i18n.status = savedStatus
@@ -1787,7 +1787,7 @@ QUnit.test('checks render with status, label and detail', (assert) => {
   assert.strictEqual(rows[2].cells[0].textContent, t('Pages'), 'pages label shown')
   assert.strictEqual(rows[2].cells[1].textContent, '12', 'pages counted')
   assert.strictEqual(rows[5].cells[1].textContent, '2 KB', 'project size formatted')
-  assert.strictEqual(rows[6].cells[0].textContent, t('PHP error log'), 'log label shown')
+  assert.strictEqual(rows[6].cells[0].textContent, t('Application log'), 'log label shown')
   assert.strictEqual(rows[6].cells[1].textContent, '512 B / 7', 'log size and lines')
 
   SystemModel.info.overview.logSize = 0

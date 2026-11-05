@@ -220,7 +220,7 @@ end.
 | Delete a backup | – | ✓ |
 | List and view stylesheets | ✓ | ✓ |
 | Change a stylesheet | – | ✓ |
-| Environment, error log and php-info | – | ✓ |
+| Environment, application log and php-info | – | ✓ |
 
 `readOnly` is the one flag next to the role, because it is not a permission tier: the
 account keeps its role, usually `admin`, but the router refuses every write - see
@@ -249,7 +249,7 @@ is refused – nobody is logged out for clicking a button they may not use.
 
 The admin UI groups its navigation into four areas: Content (Pages, Media, Backups,
 Design), This page (Edit, Copy and Delete for the page currently in the preview), Admin
-(Environment, PHP error log, PHP info) and Account (About, Change password, Change
+(Environment, Application log, PHP info) and Account (About, Change password, Change
 language, Logout).
 Theme stays a direct control; Jump to page is available from the command palette.
 The old Quick Action is gone. Add page is a

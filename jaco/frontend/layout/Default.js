@@ -373,7 +373,7 @@ export const DefaultLayout = {
               ]),
               dropdown('admin', t('Admin'), [
                 roleLink('admin', '/system/env', t('Environment')),
-                roleLink('admin', '/system/log', t('PHP error log')),
+                roleLink('admin', '/system/log', t('Application log')),
                 roleLink('admin', '/system/php-info', t('PHP info')),
               ]),
               m('button.palette-trigger', {

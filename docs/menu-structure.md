@@ -28,7 +28,7 @@ This page ▾
 
 Admin ▾
 ├─ Environment
-├─ PHP error log
+├─ Application log
 └─ PHP info
 
 Account ▾

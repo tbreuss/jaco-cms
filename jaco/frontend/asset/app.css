@@ -403,7 +403,7 @@ body {
     text-decoration: none;
     display: block;
     text-align: left;
-    /* the menu sizes itself to the longest entry, e.g. "PHP-Fehlerprotokoll" */
+    /* the menu sizes itself to the longest entry, e.g. "Anwendungsprotokoll" */
     white-space: nowrap;
 }
 

@@ -152,6 +152,6 @@ const overviewTable = (overview) => {
     [t('Media')]: String(overview.uploads),
     [t('Backups')]: String(overview.backups),
     [t('Project size')]: size,
-    [t('PHP error log')]: `${formatBytes(overview.logSize)} / ${overview.logLines === 0 ? t('Empty') : overview.logLines.toLocaleString('de-CH')}`,
+    [t('Application log')]: `${formatBytes(overview.logSize)} / ${overview.logLines === 0 ? t('Empty') : overview.logLines.toLocaleString('de-CH')}`,
   })
 }
