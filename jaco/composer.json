@@ -7,7 +7,7 @@
         "ext-dom": "*",
         "ext-libxml": "*",
         "ext-openssl": "*",
-        "firebase/php-jwt": "^6.1",
+        "firebase/php-jwt": "^7.0",
         "opis/json-schema": "^2.3",
         "adhocore/cli": "^1.6",
         "chillerlan/php-qrcode": "^6.0"
@@ -23,11 +23,6 @@
     "config": {
         "platform": {
             "php": "8.2"
-        },
-        "audit": {
-            "ignore": {
-                "PKSA-y2cr-5h3j-g3ys": "Accepted low risk, drop after upgrade to firebase/php-jwt v7"
-            }
         }
     },
     "require-dev": {

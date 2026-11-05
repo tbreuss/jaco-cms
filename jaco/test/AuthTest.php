@@ -147,7 +147,7 @@ final class AuthTest extends TestCase
     public function testTokenSignedWithAnotherSecretIsRejected(): void
     {
         $config = test_config();
-        $this->assertFalse(auth\is_authenticated($config, $this->tokenWith(secret: 'another-secret')));
+        $this->assertFalse(auth\is_authenticated($config, $this->tokenWith(secret: 'another-secret-key-0123456789abcdef')));
     }
 
     public function testExpiredTokenIsRejected(): void

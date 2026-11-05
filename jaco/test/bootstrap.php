@@ -58,7 +58,7 @@ function test_config(): Config
         defaultLanguage: 'en',
         directoryPermissions: 0755,
         filePermissions: 0644,
-        secretKey: 'test_1234',
+        secretKey: 'test-secret-key-0123456789abcdef',
         users: [
             TEST_USERNAME => ['password' => test_config_password_hash(), 'role' => 'admin'],
         ],
