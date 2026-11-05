@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Starts php's built in server on the repository root for tests that need a real http
- * request: a PHP_SAPI guard or a response header cannot be observed from inside the
+ * request (the website itself lives in website/, so only jaco/ is served here): a PHP_SAPI guard or a response header cannot be observed from inside the
  * process. The port comes from the operating system, so parallel runs do not collide.
  */
 abstract class HttpServerTestCase extends TestCase
@@ -103,7 +103,7 @@ abstract class HttpServerTestCase extends TestCase
     {
         $deadline = microtime(true) + 10;
         while (microtime(true) < $deadline) {
-            [$status] = self::request('GET', '/index.html');
+            [$status] = self::request('GET', '/jaco/index.html');
             if ($status === 200) {
                 return;
             }

@@ -12,9 +12,14 @@ are backed up before writing.
 
 ## Key directories
 
+In an installed site, `jaco/`, `jaco-data/` and `media/` sit side by side in the web root.
+In this repository the web root is `website/`; `jaco/` is mounted into it for local
+development (`docker-compose.yml`).
+
 - `jaco/` — application (admin UI, API, PHP code, vendor). Replaced on update.
-- `jaco-data/` — operator data: settings.php, templates, backups, runtime logs. Never served.
-- `media/` — editor uploads, served as static files.
+- `website/` — the project site and the web root: public pages, `assets/`, `.htaccess`.
+- `website/jaco-data/` — operator data: settings.php, templates, backups, runtime logs. Never served.
+- `website/media/` — editor uploads, served as static files.
 - `docs/` — maintainer documentation (index: docs/readme.md).
 
 ## Documentation

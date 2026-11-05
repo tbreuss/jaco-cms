@@ -157,7 +157,7 @@ final class DataAttributeContractTest extends TestCase
         $root = \dirname(__DIR__, 2);
         $names = [];
 
-        $files = ['assets/site.css', 'jaco/frontend/asset/app.css', 'jaco/frontend/asset/editor.css'];
+        $files = ['website/assets/site.css', 'jaco/frontend/asset/app.css', 'jaco/frontend/asset/editor.css'];
         foreach ($files as $relative) {
             $path = $root . '/jaco/' . $relative;
             if (!\is_file($path)) {
@@ -228,7 +228,7 @@ final class DataAttributeContractTest extends TestCase
     private function pageFiles(string $root): array
     {
         $files = [];
-        $directories = [$root, $root . '/de', $root . '/jaco-data/templates/content', $root . '/jaco-data/templates/page', $root . '/jaco-data/templates/site'];
+        $directories = [$root . '/website', $root . '/website/de', $root . '/website/jaco-data/templates/content', $root . '/website/jaco-data/templates/page', $root . '/website/jaco-data/templates/site'];
 
         foreach ($directories as $directory) {
             foreach (\glob($directory . '/*.html') ?: [] as $file) {

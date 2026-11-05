@@ -103,7 +103,7 @@ nav-en.html, nav-de.html
 footer-en.html, footer-de.html
 ```
 
-`assets/nav.js` derives the active menu item from the current URL and sends
+`website/assets/nav.js` derives the active menu item from the current URL and sends
 the language switch to the other language's index page, so the navigation
 template can be identical on all pages of one language.
 

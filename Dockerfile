@@ -50,6 +50,8 @@ RUN cp /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini
 RUN groupadd -g 1000 jaco-cms && useradd -m -u 1000 -g jaco-cms jaco-cms
 RUN mkdir /app  && chown -R jaco-cms:jaco-cms /app
 USER jaco-cms
+# the repository is bind-mounted and owned by the host user, not by jaco-cms
+RUN git config --global --add safe.directory /app
 
 WORKDIR /app
 VOLUME /app

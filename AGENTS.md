@@ -1,10 +1,12 @@
 # Jaco CMS
 
 PHP 8.2+ CMS that turns static HTML into editable pages. No database, no build step.
-Site content lives as `.html` files in the web root; editable regions carry `data-jaco-*`
-attributes. Admin SPA (Mithril.js) under `jaco/`, PHP API at `jaco/api.php`, CLI at
-`jaco/cli.php`. Operator data (settings, templates, backups, runtime) lives in
-`jaco-data/` and is never served over the web. Uploads live in `media/`.
+Site content lives as `.html` files in the web root (in this repo `website/`); editable
+regions carry `data-jaco-*` attributes. Admin SPA (Mithril.js) under `jaco/`, PHP API at
+`jaco/api.php`, CLI at `jaco/cli.php`. Operator data (settings, templates, backups,
+runtime) lives in `jaco-data/` and is never served over the web. Uploads live in `media/`.
+Jaco derives its web root from the location of `jaco/`, so the dev server mounts `jaco/`
+into `website/` (`docker-compose.yml`).
 
 Details: [README.md](README.md), [llms.txt](llms.txt). Maintainer docs index:
 [docs/readme.md](docs/readme.md).
@@ -29,7 +31,7 @@ Details: [README.md](README.md), [llms.txt](llms.txt). Maintainer docs index:
 | `jaco/schema/` | JSON schemas — the API contract, validated by `backend/core/router.php` |
 | `jaco/language/{en,de,fr,it}.json` | Admin UI translations |
 | `jaco/test/` | PHPUnit; `jaco/test/js/` QUnit; `jaco/test/e2e/` Playwright |
-| `jaco-data/` | Operator data; never served, never deployed from git |
+| `website/` | The project site and web root: pages, `assets/`, `.htaccess`, `media/` (uploads), `jaco-data/` (operator data); `jaco/` is mounted into it (`docker-compose.yml`) |
 | `docs/` | Maintainer documentation, lowercase hyphenated file names |
 
 ## Conventions
@@ -69,7 +71,7 @@ composer test -d jaco          # PHPUnit
 composer check -d jaco         # the above in one go
 
 find jaco/frontend jaco/test/js \( -name '*.js' -o -name '*.mjs' \) -not -path '*/asset/*' -exec node --check {} \;
-php -S 127.0.0.1:8899 -t . &   # QUnit needs a server
+sh scripts/assemble-docroot.sh && php -S 127.0.0.1:8899 -t .docroot &   # QUnit needs a server
 node jaco/test/js/runner.mjs
 
 npm ci --prefix jaco/test/e2e && php jaco/test/e2e/create-settings.php

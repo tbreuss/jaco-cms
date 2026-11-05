@@ -50,13 +50,13 @@ final class IgnoreRulesTest extends TestCase
         // without these a fresh clone has no directory to write into, and no
         // protection file on the server
         foreach ([
-            'jaco-data/backups/.gitignore',
-            'jaco-data/runtime/.gitignore',
-            'jaco-data/templates/content/.gitignore',
-            'jaco-data/templates/page/.gitignore',
-            'jaco-data/templates/site/.gitignore',
-            'media/.gitignore',
-            'media/.htaccess',
+            'website/jaco-data/backups/.gitignore',
+            'website/jaco-data/runtime/.gitignore',
+            'website/jaco-data/templates/content/.gitignore',
+            'website/jaco-data/templates/page/.gitignore',
+            'website/jaco-data/templates/site/.gitignore',
+            'website/media/.gitignore',
+            'website/media/.htaccess',
         ] as $file) {
             $this->assertNotNull(
                 $this->git('add', '--dry-run', '--', $file),
@@ -70,9 +70,9 @@ final class IgnoreRulesTest extends TestCase
         // demo-elements.svg appears in the elements page, the two social cards in
         // the head: content that belongs to the site, unlike an upload
         foreach ([
-            'media/demo-elements.svg',
-            'media/social-card-en.png',
-            'media/social-card-de.png',
+            'website/media/demo-elements.svg',
+            'website/media/social-card-en.png',
+            'website/media/social-card-de.png',
         ] as $file) {
             $this->assertNotNull($this->git('add', '--dry-run', '--', $file), $file . ' has to be committable');
         }
@@ -82,7 +82,7 @@ final class IgnoreRulesTest extends TestCase
     {
         // a name the admin would produce: not a shipped sample, so it must be ignored
         foreach (['content', 'page', 'site'] as $kind) {
-            $path = 'jaco-data/templates/' . $kind . '/sample_new_' . $kind . '.html';
+            $path = 'website/jaco-data/templates/' . $kind . '/sample_new_' . $kind . '.html';
             $absolute = \dirname(__DIR__, 2) . '/' . $path;
             \file_put_contents($absolute, '<div>probe</div>');
 
@@ -101,9 +101,9 @@ final class IgnoreRulesTest extends TestCase
     {
         // each of these is created by the running application, never by a developer
         foreach ([
-            'jaco-data/backups/20260101_000000_aaaa_index.html',
-            'jaco-data/runtime/log/error.log',
-            'media/20260101_000000_aaaa.jpg',
+            'website/jaco-data/backups/20260101_000000_aaaa_index.html',
+            'website/jaco-data/runtime/log/error.log',
+            'website/media/20260101_000000_aaaa.jpg',
         ] as $path) {
             $absolute = \dirname(__DIR__, 2) . '/' . $path;
             @\mkdir(\dirname($absolute), 0755, true);

@@ -28,12 +28,12 @@ php -r 'exit(extension_loaded("zip") ? 0 : 1);' || { echo "php-ext zip missing" 
 git -C "$ROOT" archive HEAD jaco | tar -x -C "$WORK"
 mkdir -p "$WORK/jaco-data/templates/page" "$WORK/jaco-data/templates/content" \
          "$WORK/jaco-data/templates/site" "$WORK/jaco-data/backups"
-cp "$ROOT/jaco-data/.htaccess" "$WORK/jaco-data/.htaccess"
-cp "$ROOT/jaco-data/backups/.gitignore" "$WORK/jaco-data/backups/.gitignore"
+cp "$ROOT/website/jaco-data/.htaccess" "$WORK/jaco-data/.htaccess"
+cp "$ROOT/website/jaco-data/backups/.gitignore" "$WORK/jaco-data/backups/.gitignore"
 mkdir -p "$WORK/jaco-data/app-backups"
-cp "$ROOT/jaco-data/app-backups/.gitignore" "$WORK/jaco-data/app-backups/.gitignore"
+cp "$ROOT/website/jaco-data/app-backups/.gitignore" "$WORK/jaco-data/app-backups/.gitignore"
 for dir in page content site; do
-    cp "$ROOT/jaco-data/templates/$dir/.gitignore" "$WORK/jaco-data/templates/$dir/.gitignore"
+    cp "$ROOT/website/jaco-data/templates/$dir/.gitignore" "$WORK/jaco-data/templates/$dir/.gitignore"
 done
 
 # Add the installation guide and license from the working directory (possibly uncommitted).

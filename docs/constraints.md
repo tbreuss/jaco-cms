@@ -154,10 +154,10 @@ These are the invariants and edge cases that tests cannot express on their own.
   (`:root[data-theme="dark"]` carries the dark tokens). An inline script in
   `jaco/index.html` sets the attribute before CSS paints to avoid a flash; new
   theme-dependent colors belong in the `:root` tokens, never in rules.
-  The project site shares that key (`assets/theme.js` writes the same `jaco-theme`);
-  `assets/site.css` keeps its palette in `:root` tokens with `light-dark()`.
+  The project site shares that key (`website/assets/theme.js` writes the same `jaco-theme`);
+  `website/assets/site.css` keeps its palette in `:root` tokens with `light-dark()`.
   The explicit `data-theme="dark"` block repeats the dark tokens for browsers without
-  `light-dark()` (iOS < 17.5, Chrome < 123). The mobile menu in `assets/nav.js` works
+  `light-dark()` (iOS < 17.5, Chrome < 123). The mobile menu in `website/assets/nav.js` works
   the same way: button in markup, open state a class on `<html>`. It takes over below
   40rem (the plain row needs 500 px plus page padding in German).
 - **Server errors stay English on the wire and are translated in the frontend.**
