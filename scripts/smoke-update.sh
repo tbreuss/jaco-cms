@@ -22,7 +22,7 @@ echo "Working dir: $WORK"
 # a real HTTPS update verifies jaco-dist-<version>.zip.sha256 next to the archive.
 echo "--- Building local release ---"
 cd "$ROOT"
-./build-dist.sh smoke-test 2>&1 | tail -3
+scripts/build-dist.sh smoke-test 2>&1 | tail -3
 cp "$ROOT/jaco-dist-smoke-test.zip" "$WORK/release.zip"
 cp "$ROOT/jaco-dist-smoke-test.zip.sha256" "$WORK/release.zip.sha256"
 rm -f "$ROOT/jaco-dist-smoke-test.zip" "$ROOT/jaco-dist-smoke-test.zip.sha256"

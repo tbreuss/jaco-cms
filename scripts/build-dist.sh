@@ -2,7 +2,7 @@
 # Builds the release archive jaco-dist-<version>.zip: app + vendor,
 # without dev files, user data and version control.
 #
-#   ./build-dist.sh [version]   (default: dev)
+#   scripts/build-dist.sh [version]   (default: dev)
 #
 # Next to it sits jaco-dist-<version>.zip.sha256: the self-updater installs
 # only an archive whose checksum matches the published release.
@@ -11,7 +11,7 @@
 set -eu
 
 VERSION="${1:-dev}"
-ROOT="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT INT TERM
 
