@@ -3282,6 +3282,29 @@ QUnit.test('the shared editor is read-only for an editor', (assert) => {
   }
 })
 
+QUnit.test('the template select lists the files in file name order', (assert) => {
+  // the page listing arrives sorted by title (the page manager shows titles), but
+  // this select shows file names: in title order it reads as unsorted
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
+  PageTemplateEditModel.isLoading = false
+  PageTemplateEditModel.list = [
+    {file: 'landing-de.html', title: '[DE] Landingpage'},
+    {file: 'blank-de.html', title: '[DE] Leere Seite'},
+    {file: 'card-de.html', title: '[DE] Wiederholbare Karten'},
+  ]
+  PageTemplateEditModel.item = {}
+  try {
+    const json = JSON.stringify(PageTemplateView.view())
+    const positions = ['blank-de.html', 'card-de.html', 'landing-de.html'].map((file) => json.indexOf(file))
+
+    assert.ok(positions.every((position) => position >= 0), 'every file is offered')
+    assert.deepEqual([...positions].sort((a, b) => a - b), positions, 'the files are listed alphabetically')
+  } finally {
+    PageTemplateEditModel.list = []
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
 QUnit.test('the page model reads the document, the listing has no content', async (assert) => {
   // regression: the listing carries the title only (template/pages answers
   // "content": null), so a page template showed an empty editor. The model has

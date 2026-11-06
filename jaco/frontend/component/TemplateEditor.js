@@ -46,6 +46,13 @@ export const createTemplateEditor = ({
     loadedFile: null,
   }
 
+  // The select shows file names, so that is the order it has to be in. The page
+  // listing arrives sorted by title (the page manager shows titles there), which
+  // reads as unsorted next to the file names. The first entry is the one that
+  // opens, so it comes from the same order.
+  const sortedList = () => [...model.list].sort((a, b) =>
+    a.file.localeCompare(b.file, undefined, {numeric: true, sensitivity: 'base'}))
+
   const editorId = () => 'ace-' + kind
 
   const isDirty = () => editor && state.savedContent !== null && editor.getValue() !== state.savedContent
@@ -133,7 +140,7 @@ export const createTemplateEditor = ({
     state.loadedFile = null
     model.item = {}
     const onListLoaded = () => {
-      const first = model.list[0]
+      const first = sortedList()[0]
       if (first) {
         selectFile(first.file)
       }
@@ -237,7 +244,7 @@ export const createTemplateEditor = ({
         wrap: 'div.row',
         label: editorLabel(),
         value: state.file,
-        options: model.list.map((item) => ({value: item.file, label: item.file})),
+        options: sortedList().map((item) => ({value: item.file, label: item.file})),
         error: errorFor(state.errors, 'fileName'),
         onchange: (file) => {
           if (confirmDiscard()) {
