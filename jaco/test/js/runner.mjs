@@ -190,7 +190,16 @@ try {
   socket.close()
 
   if (!result) {
+    // A run that never ends has no result to report, so name the test that was
+    // running when the time ran out. Without this the message says only that
+    // something hung, and finding it means guessing.
+    const progress = await evaluate('window.__qunitProgress ?? ""')
+    const counts = await evaluate('JSON.stringify(window.__qunitCounts)')
     console.error(`The qunit run did not finish within ${timeoutMs} ms (${url}).`)
+    console.error(progress
+      ? `  hung in: ${progress}`
+      : '  hung before the first test started (the test module may not have loaded)')
+    console.error(`  finished before that: ${counts}`)
     exitCode = 1
   } else {
     const {total, passed, failed, skipped} = result.counts
