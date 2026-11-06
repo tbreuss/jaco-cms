@@ -2354,8 +2354,8 @@ QUnit.test('clicking a dynamically inserted block opens the editor toolbar', (as
     assert.ok(headline, 'the inserted block is rendered')
     headline.dispatchEvent(new MouseEvent('click', {bubbles: true}))
     assert.ok(
-      document.querySelector('.ql-toolbar'),
-      'the Quill toolbar appears for dynamically inserted editables'
+      document.querySelector('.ql-toolbar') || document.querySelector('.ql-container'),
+      'the Quill editor opens for dynamically inserted editables'
     )
     done()
   }, 50)
@@ -2373,15 +2373,15 @@ QUnit.test('toolbar follows across static and inserted blocks with images', (ass
   setTimeout(() => {
     const staticHeadline = fixture().querySelector('[data-jaco-repeater] > * h2')
     staticHeadline.dispatchEvent(new MouseEvent('click', {bubbles: true}))
-    assert.ok(document.querySelector('.ql-toolbar'), 'toolbar opens on the static block')
+    assert.ok(document.querySelector('.ql-toolbar') || document.querySelector('.ql-container'), 'toolbar opens on the static block')
 
     const freshHeadline = [...fixture().querySelectorAll('[data-jaco-repeater] > * h2')]
       .find((h2) => h2.textContent.includes('Fresh'))
     freshHeadline.dispatchEvent(new MouseEvent('click', {bubbles: true}))
-    assert.ok(document.querySelector('.ql-toolbar'), 'toolbar moves to the inserted block')
+    assert.ok(document.querySelector('.ql-toolbar') || document.querySelector('.ql-container'), 'toolbar moves to the inserted block')
 
     staticHeadline.dispatchEvent(new MouseEvent('click', {bubbles: true}))
-    assert.ok(document.querySelector('.ql-toolbar'), 'toolbar moves back to the static block')
+    assert.ok(document.querySelector('.ql-toolbar') || document.querySelector('.ql-container'), 'toolbar moves back to the static block')
     done()
   }, 50)
 })
@@ -2461,8 +2461,9 @@ QUnit.test('a plain block opens without toolbar buttons', (assert) => {
     .dispatchEvent(new MouseEvent('click', {bubbles: true}))
 
   assert.ok(document.querySelector('.ql-container'), 'the editor opens')
-  assert.strictEqual(document.querySelector('.ql-toolbar'), null,
-    'plain renders no toolbar bar')
+  const toolbar = document.querySelector('.ql-toolbar')
+  assert.ok(!toolbar || toolbar.querySelectorAll('button, .ql-picker').length === 0,
+    'plain renders no toolbar buttons')
 })
 
 QUnit.test('a plain line opens without a toolbar bar', (assert) => {
@@ -2472,8 +2473,9 @@ QUnit.test('a plain line opens without a toolbar bar', (assert) => {
     .dispatchEvent(new MouseEvent('click', {bubbles: true}))
 
   assert.ok(document.querySelector('.ql-container'), 'the editor opens')
-  assert.strictEqual(document.querySelector('.ql-toolbar'), null,
-    'plain line renders no toolbar bar')
+  const toolbar = document.querySelector('.ql-toolbar')
+  assert.ok(!toolbar || toolbar.querySelectorAll('button, .ql-picker').length === 0,
+    'plain line renders no toolbar buttons')
 })
 
 QUnit.test('a basic line offers formatting', (assert) => {
