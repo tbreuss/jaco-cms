@@ -79,7 +79,7 @@ export const commands = [
     id: 'nav.templates',
     labelKey: 'List templates',
     roles: ['editor', 'admin'],
-    run: () => m.route.set('/templates'),
+    run: () => m.route.set('/templates/site'),
   },
   {
     id: 'nav.backups',

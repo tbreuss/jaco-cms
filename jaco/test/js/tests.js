@@ -44,6 +44,11 @@ import {BackupListView} from '/jaco/frontend/view/backup/BackupListView.js'
 import {BackupListModel} from '/jaco/frontend/model/BackupListModel.js'
 import {CssEditView, setEditor as setCssEditor, onSaveButtonClicked as onSaveCssButtonClicked, state as cssEditState} from '/jaco/frontend/view/CssEditView.js'
 import {CssEditModel} from '/jaco/frontend/model/CssEditModel.js'
+import {PageTemplateEditModel, ContentTemplateEditModel} from '/jaco/frontend/model/PageContentTemplateModel.js'
+import {SiteTemplateModel} from '/jaco/frontend/model/SiteTemplateModel.js'
+import {TemplateView} from '/jaco/frontend/view/TemplateView.js'
+import {PageTemplateView} from '/jaco/frontend/view/PageTemplateView.js'
+import {ContentTemplateView} from '/jaco/frontend/view/ContentTemplateView.js'
 import {api} from '/jaco/frontend/service/api.js'
 import {t, tError, i18n} from '/jaco/frontend/model/i18n.js'
 import {isSaveShortcut, isSaveAndCloseShortcut, bindSaveShortcut, saveShortcutLabel, saveAndCloseShortcutLabel} from '/jaco/frontend/lib/shortcuts.js'
@@ -635,8 +640,8 @@ QUnit.test('the layout greys out what the role may not do', (assert) => {
     )
     assert.deepEqual(
       [...dropdowns[0].querySelectorAll('.nav-disabled')].map((item) => item.textContent),
-      [],
-      'nothing in the content menu is disabled any more',
+      [t('Page templates'), t('Content templates')],
+      'the page and content templates are the admin\'s, their entries stay visible but disabled',
     )
     assert.deepEqual(
       [...dropdowns[1].querySelectorAll('a')].map((link) => link.textContent),
@@ -3204,6 +3209,137 @@ QUnit.test('rememberPreviewPage clears storage when the page is gone', (assert) 
   })
 })
 
+QUnit.module('template editor')
+
+// the views render labels through t(): without the translations the label
+// would show as "{Key}", so every test pins the messages it asks for
+const withTranslations = (keys, body) => {
+  const saved = i18n.messages
+  i18n.messages = {...saved}
+  for (const key of keys) {
+    i18n.messages[key] = key
+  }
+  try {
+    return body()
+  } finally {
+    i18n.messages = saved
+  }
+}
+
+// every string a vnode tree holds, joined: the label of a button lives in a
+// span child or in the title attribute - both are text somewhere in the tree
+const renderedText = (vnode) => {
+  const parts = []
+  const walk = (node) => {
+    if (node === null || node === undefined) {
+      return
+    }
+    if (typeof node === 'string' || typeof node === 'number') {
+      parts.push(String(node))
+      return
+    }
+    if (Array.isArray(node)) {
+      node.forEach(walk)
+      return
+    }
+    if (typeof node === 'object') {
+      Object.values(node.attrs ?? {}).forEach(walk)
+      walk(node.children)
+    }
+  }
+  walk(vnode)
+  return parts.join(' ')
+}
+
+const renderTemplateView = (view) => {
+  const calls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => calls.push(path)
+  try {
+    m.render(fixture(), view())
+    return calls
+  } finally {
+    m.route.set = originalSet
+  }
+}
+
+QUnit.test('the shared editor is read-only for an editor', (assert) => {
+  // the markup belongs to the admin: an editor sees the template, the save
+  // buttons are disabled and the server refuses the update route anyway
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('editor'))
+  PageTemplateEditModel.isLoading = false
+  PageTemplateEditModel.list = [{file: 'blank-en.html', title: 'Blank'}]
+  PageTemplateEditModel.item = {}
+  try {
+    const calls = renderTemplateView(PageTemplateView.view)
+    assert.deepEqual(calls, [], 'rendering the view does not navigate')
+    assert.ok(JSON.stringify(PageTemplateView.view()).includes(t('Back')), 'an editor gets Back instead of Cancel')
+  } finally {
+    m.render(fixture(), null)
+    PageTemplateEditModel.list = []
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('a kind without templates shows its own hint', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
+  PageTemplateEditModel.isLoading = false
+  PageTemplateEditModel.list = []
+  PageTemplateEditModel.item = {}
+  ContentTemplateEditModel.isLoading = false
+  ContentTemplateEditModel.list = []
+  ContentTemplateEditModel.item = {}
+  try {
+    withTranslations([
+      'No page templates found. Create HTML documents under jaco-data/templates/page/ to get started.',
+      'A page template is a complete HTML document; a new page is created from it.',
+      'No content templates found. Create HTML fragments under jaco-data/templates/content/ to get started.',
+      'A content template is one block with exactly one root element, inserted through repeater or slot.',
+    ], () => {
+    const page = JSON.stringify(PageTemplateView.view())
+    assert.ok(page.includes(t('No page templates found. Create HTML documents under jaco-data/templates/page/ to get started.')))
+    assert.ok(page.includes(t('A page template is a complete HTML document; a new page is created from it.')))
+
+    const content = JSON.stringify(ContentTemplateView.view())
+    assert.ok(content.includes(t('No content templates found. Create HTML fragments under jaco-data/templates/content/ to get started.')))
+    assert.ok(content.includes(t('A content template is one block with exactly one root element, inserted through repeater or slot.')))
+    assert.notOk(content.includes(t('No page templates found. Create HTML documents under jaco-data/templates/page/ to get started.')))
+    })
+  } finally {
+    m.render(fixture(), null)
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('the site view keeps the apply flow next to the shared editor', (assert) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('editor'))
+  SiteTemplateModel.isLoading = false
+  SiteTemplateModel.list = [{file: 'footer-en.html', name: 'footer-en'}]
+  SiteTemplateModel.item = {file: 'footer-en.html', content: '<footer>x</footer>'}
+  try {
+    withTranslations([
+      'Site templates',
+      'Template',
+      'The marker must match the template file: data-jaco-template="{file}".',
+      'Preview & apply',
+      'Every page that is rewritten is backed up first.',
+    ], () => {
+    // compare the rendered text, not the JSON: that escapes " and &
+    const text = renderedText(TemplateView.view())
+    assert.ok(text.includes(t('Preview & apply')))
+    assert.ok(text.includes(t('Every page that is rewritten is backed up first.')))
+    assert.notOk(text.includes(t('Apply template to all pages?')), 'no dialog without a preview')
+    // the marker hint needs the file name, so it only shows with a loaded file
+    assert.ok(text.includes('data-jaco-template="footer-en.html"'))
+    })
+  } finally {
+    m.render(fixture(), null)
+    SiteTemplateModel.list = []
+    SiteTemplateModel.item = {}
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
 QUnit.module('import audit')
 
 // Every module that renders mithril components. A <Capitalized> name used
@@ -3236,6 +3372,8 @@ const auditFiles = [
   '/jaco/frontend/component/ModalMedium.js',
   '/jaco/frontend/component/ModalSmall.js',
   '/jaco/frontend/component/Select.js',
+  '/jaco/frontend/component/TemplateEditor.js',
+  '/jaco/frontend/view/ContentTemplateView.js',
   '/jaco/frontend/view/CssEditView.js',
   '/jaco/frontend/view/LoginView.js',
   '/jaco/frontend/view/LogoutView.js',
@@ -3244,11 +3382,13 @@ const auditFiles = [
   '/jaco/frontend/view/PageDeleteView.js',
   '/jaco/frontend/view/PageGotoView.js',
   '/jaco/frontend/view/PageInlineEditView.js',
+  '/jaco/frontend/view/PageTemplateView.js',
   '/jaco/frontend/view/PhpInfoView.js',
   '/jaco/frontend/view/PhpLogView.js',
   '/jaco/frontend/view/PasswordView.js',
   '/jaco/frontend/view/StartView.js',
   '/jaco/frontend/view/SystemView.js',
+  '/jaco/frontend/view/TemplateView.js',
   '/jaco/frontend/view/backup/BackupEditView.js',
   '/jaco/frontend/view/backup/BackupListView.js',
   '/jaco/frontend/view/page/PageEditView.js',

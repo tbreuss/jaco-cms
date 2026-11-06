@@ -215,7 +215,9 @@ end.
 | Add and delete uploads | ✓ | ✓ |
 | Read stylesheets, backups and site templates | – | ✓ |
 | Read and apply site templates | ✓ | ✓ |
+| Read page and content templates | ✓ | ✓ |
 | Change the markup of a site template | – | ✓ |
+| Change a page or content template | – | ✓ |
 | List, view and restore backups | ✓ | ✓ |
 | Delete a backup | – | ✓ |
 | List and view stylesheets | ✓ | ✓ |
@@ -240,8 +242,8 @@ falling back to something, so a typo cannot hand out access.
   `backup/restore`, `css/list`, `css/view`, `system/change-password`,
   `system/change-language` and `system/languages`
 - `admin`: everything, notably `backup/delete`, `css/update`, `template/site/update`,
-  `system`, `system/log`, `system/log/clear`, `system/php-info`,
-  `system/check-update` and `system/update`
+  `template/page/update`, `template/content/update`, `system`, `system/log`,
+  `system/log/clear`, `system/php-info`, `system/check-update` and `system/update`
 
 An invalid or missing token answers **401**: the session is gone and the frontend returns
 to the login. A role that is too low answers **403**: the session stays, only that action

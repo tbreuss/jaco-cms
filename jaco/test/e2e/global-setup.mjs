@@ -8,6 +8,7 @@ const backupFile = join(root, 'jaco-data', 'backups', '20260101_000000_e2e1_inde
 const loginHistoryFile = join(root, 'jaco-data', 'runtime', 'log', 'loginhistory.json')
 const siteTemplateFile = join(root, 'jaco-data', 'templates', 'site', 'e2e-footer.html')
 const siteTemplatePage = join(root, 'e2e-template-page.html')
+const contentTemplateFile = join(root, 'jaco-data', 'templates', 'content', 'e2e-content.html')
 
 // A valid 1×1 PNG; the upload detail view only needs a real file with an
 // allowed extension.
@@ -23,6 +24,8 @@ export default async function globalSetup() {
   mkdirSync(dirname(siteTemplateFile), {recursive: true})
   writeFileSync(siteTemplateFile, '<footer data-jaco-template="e2e-footer.html">E2E footer</footer>')
   writeFileSync(siteTemplatePage, '<!DOCTYPE html><html><body><footer data-jaco-template="e2e-footer.html">Before</footer></body></html>')
+  mkdirSync(dirname(contentTemplateFile), {recursive: true})
+  writeFileSync(contentTemplateFile, '<div class="feature"><h3 data-jaco-line>E2E card</h3></div>\n')
   copyFileSync(join(root, 'index.html'), backupFile)
   rmSync(loginHistoryFile, {force: true})
 
@@ -33,5 +36,6 @@ export default async function globalSetup() {
     rmSync(loginHistoryFile, {force: true})
     rmSync(siteTemplateFile, {force: true})
     rmSync(siteTemplatePage, {force: true})
+    rmSync(contentTemplateFile, {force: true})
   }
 }

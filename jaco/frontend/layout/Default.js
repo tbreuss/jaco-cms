@@ -358,9 +358,11 @@ export const DefaultLayout = {
               dropdown('content', t('Content'), [
                 roleLink('editor', '/pages', t('Pages')),
                 roleLink('editor', '/uploads', t('Media')),
-                // an editor reads and applies site templates, only the markup is
-                // the admin's
-                roleLink('editor', '/templates', t('Templates')),
+                // an editor reads the templates, only the markup is the admin's;
+                // admin also sees the page and content templates
+                roleLink('editor', '/templates/site', t('Templates')),
+                roleLink('admin', '/templates/page', t('Page templates')),
+                roleLink('admin', '/templates/content', t('Content templates')),
                 // an editor restores his own work and reads the design;
                 // deleting backups and changing the CSS stays with the admin
                 roleLink('editor', '/backups', t('Backups')),

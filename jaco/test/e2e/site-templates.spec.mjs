@@ -7,7 +7,7 @@ test('admin can open the site template editor', async ({page}) => {
   await page.locator('form button').click()
   await expect(page).toHaveURL(/\/jaco\/#!\/$/)
 
-  await page.goto('/jaco/#!/templates')
+  await page.goto('/jaco/#!/templates/site')
   await expect(page.locator('h1')).toHaveText('Site templates')
   await page.locator('#templateFile').selectOption('e2e-footer.html')
   await expect(page.locator('#templateFile')).toHaveValue('e2e-footer.html')
@@ -26,7 +26,7 @@ test('admin can preview and apply a site template', async ({page}) => {
   await page.locator('form button').click()
   await expect(page).toHaveURL(/\/jaco\/#!\/$/)
 
-  await page.goto('/jaco/#!/templates')
+  await page.goto('/jaco/#!/templates/site')
   await expect(page.locator('#ace')).toBeVisible()
   await page.locator('#templateFile').selectOption('e2e-footer.html')
   await expect(page.locator('#templateFile')).toHaveValue('e2e-footer.html')
@@ -64,7 +64,7 @@ test('the apply dialog does not claim there is no backup', async ({page}) => {
   await page.locator('form button').click()
   await expect(page).toHaveURL(/\/jaco\/#!\/$/)
 
-  await page.evaluate(() => window.m.route.set('/templates'))
+  await page.evaluate(() => window.m.route.set('/templates/site'))
   await expect(page.locator('#templateFile')).toBeVisible()
 
   await page.getByRole('button', {name: 'Preview & apply'}).click()
@@ -83,7 +83,7 @@ test('an editor may apply a template but not change it', async ({page}) => {
   await page.locator('form button').click()
   await expect(page).toHaveURL(/\/jaco\/#!\/$/)
 
-  await page.evaluate(() => window.m.route.set('/templates'))
+  await page.evaluate(() => window.m.route.set('/templates/site'))
   await expect(page.locator('#templateFile')).toBeVisible()
 
   // a disabled button carries the reason as its accessible name, so locate the

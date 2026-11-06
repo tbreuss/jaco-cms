@@ -79,10 +79,36 @@ const routes = [
   },
   {
     name: 'Templates',
-    path: '/templates',
+    path: '/templates/site',
     roles: {
       admin: view('h1', 'Site templates'),
       // an editor reads and applies site templates, only the markup stays admin
+      editor: view('h1', 'Site templates'),
+    },
+  },
+  {
+    name: 'Page templates',
+    path: '/templates/page',
+    roles: {
+      admin: view('h1', 'Page templates'),
+      // the page and content templates are admin routes: the load answers 403
+      editor: view('h1', 'Access denied'),
+    },
+  },
+  {
+    name: 'Content templates',
+    path: '/templates/content',
+    roles: {
+      admin: view('h1', 'Content templates'),
+      editor: view('h1', 'Access denied'),
+    },
+  },
+  {
+    name: 'Old template entry point',
+    path: '/templates',
+    // the old link still lands on the site templates
+    roles: {
+      admin: view('h1', 'Site templates'),
       editor: view('h1', 'Site templates'),
     },
   },
