@@ -636,7 +636,7 @@ QUnit.test('the layout greys out what the role may not do', (assert) => {
     const dropdowns = [...fixture().querySelectorAll('.dropdown-content')]
     assert.deepEqual(
       [...dropdowns[0].querySelectorAll('a')].map((link) => link.textContent),
-      [t('Pages'), t('Media'), t('Templates'), t('Backups'), t('Design')],
+      [t('Pages'), t('Media'), t('Shared content'), t('Backups'), t('Design')],
       'an editor reaches content, templates, backups and the design',
     )
     assert.deepEqual(
@@ -3371,7 +3371,7 @@ QUnit.test('the site view keeps the apply flow next to the shared editor', (asse
   SiteTemplateModel.item = {file: 'footer-en.html', content: '<footer>x</footer>'}
   try {
     withTranslations([
-      'Site templates',
+      'Shared content',
       'Template',
       'The marker must match the template file: data-jaco-template="{file}".',
       'Preview & apply',

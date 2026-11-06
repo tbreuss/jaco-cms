@@ -78,12 +78,12 @@ const routes = [
     },
   },
   {
-    name: 'Templates',
+    name: 'Shared content',
     path: '/templates/site',
     roles: {
-      admin: view('h1', 'Site templates'),
+      admin: view('h1', 'Shared content'),
       // an editor reads and applies site templates, only the markup stays admin
-      editor: view('h1', 'Site templates'),
+      editor: view('h1', 'Shared content'),
     },
   },
   {
@@ -108,8 +108,8 @@ const routes = [
     path: '/templates',
     // the old link still lands on the site templates
     roles: {
-      admin: view('h1', 'Site templates'),
-      editor: view('h1', 'Site templates'),
+      admin: view('h1', 'Shared content'),
+      editor: view('h1', 'Shared content'),
     },
   },
   {name: 'Password', path: '/password', roles: everyRole('h1', 'Change password')},

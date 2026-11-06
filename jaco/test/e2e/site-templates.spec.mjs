@@ -8,7 +8,7 @@ test('admin can open the site template editor', async ({page}) => {
   await expect(page).toHaveURL(/\/jaco\/#!\/$/)
 
   await page.goto('/jaco/#!/templates/site')
-  await expect(page.locator('h1')).toHaveText('Site templates')
+  await expect(page.locator('h1')).toHaveText('Shared content')
   await page.locator('#templateFile').selectOption('e2e-footer.html')
   await expect(page.locator('#templateFile')).toHaveValue('e2e-footer.html')
   // the dropdown shows the file name, extension included: the marker in a page

@@ -24,7 +24,7 @@ const editor = createTemplateEditor({
   kind: 'site',
   model: SiteTemplateModel,
   mode: 'ace/mode/html',
-  heading: () => t('Site templates'),
+  heading: () => t('Shared content'),
   editorLabel: () => t('Template'),
   missingHint: () => t('No templates found. Create HTML files under jaco-data/templates/site/ to get started.'),
   canEdit: () => auth.can('admin'),

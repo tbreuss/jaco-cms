@@ -17,7 +17,7 @@ macOS and `Ctrl+K` elsewhere.
 Content ▾
 ├─ Pages
 ├─ Media
-├─ Templates
+├─ Shared content
 ├─ Backups
 └─ Design
 
@@ -72,10 +72,10 @@ a.html    Startseite      12.10.2026      [Edit] [Copy] [Delete]
   the preview.
 - `Jump to page` is available from the command palette, not the Pages view.
 
-## Site templates
+## Shared content
 
-Templates live under `jaco-data/templates/site/` and are created through the file
-system. Admins and editors open them under **Content → Templates**. An admin edits
+Shared content (site templates) lives under `jaco-data/templates/site/` and is created
+through the file system. Admins and editors open it under **Content → Shared content**. An admin edits
 the markup and saves with **Save** or **Save & Close**; an editor sees the same
 editor read-only, so the markup is the admin's and the rollout is not.
 
@@ -123,7 +123,7 @@ The inline editor toolbar offers **Page settings**, **Cancel** and **Save**.
 | Element | Admin | Editor |
 | --- | --- | --- |
 | Content: Pages, Media, Backups | active | active |
-| Content: Templates | writable | read-only |
+| Content: Shared content | writable | read-only |
 | Design | writable | read-only |
 | This page: Edit page | active | active |
 | This page: Copy/Delete page | active | active |

@@ -25,7 +25,7 @@ Every change is backed up automatically; restore with one click.
 
 - Inline editor: rich text, single lines, links, images, YouTube embeds
 - Media library: upload once, reuse images and PDFs from the image picker
-- Site templates: reusable HTML fragments, apply to all marked elements at once
+- Shared content: reusable HTML fragments, apply to all marked elements at once
 - Page manager: create from templates, copy, delete
 - Page settings: title, meta description, robots — without editing HTML
 - Content blocks: add, remove, reorder recurring sections by drag and drop

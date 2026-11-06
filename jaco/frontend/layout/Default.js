@@ -360,7 +360,7 @@ export const DefaultLayout = {
                 roleLink('editor', '/uploads', t('Media')),
                 // an editor reads the templates, only the markup is the admin's;
                 // admin also sees the page and content templates
-                roleLink('editor', '/templates/site', t('Templates')),
+                roleLink('editor', '/templates/site', t('Shared content')),
                 roleLink('admin', '/templates/page', t('Page templates')),
                 roleLink('admin', '/templates/content', t('Content templates')),
                 // an editor restores his own work and reads the design;
