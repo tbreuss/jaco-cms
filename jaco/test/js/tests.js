@@ -2390,7 +2390,7 @@ QUnit.test('blocks introduce no positioned ancestor for editor chrome', (assert)
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))
 
-  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<div><h2 data-jaco-line>Fresh</h2></div>'))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<div><h2 data-jaco-line data-jaco-line--tools="basic">Fresh</h2></div>'))
   fixture().querySelector('.jaco-content-add-button').click()
 
   setTimeout(() => {
