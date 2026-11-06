@@ -2346,7 +2346,7 @@ QUnit.test('clicking a dynamically inserted block opens the editor toolbar', (as
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))
 
-  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<div><h2 data-jaco-line>Fresh headline</h2></div>'))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher('<div><h2 data-jaco-line data-jaco-line--tools="basic">Fresh headline</h2></div>'))
   fixture().querySelector('.jaco-content-add-button').click()
 
   setTimeout(() => {
@@ -2354,8 +2354,8 @@ QUnit.test('clicking a dynamically inserted block opens the editor toolbar', (as
     assert.ok(headline, 'the inserted block is rendered')
     headline.dispatchEvent(new MouseEvent('click', {bubbles: true}))
     assert.ok(
-      document.querySelector('.ql-toolbar') || document.querySelector('.ql-container'),
-      'the Quill editor opens for dynamically inserted editables'
+      document.querySelector('.ql-toolbar'),
+      'the Quill toolbar appears for dynamically inserted editables'
     )
     done()
   }, 50)
@@ -2365,7 +2365,7 @@ QUnit.test('toolbar follows across static and inserted blocks with images', (ass
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))
 
-  const fragment = '<div class="news-text"><h2 data-jaco-line>Fresh headline</h2>' +
+  const fragment = '<div class="news-text"><h2 data-jaco-line data-jaco-line--tools="basic">Fresh headline</h2>' +
     '<img data-jaco-image height="120" src="img/spacer.png" width="120"></div>'
   window.JacoContentLists.initContentLists(fixture(), stubFetcher(fragment))
   fixture().querySelector('.jaco-content-add-button').click()
@@ -2373,15 +2373,15 @@ QUnit.test('toolbar follows across static and inserted blocks with images', (ass
   setTimeout(() => {
     const staticHeadline = fixture().querySelector('[data-jaco-repeater] > * h2')
     staticHeadline.dispatchEvent(new MouseEvent('click', {bubbles: true}))
-    assert.ok(document.querySelector('.ql-toolbar') || document.querySelector('.ql-container'), 'toolbar opens on the static block')
+    assert.ok(document.querySelector('.ql-toolbar'), 'toolbar opens on the static block')
 
     const freshHeadline = [...fixture().querySelectorAll('[data-jaco-repeater] > * h2')]
       .find((h2) => h2.textContent.includes('Fresh'))
     freshHeadline.dispatchEvent(new MouseEvent('click', {bubbles: true}))
-    assert.ok(document.querySelector('.ql-toolbar') || document.querySelector('.ql-container'), 'toolbar moves to the inserted block')
+    assert.ok(document.querySelector('.ql-toolbar'), 'toolbar moves to the inserted block')
 
     staticHeadline.dispatchEvent(new MouseEvent('click', {bubbles: true}))
-    assert.ok(document.querySelector('.ql-toolbar') || document.querySelector('.ql-container'), 'toolbar moves back to the static block')
+    assert.ok(document.querySelector('.ql-toolbar'), 'toolbar moves back to the static block')
     done()
   }, 50)
 })
@@ -2454,28 +2454,24 @@ QUnit.test('the full block toolbar offers video embeds', (assert) => {
   assert.ok(document.querySelector('.ql-toolbar .ql-video'), 'video button is in the toolbar')
 })
 
-QUnit.test('a plain block opens without toolbar buttons', (assert) => {
+QUnit.test('a plain block opens without a toolbar', (assert) => {
   m.render(fixture(), m.trust('<div data-jaco-block><p>no tools</p></div>'))
 
   fixture().querySelector('[data-jaco-block] p')
     .dispatchEvent(new MouseEvent('click', {bubbles: true}))
 
   assert.ok(document.querySelector('.ql-container'), 'the editor opens')
-  const toolbar = document.querySelector('.ql-toolbar')
-  assert.ok(!toolbar || toolbar.querySelectorAll('button, .ql-picker').length === 0,
-    'plain renders no toolbar buttons')
+  assert.strictEqual(document.querySelector('.ql-toolbar'), null, 'plain renders no toolbar, not even an empty one')
 })
 
-QUnit.test('a plain line opens without a toolbar bar', (assert) => {
+QUnit.test('a plain line opens without a toolbar', (assert) => {
   m.render(fixture(), m.trust('<h1 data-jaco-line>no tools</h1>'))
 
   fixture().querySelector('[data-jaco-line]')
     .dispatchEvent(new MouseEvent('click', {bubbles: true}))
 
   assert.ok(document.querySelector('.ql-container'), 'the editor opens')
-  const toolbar = document.querySelector('.ql-toolbar')
-  assert.ok(!toolbar || toolbar.querySelectorAll('button, .ql-picker').length === 0,
-    'plain line renders no toolbar buttons')
+  assert.strictEqual(document.querySelector('.ql-toolbar'), null, 'plain line renders no toolbar, not even an empty one')
 })
 
 QUnit.test('a basic line offers formatting', (assert) => {

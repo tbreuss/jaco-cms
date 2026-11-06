@@ -458,12 +458,6 @@ window.addClickHandler = () => {
       let toolbarLineOptions = lineTools === 'basic'
         ? [['bold', 'italic', 'underline', 'strike'], ['link'], ['clean']]
         : []
-      let editorLineOptions = {
-        modules: {
-          toolbar: toolbarLineOptions.length ? toolbarLineOptions : false,
-        },
-        theme: 'snow'
-      }
       new Quill(editableLine, {
         modules: {
           toolbar: toolbarLineOptions.length ? toolbarLineOptions : false,
