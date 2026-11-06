@@ -109,6 +109,46 @@ final class ApiPageTemplateUpdateTest extends ApiTestCase
         $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
     }
 
+    public function testTheDocumentCanBeRead(): void
+    {
+        // the listing carries the title only, so the editor asks for one file
+        $response = $this->api('template/page/view', method: 'GET', query: ['file' => self::TEMPLATE]);
+
+        $this->assertSame(Status::OK, $response->status);
+
+        $body = (array) json_decode((string) $response->body, true);
+        $this->assertSame(self::TEMPLATE, $body['file']);
+        $this->assertSame('[EN] Blank', $body['title']);
+        $this->assertSame(self::DOCUMENT, $body['content']);
+        $this->assertIsInt($body['created']);
+    }
+
+    public function testAnEditorMayReadTheDocument(): void
+    {
+        // page/create reads the same file to create a page from it, so an editor
+        // already reaches the content - the view route only makes it visible
+        $config = test_config();
+        $token = \jaco\core\auth\create_token($config, TEST_USERNAME, \jaco\core\auth\ROLE_EDITOR, '', false);
+
+        $response = $this->api(
+            'template/page/view',
+            [],
+            'GET',
+            false,
+            query: ['file' => self::TEMPLATE],
+            server: ['HTTP_AUTHORIZATION' => 'Bearer ' . $token],
+        );
+
+        $this->assertSame(Status::OK, $response->status);
+    }
+
+    public function testReadingAMissingTemplateIsRejected(): void
+    {
+        $response = $this->api('template/page/view', method: 'GET', query: ['file' => 'does-not-exist.html']);
+
+        $this->assertSame(Status::UNPROCESSABLE_ENTITY, $response->status);
+    }
+
     public function testTheEditorMayNotChangeAPageTemplate(): void
     {
         $config = test_config();

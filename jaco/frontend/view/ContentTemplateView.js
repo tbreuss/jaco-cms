@@ -1,5 +1,5 @@
 import {t} from '../model/i18n.js'
-import {ContentTemplateEditModel} from '../model/PageContentTemplateModel.js'
+import {ContentTemplateEditModel} from '../model/ContentTemplateModel.js'
 import {createTemplateEditor} from '../component/TemplateEditor.js'
 import {auth} from '../lib/auth.js'
 

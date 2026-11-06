@@ -78,6 +78,7 @@
     "Site templates": "Modelli del sito",
     "Page templates": "Modelli di pagina",
     "Content templates": "Modelli di contenuto",
+    "Content template": "Modello di contenuto",
     "Title": "Titolo",
     "A page template is a complete HTML document; a new page is created from it.": "Un modello di pagina è un documento HTML completo; da esso viene creata una nuova pagina.",
     "No page templates found. Create HTML documents under jaco-data/templates/page/ to get started.": "Nessun modello di pagina trovato. Creare documenti HTML in jaco-data/templates/page/.",

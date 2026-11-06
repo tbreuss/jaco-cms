@@ -2,6 +2,7 @@
 
 namespace jaco\tests;
 
+use jaco\core\auth;
 use jaco\core\router;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
@@ -15,6 +16,12 @@ use PHPUnit\Framework\TestCase;
  * only look at one side.
  *
  * The check follows the chain menu entry -> view -> model -> api action -> role.
+ *
+ * A view usually reads more than it writes: the page template editor lists the
+ * templates and reads one file with the editor's rights, and only the update is
+ * the admin's. The menu entry has to allow the page at all, so the highest role
+ * an entry's view reaches decides - reading one route alone would let an admin
+ * page hang off an editor route.
  */
 #[TestDox('Menu roles match the route table')]
 final class MenuRoleTest extends TestCase
@@ -29,20 +36,20 @@ final class MenuRoleTest extends TestCase
         foreach ($this->menuEntries() as $label => $entry) {
             [$path, $role] = $entry;
 
-            $action = $routes[$path] ?? null;
-            if ($action === null) {
+            $actions = $routes[$path] ?? null;
+            if ($actions === null) {
                 $mismatch[] = $label . ': no view loads ' . $path;
                 continue;
             }
 
-            $required = $roles[$action] ?? null;
-            if ($required === null) {
-                $mismatch[] = $label . ': ' . $action . ' is not a registered route';
+            $rolesOfView = $this->rolesOf($actions, $roles);
+            if ($rolesOfView === null) {
+                $mismatch[] = $label . ': ' . \implode(', ', $actions) . ' names a route that is not registered';
                 continue;
             }
 
-            if ($required !== $role) {
-                $mismatch[] = \sprintf('%s: menu says %s, %s needs %s', $label, $role, $action, $required);
+            if (!\in_array($role, $this->rolesAtLeast($rolesOfView), true)) {
+                $mismatch[] = \sprintf('%s: menu says %s, %s only reach %s', $label, $role, \implode(', ', $actions), \implode('/', $rolesOfView));
             }
         }
 
@@ -74,10 +81,11 @@ final class MenuRoleTest extends TestCase
     }
 
     /**
-     * The first api action a view calls, reached through its model import, keyed
-     * by route path.
+     * The api actions a view calls, reached through its model imports, keyed by
+     * route path: every model a view imports contributes, plus the calls the
+     * view makes itself.
      *
-     * @return array<string, string>
+     * @return array<string, list<string>>
      */
     private function actionForPath(): array
     {
@@ -94,61 +102,97 @@ final class MenuRoleTest extends TestCase
 
         $map = [];
         foreach ($matches as [, $path, $view]) {
-            $action = $this->actionOfView($view);
-            if ($action !== null) {
-                $map[$path] = $action;
+            $actions = $this->actionsOfView($view);
+            if ($actions !== []) {
+                $map[$path] = $actions;
             }
         }
 
         return $map;
     }
 
-    private function actionOfView(string $view): ?string
+    /**
+     * @return list<string>
+     */
+    private function actionsOfView(string $view): array
     {
         $file = $this->root() . '/jaco/frontend/view/' . $view;
         if (!\is_file($file)) {
-            return null;
+            return [];
         }
 
         $source = (string) \file_get_contents($file);
+        $actions = [];
 
         // the import reaches the model directory from the view, one or two levels up
-        \preg_match_all("~from '(?:\\.\\./)+model/([^']+)'~", $source, $matches);
+        \preg_match_all("~from '(?:\.\./)+model/([^']+)'~", $source, $matches);
 
         foreach ($matches[1] as $model) {
-            $call = $this->firstApiCall($this->root() . '/jaco/frontend/model/' . $model);
-            if ($call !== null) {
-                return $call;
-            }
+            $actions = [...$actions, ...$this->apiCalls($this->root() . '/jaco/frontend/model/' . $model)];
         }
 
         // a view without a model calls the api itself (the inline editor)
-        return $this->firstApiCall($file);
+        return \array_values(\array_unique([...$actions, ...$this->apiCalls($file)]));
     }
 
     /**
-     * The endpoint a file talks to first, skipping the translations request every
-     * view makes on load.
+     * The endpoints a file calls, skipping the translations request every view
+     * makes on load.
+     *
+     * @return list<string>
      */
-    private function firstApiCall(string $file): ?string
+    private function apiCalls(string $file): array
     {
         if (!\is_file($file)) {
-            return null;
+            return [];
         }
 
         $source = (string) \file_get_contents($file);
 
-        if (\preg_match_all("/api\.(?:get|post)\('([^']+)'/", $source, $matches) === 0) {
-            return null;
-        }
+        \preg_match_all("/api\.(?:get|post)\('([^']+)'/", $source, $matches);
 
-        foreach ($matches[1] as $action) {
-            if ($action !== 'translations') {
-                return $action;
+        return \array_values(\array_filter(
+            \array_unique($matches[1]),
+            static fn(string $action): bool => $action !== 'translations',
+        ));
+    }
+
+    /**
+     * The roles of the routes a view calls; null when one of them is not registered.
+     *
+     * @param list<string> $actions
+     * @param array<string, string> $roles
+     * @return list<string>|null
+     */
+    private function rolesOf(array $actions, array $roles): ?array
+    {
+        $found = [];
+        foreach ($actions as $action) {
+            $role = $roles[$action] ?? null;
+            if ($role === null) {
+                return null;
             }
+            $found[] = $role;
         }
 
-        return null;
+        return \array_values(\array_unique($found));
+    }
+
+    /**
+     * The roles that reach at least one of the given roles.
+     *
+     * @param list<string> $required
+     * @return list<string>
+     */
+    private function rolesAtLeast(array $required): array
+    {
+        $rank = [auth\ROLE_EDITOR => 1, auth\ROLE_ADMIN => 2];
+        $minimum = 99;
+        foreach ($required as $role) {
+            $minimum = \min($minimum, $rank[$role] ?? 99);
+        }
+
+        return \array_keys(\array_filter($rank, static fn(int $value): bool => $value >= $minimum));
     }
 
     /** @return array<string, string> */

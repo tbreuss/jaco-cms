@@ -1,11 +1,12 @@
 import {api} from '../service/api.js'
 
-// Page templates are read with the editor's rights (the page manager lists them
-// when a page is created), but only the admin may change one: the update route
-// answers 403 for anyone else, the view keeps the buttons disabled.
-
-const loadDocument = (file) => api.get('template/pages', {}, {pageLoad: true})
-  .then((data) => data.find((entry) => entry.file === file) ?? {})
+// Page templates. Listing and reading are the editor's: the page manager shows
+// the templates when a page is created, and page/create reads the same file.
+// Only the admin may change one - the update route answers 403 for anyone else,
+// and the view keeps the buttons disabled for that role.
+//
+// The listing carries the title only, so the document is read file by file:
+// unlike a content fragment there is no list entry that could hold it.
 
 export const PageTemplateEditModel = {
   isLoading: false,
@@ -23,7 +24,7 @@ export const PageTemplateEditModel = {
   },
   load: (file) => {
     PageTemplateEditModel.isLoading = true
-    return loadDocument(file)
+    return api.get('template/page/view', {file}, {pageLoad: true})
       .then((data) => {
         PageTemplateEditModel.item = data
         PageTemplateEditModel.isLoading = false
@@ -36,43 +37,6 @@ export const PageTemplateEditModel = {
       body: {
         fileName: PageTemplateEditModel.item.file,
         content: PageTemplateEditModel.item.content,
-      }
-    })
-  }
-}
-
-// Content templates are read through the fragment endpoints the inline editor
-// uses. An editor inserts them into pages, so the listing is read-only there.
-
-export const ContentTemplateEditModel = {
-  isLoading: false,
-  list: [],
-  item: {},
-  loadList: () => {
-    ContentTemplateEditModel.isLoading = true
-    return api.get('template/content', {}, {pageLoad: true})
-      .then((data) => {
-        ContentTemplateEditModel.list = data
-        ContentTemplateEditModel.isLoading = false
-      }, () => {
-        ContentTemplateEditModel.isLoading = false
-      })
-  },
-  load: (file) => {
-    ContentTemplateEditModel.isLoading = true
-    return api.get('template/content/view', {file}, {pageLoad: true})
-      .then((data) => {
-        ContentTemplateEditModel.item = data
-        ContentTemplateEditModel.isLoading = false
-      }, () => {
-        ContentTemplateEditModel.isLoading = false
-      })
-  },
-  save: () => {
-    return api.post('template/content/update', {}, {
-      body: {
-        fileName: ContentTemplateEditModel.item.file,
-        content: ContentTemplateEditModel.item.content,
       }
     })
   }

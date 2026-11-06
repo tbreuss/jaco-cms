@@ -82,6 +82,7 @@
     "Site templates": "Website-Vorlagen",
     "Page templates": "Seitenvorlagen",
     "Content templates": "Inhaltsvorlagen",
+    "Content template": "Inhaltsvorlage",
     "Title": "Titel",
     "A page template is a complete HTML document; a new page is created from it.": "Eine Seitenvorlage ist ein vollständiges HTML-Dokument; daraus wird eine neue Seite erstellt.",
     "No page templates found. Create HTML documents under jaco-data/templates/page/ to get started.": "Keine Seitenvorlagen gefunden. HTML-Dokumente unter jaco-data/templates/page/ anlegen.",

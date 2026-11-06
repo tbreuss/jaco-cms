@@ -44,7 +44,8 @@ import {BackupListView} from '/jaco/frontend/view/backup/BackupListView.js'
 import {BackupListModel} from '/jaco/frontend/model/BackupListModel.js'
 import {CssEditView, setEditor as setCssEditor, onSaveButtonClicked as onSaveCssButtonClicked, state as cssEditState} from '/jaco/frontend/view/CssEditView.js'
 import {CssEditModel} from '/jaco/frontend/model/CssEditModel.js'
-import {PageTemplateEditModel, ContentTemplateEditModel} from '/jaco/frontend/model/PageContentTemplateModel.js'
+import {PageTemplateEditModel} from '/jaco/frontend/model/PageContentTemplateModel.js'
+import {ContentTemplateEditModel} from '/jaco/frontend/model/ContentTemplateModel.js'
 import {SiteTemplateModel} from '/jaco/frontend/model/SiteTemplateModel.js'
 import {TemplateView} from '/jaco/frontend/view/TemplateView.js'
 import {PageTemplateView} from '/jaco/frontend/view/PageTemplateView.js'
@@ -3278,6 +3279,35 @@ QUnit.test('the shared editor is read-only for an editor', (assert) => {
     m.render(fixture(), null)
     PageTemplateEditModel.list = []
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+  }
+})
+
+QUnit.test('the page model reads the document, the listing has no content', async (assert) => {
+  // regression: the listing carries the title only (template/pages answers
+  // "content": null), so a page template showed an empty editor. The model has
+  // to read the file it shows.
+  const requested = []
+  const stub = stubRequest((options) => {
+    requested.push(options.url)
+    if (String(options.url).includes('template/pages')) {
+      return Promise.resolve([{file: 'blank-en.html', title: 'Blank', created: 1}])
+    }
+    return Promise.resolve({
+      file: 'blank-en.html',
+      title: 'Blank',
+      created: 1,
+      content: '<!DOCTYPE html><html><head><title>Blank</title></head></html>',
+    })
+  })
+  try {
+    PageTemplateEditModel.item = {}
+    await PageTemplateEditModel.load('blank-en.html')
+
+    assert.ok(requested.some((url) => String(url).includes('template/page/view')), 'the document route is asked')
+    assert.ok(PageTemplateEditModel.item.content.includes('<title>Blank</title>'), 'the editor gets the document')
+  } finally {
+    stub.restore()
+    PageTemplateEditModel.item = {}
   }
 })
 

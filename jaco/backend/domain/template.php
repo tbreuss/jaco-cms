@@ -118,6 +118,33 @@ function find_content_template(Config $config, string $file): Payload
     ]);
 }
 
+/**
+ * One page template with the whole document. The listing carries the title
+ * only - reading every document in it would fill the list with pages nobody
+ * opens - so the editor asks for the one file it shows. An editor may read it:
+ * `page/create` reads the same file to create a page from it.
+ */
+function find_page_template(Config $config, string $file): Payload
+{
+    [$file, $errors] = validate_existing_template_file($config, 'page', $file);
+    if ($file === null) {
+        return Payload::invalid($errors);
+    }
+
+    $content = filesystem\read_file($config->templatePageDir, $file);
+
+    if ($content === null) {
+        return Payload::error([['file', 'Could not read file.']]);
+    }
+
+    return Payload::success([
+        'file' => $file,
+        'title' => html\get_title($content),
+        'created' => filesystem\file_mtime($file, $config->templatePageDir),
+        'content' => $content,
+    ]);
+}
+
 function site_template_name(string $file): string
 {
     return \pathinfo($file, PATHINFO_FILENAME);
