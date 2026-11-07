@@ -1053,7 +1053,11 @@ QUnit.test('the palette trigger names the Ctrl/Cmd+K shortcut', (assert) => {
   assert.ok(trigger.title.includes(shortcut), 'the tooltip names the shortcut')
   assert.ok(trigger.getAttribute('aria-label').includes(shortcut), 'the accessible name names the shortcut')
   assert.strictEqual(trigger.querySelector('.palette-shortcut')?.textContent, shortcut, 'the shortcut is visible')
-  assert.strictEqual(trigger.querySelector('.icon'), null, 'the shortcut badge replaces the keyboard icon')
+  // the desktop shows the badge and the label; the icon is for small screens, where
+  // the stylesheet hides both and shows the icon instead. It is the search icon,
+  // not the keyboard icon the badge once replaced.
+  assert.ok(trigger.querySelector('.icon'), 'a small-screen icon is rendered')
+  assert.ok(trigger.querySelector('.icon + kbd.palette-shortcut'), 'the badge follows the icon')
 })
 
 QUnit.test('the listener is removed with the layout', (assert) => {
