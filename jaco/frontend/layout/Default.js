@@ -52,7 +52,7 @@ const themeLabel = (value) => t(value === 'light' ? 'Light' : value === 'dark' ?
 // native select: one visible control, theme popup handled by the browser -
 // no state, nothing to get stuck, touch and keyboard free.
 // Only the hover of the dropdown options is styled, in both themes.
-const themeSwitch = () => m('select.theme-switch', {
+const themeSwitch = (extraClass = '') => m('select.theme-switch' + extraClass, {
   'aria-label': t('Theme'),
   value: getTheme(),
   onchange: (e) => {
@@ -117,7 +117,8 @@ const openMenuOnHover = (name) => {
   }
 }
 
-const dropdown = (name, label, items, extraClass = '') => {
+// The icon is for small screens, where the stylesheet shows it instead of the label.
+const dropdown = (name, label, items, extraClass = '', icon = null) => {
   const open = openMenu === name
   const id = 'menu-' + name
 
@@ -178,7 +179,7 @@ const dropdown = (name, label, items, extraClass = '') => {
           }, 0)
         }
       },
-    }, label),
+    }, icon ? [m(Icon, {name: icon}), m('span', label)] : label),
     m('.dropdown-content', {
       id: id,
       role: 'menu',
@@ -366,23 +367,23 @@ export const DefaultLayout = {
                 // deleting backups and changing the CSS stays with the admin
                 roleLink('editor', '/backups', t('Backups')),
                 roleLink('editor', '/css', t('Design')),
-              ]),
+              ], '', 'folder'),
               dropdown('this-page', t('This page'), [
                 roleLink('editor', '/page-edit', t('Edit page')),
                 roleLink('editor', '/page-copy', t('Copy page')),
                 roleLink('editor', '/page-delete', t('Delete page')),
-              ]),
+              ], '', 'file'),
               dropdown('admin', t('Admin'), [
                 roleLink('admin', '/system/env', t('Environment')),
                 roleLink('admin', '/system/log', t('Application log')),
                 roleLink('admin', '/system/php-info', t('PHP info')),
-              ]),
+              ], '', 'shield'),
               m('button.palette-trigger', {
                 type: 'button',
                 onclick: () => openPalette(),
                 title: t('Commands') + ' (' + paletteShortcut + ')',
                 'aria-label': t('Commands') + ' (' + paletteShortcut + ')',
-              }, m('kbd.palette-shortcut', paletteShortcut), m('span', t('Commands'))),
+              }, m(Icon, {name: 'search'}), m('kbd.palette-shortcut', paletteShortcut), m('span', t('Commands'))),
               dropdown('account', t('Account'), [
                 accountInfo(),
                 menuLink('/system/about', t('About')),
@@ -391,7 +392,10 @@ export const DefaultLayout = {
                 menuLink('/password', t('Change password')),
                 menuLink('/language', t('Change language')),
                 menuLink('/logout', t('Logout')),
-              ], '.account-menu'),
+                // small screens have no room for the switch in the bar: it moves
+                // into this menu (the stylesheet shows one or the other)
+                themeSwitch('.in-menu'),
+              ], '.account-menu', 'user'),
               themeSwitch(),
             ]) : m('.navbar', [
               title(),

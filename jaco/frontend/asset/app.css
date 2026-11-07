@@ -277,6 +277,17 @@ body {
     max-width: calc(100vw - 1rem);
 }
 
+/* The menu icons replace the labels on small screens only. */
+.palette-trigger > .icon,
+.dropdown .dropbtn > .icon {
+    display: none;
+}
+
+/* The copy of the theme switch inside the account menu is for small screens only. */
+.theme-switch.in-menu {
+    display: none;
+}
+
 /* Theme switch: native select, navbar-styled. The dropdown popup itself is
    drawn by the browser; only its option hover is styled, in both themes. */
 .theme-switch {
@@ -1622,4 +1633,155 @@ a.list-group-item {
 
 .denied-detail {
     color: var(--color-text-muted, inherit);
+}
+
+/* Small screens: the admin is built for desktop widths. Give the content card the
+   whole width, let dialogs use it, keep the navigation on fewer lines and let wide
+   tables scroll instead of widening the page. Placed last so it wins over the base
+   rules above. */
+@media screen and (max-width: 600px) {
+    .content {
+        margin: 0;
+        padding: var(--space-4);
+        border-radius: 0;
+        min-height: 100%;
+    }
+
+    .modal-inner,
+    .modal-sm {
+        width: calc(100% - 1rem);
+        max-width: none;
+        margin-top: 4vh;
+    }
+
+    /* keep the navigation on one line: tighter entries, and no command palette
+       button - its shortcut means nothing on a touch screen */
+    .navbar > a:not(.title),
+    .navbar > .nav-disabled,
+    .navbar .dropdown > .dropbtn {
+        padding: 0 clamp(4px, 1.6vw, var(--space-4));
+    }
+
+    /* the command palette button is an icon here: its shortcut means nothing on
+       a touch screen */
+    .palette-trigger {
+        min-width: 44px;
+        justify-content: center;
+    }
+
+    .palette-trigger > .icon {
+        display: block;
+        width: 1.4em;
+        height: 1.4em;
+    }
+
+    .palette-trigger > kbd,
+    .palette-trigger > span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    /* the menus open over the full width, anchored to the bar instead of their
+       button, so none of them can run past the screen edge; entries are tall
+       enough to tap */
+    .navbar {
+        position: relative;
+    }
+
+    .dropdown {
+        position: static;
+    }
+
+    .dropdown-content,
+    .account-menu .dropdown-content {
+        left: 0;
+        right: 0;
+        max-width: none;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .dropdown-content a,
+    .dropdown-content .nav-disabled {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+    }
+
+    .dropdown-content .nav-account-info {
+        max-width: none;
+    }
+
+    /* menu buttons show an icon; the label stays as the accessible name. The
+       buttons are wide enough to tap, and the open one carries a marker line so
+       it is clear which menu the list belongs to. */
+    .dropdown .dropbtn > .icon {
+        display: block;
+        width: 1.4em;
+        height: 1.4em;
+    }
+
+    .navbar .dropdown > .dropbtn:has(> .icon) {
+        min-width: 44px;
+        justify-content: center;
+        padding: 0 var(--space-5);
+    }
+
+    .navbar .dropdown.is-open > .dropbtn {
+        box-shadow: inset 0 -3px 0 var(--color-primary);
+    }
+
+    .dropdown .dropbtn > .icon + span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    /* the theme switch leaves the bar and lives in the account menu */
+    .navbar > .theme-switch {
+        display: none;
+    }
+
+    .theme-switch.in-menu {
+        display: block;
+        width: calc(100% - 2 * var(--space-6));
+        margin: var(--space-3) var(--space-6);
+    }
+
+    .table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .row.text-right {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    /* the buttons share the width instead of stacking at different sizes */
+    .row.text-right button {
+        flex: 1 1 auto;
+        margin: 0;
+    }
+
+    /* icon-only buttons: only a label that follows an icon is hidden, a text-only
+       button keeps its text. The label stays in the DOM as the accessible name. */
+    .row.text-right button > .icon + span,
+    .dialog button > .icon + span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
 }

@@ -661,7 +661,8 @@ QUnit.test('the layout greys out what the role may not do', (assert) => {
       'the account menu is available',
     )
     assert.strictEqual(fixture().querySelector('.jump-to-page'), null, 'the page jump is no longer a direct control')
-    assert.ok(fixture().querySelector('select.theme-switch'), 'the theme switch stays direct')
+    assert.ok(fixture().querySelector('.navbar > select.theme-switch'), 'the theme switch stays direct')
+    assert.ok(dropdowns[3].querySelector('select.theme-switch.in-menu'), 'small screens find it in the account menu')
   } finally {
     i18n.status = savedStatus
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
