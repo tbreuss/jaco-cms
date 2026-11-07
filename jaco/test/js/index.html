@@ -17,6 +17,21 @@
     // the runner reads this through the devtools protocol
     window.__qunitFailures = []
     window.__qunitCounts = {total: 0, passed: 0, failed: 0, skipped: 0}
+    // The test that is running right now. A run that never ends leaves no
+    // result behind, so this is the only way to say which test hung instead of
+    // just that something did. Kept empty until the first test starts, which
+    // tells "nothing ran" apart from "test N ran and never finished".
+    window.__qunitProgress = ''
+
+    // A test that waits for done() and never gets there (an error inside a
+    // timer callback, say) would block the whole run for ever. With a limit it
+    // fails after a few seconds and the run goes on. The longest deliberate wait
+    // is the 2 s boot load in tests.js; raise a single test with assert.timeout().
+    QUnit.config.testTimeout = 5000
+
+    QUnit.on('testStart', (test) => {
+      window.__qunitProgress = test.fullName || test.name
+    })
 
     QUnit.on('testEnd', (test) => {
       const counts = window.__qunitCounts
