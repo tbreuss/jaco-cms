@@ -185,7 +185,7 @@ export const LoginView = {
           }
         }),
         m(FormErrors, {errors: state.errors.filter((error) => !fieldPointers.includes(error.source.pointer))}),
-        m(ButtonGroup, {wrap: 'div.row.text-right'},
+        m(ButtonGroup, {wrap: 'div.row'},
           m(ButtonPrimary, {type: 'submit'}, m(Icon, {name: 'login'}), m('span', t('Login')))
         )
       )

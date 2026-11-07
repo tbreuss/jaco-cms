@@ -218,7 +218,7 @@ body {
 .navbar {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     background-color: var(--color-navbar);
     border-bottom: 1px solid var(--color-border);
 }
@@ -228,12 +228,14 @@ body {
 }
 
 /* Links inside the navbar */
-.navbar a {
+.navbar a,
+.navbar button {
     font-size: var(--text-chrome);
     color: var(--color-navbar-text);
     text-align: center;
     padding: var(--space-nav) var(--space-6);
     text-decoration: none;
+    white-space: nowrap;
 }
 
 .navbar a.title {
@@ -249,6 +251,7 @@ body {
     padding: var(--space-nav) var(--space-6);
     opacity: .5;
     cursor: not-allowed;
+    white-space: nowrap;
 }
 
 .dropdown-content .nav-disabled {
@@ -832,6 +835,19 @@ button.secondary:active {
     transform: translateY(1px);
 }
 
+/* The "Logged out" dialog stacks its two actions vertically with a gap, so
+   they are easy to tap and never touch. On small screens they take the full
+   dialog width. */
+.logout-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.logout-actions button {
+    width: 100%;
+}
+
 /* Destructive actions (delete, clear): fixed reds with white text, readable
    in both themes, hence no tokens. Scoped to buttons so other elements with
    the .danger class (e.g. toasts) do not inherit button styling. */
@@ -1154,6 +1170,11 @@ ul.form-errors {
 
 .modal-sm-login input {
     width: 100% !important;
+}
+
+.modal-sm-login button.primary {
+    width: 100%;
+    display: block;
 }
 
 
@@ -1652,6 +1673,7 @@ a.list-group-item {
         width: calc(100% - 1rem);
         max-width: none;
         margin-top: 4vh;
+        padding: var(--space-5);
     }
 
     /* keep the navigation on one line: tighter entries, and no command palette
