@@ -68,6 +68,9 @@
       ? window.location.pathname + 'index.html'
       : window.location.pathname
     document.querySelectorAll('.navigation a[href]').forEach((link) => {
+        if (link.closest('.nav-brand, .nav-logo')) {
+            return
+        }
       const target = new URL(link.getAttribute('href'), document.baseURI).pathname
       const active = target === path
       link.parentElement.classList.toggle('active', active)

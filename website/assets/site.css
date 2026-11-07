@@ -158,6 +158,41 @@ li {
     color: #fff;
 }
 
+/* Brand / logo mark in the navigation, pinned to the left. */
+.navigation .nav-brand,
+.navigation .nav-logo {
+    margin-right: auto;
+}
+
+.navigation .nav-brand a,
+.navigation .nav-logo a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+    color: var(--fg);
+}
+
+.navigation .nav-logo a {
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.navigation .nav-logo-mark {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 auto;
+}
+
+.navigation .nav-brand a:hover,
+.navigation .nav-logo a:hover {
+    background: none;
+    text-decoration: none;
+}
+
+
+
+
 /* Language and theme are tools, not pages: same look, set apart on the right */
 .navigation .nav-utility {
     display: flex;
@@ -579,7 +614,7 @@ iframe.elements-video {
     }
 
     /* everything but the toggle moves into the menu */
-    html.js .navigation > li:not(.nav-toggle-item) {
+    html.js .navigation > li:not(.nav-toggle-item):not(.nav-brand):not(.nav-logo) {
         display: none;
     }
 
@@ -587,7 +622,7 @@ iframe.elements-video {
         flex-wrap: wrap;
     }
 
-    html.js.nav-open .navigation > li:not(.nav-toggle-item) {
+    html.js.nav-open .navigation > li:not(.nav-toggle-item):not(.nav-brand):not(.nav-logo) {
         display: flex;
         width: 100%;
     }
