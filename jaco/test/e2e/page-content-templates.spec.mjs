@@ -48,7 +48,8 @@ test('a fragment with two roots is refused and stays on screen', async ({page}) 
 
   await page.evaluate(() => window.m.route.set('/templates/content'))
   await page.locator('#templateFile-content').selectOption('e2e-content.html')
-  await expect(page.locator('#ace-content')).toContainText('E2E card')
+  // the save test runs before and has replaced the card text: match what both versions share
+  await expect(page.locator('#ace-content')).toContainText('feature')
 
   await page.evaluate(() => {
     ace.edit('ace-content').setValue('<div>one</div><div>two</div>')
@@ -67,5 +68,6 @@ test('an editor may not change a page template', async ({page}) => {
   // the editor reads the template, the save buttons stay disabled
   await expect(page.locator('h1')).toHaveText('Page templates')
   await expect(page.locator('#ace-content')).toContainText('one')
-  await expect(page.getByRole('button', {name: 'Save', exact: true})).toBeDisabled()
+  // a disabled button carries the reason as its accessible name, so locate it by its text
+  await expect(page.locator('button', {hasText: 'Save'}).first()).toHaveAttribute('aria-disabled', 'true')
 })

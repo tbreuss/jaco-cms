@@ -9,12 +9,12 @@ test('admin can open the site template editor', async ({page}) => {
 
   await page.goto('/jaco/#!/templates/site')
   await expect(page.locator('h1')).toHaveText('Shared content')
-  await page.locator('#templateFile').selectOption('e2e-footer.html')
-  await expect(page.locator('#templateFile')).toHaveValue('e2e-footer.html')
+  await page.locator('#templateFile-site').selectOption('e2e-footer.html')
+  await expect(page.locator('#templateFile-site')).toHaveValue('e2e-footer.html')
   // the dropdown shows the file name, extension included: the marker in a page
   // has to match it exactly
-  await expect(page.locator('#templateFile option:checked')).toHaveText('e2e-footer.html')
-  await expect(page.locator('#ace')).toBeVisible()
+  await expect(page.locator('#templateFile-site option:checked')).toHaveText('e2e-footer.html')
+  await expect(page.locator('#ace-site')).toBeVisible()
   await expect(page.getByRole('button', {name: 'Preview & apply', exact: true})).toBeEnabled()
 })
 
@@ -27,12 +27,12 @@ test('admin can preview and apply a site template', async ({page}) => {
   await expect(page).toHaveURL(/\/jaco\/#!\/$/)
 
   await page.goto('/jaco/#!/templates/site')
-  await expect(page.locator('#ace')).toBeVisible()
-  await page.locator('#templateFile').selectOption('e2e-footer.html')
-  await expect(page.locator('#templateFile')).toHaveValue('e2e-footer.html')
-  await expect(page.locator('#ace')).toContainText('E2E footer')
+  await expect(page.locator('#ace-site')).toBeVisible()
+  await page.locator('#templateFile-site').selectOption('e2e-footer.html')
+  await expect(page.locator('#templateFile-site')).toHaveValue('e2e-footer.html')
+  await expect(page.locator('#ace-site')).toContainText('E2E footer')
   await page.evaluate(() => {
-    ace.edit('ace').setValue('<footer>After apply</footer>')
+    ace.edit('ace-site').setValue('<footer>After apply</footer>')
   })
   await page.getByRole('button', {name: 'Preview & apply', exact: true}).click()
 
@@ -65,7 +65,7 @@ test('the apply dialog does not claim there is no backup', async ({page}) => {
   await expect(page).toHaveURL(/\/jaco\/#!\/$/)
 
   await page.evaluate(() => window.m.route.set('/templates/site'))
-  await expect(page.locator('#templateFile')).toBeVisible()
+  await expect(page.locator('#templateFile-site')).toBeVisible()
 
   await page.getByRole('button', {name: 'Preview & apply'}).click()
 
@@ -84,7 +84,7 @@ test('an editor may apply a template but not change it', async ({page}) => {
   await expect(page).toHaveURL(/\/jaco\/#!\/$/)
 
   await page.evaluate(() => window.m.route.set('/templates/site'))
-  await expect(page.locator('#templateFile')).toBeVisible()
+  await expect(page.locator('#templateFile-site')).toBeVisible()
 
   // a disabled button carries the reason as its accessible name, so locate the
   // labels by their visible text instead
