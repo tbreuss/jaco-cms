@@ -605,6 +605,7 @@ body.page-edit .dialog button {
 
 button {
     margin: var(--space-1) 0;
+    flex-shrink: 0;
 }
 
 .m-notifications {
