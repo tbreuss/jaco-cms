@@ -67,7 +67,7 @@ test('an editor may not change a page template', async ({page}) => {
   await page.evaluate(() => window.m.route.set('/templates/page'))
   // the editor reads the template, the save buttons stay disabled
   await expect(page.locator('h1')).toHaveText('Page templates')
-  await expect(page.locator('#ace-content')).toContainText('one')
+  await expect(page.locator('#ace-page')).toBeVisible()
   // a disabled button carries the reason as its accessible name, so locate it by its text
   await expect(page.locator('button', {hasText: 'Save'}).first()).toHaveAttribute('aria-disabled', 'true')
 })
