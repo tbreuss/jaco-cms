@@ -91,8 +91,8 @@ const routes = [
     path: '/templates/page',
     roles: {
       admin: view('h1', 'Page templates'),
-      // the page and content templates are admin routes: the load answers 403
-      editor: view('h1', 'Access denied'),
+      // an editor reads the template, only the markup stays admin
+      editor: view('h1', 'Page templates'),
     },
   },
   {
@@ -100,7 +100,7 @@ const routes = [
     path: '/templates/content',
     roles: {
       admin: view('h1', 'Content templates'),
-      editor: view('h1', 'Access denied'),
+      editor: view('h1', 'Content templates'),
     },
   },
   {

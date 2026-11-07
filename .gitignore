@@ -28,3 +28,6 @@
 
 # Test docroot assembled by scripts/assemble-docroot.sh
 /.docroot/
+
+# Runtime data written by the admin and the test suites
+/jaco-data/runtime/

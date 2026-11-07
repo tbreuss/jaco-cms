@@ -1,7 +1,7 @@
 import {test, expect} from '@playwright/test'
 
-// The page and content templates are the admin's: the editor shows the file,
-// the admin edits and saves it. Every save is backed up, and a document that
+// The page and content templates are read by an editor and changed by the admin:
+// the editor sees the file with disabled save buttons, the admin edits and saves it. Every save is backed up, and a document that
 // breaks the kind is refused with the reason on screen.
 
 const login = async (page, user) => {
@@ -64,6 +64,8 @@ test('an editor may not change a page template', async ({page}) => {
   await login(page, 'editor')
 
   await page.evaluate(() => window.m.route.set('/templates/page'))
-  // the route is an admin route: the editor gets the explanation, not the form
-  await expect(page.locator('h1')).toContainText('Access denied')
+  // the editor reads the template, the save buttons stay disabled
+  await expect(page.locator('h1')).toHaveText('Page templates')
+  await expect(page.locator('#ace-content')).toContainText('one')
+  await expect(page.getByRole('button', {name: 'Save', exact: true})).toBeDisabled()
 })
