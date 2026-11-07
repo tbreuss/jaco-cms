@@ -1696,6 +1696,7 @@ a.list-group-item {
        enough to tap */
     .navbar {
         position: relative;
+        flex-wrap: nowrap;
     }
 
     .dropdown {
