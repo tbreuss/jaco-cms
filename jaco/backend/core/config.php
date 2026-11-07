@@ -39,6 +39,20 @@ final readonly class Config
         /** The file the settings were loaded from; null means dataDir/settings.php. */
         public ?string $settingsFile = null,
     ) {}
+
+    /**
+     * The directory of one kind of template ("page", "content", "site"), or null
+     * for a kind Jaco does not know.
+     */
+    public function templateDir(string $kind): ?string
+    {
+        return match ($kind) {
+            'page' => $this->templatePageDir,
+            'content' => $this->templateContentDir,
+            'site' => $this->templateSiteDir,
+            default => null,
+        };
+    }
 }
 
 /**

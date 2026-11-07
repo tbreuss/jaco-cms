@@ -275,11 +275,43 @@ router\get(
 );
 
 router\get(
+    route: 'template/page/view',
+    callback: jaco\api\template\page\view\action(...),
+    authenticated: true,
+    role: 'editor',
+    responseSchema: 'template/page/view/response.json',
+);
+
+// page and content templates are whole documents and block markup; the admin
+// owns them, like the site templates. Updating only: a new template is a file
+// copied on the server, so the listing stays the way it was.
+router\post(
+    route: 'template/page/update',
+    callback: jaco\api\template\page\update\action(...),
+    authenticated: true,
+    role: 'admin',
+    requestSchema: 'template/page/update/request.json',
+    responseSchema: 'template/page/update/response.json',
+);
+
+router\get(
     route: 'template/content/view',
     callback: jaco\api\template\content\view\action(...),
     authenticated: true,
     role: 'editor',
     responseSchema: 'template/content/view/response.json',
+);
+
+// page and content templates are whole documents and block markup; the admin
+// owns them, like the site templates. Updating only: a new template is a file
+// copied on the server, so the listing stays the way it was.
+router\post(
+    route: 'template/content/update',
+    callback: jaco\api\template\content\update\action(...),
+    authenticated: true,
+    role: 'admin',
+    requestSchema: 'template/content/update/request.json',
+    responseSchema: 'template/content/update/response.json',
 );
 
 router\get(

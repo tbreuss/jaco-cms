@@ -17,7 +17,9 @@ macOS and `Ctrl+K` elsewhere.
 Content ▾
 ├─ Pages
 ├─ Media
-├─ Templates
+├─ Shared content
+├─ Page templates
+├─ Content templates
 ├─ Backups
 └─ Design
 
@@ -72,10 +74,10 @@ a.html    Startseite      12.10.2026      [Edit] [Copy] [Delete]
   the preview.
 - `Jump to page` is available from the command palette, not the Pages view.
 
-## Site templates
+## Shared content
 
-Templates live under `jaco-data/templates/site/` and are created through the file
-system. Admins and editors open them under **Content → Templates**. An admin edits
+Shared content (site templates) lives under `jaco-data/templates/site/` and is created
+through the file system. Admins and editors open it under **Content → Shared content**. An admin edits
 the markup and saves with **Save** or **Save & Close**; an editor sees the same
 editor read-only, so the markup is the admin's and the rollout is not.
 
@@ -107,6 +109,22 @@ footer-en.html, footer-de.html
 the language switch to the other language's index page, so the navigation
 template can be identical on all pages of one language.
 
+## Page and content templates
+
+Admins and editors open **Content → Page templates** and **Content → Content templates**. Both
+list the files in `jaco-data/templates/page/` and `jaco-data/templates/content/`;
+a new template is a file copied on the server, the admin only edits existing ones.
+An admin saves with **Save** or **Save & Close**, which backs the file up first and
+writes it atomically; an editor sees the same editor read-only with the save buttons
+disabled.
+
+- A page template must be a complete HTML document (doctype or `<html>`, and a
+  `<title>`), because new pages are created from it.
+- A content template must contain exactly one root element and only known
+  `data-jaco-*` names, because it is inserted as one block through a repeater or slot.
+- The content is written as sent and not sanitized: the markup is the admin's.
+
+
 ## Inline editor
 
 The inline editor toolbar offers **Page settings**, **Cancel** and **Save**.
@@ -123,7 +141,8 @@ The inline editor toolbar offers **Page settings**, **Cancel** and **Save**.
 | Element | Admin | Editor |
 | --- | --- | --- |
 | Content: Pages, Media, Backups | active | active |
-| Content: Templates | writable | read-only |
+| Content: Shared content | writable | read-only |
+| Content: Page and content templates | writable | read-only |
 | Design | writable | read-only |
 | This page: Edit page | active | active |
 | This page: Copy/Delete page | active | active |

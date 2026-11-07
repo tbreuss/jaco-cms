@@ -62,8 +62,34 @@ m.route(document.getElementById('app'), '/', {
     }
   },
   '/templates': {
+    // the old entry point: site templates are one of three kinds now, and an
+    // old link must keep working without leaving the redirect in the history
+    onmatch:  () => {
+      return {
+        oninit: () => m.route.set('/templates/site', null, {replace: true}),
+        view: () => null,
+      }
+    }
+  },
+  '/templates/site': {
     onmatch:  () => {
       return loadComponent('TemplateView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
+    }
+  },
+  '/templates/page': {
+    onmatch:  () => {
+      return loadComponent('PageTemplateView.js')
+    },
+    render: (vnode) => {
+      return m(DefaultLayout, m(vnode.tag))
+    }
+  },
+  '/templates/content': {
+    onmatch:  () => {
+      return loadComponent('ContentTemplateView.js')
     },
     render: (vnode) => {
       return m(DefaultLayout, m(vnode.tag))

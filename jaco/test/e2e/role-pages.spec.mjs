@@ -78,12 +78,38 @@ const routes = [
     },
   },
   {
-    name: 'Templates',
-    path: '/templates',
+    name: 'Shared content',
+    path: '/templates/site',
     roles: {
-      admin: view('h1', 'Site templates'),
+      admin: view('h1', 'Shared content'),
       // an editor reads and applies site templates, only the markup stays admin
-      editor: view('h1', 'Site templates'),
+      editor: view('h1', 'Shared content'),
+    },
+  },
+  {
+    name: 'Page templates',
+    path: '/templates/page',
+    roles: {
+      admin: view('h1', 'Page templates'),
+      // an editor reads the template, only the markup stays admin
+      editor: view('h1', 'Page templates'),
+    },
+  },
+  {
+    name: 'Content templates',
+    path: '/templates/content',
+    roles: {
+      admin: view('h1', 'Content templates'),
+      editor: view('h1', 'Content templates'),
+    },
+  },
+  {
+    name: 'Old template entry point',
+    path: '/templates',
+    // the old link still lands on the site templates
+    roles: {
+      admin: view('h1', 'Shared content'),
+      editor: view('h1', 'Shared content'),
     },
   },
   {name: 'Password', path: '/password', roles: everyRole('h1', 'Change password')},

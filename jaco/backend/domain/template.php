@@ -118,6 +118,33 @@ function find_content_template(Config $config, string $file): Payload
     ]);
 }
 
+/**
+ * One page template with the whole document. The listing carries the title
+ * only - reading every document in it would fill the list with pages nobody
+ * opens - so the editor asks for the one file it shows. An editor may read it:
+ * `page/create` reads the same file to create a page from it.
+ */
+function find_page_template(Config $config, string $file): Payload
+{
+    [$file, $errors] = validate_existing_template_file($config, 'page', $file);
+    if ($file === null) {
+        return Payload::invalid($errors);
+    }
+
+    $content = filesystem\read_file($config->templatePageDir, $file);
+
+    if ($content === null) {
+        return Payload::error([['file', 'Could not read file.']]);
+    }
+
+    return Payload::success([
+        'file' => $file,
+        'title' => html\get_title($content),
+        'created' => filesystem\file_mtime($file, $config->templatePageDir),
+        'content' => $content,
+    ]);
+}
+
 function site_template_name(string $file): string
 {
     return \pathinfo($file, PATHINFO_FILENAME);
@@ -196,6 +223,116 @@ function preview_site_template(Config $config, string $file): array
     }
 
     return ['files' => $matches, 'elements' => $elements];
+}
+
+/**
+ * True when the HTML is a whole document: the page manager fills its title and
+ * creates pages from it, so a bare body would become a page without a head.
+ */
+function is_html_document(string $html): bool
+{
+    return \preg_match('#<(?:!doctype|html)[\s>]#i', $html) === 1
+        && \preg_match('#<title[\s>]#i', $html) === 1;
+}
+
+/**
+ * The same name rules the site templates use, for a file that has to exist:
+ * page and content templates are edited, never created, in the admin.
+ *
+ * @return array{0: ?string, 1: array<array{string, string}>} validated file or errors
+ */
+function validate_existing_template_file(Config $config, string $kind, string $file): array
+{
+    $file = data\sanitize_value($file, [['to_filename']]);
+    if ($file === '' || \pathinfo($file, PATHINFO_EXTENSION) !== 'html' || \basename($file) !== $file) {
+        return [null, [['file', 'Invalid template file.']]];
+    }
+
+    $dir = $config->templateDir($kind);
+    if ($dir === null || !\is_file($dir . '/' . $file)) {
+        return [null, [['file', 'Template does not exist.']]];
+    }
+
+    return [$file, []];
+}
+
+/**
+ * What a fragment has to be: one root element and the data-jaco names of the
+ * contract, since the editor inserts it into pages as one block. The file is
+ * written unsanitized - the admin owns the markup - so this check stands in for
+ * the sanitizer a page save runs.
+ *
+ * @return array{0: ?string, 1: array<array{string, string}>} content or errors
+ */
+function validate_template_fragment(string $content): array
+{
+    if (!html\fragment_has_one_root($content)) {
+        return [null, [['content', 'Template must contain exactly one root element.']]];
+    }
+
+    $unknownNames = html\data_attribute_unknown_names($content);
+    if (\count($unknownNames) > 0) {
+        return [null, \array_map(
+            static fn(string $name): array => ['content', 'unknown name: ' . $name],
+            $unknownNames,
+        )];
+    }
+
+    return [$content, []];
+}
+
+/**
+ * Write a page or content template.
+ *
+ * The content is written as it was sent: these are whole documents and block
+ * markup the admin owns, and sanitizing would drop the scripts and meta tags of
+ * a page template. The file is backed up first, like every other edit in Jaco,
+ * so a wrong save can be undone.
+ */
+function update_template(Config $config, string $kind, string $file, string $content, callable $validate): Payload
+{
+    [$file, $errors] = validate_existing_template_file($config, $kind, $file);
+    if ($file === null) {
+        return Payload::invalid($errors);
+    }
+
+    [$content, $errors] = $validate($content);
+    if ($content === null) {
+        return Payload::invalid($errors);
+    }
+
+    if ($kind !== 'page' && $kind !== 'content') {
+        return Payload::error([['file', 'Unknown template kind.']]);
+    }
+
+    $dir = (string) $config->templateDir($kind);
+
+    if (!filesystem\backup_file($dir, $file, $config->backupDir)) {
+        return Payload::error([['file', 'Could not backup file.']]);
+    }
+
+    if (!filesystem\write_file_atomic($config, $dir, $file, $content)) {
+        return Payload::error([['file', 'Could not write template.']]);
+    }
+
+    return Payload::success([
+        'file' => $file,
+        'title' => $kind === 'page' ? html\get_title($content) : $file,
+        'created' => filesystem\file_mtime($file, $dir),
+        'content' => $content,
+    ]);
+}
+
+function update_page_template(Config $config, string $file, string $content): Payload
+{
+    return update_template($config, 'page', $file, $content, static fn(string $html): array => is_html_document($html)
+        ? [$html, []]
+        : [null, [['content', 'Template must be a complete HTML document.']]]);
+}
+
+function update_content_template(Config $config, string $file, string $content): Payload
+{
+    return update_template($config, 'content', $file, $content, validate_template_fragment(...));
 }
 
 /**
