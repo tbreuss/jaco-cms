@@ -87,14 +87,15 @@ Accept: application/json
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
 
 
+# {{token}}: set it in http-client.private.env.json (not committed) instead of pasting a JWT here
 ### Page template view
 GET http://localhost:9999/jaco/api.php?action=template/page/view&file=default.html&XDEBUG_SESSION_START
 Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+Authorization: Bearer {{token}}
 
 ### Page template update
 POST http://localhost:9999/jaco/api.php?action=template/page/update&XDEBUG_SESSION_START
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -104,7 +105,7 @@ Content-Type: application/json
 
 ### Content template update
 POST http://localhost:9999/jaco/api.php?action=template/content/update&XDEBUG_SESSION_START
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJjb20uamFjbyIsImF1ZCI6ImNvbS5qYWNvIiwiaWF0IjoxNjc4MDAwODk4LCJuYmYiOjE2NzgwMDA4OTh9.hiVGYt_B782P56X7XKh3E_ZF8YeRnUKL24C7J3W55ZKonbTwUT6jxou5MVkrbpQbCkVDrVQ0Ud6-9y3WC7k0qw
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {

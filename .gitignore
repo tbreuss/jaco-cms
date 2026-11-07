@@ -31,3 +31,6 @@
 
 # Runtime data written by the admin and the test suites
 /jaco-data/runtime/
+
+# Personal HTTP client variables (tokens) for jaco/api.http
+/jaco/http-client.private.env.json
