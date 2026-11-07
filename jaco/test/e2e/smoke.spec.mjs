@@ -18,7 +18,7 @@ test('admin can log in, open the pages list and log out', {tag: '@smoke'}, async
   await page.getByRole('button', {name: 'Account'}).click()
   await page.getByRole('menuitem', {name: 'Logout'}).click()
   await expect(page.getByRole('heading', {name: 'Logged out'})).toBeVisible()
-  await page.getByRole('link', {name: 'Login again'}).click()
+  await page.getByRole('button', {name: 'Login again'}).click()
   await expect(page.locator('#username')).toBeVisible()
 })
 

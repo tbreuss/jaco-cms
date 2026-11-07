@@ -661,7 +661,8 @@ QUnit.test('the layout greys out what the role may not do', (assert) => {
       'the account menu is available',
     )
     assert.strictEqual(fixture().querySelector('.jump-to-page'), null, 'the page jump is no longer a direct control')
-    assert.ok(fixture().querySelector('select.theme-switch'), 'the theme switch stays direct')
+    assert.ok(fixture().querySelector('.navbar > select.theme-switch'), 'the theme switch stays direct')
+    assert.ok(dropdowns[3].querySelector('select.theme-switch.in-menu'), 'small screens find it in the account menu')
   } finally {
     i18n.status = savedStatus
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
@@ -1052,7 +1053,11 @@ QUnit.test('the palette trigger names the Ctrl/Cmd+K shortcut', (assert) => {
   assert.ok(trigger.title.includes(shortcut), 'the tooltip names the shortcut')
   assert.ok(trigger.getAttribute('aria-label').includes(shortcut), 'the accessible name names the shortcut')
   assert.strictEqual(trigger.querySelector('.palette-shortcut')?.textContent, shortcut, 'the shortcut is visible')
-  assert.strictEqual(trigger.querySelector('.icon'), null, 'the shortcut badge replaces the keyboard icon')
+  // the desktop shows the badge and the label; the icon is for small screens, where
+  // the stylesheet hides both and shows the icon instead. It is the search icon,
+  // not the keyboard icon the badge once replaced.
+  assert.ok(trigger.querySelector('.icon'), 'a small-screen icon is rendered')
+  assert.ok(trigger.querySelector('.icon + kbd.palette-shortcut'), 'the badge follows the icon')
 })
 
 QUnit.test('the listener is removed with the layout', (assert) => {

@@ -112,7 +112,7 @@ const previewDialog = () => {
       : m('p', t('The template is applied as it is stored.')),
     m('p', t('Every page that is rewritten is backed up first.')),
     m(ButtonGroup, {wrap: 'div.row.text-right'},
-      m(ButtonSecondary, {onclick: closePreview}, m('span', t('Cancel'))),
+      m(ButtonSecondary, {onclick: closePreview}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
       m(ButtonDanger, {onclick: confirmApply, disabled: files === 0}, m(Icon, {name: 'check'}), m('span', t('Save & apply to all pages')))
     )
   ))
