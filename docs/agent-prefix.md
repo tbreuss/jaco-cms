@@ -35,7 +35,9 @@ twice for the same reason, or when a change would touch an invariant in
 - No Chrome: the QUnit runner needs an explicit browser,
   `--chrome="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"`.
 - The Playwright suite cannot run here; write the spec and report it as unverified.
-- Build throw-away docroots under `$TMPDIR`, never inside the repository: a
-  directory under Docker's file sharing cannot be removed without `sudo`.
+- Throw-away docroots can end up unremovable (`rm: Permission denied` on
+  `<docroot>/jaco`, Docker's gRPC FUSE ownership attribute); the location does
+  not matter, `$TMPDIR` is affected as well. Do not debug it, report the path
+  and let the human remove it with `sudo rm -rf`.
 - Stop a dev server when it is done with; a running `php -S` holds its docroot:
   `pkill -f "php -S 127.0.0.1:<port>"`.
