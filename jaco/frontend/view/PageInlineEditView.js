@@ -200,6 +200,9 @@ const bindShortcut = () => {
   if (!auth.can('editor')) {
     return
   }
+  // the handler runs again on every iframe load (a save reloads the page): drop
+  // the previous listeners first, or one Ctrl+S would save once per load
+  unbindSaveShortcuts.forEach((unbind) => unbind())
   // keydown does not cross document boundaries: listen in the parent
   // document (toolbar, buttons) as well as inside the iframe (content)
   unbindSaveShortcuts = [
