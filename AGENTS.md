@@ -11,6 +11,8 @@ into `website/` (`docker-compose.yml`).
 Details: [README.md](README.md), [llms.txt](llms.txt). Maintainer docs index:
 [docs/readme.md](docs/readme.md).
 
+Working rules for an assistant in this repository: [docs/agent-prefix.md](docs/agent-prefix.md).
+
 ## Ground rules
 
 - Answer in the user's language. Commit messages and code comments are English.
