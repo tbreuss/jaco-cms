@@ -9,7 +9,7 @@ import {PageSettingsDialog} from '../component/PageSettingsDialog.js'
 import {Icon} from '../component/Icon.js'
 import {app} from '../lib/app.js'
 import {auth} from '../lib/auth.js'
-import {bindSaveShortcut, saveShortcutLabel} from '../lib/shortcuts.js'
+import {bindSaveShortcut, saveAndCloseShortcutLabel, saveShortcutLabel} from '../lib/shortcuts.js'
 import {dirty} from '../lib/dirty.js'
 
 // Content as it was when the view opened. Captured from makeEditable's ready
@@ -44,11 +44,12 @@ const beforeUnloadHandler = (e) => {
 }
 
 export const save = (e) => {
+  if (!e) e = {}
   e.redraw = false
   if (!auth.can('editor')) {
-    return
+    return Promise.resolve()
   }
-  api.post('page/update-body', {}, {
+  return api.post('page/update-body', {}, {
     background: true, // no redraw
     body: {
       fileName: iframe.fileName(),
@@ -57,10 +58,12 @@ export const save = (e) => {
     withCredentials: false
   })
     .then(() => {
-      savedBody = iframe.getHTML()
       iframe.reload()
       addSuccess(t('Page was successfully saved.'))
-      m.route.set('/')
+      // the request runs in the background and the click handler suppresses
+      // its redraw, so without this the toast sits in the state: it used to
+      // appear only because the save navigated away right after
+      m.redraw()
     })
     .catch(({code, response}) => {
       if (code === 422) {
@@ -69,6 +72,24 @@ export const save = (e) => {
         })
       }
       m.redraw()
+      throw {code, response}
+    })
+}
+
+export const saveAndClose = (e) => {
+  if (!e) e = {}
+  return save(e)
+    .then(() => {
+      // the save succeeded: there is nothing left to discard. Without this the
+      // reload below has already replaced the document, so the dirty guard
+      // compares the fresh page against the pre-save baseline and asks whether
+      // to throw away changes that were just stored.
+      dirty.clear()
+      m.route.set('/')
+    })
+    .catch(() => {
+      // validation/server errors are already surfaced by save;
+      // do not navigate away on a failed save
     })
 }
 
@@ -184,9 +205,11 @@ const bindShortcut = () => {
   unbindSaveShortcuts = [
     bindSaveShortcut(document, {
       onSave: () => save({redraw: false}),
+      onSaveAndClose: () => saveAndClose({redraw: false}),
     }),
     bindSaveShortcut(iframe.contentDocument(), {
       onSave: () => save({redraw: false}),
+      onSaveAndClose: () => saveAndClose({redraw: false}),
     }),
   ]
 }
@@ -218,8 +241,12 @@ export const PageInlineEditView = {
     bindShortcut()
     setEditLayout(true)
     iframe.fitBelowNavbar()
-    // the listener lives on the iframe document and dies with it on navigation
-    iframe.getElement().onload = bindShortcut
+    // reloads (e.g. after a save) must re-hook the editors and the shortcuts,
+    // otherwise the page would stay non-editable
+    iframe.getElement().onload = () => {
+      iframe.makeEditable(captureSavedBody)
+      bindShortcut()
+    }
   },
   onremove: () => {
     pageSettings.open = false
@@ -242,6 +269,11 @@ export const PageInlineEditView = {
         disabled: !auth.can('editor'),
         title: auth.can('editor') ? t('Save') + ' (' + saveShortcutLabel() + ')' : t('Save') + ' – ' + t('Your role does not allow this.'),
       }, m(Icon, {name: 'save'}), m('span', t('Save'))),
+      m(ButtonPrimary, {
+        onclick: saveAndClose,
+        disabled: !auth.can('editor'),
+        title: auth.can('editor') ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
+      }, m(Icon, {name: 'check'}), m('span', t('Save & Close'))),
     ),
     pageSettings.open && m(PageSettingsDialog, {
       page: pageSettings.page,
