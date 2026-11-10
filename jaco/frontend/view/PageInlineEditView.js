@@ -285,7 +285,7 @@ export const PageInlineEditView = {
         onclick: saveAndClose,
         disabled: !auth.can('editor'),
         title: auth.can('editor') ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
-      }, m(Icon, {name: 'check'}), m('span', t('Save & Close'))),
+      }, m(Icon, {name: 'save-check'}), m('span', t('Save & Close'))),
     ),
     pageSettings.open && m(PageSettingsDialog, {
       page: pageSettings.page,
