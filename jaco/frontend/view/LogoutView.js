@@ -16,7 +16,7 @@ export const LogoutView = {
   },
   view: () => m(ModalSmall, {title: t('Logged out')},
     m('div.logout-actions',
-      m(ButtonSecondary, {type: 'button', onclick: () => m.route.set('/')}, t('Go to homepage')),
+      m(ButtonSecondary, {type: 'button', onclick: () => { window.top.location.href = '../' }}, t('Go to homepage')),
       m(ButtonPrimary, {type: 'button', onclick: () => m.route.set('/login')}, t('Login again'))
     )
   )
