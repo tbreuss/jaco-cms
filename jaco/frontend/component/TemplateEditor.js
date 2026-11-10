@@ -296,7 +296,7 @@ export const createTemplateEditor = ({
             onclick: onSaveAndCloseButtonClicked,
             disabled: !editable,
             title: editable ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
-          }, m(Icon, {name: 'check'}), m('span', t('Save & Close')))
+          }, m(Icon, {name: 'save-check'}), m('span', t('Save & Close')))
         )
       )
     )
