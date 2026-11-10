@@ -240,6 +240,10 @@ export const PageInlineEditView = {
       m.route.set('/')
       return
     }
+    // The document the editors were initialized on. A load event for this very
+    // document (it may still be loading subresources when the view opens) must
+    // not initialize the editors a second time: that rebuilds toolbars and dialogs.
+    let editedDocument = iframe.contentDocument()
     iframe.makeEditable(captureSavedBody)
     bindShortcut()
     setEditLayout(true)
@@ -247,6 +251,11 @@ export const PageInlineEditView = {
     // reloads (e.g. after a save) must re-hook the editors and the shortcuts,
     // otherwise the page would stay non-editable
     iframe.getElement().onload = () => {
+      const current = iframe.contentDocument()
+      if (current === editedDocument) {
+        return
+      }
+      editedDocument = current
       iframe.makeEditable(captureSavedBody)
       bindShortcut()
     }
