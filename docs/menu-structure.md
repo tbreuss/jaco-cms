@@ -127,7 +127,7 @@ disabled.
 
 ## Inline editor
 
-The inline editor toolbar offers **Page settings**, **Cancel** and **Save**.
+The inline editor toolbar offers **Page settings**, **Cancel**, **Save** and **Save & Close**.
 
 - **Page settings** opens a modal for the page title, meta description and robots
   value. It is available to editors and admins; a read-only account sees the

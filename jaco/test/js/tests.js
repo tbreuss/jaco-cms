@@ -18,7 +18,7 @@ import {PageDeleteView} from '/jaco/frontend/view/PageDeleteView.js'
 import {ModalSmall} from '/jaco/frontend/component/ModalSmall.js'
 import {PageGotoView, state as pageGotoState} from '/jaco/frontend/view/PageGotoView.js'
 import {PageInlineEditView} from '/jaco/frontend/view/PageInlineEditView.js'
-import {save as inlineSave} from '/jaco/frontend/view/PageInlineEditView.js'
+import {save as inlineSave, saveAndClose as inlineSaveAndClose} from '/jaco/frontend/view/PageInlineEditView.js'
 import {PageTemplateModel} from '/jaco/frontend/model/PageTemplateModel.js'
 import {PageListView} from '/jaco/frontend/view/page/PageListView.js'
 import {PageEditView, onSaveButtonClicked as onSavePageButtonClicked, onSaveAndCloseButtonClicked, setEditor, state as pageEditState} from '/jaco/frontend/view/page/PageEditView.js'
@@ -4184,7 +4184,7 @@ QUnit.test('renders cancel and save buttons', (assert) => {
   assert.ok(buttons.length >= 2, 'cancel and save buttons rendered')
 })
 
-QUnit.test('save success navigates to home', async (assert) => {
+QUnit.test('save success does not navigate', async (assert) => {
   const origPost = api.post
   const routeCalls = []
   const originalSet = m.route.set
@@ -4201,7 +4201,47 @@ QUnit.test('save success navigates to home', async (assert) => {
 
   api.post = origPost
   m.route.set = originalSet
-  assert.ok(routeCalls.includes('/'), 'navigates home on success')
+  assert.notOk(routeCalls.includes('/'), 'stays in the editor on save')
+})
+
+QUnit.test('save and close success navigates home', async (assert) => {
+  const origPost = api.post
+  const routeCalls = []
+  const originalSet = m.route.set
+  m.route.set = (path) => routeCalls.push(path)
+  const reloadCalls = []
+  iframe.reload = () => reloadCalls.push('reload')
+
+  api.post = (action, params, options) => Promise.resolve({})
+
+  // the reload rebuilds the page: after the save the document differs from the
+  // baseline captured when the view opened. Without clearing the baseline the
+  // route guard asks whether to discard changes that are already stored.
+  let body = '<p>body</p>'
+  iframe.getHTML = () => body
+
+  m.render(fixture(), m(PageInlineEditView))
+  body = '<p>body reloaded</p>'
+  const prompts = []
+  const originalConfirm = window.confirm
+  window.confirm = (message) => {
+    prompts.push(message)
+    return true
+  }
+
+  try {
+    await inlineSaveAndClose({redraw: false})
+
+    assert.ok(routeCalls.includes('/'), 'navigates home on save and close')
+    // the navigation above is stubbed, so the router guard is asked directly:
+    // it is the one that shows the discard dialog
+    assert.notOk(dirty.isDirty(), 'nothing to discard after a successful save')
+    assert.deepEqual(prompts, [], 'no discard prompt after a successful save')
+  } finally {
+    window.confirm = originalConfirm
+    api.post = origPost
+    m.route.set = originalSet
+  }
 })
 
 QUnit.test('save validation error does not navigate', async (assert) => {
@@ -4213,7 +4253,7 @@ QUnit.test('save validation error does not navigate', async (assert) => {
   api.post = (action, params, options) => Promise.reject({code: 422, response: [{title: 'bad', detail: 'bad detail'}]})
 
   m.render(fixture(), m(PageInlineEditView))
-  inlineSave({redraw: false})
+  inlineSave({redraw: false}).catch(() => {})
 
   await new Promise((r) => setTimeout(r, 50))
 
@@ -4227,12 +4267,15 @@ QUnit.test('a viewer can open the inline editor but gets no save button', (asser
   m.render(fixture(), m(PageInlineEditView))
 
   const buttons = [...fixture().querySelectorAll('button')]
-  assert.strictEqual(buttons.length, 2, 'cancel and save stay visible')
+  assert.strictEqual(buttons.length, 3, 'cancel, save and save and close stay visible')
   assert.ok(buttons[0].textContent.includes(t('Cancel')), 'cancel is rendered')
   assert.notOk(isAriaDisabled(buttons[0]), 'cancel stays usable')
   const save = buttons.find((button) => button.textContent.trim() === t('Save'))
   assert.ok(save, 'the save button is rendered')
   assert.ok(isAriaDisabled(save), 'save is disabled for a viewer')
+  const saveClose = buttons.find((button) => button.textContent.trim() === t('Save & Close'))
+  assert.ok(saveClose, 'the save and close button is rendered')
+  assert.ok(isAriaDisabled(saveClose), 'save and close is disabled for a viewer')
 })
 
 QUnit.test('a refused page-settings save shows one toast, not two', async (assert) => {
