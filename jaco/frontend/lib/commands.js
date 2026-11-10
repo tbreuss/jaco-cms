@@ -77,9 +77,21 @@ export const commands = [
   },
   {
     id: 'nav.templates',
-    labelKey: 'List templates',
+    labelKey: 'List shared content',
     roles: ['editor', 'admin'],
     run: () => m.route.set('/templates/site'),
+  },
+  {
+    id: 'nav.page-templates',
+    labelKey: 'List page templates',
+    roles: ['editor', 'admin'],
+    run: () => m.route.set('/templates/page'),
+  },
+  {
+    id: 'nav.content-templates',
+    labelKey: 'List content templates',
+    roles: ['editor', 'admin'],
+    run: () => m.route.set('/templates/content'),
   },
   {
     id: 'nav.backups',
@@ -92,6 +104,42 @@ export const commands = [
     labelKey: 'Edit CSS',
     roles: ['editor', 'admin'],
     run: () => m.route.set('/css'),
+  },
+  {
+    id: 'nav.environment',
+    labelKey: 'View environment',
+    roles: ['admin'],
+    run: () => m.route.set('/system/env'),
+  },
+  {
+    id: 'nav.log',
+    labelKey: 'View application log',
+    roles: ['admin'],
+    run: () => m.route.set('/system/log'),
+  },
+  {
+    id: 'nav.php-info',
+    labelKey: 'View PHP info',
+    roles: ['admin'],
+    run: () => m.route.set('/system/php-info'),
+  },
+  {
+    id: 'nav.about',
+    labelKey: 'View about',
+    roles: ['editor', 'admin'],
+    run: () => m.route.set('/system/about'),
+  },
+  {
+    id: 'nav.password',
+    labelKey: 'Change password',
+    roles: ['editor', 'admin'],
+    run: () => m.route.set('/password'),
+  },
+  {
+    id: 'nav.language',
+    labelKey: 'Change language',
+    roles: ['editor', 'admin'],
+    run: () => m.route.set('/language'),
   },
   {
     id: 'theme.toggle',

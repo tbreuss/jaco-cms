@@ -75,6 +75,7 @@
     "Page template": "Modello pagina",
     "Page settings": "Impostazioni pagina",
     "Shared content": "Contenuto condiviso",
+    "List shared content": "Elenca i contenuti condivisi",
     "Page templates": "Modelli di pagina",
     "Content templates": "Modelli di contenuto",
     "Content template": "Modello di contenuto",
@@ -125,6 +126,10 @@
     "View page": "Vedi pagina",
     "View upload": "Vedi caricamento",
     "View": "Vedi",
+    "View environment": "Vedi ambiente",
+    "View application log": "Vedi registro applicazione",
+    "View PHP info": "Vedi info PHP",
+    "View about": "Vedi informazioni",
     "Yes": "Sì",
     "Authentication failed.": "Autenticazione fallita.",
     "Changes are disabled while maintenance mode is enabled.": "Le modifiche sono disabilitate mentre la modalità di manutenzione è attiva.",
@@ -280,6 +285,8 @@
     "Every page that is rewritten is backed up first.": "Ogni pagina riscritta viene salvata in backup prima.",
     "The template is applied as it is stored.": "Il modello viene applicato così com’è salvato.",
     "List templates": "Elenca i modelli",
+    "List page templates": "Elenca i modelli di pagina",
+    "List content templates": "Elenca i modelli di contenuto",
     "Add block": "Aggiungi blocco",
     "Block hinzufügen": "Aggiungi blocco"
 }

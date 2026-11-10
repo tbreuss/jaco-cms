@@ -80,6 +80,7 @@
     "Template was successfully saved.": "Template was successfully saved.",
     "No templates found. Create HTML files under jaco-data/templates/site/ to get started.": "No templates found. Create HTML files under jaco-data/templates/site/ to get started.",
     "Shared content": "Shared content",
+    "List shared content": "List shared content",
     "Page templates": "Page templates",
     "Content templates": "Content templates",
     "Content template": "Content template",
@@ -125,6 +126,10 @@
     "View page": "View page",
     "View upload": "View upload",
     "View": "View",
+    "View environment": "View environment",
+    "View application log": "View application log",
+    "View PHP info": "View PHP info",
+    "View about": "View about",
     "Yes": "Yes",
     "Authentication failed.": "Authentication failed.",
     "Changes are disabled while maintenance mode is enabled.": "Changes are disabled while maintenance mode is enabled.",
@@ -280,6 +285,8 @@
     "Every page that is rewritten is backed up first.": "Every page that is rewritten is backed up first.",
     "The template is applied as it is stored.": "The template is applied as it is stored.",
     "List templates": "List templates",
+    "List page templates": "List page templates",
+    "List content templates": "List content templates",
     "Add block": "Add block",
     "Block hinzufügen": "Add block"
 }

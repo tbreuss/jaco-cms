@@ -80,6 +80,7 @@
     "Template was successfully saved.": "Vorlage wurde gespeichert.",
     "No templates found. Create HTML files under jaco-data/templates/site/ to get started.": "Keine Vorlagen gefunden. HTML-Dateien unter jaco-data/templates/site/ anlegen.",
     "Shared content": "Gemeinsame Inhalte",
+    "List shared content": "Gemeinsame Inhalte auflisten",
     "Page templates": "Seitenvorlagen",
     "Content templates": "Inhaltsvorlagen",
     "Content template": "Inhaltsvorlage",
@@ -125,6 +126,10 @@
     "View page": "Seite ansehen",
     "View upload": "Upload ansehen",
     "View": "Ansehen",
+    "View environment": "Umgebung ansehen",
+    "View application log": "Anwendungsprotokoll ansehen",
+    "View PHP info": "PHP-Info ansehen",
+    "View about": "Über Jaco CMS ansehen",
     "Yes": "Ja",
     "Authentication failed.": "Anmeldung fehlgeschlagen.",
     "Changes are disabled while maintenance mode is enabled.": "Änderungen sind deaktiviert, solange der Wartungsmodus aktiviert ist.",
@@ -280,6 +285,8 @@
     "Every page that is rewritten is backed up first.": "Jede umgeschriebene Seite wird vorher gesichert.",
     "The template is applied as it is stored.": "Die Vorlage wird so angewendet, wie sie gespeichert ist.",
     "List templates": "Vorlagen auflisten",
+    "List page templates": "Seitenvorlagen auflisten",
+    "List content templates": "Inhaltsvorlagen auflisten",
     "Add block": "Block hinzufügen",
     "Block hinzufügen": "Block hinzufügen"
 }
