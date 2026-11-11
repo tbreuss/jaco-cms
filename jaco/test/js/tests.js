@@ -2367,6 +2367,30 @@ QUnit.test('clicking a dynamically inserted block opens the editor toolbar', (as
   }, 50)
 })
 
+QUnit.test('the item bar stays out of the edited text and survives closing the editor', (assert) => {
+  m.render(fixture(), m.trust(
+    '<div data-jaco-repeater="x.html" data-jaco-repeater--label="Add">' +
+    '<div data-jaco-block data-jaco-block--tools="basic"><p>Hello</p></div></div>'
+  ))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+  const block = fixture().querySelector('[data-jaco-block]')
+  const bar = block.querySelector(':scope > .jaco-content-item-bar')
+  assert.ok(bar, 'the block has an item bar before editing')
+  const deleteButton = bar.querySelector('button:last-child')
+
+  block.dispatchEvent(new MouseEvent('click', {bubbles: true}))
+  const editor = block.querySelector('.ql-editor')
+  assert.ok(editor, 'the editor is open')
+  assert.notOk(editor.querySelector('.jaco-content-item-bar'), 'the bar is not part of the edited text')
+  assert.notOk(editor.textContent.includes('×'), 'the × is not in the text')
+
+  window.removeRichTextEditorElements()
+  const restored = block.querySelector(':scope > .jaco-content-item-bar')
+  assert.strictEqual(restored, bar, 'the same bar is back in the block')
+  assert.strictEqual(restored.querySelector('button:last-child'), deleteButton, 'with its working delete button')
+  assert.strictEqual(block.querySelectorAll('.jaco-content-item-bar').length, 1, 'exactly one bar')
+})
+
 QUnit.test('toolbar follows across static and inserted blocks with images', (assert) => {
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))
