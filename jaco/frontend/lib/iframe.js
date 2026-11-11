@@ -159,6 +159,10 @@ export const iframe = {
       frame.src = pathToPreviewUrl(saved)
     }
   },
+  // marks the page document (not the body, so it never reaches the saved HTML)
+  setShowEditable: (on) => {
+    iframe.contentDocument().documentElement.classList.toggle('jaco-show-editable', on)
+  },
   reload: () => {
     iframe.contentWindow().location.reload()
   },

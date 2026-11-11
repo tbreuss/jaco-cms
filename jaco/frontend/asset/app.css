@@ -827,6 +827,11 @@ button.secondary {
     transition: background-color 0.15s ease;
 }
 
+button.secondary[aria-pressed="true"] {
+    background-color: var(--color-secondary-dark);
+    box-shadow: inset 0 0 0 2px var(--color-on-primary);
+}
+
 button.secondary:hover {
     background-color: var(--color-secondary-dark);
 }
