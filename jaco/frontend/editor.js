@@ -444,6 +444,7 @@ window.addClickHandler = () => {
         },
         theme: 'snow'
       }
+      stashItemBar(editable)
       new Quill(editable, editorOptions)
       localizeQuillChrome()
       editorMessagesReady.then(localizeQuillChrome)
@@ -458,6 +459,7 @@ window.addClickHandler = () => {
       let toolbarLineOptions = lineTools === 'basic'
         ? [['bold', 'italic', 'underline', 'strike'], ['link'], ['clean']]
         : []
+      stashItemBar(editableLine)
       new Quill(editableLine, {
         modules: {
           toolbar: toolbarLineOptions.length ? toolbarLineOptions : false,
@@ -730,6 +732,25 @@ window.detectImageSize = (image) => {
   */
 }
 
+// The content-list item bar (delete button) lives inside the block as a direct
+// child. Quill would swallow it into the editable text, so take it out while
+// editing and put it back when the editor closes.
+window.stashItemBar = (element) => {
+  const bar = element.querySelector(':scope > .jaco-content-item-bar')
+  if (bar) {
+    bar.remove()
+    element._jacoItemBar = bar
+  }
+}
+
+window.restoreItemBar = (element) => {
+  const bar = element._jacoItemBar
+  if (bar) {
+    element.prepend(bar)
+    delete element._jacoItemBar
+  }
+}
+
 window.handlePosition = (element) => {
   const toolbar = element.parentElement.querySelectorAll('.ql-toolbar')[0]
   // plain offers no toolbar: there is nothing to position
@@ -772,6 +793,7 @@ window.removeRichTextEditorElements = () => {
   window.removeMediaPicker?.()
   window.removeVideoDialog?.()
   document.querySelectorAll('.ql-editor').forEach((element) => {
+    const container = element.parentElement
     element.parentElement.classList.remove('ql-container', 'ql-snow')
     // remove empty class attribute
     if (element.parentElement.classList.length === 0) {
@@ -785,6 +807,7 @@ window.removeRichTextEditorElements = () => {
       normalizeVideoFrames(element)
       element.parentElement.innerHTML = element.innerHTML
     }
+    restoreItemBar(container)
   })
   document.querySelectorAll('.ql-toolbar, .ql-clipboard, .ql-tooltip').forEach((element) => {
     element.remove()
