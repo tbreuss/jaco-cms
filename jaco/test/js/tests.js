@@ -3179,7 +3179,7 @@ QUnit.test('arrow keys wrap the selection like the command palette', (assert) =>
   pageGotoState.selected = 0
   m.render(fixture(), m(PageGotoView))
 
-  const input = fixture().querySelector('.list-filter input')
+  const input = fixture().querySelector('.palette-filter')
   input.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp', bubbles: true}))
   m.render(fixture(), m(PageGotoView))
   assert.strictEqual(pageGotoState.selected, 1, 'arrow up from the first item wraps to the last')
@@ -3201,11 +3201,11 @@ QUnit.test('filters the page list and opens the selected page', async (assert) =
     await new Promise((resolve) => setTimeout(resolve, 0))
     m.render(fixture(), m(PageGotoView))
 
-    const modal = fixture().querySelector('.modal')
-    assert.ok(modal, 'the search palette is rendered')
-    assert.strictEqual(getComputedStyle(modal).alignItems, 'flex-start', 'every modal keeps a fixed top edge')
+    const overlay = fixture().querySelector('.palette-overlay')
+    assert.ok(overlay, 'the search palette is rendered')
+    assert.strictEqual(getComputedStyle(overlay).alignItems, 'flex-start', 'the palette keeps a fixed top edge')
 
-    const input = fixture().querySelector('.list-filter input')
+    const input = fixture().querySelector('.palette-filter')
     assert.ok(input, 'the filter field is rendered')
     assert.strictEqual(document.activeElement, input, 'the filter takes focus')
     assert.ok(fixture().textContent.includes('a.html'), 'all pages are listed initially')
@@ -3214,23 +3214,12 @@ QUnit.test('filters the page list and opens the selected page', async (assert) =
     input.dispatchEvent(new Event('input'))
     m.render(fixture(), m(PageGotoView))
 
-    const clearBtn = fixture().querySelector('.list-filter-clear')
-    assert.ok(clearBtn, 'clear button shown while filtering')
-    clearBtn.click()
-    m.render(fixture(), m(PageGotoView))
-    assert.strictEqual(pageGotoState.filter, '', 'clear resets the filter')
-    assert.notOk(fixture().querySelector('.list-filter-clear'), 'clear button hides when filter is empty')
-
-    input.value = 'page b'
-    input.dispatchEvent(new Event('input'))
-    m.render(fixture(), m(PageGotoView))
-
-    const items = [...fixture().querySelectorAll('.list-group-item')]
+    const items = [...fixture().querySelectorAll('.palette-row')]
     assert.strictEqual(items.length, 1, 'the title filter narrows the list')
     assert.ok(items[0].textContent.includes('b.html'))
     assert.ok(items[0].classList.contains('selected'), 'the first hit is selected')
 
-    input.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}))
+    input.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}))
     assert.deepEqual(loaded, ['/b.html'], 'enter opens the selected page')
     assert.deepEqual(routeCalls, ['/'], 'and returns to the preview')
   } finally {
