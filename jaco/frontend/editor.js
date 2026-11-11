@@ -732,14 +732,22 @@ window.detectImageSize = (image) => {
   */
 }
 
-// The content-list item bar (delete button) lives inside the block as a direct
-// child. Quill would swallow it into the editable text, so take it out while
-// editing and put it back when the editor closes.
+// Content-list chrome (item bars with the delete button, add buttons, chooser)
+// is editor UI, not text. Quill would swallow it into the edited text, so take
+// it out while editing and put it back when the editor closes: the block's own
+// bar (a direct child) is kept and re-attached as is; the chrome of lists
+// nested inside the block is dropped and rebuilt for the lists that are still
+// there.
 window.stashItemBar = (element) => {
   const bar = element.querySelector(':scope > .jaco-content-item-bar')
   if (bar) {
     bar.remove()
     element._jacoItemBar = bar
+  }
+  const lists = window.JacoContentLists
+  if (lists && element.querySelector('[data-jaco-repeater], [data-jaco-slot], .jaco-content-item-bar, .jaco-content-add-button, .jaco-slot-chooser')) {
+    lists.removeContentListChrome(element)
+    element._jacoNestedLists = true
   }
 }
 
@@ -748,6 +756,10 @@ window.restoreItemBar = (element) => {
   if (bar) {
     element.prepend(bar)
     delete element._jacoItemBar
+  }
+  if (element._jacoNestedLists) {
+    delete element._jacoNestedLists
+    window.JacoContentLists?.initContentLists(element)
   }
 }
 
