@@ -1,9 +1,6 @@
 import {t} from '../model/i18n.js'
 import {iframe} from '../lib/iframe.js'
-import {ModalMedium} from '../component/ModalMedium.js'
-import {FilterInput} from '../component/FilterInput.js'
 import {Icon} from '../component/Icon.js'
-import {ButtonSecondary} from '../component/ButtonSecondary.js'
 import {PageListModel} from '../model/PageListModel.js'
 import {app} from '../lib/app.js'
 
@@ -88,53 +85,43 @@ const onKeyDown = (e) => {
   }
 }
 
+const action = (page, label, icon, run) =>
+  m('button.palette-action', {
+    type: 'button',
+    title: label,
+    'aria-label': label,
+    onclick: (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      run(page)
+    },
+  }, m(Icon, {name: icon}))
+
+// Same look as the command palette: one row per page, the file as the label
+// and the title below it, the secondary actions on the right of the row.
 const pageList = (pages, selected) =>
-  pages.length
-    ? m('.list-group.page-goto-list', pages.map((page, index) =>
-      m('div.list-group-item.page-goto-item', {
-        class: index === selected ? 'selected' : undefined,
-      },
-      m('a.page-goto-link', {
-        href: '#',
-        onclick: (e) => {
-          e.preventDefault()
-          openPage(page)
-        }
-      },
-      m('span.page-goto-file', page.file),
-      page.title ? m('span.page-goto-title', ' · ' + page.title) : null),
-      m('span.page-goto-actions', {style: {display: 'flex', gap: '0.25rem', flex: '0 0 auto'}},
-        m(ButtonSecondary, {
-          type: 'button',
-          onclick: (e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            openPage(page)
+  m('.palette-list', {id: 'goto-list', role: 'listbox', 'aria-label': t('Jump to page')},
+    pages.length
+      ? pages.map((page, index) =>
+        m('.palette-row', {
+          class: index === selected ? 'selected' : undefined,
+          onmouseenter: () => {
+            state.selected = index
           },
-          title: t('View page'),
-          'aria-label': t('View page'),
-        }, m(Icon, {name: 'view'})),
-        m(ButtonSecondary, {
+        },
+        m('button.palette-item', {
+          id: 'goto-item-' + index,
           type: 'button',
-          onclick: (e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            openPage(page, true)
-          },
-          title: t('Edit content'),
-          'aria-label': t('Edit content'),
-        }, m(Icon, {name: 'edit-content'})),
-        m(ButtonSecondary, {
-          type: 'button',
-          onclick: (e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            m.route.set('/pages/edit/:file...', {file: page.file})
-          },
-          title: t('Edit page'),
-          'aria-label': t('Edit page'),
-        }, m(Icon, {name: 'edit'}))))))
-    : m('p', t('Sorry, no page found'))
+          role: 'option',
+          'aria-selected': index === selected ? 'true' : 'false',
+          onclick: () => openPage(page),
+        },
+        m('span.palette-label', page.file),
+        page.title ? m('span.palette-context', page.title) : null),
+        m('span.palette-actions',
+          action(page, t('Edit content'), 'edit-content', (p) => openPage(p, true)),
+          action(page, t('Edit page'), 'edit', (p) => m.route.set('/pages/edit/:file...', {file: p.file})))))
+      : m('p.palette-empty', t('Sorry, no page found')))
 
 export const PageGotoView = {
   oninit: () => {
@@ -156,26 +143,40 @@ export const PageGotoView = {
     const pages = filtered()
     const selected = Math.min(state.selected, Math.max(pages.length - 1, 0))
 
-    return m(ModalMedium, {title: t('Jump to page')},
-      m(FilterInput, {
-        placeholder: t('Filter page files'),
-        value: state.filter,
-        autofocus: true,
-        onkeydown: onKeyDown,
-        oninput: (e) => {
-          state.filter = e.target.value
-          state.selected = 0
-        },
-        onclear: () => {
-          state.filter = ''
-          state.selected = 0
-        },
-        clearLabel: t('Clear filter'),
-      }),
-      state.loading
-        ? m('p', t('Loading') + '...')
-        : pageList(pages, selected),
-      m('p.hint', t('Use ↑↓ to select, Enter to open, Shift+Enter to edit, Esc to close.'))
-    )
+    return m('.palette-overlay', {
+      onclick: (e) => {
+        if (e.target === e.currentTarget) {
+          cancel(e)
+        }
+      },
+    },
+    m('.palette', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': t('Jump to page'),
+      onkeydown: onKeyDown,
+      oncreate: ({dom}) => dom.querySelector('.palette-filter')?.focus(),
+    },
+    m('h2.sr-only', t('Jump to page')),
+    m('input.palette-filter', {
+      type: 'text',
+      role: 'combobox',
+      'aria-label': t('Filter page files'),
+      'aria-expanded': 'true',
+      'aria-controls': 'goto-list',
+      'aria-autocomplete': 'list',
+      'aria-activedescendant': pages.length ? 'goto-item-' + selected : undefined,
+      placeholder: t('Filter page files') + ' …',
+      value: state.filter,
+      oninput: (e) => {
+        state.filter = e.target.value
+        state.selected = 0
+      },
+    }),
+    state.loading
+      ? m('p.palette-empty', t('Loading') + '...')
+      : pageList(pages, selected),
+    m('.palette-hint', t('Use ↑↓ to select, Enter to open, Shift+Enter to edit, Esc to close.'))
+    ))
   }
 }
