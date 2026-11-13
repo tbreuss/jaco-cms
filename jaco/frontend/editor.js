@@ -440,7 +440,9 @@ window.addClickHandler = () => {
       let editorOptions = {
         modules: {
           // plain offers no toolbar: false keeps Quill from rendering an empty bar
-          toolbar: toolbarOptions.length ? toolbarOptions : false
+          toolbar: toolbarOptions.length ? toolbarOptions : false,
+          // do not add empty lines for the visual spacing between elements
+          clipboard: {matchVisual: false}
         },
         theme: 'snow'
       }
@@ -463,6 +465,7 @@ window.addClickHandler = () => {
       new Quill(editableLine, {
         modules: {
           toolbar: toolbarLineOptions.length ? toolbarLineOptions : false,
+          clipboard: {matchVisual: false},
           keyboard: {
             bindings: {
               shift_enter: {
