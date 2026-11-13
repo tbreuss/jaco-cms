@@ -4267,9 +4267,10 @@ QUnit.test('a viewer can open the inline editor but gets no save button', (asser
   m.render(fixture(), m(PageInlineEditView))
 
   const buttons = [...fixture().querySelectorAll('button')]
-  assert.strictEqual(buttons.length, 3, 'cancel, save and save and close stay visible')
-  assert.ok(buttons[0].textContent.includes(t('Cancel')), 'cancel is rendered')
-  assert.notOk(isAriaDisabled(buttons[0]), 'cancel stays usable')
+  assert.strictEqual(buttons.length, 4, 'highlight, cancel, save and save and close stay visible')
+  const cancel = buttons.find((button) => button.textContent.includes(t('Cancel')))
+  assert.ok(cancel, 'cancel is rendered')
+  assert.notOk(isAriaDisabled(cancel), 'cancel stays usable')
   const save = buttons.find((button) => button.textContent.trim() === t('Save'))
   assert.ok(save, 'the save button is rendered')
   assert.ok(isAriaDisabled(save), 'save is disabled for a viewer')
