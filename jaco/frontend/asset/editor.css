@@ -224,6 +224,18 @@
     margin-bottom: 2px;
 }
 
+/* Text blocks and lines lose their bar while Quill edits them (stashItemBar).
+   Here the bar takes no space in the flow, its buttons overlay the top right
+   corner of the item, so removing it does not shift the content. */
+[data-jaco-block] > .jaco-content-item-bar,
+[data-jaco-line] > .jaco-content-item-bar {
+    align-items: flex-start;
+    height: 0;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+}
+
 .jaco-content-item-bar button,
 .jaco-content-grip {
     background: var(--bg, #eee);
