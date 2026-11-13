@@ -591,7 +591,7 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
 [data-jaco-image--mode],
 [data-jaco-link] {
     outline: 1px dotted color-mix(in srgb, var(--jaco-edit) 30%, transparent);
-    transition: outline-color 0.12s, background-color 0.12s;
+    transition: background-color 0.12s;
 }
 
 /* toolbar switch "show editable areas": full lines for content and structure */
