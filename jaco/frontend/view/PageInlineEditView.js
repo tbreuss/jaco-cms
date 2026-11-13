@@ -182,12 +182,16 @@ const cancel = (e) => {
   m.route.set('/')
 }
 
-// survives iframe reloads (a save reloads the page)
-let showEditable = false
+const SHOW_EDITABLE_STORAGE_KEY = 'jaco-show-editable'
+
+// survives iframe reloads (a save reloads the page) and, via sessionStorage,
+// page reloads within the session
+let showEditable = window.sessionStorage.getItem(SHOW_EDITABLE_STORAGE_KEY) === '1'
 
 const toggleShowEditable = (e) => {
   e.redraw = true
   showEditable = !showEditable
+  window.sessionStorage.setItem(SHOW_EDITABLE_STORAGE_KEY, showEditable ? '1' : '0')
   iframe.setShowEditable(showEditable)
 }
 

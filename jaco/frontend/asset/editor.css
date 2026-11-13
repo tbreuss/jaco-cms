@@ -62,6 +62,7 @@
 
 [data-jaco-link]:hover {
     text-decoration: none;
+    outline-style: solid;
 }
 
 [data-jaco-block]:hover,
