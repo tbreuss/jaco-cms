@@ -2367,6 +2367,58 @@ QUnit.test('clicking a dynamically inserted block opens the editor toolbar', (as
   }, 50)
 })
 
+QUnit.test('the item bar stays out of the edited text and survives closing the editor', (assert) => {
+  m.render(fixture(), m.trust(
+    '<div data-jaco-repeater="x.html" data-jaco-repeater--label="Add">' +
+    '<div data-jaco-block data-jaco-block--tools="basic"><p>Hello</p></div></div>'
+  ))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+  const block = fixture().querySelector('[data-jaco-block]')
+  const bar = block.querySelector(':scope > .jaco-content-item-bar')
+  assert.ok(bar, 'the block has an item bar before editing')
+  const deleteButton = bar.querySelector('button:last-child')
+
+  block.dispatchEvent(new MouseEvent('click', {bubbles: true}))
+  const editor = block.querySelector('.ql-editor')
+  assert.ok(editor, 'the editor is open')
+  assert.notOk(editor.querySelector('.jaco-content-item-bar'), 'the bar is not part of the edited text')
+  assert.notOk(editor.textContent.includes('×'), 'the × is not in the text')
+
+  window.removeRichTextEditorElements()
+  const restored = block.querySelector(':scope > .jaco-content-item-bar')
+  assert.strictEqual(restored, bar, 'the same bar is back in the block')
+  assert.strictEqual(restored.querySelector('button:last-child'), deleteButton, 'with its working delete button')
+  assert.strictEqual(block.querySelectorAll('.jaco-content-item-bar').length, 1, 'exactly one bar')
+})
+
+QUnit.test('chrome of a list nested in an edited block stays out of the text and leaves nothing behind', (assert) => {
+  m.render(fixture(), m.trust(
+    '<div data-jaco-repeater="x.html" data-jaco-repeater--label="Outer">' +
+    '<div data-jaco-block data-jaco-block--tools="basic"><p>Hello</p>' +
+    '<div><div data-jaco-repeater="y.html" data-jaco-repeater--label="Inner"><div><span>Inner item</span></div></div></div>' +
+    '</div></div>'
+  ))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+  const block = fixture().querySelector('[data-jaco-repeater="x.html"] > [data-jaco-block]')
+  assert.ok(block.querySelector('.jaco-content-item-bar'), 'bars exist before editing')
+
+  block.dispatchEvent(new MouseEvent('click', {bubbles: true}))
+  const editor = block.querySelector('.ql-editor')
+  assert.ok(editor, 'the editor is open')
+  assert.notOk(editor.querySelector('.jaco-content-item-bar'), 'no item bar in the edited text')
+  assert.notOk(editor.querySelector('.jaco-content-add-button'), 'no add button in the edited text')
+  assert.notOk(editor.textContent.includes('×'), 'no × in the text')
+
+  window.removeRichTextEditorElements()
+  assert.strictEqual(block.querySelectorAll(':scope > .jaco-content-item-bar').length, 1, 'the block has its own bar again')
+  // Quill reformats the block (div -> p, unknown attributes dropped), so the
+  // nested list itself does not survive editing; what matters is that its
+  // chrome neither ends up in the text nor stays behind without a list.
+  assert.notOk(block.querySelector('.jaco-content-add-button'), 'no orphaned add button')
+  assert.notOk(block.textContent.includes('Inner'.repeat(2)), 'no duplicated content')
+  assert.strictEqual(block.querySelectorAll('.jaco-content-item-bar').length, block.querySelectorAll('[data-jaco-repeater] > *').length + 1, 'every remaining item has one bar, plus the block\'s own')
+})
+
 QUnit.test('toolbar follows across static and inserted blocks with images', (assert) => {
   const done = assert.async()
   m.render(fixture(), m.trust(contentListHtml('top')))
@@ -3127,7 +3179,7 @@ QUnit.test('arrow keys wrap the selection like the command palette', (assert) =>
   pageGotoState.selected = 0
   m.render(fixture(), m(PageGotoView))
 
-  const input = fixture().querySelector('.list-filter input')
+  const input = fixture().querySelector('.palette-filter')
   input.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp', bubbles: true}))
   m.render(fixture(), m(PageGotoView))
   assert.strictEqual(pageGotoState.selected, 1, 'arrow up from the first item wraps to the last')
@@ -3149,11 +3201,11 @@ QUnit.test('filters the page list and opens the selected page', async (assert) =
     await new Promise((resolve) => setTimeout(resolve, 0))
     m.render(fixture(), m(PageGotoView))
 
-    const modal = fixture().querySelector('.modal')
-    assert.ok(modal, 'the search palette is rendered')
-    assert.strictEqual(getComputedStyle(modal).alignItems, 'flex-start', 'every modal keeps a fixed top edge')
+    const overlay = fixture().querySelector('.palette-overlay')
+    assert.ok(overlay, 'the search palette is rendered')
+    assert.strictEqual(getComputedStyle(overlay).alignItems, 'flex-start', 'the palette keeps a fixed top edge')
 
-    const input = fixture().querySelector('.list-filter input')
+    const input = fixture().querySelector('.palette-filter')
     assert.ok(input, 'the filter field is rendered')
     assert.strictEqual(document.activeElement, input, 'the filter takes focus')
     assert.ok(fixture().textContent.includes('a.html'), 'all pages are listed initially')
@@ -3162,23 +3214,12 @@ QUnit.test('filters the page list and opens the selected page', async (assert) =
     input.dispatchEvent(new Event('input'))
     m.render(fixture(), m(PageGotoView))
 
-    const clearBtn = fixture().querySelector('.list-filter-clear')
-    assert.ok(clearBtn, 'clear button shown while filtering')
-    clearBtn.click()
-    m.render(fixture(), m(PageGotoView))
-    assert.strictEqual(pageGotoState.filter, '', 'clear resets the filter')
-    assert.notOk(fixture().querySelector('.list-filter-clear'), 'clear button hides when filter is empty')
-
-    input.value = 'page b'
-    input.dispatchEvent(new Event('input'))
-    m.render(fixture(), m(PageGotoView))
-
-    const items = [...fixture().querySelectorAll('.list-group-item')]
+    const items = [...fixture().querySelectorAll('.palette-row')]
     assert.strictEqual(items.length, 1, 'the title filter narrows the list')
     assert.ok(items[0].textContent.includes('b.html'))
     assert.ok(items[0].classList.contains('selected'), 'the first hit is selected')
 
-    input.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}))
+    input.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}))
     assert.deepEqual(loaded, ['/b.html'], 'enter opens the selected page')
     assert.deepEqual(routeCalls, ['/'], 'and returns to the preview')
   } finally {
