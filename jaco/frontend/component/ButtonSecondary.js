@@ -1,7 +1,7 @@
 // See ButtonPrimary: aria-disabled instead of native disabled keeps the button
 // focusable, so the reason in its title/label is reachable.
 export const ButtonSecondary = {
-  view: ({attrs: {onclick, title, disabled, 'aria-label': ariaLabel, type}, children}) =>
+  view: ({attrs: {onclick, title, disabled, 'aria-label': ariaLabel, 'aria-pressed': ariaPressed, type}, children}) =>
     m('button.secondary', {
       onclick: disabled
         ? (event) => {
@@ -12,6 +12,7 @@ export const ButtonSecondary = {
       title: title,
       'aria-disabled': disabled ? 'true' : undefined,
       'aria-label': disabled && title ? title : ariaLabel,
+      'aria-pressed': ariaPressed,
       ...(type ? {type} : {}),
     }, children)
 }

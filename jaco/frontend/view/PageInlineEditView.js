@@ -182,6 +182,19 @@ const cancel = (e) => {
   m.route.set('/')
 }
 
+const SHOW_EDITABLE_STORAGE_KEY = 'jaco-show-editable'
+
+// survives iframe reloads (a save reloads the page) and, via sessionStorage,
+// page reloads within the session
+let showEditable = window.sessionStorage.getItem(SHOW_EDITABLE_STORAGE_KEY) === '1'
+
+const toggleShowEditable = (e) => {
+  e.redraw = true
+  showEditable = !showEditable
+  window.sessionStorage.setItem(SHOW_EDITABLE_STORAGE_KEY, showEditable ? '1' : '0')
+  iframe.setShowEditable(showEditable)
+}
+
 let unbindSaveShortcuts = []
 
 // In edit mode the admin chrome and the preview share one column: the chrome
@@ -245,6 +258,7 @@ export const PageInlineEditView = {
     // not initialize the editors a second time: that rebuilds toolbars and dialogs.
     let editedDocument = iframe.contentDocument()
     iframe.makeEditable(captureSavedBody)
+    iframe.setShowEditable(showEditable)
     bindShortcut()
     setEditLayout(true)
     iframe.fitBelowNavbar()
@@ -257,6 +271,7 @@ export const PageInlineEditView = {
       }
       editedDocument = current
       iframe.makeEditable(captureSavedBody)
+      iframe.setShowEditable(showEditable)
       bindShortcut()
     }
   },
@@ -275,6 +290,11 @@ export const PageInlineEditView = {
     m(ButtonGroup, {wrap: 'div.dialog'},
       auth.can('editor') && m(ButtonSecondary, {onclick: openPageSettings},
         m(Icon, {name: 'edit'}), m('span', t('Page settings'))),
+      m(ButtonSecondary, {
+        onclick: toggleShowEditable,
+        title: t('Highlight editable areas'),
+        'aria-pressed': showEditable ? 'true' : 'false',
+      }, m(Icon, {name: 'highlight'}), m('span', t('Highlight editable areas'))),
       m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
       m(ButtonPrimary, {
         onclick: save,

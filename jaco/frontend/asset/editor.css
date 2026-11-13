@@ -1,12 +1,10 @@
 [data-jaco-block] {
-    outline: 1px solid var(--border, #ddd);
     border: 1px solid rgba(255, 255, 255, 0);
     min-height: 1rem;
     margin-bottom: 1rem;
 }
 
 [data-jaco-line] {
-    outline: 1px solid var(--border, #ddd);
     min-height: 1rem;
 }
 
@@ -42,16 +40,7 @@
     color: inherit;
 }
 
-[data-jaco-image] {
-    outline: 1px solid var(--border, #ddd);
-}
-
-[data-jaco-image--mode] {
-    outline: 1px solid var(--border, #ddd);
-}
-
 [data-jaco-link] {
-    outline: 1px solid var(--border, #ddd);
     display: inline-block;
 }
 
@@ -62,6 +51,7 @@
 
 [data-jaco-link]:hover {
     text-decoration: none;
+    outline-style: solid;
 }
 
 [data-jaco-block]:hover,
@@ -232,6 +222,18 @@
     justify-content: flex-end;
     gap: 4px;
     margin-bottom: 2px;
+}
+
+/* Text blocks and lines lose their bar while Quill edits them (stashItemBar).
+   Here the bar takes no space in the flow, its buttons overlay the top right
+   corner of the item, so removing it does not shift the content. */
+[data-jaco-block] > .jaco-content-item-bar,
+[data-jaco-line] > .jaco-content-item-bar {
+    align-items: flex-start;
+    height: 0;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
 }
 
 .jaco-content-item-bar button,
@@ -580,4 +582,106 @@ a [data-jaco-editable-image-temp], a:hover [data-jaco-editable-image-temp] {
 
 .ql-editor.ql-blank::before {
     color: var(--muted, #999);
+}
+
+/* ------------------------------------------------------------------
+   Visual language for nested content
+   - editable content (block/line/image/link): a faint dotted line, solid on hover
+     or when the toolbar switch is on; non-editable markup has none
+   - structure (repeater/slot and their items): dashed, other colour,
+     bar only on the innermost hovered item
+   - everything else: untouched
+   ------------------------------------------------------------------ */
+:root {
+    --jaco-edit: var(--accent, #1a73e8);
+    --jaco-struct: #e8710a;
+}
+
+[data-jaco-block],
+[data-jaco-line],
+[data-jaco-image],
+[data-jaco-image--mode],
+[data-jaco-link] {
+    outline: 1px dotted color-mix(in srgb, var(--jaco-edit) 30%, transparent);
+    transition: background-color 0.12s;
+}
+
+/* toolbar switch "show editable areas": full lines for content and structure */
+.jaco-show-editable [data-jaco-block],
+.jaco-show-editable [data-jaco-line],
+.jaco-show-editable [data-jaco-image],
+.jaco-show-editable [data-jaco-image--mode],
+.jaco-show-editable [data-jaco-link] {
+    outline: 1px solid color-mix(in srgb, var(--jaco-edit) 70%, transparent);
+    background-color: color-mix(in srgb, var(--jaco-edit) 6%, transparent);
+}
+
+.jaco-show-editable [data-jaco-repeater],
+.jaco-show-editable [data-jaco-slot] {
+    outline-color: color-mix(in srgb, var(--jaco-struct) 80%, transparent);
+}
+
+[data-jaco-block]:hover,
+[data-jaco-line]:hover,
+[data-jaco-image]:hover,
+[data-jaco-image--mode]:hover,
+[data-jaco-link]:hover {
+    outline-color: var(--jaco-edit);
+    background-color: color-mix(in srgb, var(--jaco-edit) 10%, transparent);
+}
+
+[data-jaco-block]:hover,
+[data-jaco-line]:hover {
+    cursor: text;
+}
+
+/* structure: faint at rest, clear for the hovered level */
+[data-jaco-repeater],
+[data-jaco-slot] {
+    outline: 1px dashed color-mix(in srgb, var(--jaco-struct) 35%, transparent);
+    transition: outline-color 0.12s;
+}
+
+[data-jaco-repeater]:hover,
+[data-jaco-slot]:hover {
+    outline-color: color-mix(in srgb, var(--jaco-struct) 70%, transparent);
+}
+
+[data-jaco-repeater] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser),
+[data-jaco-slot] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser) {
+    outline: 1px dashed transparent;
+    outline-offset: 2px;
+}
+
+[data-jaco-repeater] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser):hover:not(:has([data-jaco-repeater] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser):hover, [data-jaco-slot] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser):hover)),
+[data-jaco-slot] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser):hover:not(:has([data-jaco-repeater] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser):hover, [data-jaco-slot] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser):hover)) {
+    outline-color: var(--jaco-struct);
+}
+
+/* nesting depth: one more shade per level */
+[data-jaco-repeater] [data-jaco-repeater],
+[data-jaco-repeater] [data-jaco-slot],
+[data-jaco-slot] [data-jaco-repeater],
+[data-jaco-slot] [data-jaco-slot] {
+    /* inset shadow: marks the depth without taking space from the layout */
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--jaco-struct) 45%, transparent);
+}
+
+/* item bar: only for the innermost hovered (or focused) item */
+.jaco-content-item-bar {
+    opacity: 0.35;
+    transition: opacity 0.12s;
+}
+
+[data-jaco-repeater] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser):hover:not(:has([data-jaco-repeater] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser):hover, [data-jaco-slot] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser):hover)) > .jaco-content-item-bar,
+[data-jaco-slot] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser):hover:not(:has([data-jaco-repeater] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser):hover, [data-jaco-slot] > *:not(.jaco-content-add-button):not(.jaco-slot-chooser):hover)) > .jaco-content-item-bar,
+.jaco-content-item-bar:hover,
+.jaco-content-item-bar:focus-within {
+    opacity: 1;
+}
+
+@media (hover: none) {
+    .jaco-content-item-bar {
+        opacity: 1;
+    }
 }
