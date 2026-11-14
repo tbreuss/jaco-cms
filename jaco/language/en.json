@@ -275,6 +275,7 @@
     "Could not preview the template.": "Could not preview the template.",
     "Template": "Template",
     "The current editor content is saved before applying.": "The current editor content is saved before applying.",
+    "The editor could not be loaded. Please reload the page.": "The editor could not be loaded. Please reload the page.",
     "Apply": "Apply",
     "Save & apply to all pages": "Save & apply to all pages",
     "Preview & apply": "Preview & apply",

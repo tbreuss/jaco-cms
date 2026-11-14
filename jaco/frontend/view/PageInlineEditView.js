@@ -26,6 +26,29 @@ const captureSavedBody = () => {
   try { savedBody = readBody() } catch (e) { savedBody = null }
 }
 
+// Set when the editor scripts in the page did not load (see iframe.makeEditable).
+// Saving is off then: there is nothing the user could have edited, and the page
+// cannot even be read.
+let editorFailed = false
+
+// Counts the loads that were started. A load that settles after a newer one began
+// (or after the view closed) is stale and says nothing.
+let loadSequence = 0
+
+const startEditors = () => {
+  const thisLoad = ++loadSequence
+  editorFailed = false
+  Promise.resolve(iframe.makeEditable(captureSavedBody))
+    .catch(() => {
+      if (thisLoad !== loadSequence) {
+        return
+      }
+      editorFailed = true
+      addDanger(t('The editor could not be loaded. Please reload the page.'))
+      m.redraw()
+    })
+}
+
 const isDirty = () => {
   // a read-only account may try the editor, but nothing can be saved: do not trap them in
   // a discard dialog for changes that would be thrown away anyway
@@ -45,7 +68,7 @@ const beforeUnloadHandler = (e) => {
 export const save = (e) => {
   if (!e) e = {}
   e.redraw = false
-  if (!auth.can('editor')) {
+  if (!auth.can('editor') || editorFailed) {
     return Promise.resolve()
   }
   return api.post('page/update-body', {}, {
@@ -256,7 +279,7 @@ export const PageInlineEditView = {
     // document (it may still be loading subresources when the view opens) must
     // not initialize the editors a second time: that rebuilds toolbars and dialogs.
     let editedDocument = iframe.contentDocument()
-    iframe.makeEditable(captureSavedBody)
+    startEditors()
     iframe.setShowEditable(showEditable)
     bindShortcut()
     setEditLayout(true)
@@ -269,12 +292,14 @@ export const PageInlineEditView = {
         return
       }
       editedDocument = current
-      iframe.makeEditable(captureSavedBody)
+      startEditors()
       iframe.setShowEditable(showEditable)
       bindShortcut()
     }
   },
   onremove: () => {
+    loadSequence++
+    editorFailed = false
     pageSettings.open = false
     pageSettings.page = null
     window.removeEventListener('beforeunload', beforeUnloadHandler)
@@ -297,13 +322,21 @@ export const PageInlineEditView = {
       m(ButtonSecondary, {onclick: cancel}, m(Icon, {name: 'clear'}), m('span', t('Cancel'))),
       m(ButtonPrimary, {
         onclick: save,
-        disabled: !auth.can('editor'),
-        title: auth.can('editor') ? t('Save') + ' (' + saveShortcutLabel() + ')' : t('Save') + ' – ' + t('Your role does not allow this.'),
+        disabled: !auth.can('editor') || editorFailed,
+        title: !auth.can('editor')
+          ? t('Save') + ' – ' + t('Your role does not allow this.')
+          : editorFailed
+            ? t('The editor could not be loaded. Please reload the page.')
+            : t('Save') + ' (' + saveShortcutLabel() + ')',
       }, m(Icon, {name: 'save'}), m('span', t('Save'))),
       m(ButtonPrimary, {
         onclick: saveAndClose,
-        disabled: !auth.can('editor'),
-        title: auth.can('editor') ? t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')' : t('Save & Close') + ' – ' + t('Your role does not allow this.'),
+        disabled: !auth.can('editor') || editorFailed,
+        title: !auth.can('editor')
+          ? t('Save & Close') + ' – ' + t('Your role does not allow this.')
+          : editorFailed
+            ? t('The editor could not be loaded. Please reload the page.')
+            : t('Save & Close') + ' (' + saveAndCloseShortcutLabel() + ')',
       }, m(Icon, {name: 'save-check'}), m('span', t('Save & Close'))),
     ),
     pageSettings.open && m(PageSettingsDialog, {

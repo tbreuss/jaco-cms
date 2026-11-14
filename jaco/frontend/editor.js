@@ -98,17 +98,26 @@ window.initRichTextEditor = () => {
   }
 
   // add editor script
-  const editorJavascript = document.getElementById('editorJavascript')
+  let editorJavascript = document.getElementById('editorJavascript')
   if (!editorJavascript) {
-    let newEditorJavascript = document.createElement('script')
-    newEditorJavascript.id = 'editorJavascript'
-    newEditorJavascript.type = 'text/javascript'
-    newEditorJavascript.src = '/jaco/frontend/vendor/quill/quill.min.js'
-    newEditorJavascript.async = false
-    newEditorJavascript.onload = () => {
-    }
-    document.head.appendChild(newEditorJavascript)
+    editorJavascript = document.createElement('script')
+    editorJavascript.id = 'editorJavascript'
+    editorJavascript.type = 'text/javascript'
+    editorJavascript.src = '/jaco/frontend/vendor/quill/quill.min.js'
+    editorJavascript.async = false
+    document.head.appendChild(editorJavascript)
   }
+
+  // Settles when Quill is usable: the click handler needs it. Resolves at once
+  // when it is already there, rejects when the script fails to load.
+  return new Promise((resolve, reject) => {
+    if (window.Quill) {
+      resolve()
+      return
+    }
+    editorJavascript.addEventListener('load', () => resolve(), {once: true})
+    editorJavascript.addEventListener('error', () => reject(new Error('Quill could not be loaded')), {once: true})
+  })
 }
 
 window.initImages = (root) => {

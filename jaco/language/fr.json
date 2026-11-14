@@ -275,6 +275,7 @@
     "Could not preview the template.": "Impossible de prévisualiser le modèle.",
     "Template": "Modèle",
     "The current editor content is saved before applying.": "Le contenu actuel de l’éditeur est enregistré avant l’application.",
+    "The editor could not be loaded. Please reload the page.": "L'éditeur n'a pas pu être chargé. Veuillez recharger la page.",
     "Apply": "Appliquer",
     "Save & apply to all pages": "Enregistrer et appliquer à toutes les pages",
     "Preview & apply": "Aperçu & appliquer",

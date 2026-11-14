@@ -275,6 +275,7 @@
     "Could not preview the template.": "Die Vorschau der Vorlage konnte nicht geladen werden.",
     "Template": "Vorlage",
     "The current editor content is saved before applying.": "Der aktuelle Editorinhalt wird vor dem Anwenden gespeichert.",
+    "The editor could not be loaded. Please reload the page.": "Der Editor konnte nicht geladen werden. Bitte lade die Seite neu.",
     "Apply": "Anwenden",
     "Save & apply to all pages": "Speichern & auf alle Seiten anwenden",
     "Preview & apply": "Vorschau & Anwenden",
