@@ -4149,6 +4149,48 @@ QUnit.test('a change that leaves the content equal is read once', async (assert)
   })
 })
 
+QUnit.test('the indentation Quill removes is not a change', async (assert) => {
+  const source = '<div data-jaco-block>\n      <p>Hello\n      world</p>\n    </div>\n  '
+  await withMountedInlineView(source, async (reads, page) => {
+    // what opening the block does to the source
+    window.__iframeHtml = '<div data-jaco-block><p>Hello world</p></div>'
+    touchPage(page)
+    assert.notOk(dirty.isDirty(), 'formatting alone does not ask to discard anything')
+
+    window.__iframeHtml = '<div data-jaco-block><p>Hello there</p></div>'
+    touchPage(page)
+    assert.ok(dirty.isDirty(), 'a changed word does')
+  })
+})
+
+QUnit.test('typed spaces are a change', async (assert) => {
+  await withMountedInlineView('<p>Hello world</p>', async (reads, page) => {
+    window.__iframeHtml = '<p>Hello  world</p>'
+    touchPage(page)
+    assert.ok(dirty.isDirty(), 'an extra space inside the text')
+
+    window.__iframeHtml = '<p> Hello world</p>'
+    touchPage(page)
+    assert.ok(dirty.isDirty(), 'a space at the start of a paragraph')
+
+    window.__iframeHtml = '<p>Hello world </p>'
+    touchPage(page)
+    assert.ok(dirty.isDirty(), 'a space at the end of a paragraph')
+
+    window.__iframeHtml = '<p>Hello world</p>'
+    touchPage(page)
+    assert.notOk(dirty.isDirty(), 'taking them out again is clean')
+  })
+})
+
+QUnit.test('a space between inline elements is still a change', async (assert) => {
+  await withMountedInlineView('<p><b>a</b> <i>b</i></p>', async (reads, page) => {
+    window.__iframeHtml = '<p><b>a</b><i>b</i></p>'
+    touchPage(page)
+    assert.ok(dirty.isDirty(), 'it separates two words')
+  })
+})
+
 QUnit.test('without an observer every check compares', async (assert) => {
   const Original = window.MutationObserver
   window.MutationObserver = function () { throw new Error('no observer') }

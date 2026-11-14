@@ -56,8 +56,30 @@ const observeChanges = () => {
   }
 }
 
+// Quill rewrites the formatting of a block as soon as it opens it: the indentation
+// and line breaks of the source disappear. That alone is not a change the user
+// made, so the comparison ignores exactly that: whitespace that contains a line
+// break. Such a run counts as one space between words and as nothing at block
+// boundaries and line breaks. Spaces without a line break are content - typing
+// one is a change - and so is a space between inline elements. (Line breaks
+// inside <pre> count as formatting too, so a change that is only that goes
+// unnoticed.)
+const BLOCK_TAGS = 'address|article|aside|blockquote|br|dd|div|dl|dt|figcaption|figure|footer|h[1-6]|header|hr|li|main|nav|ol|p|pre|section|table|tbody|td|th|thead|tr|ul'
+// stands for a run of formatting whitespace while the text is normalized
+const FORMATTING = ''
+const FORMATTING_WHITESPACE = /[ \t\f]*[\r\n][ \t\f\r\n]*/g
+const BLOCK_BOUNDARY = new RegExp(FORMATTING + '*(</?(?:' + BLOCK_TAGS + ')(?:\\s[^>]*)?>)' + FORMATTING + '*', 'gi')
+
+const normalizeForCompare = (html) => html
+  .replace(FORMATTING_WHITESPACE, FORMATTING)
+  .replace(BLOCK_BOUNDARY, '$1')
+  .replace(new RegExp('^' + FORMATTING + '+|' + FORMATTING + '+$', 'g'), '')
+  .replace(new RegExp(FORMATTING + '+', 'g'), ' ')
+
+// savedBody holds the normalized baseline, so the check normalizes only the
+// current page
 const captureSavedBody = () => {
-  try { savedBody = readBody() } catch (e) { savedBody = null }
+  try { savedBody = normalizeForCompare(readBody()) } catch (e) { savedBody = null }
   observeChanges()
 }
 
@@ -99,7 +121,7 @@ const isDirty = () => {
     return false
   }
   try {
-    const differs = readBody() !== savedBody
+    const differs = normalizeForCompare(readBody()) !== savedBody
     // equal again (the change was chrome, or it was undone): wait for the next one
     if (!differs && observer) {
       changed = false
