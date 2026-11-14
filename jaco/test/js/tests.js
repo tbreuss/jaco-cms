@@ -4013,6 +4013,48 @@ QUnit.test('clear button resets filter and triggers load', (assert) => {
   UploadListModel.load = origLoad
 })
 
+// The dirty check only reads the page after it changed (a MutationObserver says
+// so). A real edit changes the page; the tests that fake the content with
+// iframe.getHTML() have to change it as well.
+const touchPage = (page = document) => {
+  (page === document ? fixture() : page.body).setAttribute('data-touched', String(Math.random()))
+}
+
+// Mounts the inline editor view with a faked iframe. getHTML() returns
+// window.__iframeHtml and counts the reads in reads.count. The page in the iframe
+// is a document of its own, like in the app: on the QUnit page itself every
+// assertion the reporter prints and the rendering of the view would count as a
+// change of the page.
+const withMountedInlineView = async (html, run) => {
+  const page = document.implementation.createHTMLDocument('page')
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
+  const orig = {}
+  const keys = ['hasElement', 'makeEditable', 'contentDocument', 'contentWindow', 'fitBelowNavbar', 'getHTML', 'fileName', 'reload', 'getElement']
+  keys.forEach((k) => { orig[k] = iframe[k] })
+  const reads = {count: 0}
+  iframe.hasElement = () => true
+  iframe.makeEditable = (onReady) => { if (onReady) { onReady() } }
+  iframe.contentDocument = () => page
+  iframe.contentWindow = () => window
+  iframe.fitBelowNavbar = () => {}
+  iframe.getHTML = () => { reads.count++; return window.__iframeHtml }
+  iframe.fileName = () => 'index.html'
+  iframe.reload = () => {}
+  iframe.getElement = () => ({onload: null})
+  window.confirm = () => true
+  window.__iframeHtml = html
+  try {
+    m.render(fixture(), m(PageInlineEditView))
+    await run(reads, page)
+  } finally {
+    m.render(fixture(), null)
+    dirty.clear()
+    delete window.__iframeHtml
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    Object.keys(orig).forEach((k) => { iframe[k] = orig[k] })
+  }
+}
+
 QUnit.module('PageInlineEditView dirty baseline')
 
 QUnit.test('an unedited preview is not dirty', (assert) => {
@@ -4068,6 +4110,7 @@ QUnit.test('the first edit is detected instead of becoming the baseline', (asser
     assert.notOk(dirty.isDirty(), 'clean right after mounting')
 
     window.__iframeHtml = '<p>edited</p>'
+    touchPage()
     assert.ok(dirty.isDirty(), 'the very first edit is detected')
 
     window.__iframeHtml = '<p>original</p>'
@@ -4078,6 +4121,44 @@ QUnit.test('the first edit is detected instead of becoming the baseline', (asser
     delete window.__iframeHtml
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
     Object.keys(orig).forEach((k) => { iframe[k] = orig[k] })
+  }
+})
+
+QUnit.test('the dirty check does not read a page that did not change', async (assert) => {
+  await withMountedInlineView('<p>original</p>', async (reads) => {
+    assert.strictEqual(reads.count, 1, 'only the baseline was read')
+    dirty.isDirty()
+    dirty.isDirty()
+    dirty.isDirty()
+    assert.strictEqual(reads.count, 1, 'no change, no read')
+  })
+})
+
+QUnit.test('a change that leaves the content equal is read once', async (assert) => {
+  await withMountedInlineView('<p>original</p>', async (reads, page) => {
+    // what the editor itself does to the page: toolbars, dialogs, normalizing
+    touchPage(page)
+    assert.notOk(dirty.isDirty(), 'same content is clean')
+    assert.strictEqual(reads.count, 2, 'the change was compared')
+    dirty.isDirty()
+    assert.strictEqual(reads.count, 2, 'and not compared again until the next change')
+
+    touchPage(page)
+    window.__iframeHtml = '<p>edited</p>'
+    assert.ok(dirty.isDirty(), 'the next change is looked at again')
+  })
+})
+
+QUnit.test('without an observer every check compares', async (assert) => {
+  const Original = window.MutationObserver
+  window.MutationObserver = function () { throw new Error('no observer') }
+  try {
+    await withMountedInlineView('<p>original</p>', async () => {
+      window.__iframeHtml = '<p>edited</p>'
+      assert.ok(dirty.isDirty(), 'an edit is found although nothing watches the page')
+    })
+  } finally {
+    window.MutationObserver = Original
   }
 })
 

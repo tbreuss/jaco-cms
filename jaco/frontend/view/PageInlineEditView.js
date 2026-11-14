@@ -22,8 +22,43 @@ let savedBody = null
 // getHTML() reads from a copy of the page, so reading never unhooks the editor.
 const readBody = () => iframe.getHTML()
 
+// Whether the page may differ from savedBody. A MutationObserver on the page body
+// sets it, so the dirty check only reads and compares the whole body after
+// something changed; without a change there is nothing to compare. It stays true
+// when no observer could be set up: then every check compares, as before.
+let changed = true
+let observer = null
+
+const stopObserving = () => {
+  if (observer) {
+    observer.disconnect()
+    observer = null
+  }
+  changed = true
+}
+
+// Watches the body of the page from the moment the baseline is taken. The
+// observer only says "something changed": the editor itself changes the page
+// (toolbars, dialogs, Quill normalizing the markup), so the comparison with
+// savedBody still decides whether it is dirty.
+const observeChanges = () => {
+  stopObserving()
+  try {
+    const body = iframe.contentDocument().body
+    if (!body) {
+      return
+    }
+    observer = new MutationObserver(() => { changed = true })
+    observer.observe(body, {subtree: true, childList: true, attributes: true, characterData: true})
+    changed = false
+  } catch (e) {
+    observer = null
+  }
+}
+
 const captureSavedBody = () => {
   try { savedBody = readBody() } catch (e) { savedBody = null }
+  observeChanges()
 }
 
 // Set when the editor scripts in the page did not load (see iframe.makeEditable).
@@ -55,7 +90,24 @@ const isDirty = () => {
   if (!auth.can('editor') || savedBody === null) {
     return false
   }
-  try { return readBody() !== savedBody } catch (e) { return false }
+  // records the observer has not delivered yet count: a keystroke right before
+  // the check must not slip through
+  if (observer && observer.takeRecords().length > 0) {
+    changed = true
+  }
+  if (!changed) {
+    return false
+  }
+  try {
+    const differs = readBody() !== savedBody
+    // equal again (the change was chrome, or it was undone): wait for the next one
+    if (!differs && observer) {
+      changed = false
+    }
+    return differs
+  } catch (e) {
+    return false
+  }
 }
 
 const beforeUnloadHandler = (e) => {
@@ -262,6 +314,7 @@ export const PageInlineEditView = {
     // drop a baseline left over from a previous visit, so an unchanged preview
     // is not compared against it
     savedBody = null
+    stopObserving()
     dirty.set(isDirty)
     if (!app.hasAuthToken()) {
       m.route.set('/logout')
@@ -300,6 +353,7 @@ export const PageInlineEditView = {
   onremove: () => {
     loadSequence++
     editorFailed = false
+    stopObserving()
     pageSettings.open = false
     pageSettings.page = null
     window.removeEventListener('beforeunload', beforeUnloadHandler)
