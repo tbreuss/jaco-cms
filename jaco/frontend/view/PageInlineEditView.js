@@ -19,9 +19,8 @@ import {dirty} from '../lib/dirty.js'
 // which counts as clean rather than blocking the user on a half-built editor.
 let savedBody = null
 
-// keepEditorScripts: reading must not unhook the editor. Plain getHTML() removes
-// the editor scripts and chrome, which would disable editing mid-session.
-const readBody = () => iframe.getHTML({keepEditorScripts: true})
+// getHTML() reads from a copy of the page, so reading never unhooks the editor.
+const readBody = () => iframe.getHTML()
 
 const captureSavedBody = () => {
   try { savedBody = readBody() } catch (e) { savedBody = null }

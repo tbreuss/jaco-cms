@@ -119,9 +119,10 @@ These are the invariants and edge cases that tests cannot express on their own.
   one button in the list's parent. This holds after mount, insert, delete, drop
   and re-mount. The rule lives solely in `jaco/frontend/contentlists.js`
   (`blocksOfList`, `reconcileAddButtons`).
-  Nothing of the chrome may reach the saved page: `removeContentListChrome()`
-  strips buttons, item bars and an open chooser before `iframe.getHTML()` reads
-  the body; QUnit checks that a saved page carries no `jaco-content-add-button`,
+  Nothing of the chrome may reach the saved page: `iframe.getHTML()` serializes a
+  copy of the body (`window.serializeBody()` in `editor.js`) and `stripChrome()`
+  removes buttons, item bars and an open chooser from that copy, so the live page
+  and the open editor stay untouched; QUnit checks that a saved page carries no `jaco-content-add-button`,
   `jaco-content-item-bar` or `jaco-slot-chooser`.
   Two consequences: a nested list keeps its own chrome when its block stays,
   and a block and its `any` button move as a pair.

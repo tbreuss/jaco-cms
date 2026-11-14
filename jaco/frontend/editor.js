@@ -184,13 +184,27 @@ window.removeRichTextEditor = () => {
   })
 }
 
-window.removeTempImageElements = () => {
-  const selectors = [
-    '[data-jaco-editable-image-temp]'
-  ]
-  document.querySelectorAll(selectors.join(', ')).forEach((element) => {
+// Everything the editor adds to the page body that is not content - the one
+// place that names it. The remove* helpers below and window.serializeBody() read
+// from here, so a new dialog or overlay is registered here and nowhere else. The
+// chrome of the content lists comes from JacoContentLists.stripChrome().
+const CHROME = {
+  imageTemp: '[data-jaco-editable-image-temp]',
+  imageDialog: '#editableImageExtended',
+  linkDialog: '#editableLink',
+  mediaPicker: '#editableMedia',
+  videoDialog: '#editableVideo',
+  quill: '.ql-toolbar, .ql-clipboard, .ql-tooltip',
+}
+
+const removeChrome = (selector, root = document) => {
+  root.querySelectorAll(selector).forEach((element) => {
     element.remove()
   })
+}
+
+window.removeTempImageElements = () => {
+  removeChrome(CHROME.imageTemp)
 }
 
 window.disableRichTextEditor = () => {
@@ -202,7 +216,7 @@ window.disableRichTextEditor = () => {
 
 
 window.removeMediaPicker = () => {
-  document.getElementById('editableMedia')?.remove()
+  removeChrome(CHROME.mediaPicker)
 }
 
 // Pick an image that is already in the media library. The image dialog keeps
@@ -316,7 +330,7 @@ window.openMediaPicker = async (targetImage, onUpload = null) => {
 
 
 window.removeVideoDialog = () => {
-  document.getElementById('editableVideo')?.remove()
+  removeChrome(CHROME.videoDialog)
 }
 
 const findVideoAtPoint = (event) => {
@@ -793,40 +807,52 @@ window.handlePosition = (element) => {
 }
 
 window.removeExtendedImages = () => {
-  document.querySelectorAll('#editableImageExtended').forEach((element) => {
-    element.remove()
-  })
+  removeChrome(CHROME.imageDialog)
 }
 
 window.removeLinks = () => {
-  document.querySelectorAll('#editableLink').forEach((element) => {
-    element.remove()
-  })
+  removeChrome(CHROME.linkDialog)
+}
+
+// Turns one open Quill editor back into plain content of its container and
+// returns the container. Works on the live page and on a copy alike.
+const closeQuillEditor = (editor) => {
+  const container = editor.parentElement
+  container.classList.remove('ql-container', 'ql-snow')
+  // remove empty class attribute
+  if (container.classList.length === 0) {
+    container.removeAttribute('class')
+  }
+  container.removeAttribute('data-jaco-is-editing')
+  if (container.hasAttribute('data-jaco-line')) {
+    container.innerHTML = removeBlockTags(editor)
+  } else if (container.hasAttribute('data-jaco-block')) {
+    removeBoundaryEmptyParagraphs(editor)
+    normalizeVideoFrames(editor)
+    container.innerHTML = editor.innerHTML
+  }
+  return container
 }
 
 window.removeRichTextEditorElements = () => {
   window.removeMediaPicker?.()
   window.removeVideoDialog?.()
   document.querySelectorAll('.ql-editor').forEach((element) => {
-    const container = element.parentElement
-    element.parentElement.classList.remove('ql-container', 'ql-snow')
-    // remove empty class attribute
-    if (element.parentElement.classList.length === 0) {
-      element.parentElement.removeAttribute('class')
-    }
-    element.parentElement.removeAttribute('data-jaco-is-editing')
-    if (element.parentElement.hasAttribute('data-jaco-line')) {
-      element.parentElement.innerHTML = removeBlockTags(element)
-    } else if (element.parentElement.hasAttribute('data-jaco-block')) {
-      removeBoundaryEmptyParagraphs(element)
-      normalizeVideoFrames(element)
-      element.parentElement.innerHTML = element.innerHTML
-    }
-    restoreItemBar(container)
+    restoreItemBar(closeQuillEditor(element))
   })
-  document.querySelectorAll('.ql-toolbar, .ql-clipboard, .ql-tooltip').forEach((element) => {
-    element.remove()
-  })
+  removeChrome(CHROME.quill)
+}
+
+// The page body as it is stored: content only, no editor. Reading never touches
+// the live page - the work happens on a copy - so it can run at any time (dirty
+// check, save) without closing the editor the user is typing in, and a failure
+// halfway leaves nothing torn down.
+window.serializeBody = () => {
+  const copy = document.body.cloneNode(true)
+  copy.querySelectorAll('.ql-editor').forEach(closeQuillEditor)
+  removeChrome(Object.values(CHROME).join(', '), copy)
+  window.JacoContentLists?.stripChrome(copy)
+  return copy.innerHTML
 }
 
 // Quill drops the iframe dimensions when it turns a video into a ql-video
