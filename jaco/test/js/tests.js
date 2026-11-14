@@ -4127,7 +4127,7 @@ QUnit.module('iframe.makeEditable')
 
 // A page document that only knows what makeEditable asks of it. Appended scripts
 // answer on the next tick: onerror when their source contains failOn, onload otherwise.
-const fakePage = ({failOn = null, loaded = false, quill = Promise.resolve()} = {}) => {
+const fakePage = ({failOn = null, loaded = false, quill = () => Promise.resolve()} = {}) => {
   const requested = []
   const doc = {
     getElementById: (id) => (loaded && id === 'editorInstanceJavascript' ? {} : null),
@@ -4140,7 +4140,9 @@ const fakePage = ({failOn = null, loaded = false, quill = Promise.resolve()} = {
     },
   }
   const win = {
-    initRichTextEditor: () => quill,
+    // a function: a rejected promise made up front would count as unhandled
+    // until makeEditable gets to it
+    initRichTextEditor: () => quill(),
     initImages: () => {},
     JacoContentLists: null,
     jacoEditorReady: Promise.resolve(),
@@ -4196,7 +4198,7 @@ QUnit.test('rejects when a script fails to load, without onReady', async (assert
 })
 
 QUnit.test('rejects when Quill cannot be loaded', async (assert) => {
-  const page = fakePage({quill: Promise.reject(new Error('no quill'))})
+  const page = fakePage({quill: () => Promise.reject(new Error('no quill'))})
   await withFakePage(page, async () => {
     let ready = 0
     let error = null
@@ -4332,7 +4334,8 @@ QUnit.test('a failed editor load says so and switches saving off', async (assert
     m.render(fixture(), m(PageInlineEditView))
 
     assert.ok(state.list.some((toast) => toast.type === 'danger' && toast.text === message), 'the user is told')
-    const disabled = [...fixture().querySelectorAll('button')].filter((button) => button.disabled)
+    // the buttons use aria-disabled, not the native attribute (see ButtonPrimary)
+    const disabled = [...fixture().querySelectorAll('button.primary[aria-disabled="true"]')]
     assert.strictEqual(disabled.length, 2, 'Save and Save & Close are disabled')
     await inlineSave({redraw: false})
     assert.strictEqual(posted.length, 0, 'nothing is sent, not even by a shortcut')
