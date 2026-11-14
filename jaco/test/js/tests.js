@@ -4129,23 +4129,35 @@ QUnit.module('iframe.makeEditable')
 // answer on the next tick: onerror when their source contains failOn, onload otherwise.
 const fakePage = ({failOn = null, loaded = false, quill = () => Promise.resolve()} = {}) => {
   const requested = []
+  const tags = new Set(loaded ? ['editorInstanceJavascript'] : [])
+  // quill is a function: a rejected promise made up front would count as unhandled
+  // until makeEditable gets to it
+  const win = {
+    // like the real page: exists once editor.js has run, not when its tag is added
+    initRichTextEditor: loaded ? () => quill() : undefined,
+    initImages: () => {},
+    JacoContentLists: null,
+    jacoEditorReady: Promise.resolve(),
+  }
   const doc = {
-    getElementById: (id) => (loaded && id === 'editorInstanceJavascript' ? {} : null),
+    getElementById: (id) => (tags.has(id) ? {} : null),
     createElement: () => ({}),
     head: {
       appendChild: (script) => {
         requested.push(script.src)
-        setTimeout(() => (failOn && script.src.includes(failOn) ? script.onerror() : script.onload()), 0)
+        tags.add(script.id)
+        setTimeout(() => {
+          if (failOn && script.src.includes(failOn)) {
+            script.onerror()
+            return
+          }
+          if (script.src.includes('editor.js')) {
+            win.initRichTextEditor = () => quill()
+          }
+          script.onload()
+        }, 0)
       },
     },
-  }
-  const win = {
-    // a function: a rejected promise made up front would count as unhandled
-    // until makeEditable gets to it
-    initRichTextEditor: () => quill(),
-    initImages: () => {},
-    JacoContentLists: null,
-    jacoEditorReady: Promise.resolve(),
   }
   return {doc, win, requested}
 }
@@ -4168,6 +4180,21 @@ QUnit.test('resolves after both scripts are loaded and calls onReady once', asyn
     await iframe.makeEditable(() => { ready++ })
     assert.deepEqual(page.requested, ['/jaco/frontend/editor.js', '/jaco/frontend/contentlists.js'], 'both scripts, in this order')
     assert.strictEqual(ready, 1, 'onReady ran once')
+  })
+})
+
+QUnit.test('a second call while the scripts load waits instead of failing', async (assert) => {
+  // the tag is in the document as soon as loading begins, the script has not run
+  // yet: taking the tag for "ready" would call a function that does not exist
+  const page = fakePage()
+  await withFakePage(page, async () => {
+    let ready = 0
+    await Promise.all([
+      iframe.makeEditable(() => { ready++ }),
+      iframe.makeEditable(() => { ready++ }),
+    ])
+    assert.deepEqual(page.requested, ['/jaco/frontend/editor.js', '/jaco/frontend/contentlists.js'], 'the scripts were loaded once')
+    assert.strictEqual(ready, 2, 'both calls became ready')
   })
 })
 

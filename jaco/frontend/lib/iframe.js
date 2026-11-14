@@ -78,11 +78,17 @@ export const iframe = {
       }
       return Promise.all([quillLoaded, contentWindow.jacoEditorReady])
     }
-    const scriptsLoaded = contentDocument.getElementById('editorInstanceJavascript')
-      ? Promise.resolve()
-      : loadScript('editorInstanceJavascript', '/jaco/frontend/editor.js')
-        .then(() => loadScript('editorContentListsJavascript', '/jaco/frontend/contentlists.js'))
-    scriptsLoaded
+    // The loading is kept on the page's window: a script tag in the document only
+    // says that loading began, not that the script has run. A second call for the
+    // same document (leaving the editor and coming back while it still loads)
+    // waits for the first one instead of taking the tag for "ready".
+    if (!contentWindow.jacoEditorScripts) {
+      contentWindow.jacoEditorScripts = contentDocument.getElementById('editorInstanceJavascript')
+        ? Promise.resolve()
+        : loadScript('editorInstanceJavascript', '/jaco/frontend/editor.js')
+          .then(() => loadScript('editorContentListsJavascript', '/jaco/frontend/contentlists.js'))
+    }
+    contentWindow.jacoEditorScripts
       .then(initEditors)
       .then(() => {
         // too late: the caller was told it failed, do not act as if it had worked
