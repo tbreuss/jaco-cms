@@ -4123,6 +4123,99 @@ QUnit.test('serializing twice gives the same result', (assert) => {
   }
 })
 
+QUnit.module('iframe.makeEditable')
+
+// A page document that only knows what makeEditable asks of it. Appended scripts
+// answer on the next tick: onerror when their source contains failOn, onload otherwise.
+const fakePage = ({failOn = null, loaded = false, quill = Promise.resolve()} = {}) => {
+  const requested = []
+  const doc = {
+    getElementById: (id) => (loaded && id === 'editorInstanceJavascript' ? {} : null),
+    createElement: () => ({}),
+    head: {
+      appendChild: (script) => {
+        requested.push(script.src)
+        setTimeout(() => (failOn && script.src.includes(failOn) ? script.onerror() : script.onload()), 0)
+      },
+    },
+  }
+  const win = {
+    initRichTextEditor: () => quill,
+    initImages: () => {},
+    JacoContentLists: null,
+    jacoEditorReady: Promise.resolve(),
+  }
+  return {doc, win, requested}
+}
+
+const withFakePage = async (page, run) => {
+  const orig = {contentDocument: iframe.contentDocument, contentWindow: iframe.contentWindow}
+  iframe.contentDocument = () => page.doc
+  iframe.contentWindow = () => page.win
+  try {
+    await run()
+  } finally {
+    Object.assign(iframe, orig)
+  }
+}
+
+QUnit.test('resolves after both scripts are loaded and calls onReady once', async (assert) => {
+  const page = fakePage()
+  await withFakePage(page, async () => {
+    let ready = 0
+    await iframe.makeEditable(() => { ready++ })
+    assert.deepEqual(page.requested, ['/jaco/frontend/editor.js', '/jaco/frontend/contentlists.js'], 'both scripts, in this order')
+    assert.strictEqual(ready, 1, 'onReady ran once')
+  })
+})
+
+QUnit.test('does not load the scripts again when the page already has them', async (assert) => {
+  const page = fakePage({loaded: true})
+  await withFakePage(page, async () => {
+    let ready = 0
+    await iframe.makeEditable(() => { ready++ })
+    assert.deepEqual(page.requested, [], 'nothing was loaded')
+    assert.strictEqual(ready, 1, 'onReady ran')
+  })
+})
+
+QUnit.test('rejects when a script fails to load, without onReady', async (assert) => {
+  const page = fakePage({failOn: 'editor.js'})
+  await withFakePage(page, async () => {
+    let ready = 0
+    let error = null
+    try {
+      await iframe.makeEditable(() => { ready++ })
+    } catch (e) {
+      error = e
+    }
+    assert.ok(error, 'the promise rejects')
+    assert.strictEqual(ready, 0, 'onReady did not run')
+    assert.deepEqual(page.requested, ['/jaco/frontend/editor.js'], 'the second script was not requested')
+  })
+})
+
+QUnit.test('rejects when Quill cannot be loaded', async (assert) => {
+  const page = fakePage({quill: Promise.reject(new Error('no quill'))})
+  await withFakePage(page, async () => {
+    let ready = 0
+    let error = null
+    try {
+      await iframe.makeEditable(() => { ready++ })
+    } catch (e) {
+      error = e
+    }
+    assert.ok(error, 'the promise rejects')
+    assert.strictEqual(ready, 0, 'onReady did not run')
+  })
+})
+
+QUnit.test('getHTML names the problem when the editor is not loaded', async (assert) => {
+  await withFakePage({doc: {}, win: {}}, async () => {
+    assert.throws(() => iframe.getHTML(), /editor is not loaded/, 'a named error instead of a TypeError')
+  })
+})
+
 QUnit.module('dirty registry')
 
 QUnit.test('dirty.set registers a predicate and dirty.clear removes it', (assert) => {
@@ -4225,6 +4318,28 @@ QUnit.test('renders cancel and save buttons', (assert) => {
   m.render(fixture(), m(PageInlineEditView))
   const buttons = [...fixture().querySelectorAll('button')]
   assert.ok(buttons.length >= 2, 'cancel and save buttons rendered')
+})
+
+QUnit.test('a failed editor load says so and switches saving off', async (assert) => {
+  const origPost = api.post
+  const posted = []
+  api.post = (...args) => { posted.push(args); return Promise.resolve({}) }
+  iframe.makeEditable = () => Promise.reject(new Error('scripts did not load'))
+  const message = 'The editor could not be loaded. Please reload the page.'
+  try {
+    m.render(fixture(), m(PageInlineEditView))
+    await new Promise((r) => setTimeout(r, 20))
+    m.render(fixture(), m(PageInlineEditView))
+
+    assert.ok(state.list.some((toast) => toast.type === 'danger' && toast.text === message), 'the user is told')
+    const disabled = [...fixture().querySelectorAll('button')].filter((button) => button.disabled)
+    assert.strictEqual(disabled.length, 2, 'Save and Save & Close are disabled')
+    await inlineSave({redraw: false})
+    assert.strictEqual(posted.length, 0, 'nothing is sent, not even by a shortcut')
+  } finally {
+    api.post = origPost
+    state.list.length = 0
+  }
 })
 
 QUnit.test('save success does not navigate', async (assert) => {

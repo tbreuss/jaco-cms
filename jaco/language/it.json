@@ -275,6 +275,7 @@
     "Could not preview the template.": "Impossibile visualizzare l’anteprima del modello.",
     "Template": "Modello",
     "The current editor content is saved before applying.": "Il contenuto corrente dell’editor viene salvato prima dell’applicazione.",
+    "The editor could not be loaded. Please reload the page.": "Impossibile caricare l'editor. Ricarica la pagina.",
     "Apply": "Applica",
     "Save & apply to all pages": "Salva e applica a tutte le pagine",
     "Preview & apply": "Anteprima e applica",

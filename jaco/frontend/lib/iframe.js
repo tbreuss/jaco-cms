@@ -1,5 +1,8 @@
 const PREVIEW_STORAGE_KEY = 'jaco-preview-page'
 
+// How long the editor scripts in the page may take before loading counts as failed
+const EDITOR_LOAD_TIMEOUT_MS = 10000
+
 const isSafePreviewPath = (path) => {
   if (typeof path !== 'string' || path === '') {
     return false
@@ -42,43 +45,58 @@ export const iframe = {
     const pathname = iframe.removeLeadingSlash(contentDocument.location.pathname)
     return pathname === '' ? 'index.html' : pathname
   },
-  // onReady runs once the editor scripts are loaded and the editors are
-  // initialized, on the already-loaded path as well as after the async script
-  // load. Callers that read the content need it: getHTML() relies on the
-  // remove* helpers the scripts install.
-  makeEditable: (onReady) => {
+  // Loads and initializes the editors in the page. The promise settles when the
+  // editor is usable: editor.js and contentlists.js are loaded, Quill is there,
+  // the editors are initialized and the editor texts are loaded. It rejects when
+  // a script fails to load or nothing happens within EDITOR_LOAD_TIMEOUT_MS, so
+  // a page that stays uneditable says so instead of failing silently.
+  // onReady runs just before it resolves. Callers that read the content need it:
+  // getHTML() relies on serializeBody() from editor.js.
+  makeEditable: (onReady) => new Promise((resolve, reject) => {
     const contentDocument = iframe.contentDocument()
     const contentWindow = iframe.contentWindow()
+    let timedOut = false
+    const timer = setTimeout(() => {
+      timedOut = true
+      reject(new Error('The editor did not load in time'))
+    }, EDITOR_LOAD_TIMEOUT_MS)
+    const loadScript = (id, src) => new Promise((done, fail) => {
+      const script = contentDocument.createElement('script')
+      script.id = id
+      script.type = 'text/javascript'
+      script.src = src
+      script.async = false
+      script.onload = () => done()
+      script.onerror = () => fail(new Error('Could not load ' + src))
+      contentDocument.head.appendChild(script)
+    })
     const initEditors = () => {
-      contentWindow.initRichTextEditor()
+      const quillLoaded = contentWindow.initRichTextEditor()
       contentWindow.initImages()
       if (contentWindow.JacoContentLists) {
         contentWindow.JacoContentLists.initContentLists()
       }
-      if (onReady) {
-        onReady()
-      }
+      return Promise.all([quillLoaded, contentWindow.jacoEditorReady])
     }
-    if (contentDocument.getElementById('editorInstanceJavascript')) {
-      initEditors()
-    } else {
-      const script = contentDocument.createElement('script')
-      script.id = 'editorInstanceJavascript'
-      script.type = 'text/javascript'
-      script.src = '/jaco/frontend/editor.js'
-      script.async = false
-      script.onload = () => {
-        const contentLists = contentDocument.createElement('script')
-        contentLists.id = 'editorContentListsJavascript'
-        contentLists.type = 'text/javascript'
-        contentLists.src = '/jaco/frontend/contentlists.js'
-        contentLists.async = false
-        contentLists.onload = initEditors
-        contentDocument.head.appendChild(contentLists)
-      }
-      contentDocument.head.appendChild(script)
-    }
-  },
+    const scriptsLoaded = contentDocument.getElementById('editorInstanceJavascript')
+      ? Promise.resolve()
+      : loadScript('editorInstanceJavascript', '/jaco/frontend/editor.js')
+        .then(() => loadScript('editorContentListsJavascript', '/jaco/frontend/contentlists.js'))
+    scriptsLoaded
+      .then(initEditors)
+      .then(() => {
+        // too late: the caller was told it failed, do not act as if it had worked
+        if (timedOut) {
+          return
+        }
+        if (onReady) {
+          onReady()
+        }
+        resolve()
+      })
+      .catch(reject)
+      .finally(() => clearTimeout(timer))
+  }),
   removeEditors: () => {
     const contentWindow = iframe.contentWindow()
     if (typeof contentWindow.removeRichTextEditor === 'function') {
@@ -170,8 +188,12 @@ export const iframe = {
   // editor.js), so the editors stay usable, whether the caller compares the
   // content or saves it. A save reloads the page afterwards anyway.
   getHTML: () => {
+    const contentWindow = iframe.contentWindow()
+    if (typeof contentWindow.serializeBody !== 'function') {
+      throw new Error('The editor is not loaded, the page content cannot be read')
+    }
     // the inline editor owns the content of the page, not the document around it
-    let bodyHtml = iframe.contentWindow().serializeBody()
+    let bodyHtml = contentWindow.serializeBody()
 
     // The browser writes every empty attribute as x="". A data-jaco marker is an
     // empty attribute on purpose, so its ="" goes; every other attribute keeps its
