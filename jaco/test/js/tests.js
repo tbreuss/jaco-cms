@@ -4013,6 +4013,36 @@ QUnit.test('clear button resets filter and triggers load', (assert) => {
   UploadListModel.load = origLoad
 })
 
+// Mounts the inline editor view with a faked iframe. getHTML() returns
+// window.__iframeHtml, which the test changes to simulate an edit.
+const withMountedInlineView = async (html, run) => {
+  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
+  const orig = {}
+  const keys = ['hasElement', 'makeEditable', 'contentDocument', 'contentWindow', 'fitBelowNavbar', 'getHTML', 'fileName', 'reload', 'getElement']
+  keys.forEach((k) => { orig[k] = iframe[k] })
+  iframe.hasElement = () => true
+  iframe.makeEditable = (onReady) => { if (onReady) { onReady() } }
+  iframe.contentDocument = () => document
+  iframe.contentWindow = () => window
+  iframe.fitBelowNavbar = () => {}
+  iframe.getHTML = () => window.__iframeHtml
+  iframe.fileName = () => 'index.html'
+  iframe.reload = () => {}
+  iframe.getElement = () => ({onload: null})
+  window.confirm = () => true
+  window.__iframeHtml = html
+  try {
+    m.render(fixture(), m(PageInlineEditView))
+    await run()
+  } finally {
+    m.render(fixture(), null)
+    dirty.clear()
+    delete window.__iframeHtml
+    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
+    Object.keys(orig).forEach((k) => { iframe[k] = orig[k] })
+  }
+}
+
 QUnit.module('PageInlineEditView dirty baseline')
 
 QUnit.test('an unedited preview is not dirty', (assert) => {
@@ -4079,6 +4109,41 @@ QUnit.test('the first edit is detected instead of becoming the baseline', (asser
     window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
     Object.keys(orig).forEach((k) => { iframe[k] = orig[k] })
   }
+})
+
+QUnit.test('the indentation Quill removes is not a change', async (assert) => {
+  const source = '<div data-jaco-block>\n      <p>Hello\n      world</p>\n    </div>\n  '
+  await withMountedInlineView(source, async () => {
+    // what opening the block does to the source
+    window.__iframeHtml = '<div data-jaco-block><p>Hello world</p></div>'
+    assert.notOk(dirty.isDirty(), 'formatting alone does not ask to discard anything')
+
+    window.__iframeHtml = '<div data-jaco-block><p>Hello there</p></div>'
+    assert.ok(dirty.isDirty(), 'a changed word does')
+  })
+})
+
+QUnit.test('typed spaces are a change', async (assert) => {
+  await withMountedInlineView('<p>Hello world</p>', async () => {
+    window.__iframeHtml = '<p>Hello  world</p>'
+    assert.ok(dirty.isDirty(), 'an extra space inside the text')
+
+    window.__iframeHtml = '<p> Hello world</p>'
+    assert.ok(dirty.isDirty(), 'a space at the start of a paragraph')
+
+    window.__iframeHtml = '<p>Hello world </p>'
+    assert.ok(dirty.isDirty(), 'a space at the end of a paragraph')
+
+    window.__iframeHtml = '<p>Hello world</p>'
+    assert.notOk(dirty.isDirty(), 'taking them out again is clean')
+  })
+})
+
+QUnit.test('a space between inline elements is still a change', async (assert) => {
+  await withMountedInlineView('<p><b>a</b> <i>b</i></p>', async () => {
+    window.__iframeHtml = '<p><b>a</b><i>b</i></p>'
+    assert.ok(dirty.isDirty(), 'it separates two words')
+  })
 })
 
 QUnit.module('serializeBody')

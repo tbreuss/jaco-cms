@@ -22,8 +22,30 @@ let savedBody = null
 // getHTML() reads from a copy of the page, so reading never unhooks the editor.
 const readBody = () => iframe.getHTML()
 
+// Quill rewrites the formatting of a block as soon as it opens it: the indentation
+// and line breaks of the source disappear. That alone is not a change the user
+// made, so the comparison ignores exactly that: whitespace that contains a line
+// break. Such a run counts as one space between words and as nothing at block
+// boundaries and line breaks. Spaces without a line break are content - typing
+// one is a change - and so is a space between inline elements. (Line breaks
+// inside <pre> count as formatting too, so a change that is only that goes
+// unnoticed.)
+const BLOCK_TAGS = 'address|article|aside|blockquote|br|dd|div|dl|dt|figcaption|figure|footer|h[1-6]|header|hr|li|main|nav|ol|p|pre|section|table|tbody|td|th|thead|tr|ul'
+// stands for a run of formatting whitespace while the text is normalized
+const FORMATTING = String.fromCharCode(0xE000)
+const FORMATTING_WHITESPACE = /[ \t\f]*[\r\n][ \t\f\r\n]*/g
+const BLOCK_BOUNDARY = new RegExp(FORMATTING + '*(</?(?:' + BLOCK_TAGS + ')(?:\\s[^>]*)?>)' + FORMATTING + '*', 'gi')
+
+const normalizeForCompare = (html) => html
+  .replace(FORMATTING_WHITESPACE, FORMATTING)
+  .replace(BLOCK_BOUNDARY, '$1')
+  .replace(new RegExp('^' + FORMATTING + '+|' + FORMATTING + '+$', 'g'), '')
+  .replace(new RegExp(FORMATTING + '+', 'g'), ' ')
+
+// savedBody holds the normalized baseline, so the check normalizes only the
+// current page
 const captureSavedBody = () => {
-  try { savedBody = readBody() } catch (e) { savedBody = null }
+  try { savedBody = normalizeForCompare(readBody()) } catch (e) { savedBody = null }
 }
 
 // Set when the editor scripts in the page did not load (see iframe.makeEditable).
@@ -55,7 +77,11 @@ const isDirty = () => {
   if (!auth.can('editor') || savedBody === null) {
     return false
   }
-  try { return readBody() !== savedBody } catch (e) { return false }
+  try {
+    return normalizeForCompare(readBody()) !== savedBody
+  } catch (e) {
+    return false
+  }
 }
 
 const beforeUnloadHandler = (e) => {
