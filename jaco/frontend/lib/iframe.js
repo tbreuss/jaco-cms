@@ -166,28 +166,12 @@ export const iframe = {
   reload: () => {
     iframe.contentWindow().location.reload()
   },
-  // keepEditorScripts serializes without unhooking the editor. The remove*
-  // helpers below tear down live editor chrome (and removeRichTextEditor()
-  // drops the editor scripts entirely), which is what save() wants but not what
-  // an observer may do: reading would disable editing mid-session. Callers that
-  // only compare content pass true and keep the editors usable.
-  getHTML: ({keepEditorScripts = false} = {}) => {
-    const contentWindow = iframe.contentWindow()
-    contentWindow.removeRichTextEditorElements()
-    contentWindow.removeExtendedImages()
-    contentWindow.removeLinks()
-    if (!keepEditorScripts) {
-      contentWindow.removeRichTextEditor()
-    }
-    contentWindow.removeTempImageElements()
-    // keepEditorScripts is the dirty-check read: keep the content-list controls
-    // mounted, otherwise the next init call would short-circuit on the flags.
-    if (!keepEditorScripts && contentWindow.JacoContentLists) {
-      contentWindow.JacoContentLists.removeContentListChrome()
-    }
-
+  // Read-only: the page is serialized from a copy (window.serializeBody in
+  // editor.js), so the editors stay usable, whether the caller compares the
+  // content or saves it. A save reloads the page afterwards anyway.
+  getHTML: () => {
     // the inline editor owns the content of the page, not the document around it
-    let bodyHtml = contentWindow.document.body.innerHTML
+    let bodyHtml = iframe.contentWindow().serializeBody()
 
     // The browser writes every empty attribute as x="". A data-jaco marker is an
     // empty attribute on purpose, so its ="" goes; every other attribute keeps its

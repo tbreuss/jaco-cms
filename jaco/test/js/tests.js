@@ -4081,43 +4081,45 @@ QUnit.test('the first edit is detected instead of becoming the baseline', (asser
   }
 })
 
-QUnit.test('checking for changes does not unhook the editor', (assert) => {
-  window.sessionStorage.setItem('AUTHORIZATION_TOKEN', tokenWithRole('admin'))
-  const orig = {}
-  const keys = ['hasElement', 'makeEditable', 'contentDocument', 'contentWindow', 'fitBelowNavbar', 'getHTML', 'fileName', 'reload', 'getElement']
-  keys.forEach((k) => { orig[k] = iframe[k] })
-  window.__removed = []
-  iframe.hasElement = () => true
-  iframe.makeEditable = (onReady) => { if (onReady) { onReady() } }
-  iframe.contentDocument = () => document
-  iframe.contentWindow = () => window
-  iframe.fitBelowNavbar = () => {}
-  // record whether the destructive teardown was requested
-  iframe.getHTML = (options) => {
-    if (!options || options.keepEditorScripts !== true) {
-      window.__removed.push('scripts')
-    }
-    return window.__iframeHtml ?? '<p>body</p>'
-  }
-  iframe.fileName = () => 'index.html'
-  iframe.reload = () => {}
-  iframe.getElement = () => ({onload: null})
-  window.confirm = () => true
+QUnit.module('serializeBody')
+
+QUnit.test('serializing leaves the open editor and the list chrome in place', (assert) => {
+  clearFixture()
+  m.render(fixture(), m.trust(
+    '<div data-jaco-block data-jaco-block--tools="basic"><p>Hello</p></div>' +
+    '<div data-jaco-repeater="x.html"><div><h2>One</h2></div></div>'
+  ))
+  window.JacoContentLists.initContentLists(fixture(), stubFetcher())
+  fixture().querySelector('[data-jaco-block]').dispatchEvent(new MouseEvent('click', {bubbles: true}))
+  assert.ok(fixture().querySelector('.ql-editor'), 'the editor is open')
 
   try {
-    window.__iframeHtml = '<p>original</p>'
-    m.render(fixture(), m(PageInlineEditView))
-    window.__iframeHtml = '<p>edited</p>'
-    dirty.isDirty()
+    const before = document.body.innerHTML
+    const saved = window.serializeBody()
 
-    assert.deepEqual(window.__removed, [], 'the dirty check never tears the editor down')
+    assert.strictEqual(document.body.innerHTML, before, 'the live page is not touched')
+    assert.ok(fixture().querySelector('.ql-editor'), 'the editor is still open')
+    assert.ok(fixture().querySelector('.jaco-content-add-button'), 'the list controls are still there')
+    assert.notOk(/ql-editor|ql-toolbar|ql-container|data-jaco-is-editing/.test(saved), 'no Quill state in the result: ' + saved)
+    assert.notOk(/jaco-content-add-button|jaco-content-item-bar/.test(saved), 'no list chrome in the result')
+    assert.ok(saved.includes('Hello') && saved.includes('One'), 'the content is in the result')
+    assert.ok(/data-jaco-block/.test(saved) && /data-jaco-repeater/.test(saved), 'the markers are in the result')
   } finally {
-    m.render(fixture(), null)
-    dirty.clear()
-    delete window.__iframeHtml
-    delete window.__removed
-    window.sessionStorage.removeItem('AUTHORIZATION_TOKEN')
-    Object.keys(orig).forEach((k) => { iframe[k] = orig[k] })
+    window.removeRichTextEditorElements()
+    window.JacoContentLists.removeContentListChrome()
+    clearFixture()
+  }
+})
+
+QUnit.test('serializing twice gives the same result', (assert) => {
+  clearFixture()
+  m.render(fixture(), m.trust('<div data-jaco-block data-jaco-block--tools="basic"><p>Hello</p></div>'))
+  fixture().querySelector('[data-jaco-block]').dispatchEvent(new MouseEvent('click', {bubbles: true}))
+  try {
+    assert.strictEqual(window.serializeBody(), window.serializeBody(), 'reading has no side effects')
+  } finally {
+    window.removeRichTextEditorElements()
+    clearFixture()
   }
 })
 

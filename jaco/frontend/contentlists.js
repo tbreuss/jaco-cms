@@ -15,8 +15,8 @@
 // grip. The button label comes from --label, so no translations are needed.
 // Fragments are fetched from the template/content/view API, which serves files
 // from jaco-data/templates/content. Item order lives in the DOM - save needs no
-// changes, but editor chrome has to be stripped (removeContentListChrome)
-// before the body is sent, see iframe.getHTML().
+// changes, but editor chrome has to be stripped (stripChrome, on the copy that
+// window.serializeBody builds) before the body is sent, see iframe.getHTML().
 window.JacoContentLists = (() => {
   const LIST_ATTRS = ['data-jaco-repeater', 'data-jaco-slot']
   const ADD_BUTTON_CLASS = 'jaco-content-add-button'
@@ -650,6 +650,17 @@ window.JacoContentLists = (() => {
         delete list._jacoContentListsInit
       });
       (root || document).querySelectorAll('.' + DRAGGING_CLASS).forEach((element) => {
+        element.classList.remove(DRAGGING_CLASS)
+      })
+    },
+    // Removes the chrome from a detached copy of the page (see
+    // window.serializeBody). Unlike removeContentListChrome nothing has to stay
+    // usable afterwards, so there are no flags to reset and no nesting rules.
+    stripChrome: (root) => {
+      root.querySelectorAll(CHROME_CLASSES.map((name) => '.' + name).join(', ')).forEach((element) => {
+        element.remove()
+      })
+      root.querySelectorAll('.' + DRAGGING_CLASS).forEach((element) => {
         element.classList.remove(DRAGGING_CLASS)
       })
     },
